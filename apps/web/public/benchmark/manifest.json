@@ -1,0 +1,520 @@
+{
+  "version": 1,
+  "description": "50 local JPEG fixtures: 10 Unsplash photographs, 5 focal crops of each. Each layer uses a separate 1280×960 asset.",
+  "downloadedAt": "2026-10-27",
+  "license": "https://unsplash.com/license",
+  "photos": [
+    {
+      "name": "forest",
+      "photoPage": "https://unsplash.com/photos/eOpewngf68w",
+      "photographer": "Sebastian Unrau",
+      "source": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e"
+    },
+    {
+      "name": "boathouse",
+      "photoPage": "https://unsplash.com/photos/zAjdgNXsMeg",
+      "photographer": "Luca Bravo",
+      "source": "https://images.unsplash.com/photo-1470770841072-f978cf4d019e"
+    },
+    {
+      "name": "beach",
+      "photoPage": "https://unsplash.com/@seantookthese",
+      "photographer": "Sean O.",
+      "source": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e"
+    },
+    {
+      "name": "peaks",
+      "photoPage": null,
+      "photographer": null,
+      "source": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b"
+    },
+    {
+      "name": "valley",
+      "photoPage": null,
+      "photographer": null,
+      "source": "https://images.unsplash.com/photo-1469474968028-56623f02e42e"
+    },
+    {
+      "name": "stars",
+      "photoPage": null,
+      "photographer": null,
+      "source": "https://images.unsplash.com/photo-1519681393784-d120267933ba"
+    },
+    {
+      "name": "alpine",
+      "photoPage": null,
+      "photographer": null,
+      "source": "https://images.unsplash.com/photo-1501785888041-af3ef285b470"
+    },
+    {
+      "name": "ocean",
+      "photoPage": null,
+      "photographer": null,
+      "source": "https://images.unsplash.com/photo-1518837695005-2083093ee35b"
+    },
+    {
+      "name": "desert",
+      "photoPage": null,
+      "photographer": null,
+      "source": "https://images.unsplash.com/photo-1509316785289-025f5b846b35"
+    },
+    {
+      "name": "waterfall",
+      "photoPage": null,
+      "photographer": null,
+      "source": "https://images.unsplash.com/photo-1433086966358-54859d0ed716"
+    }
+  ],
+  "images": [
+    {
+      "file": "01-forest-1.jpg",
+      "variant": 1,
+      "width": 1280,
+      "height": 960,
+      "bytes": 389668,
+      "sha256": "8c08cfb02862d3ebd9a69a367f7c9d7f8df8af6d5755f003bf14b9fac4addfc6",
+      "photo": 0
+    },
+    {
+      "file": "02-forest-2.jpg",
+      "variant": 2,
+      "width": 1280,
+      "height": 960,
+      "bytes": 389668,
+      "sha256": "8c08cfb02862d3ebd9a69a367f7c9d7f8df8af6d5755f003bf14b9fac4addfc6",
+      "photo": 0
+    },
+    {
+      "file": "03-forest-3.jpg",
+      "variant": 3,
+      "width": 1280,
+      "height": 960,
+      "bytes": 421417,
+      "sha256": "b716999fa6bfb0f3a9a2b5f841e3629ef1e144951eddcbf0739663d8fe7d70c7",
+      "photo": 0
+    },
+    {
+      "file": "04-forest-4.jpg",
+      "variant": 4,
+      "width": 1280,
+      "height": 960,
+      "bytes": 428840,
+      "sha256": "5c0d96e2ded33a9b5478f19dd5476632c36d1674025100daa307f597dbbe4318",
+      "photo": 0
+    },
+    {
+      "file": "05-forest-5.jpg",
+      "variant": 5,
+      "width": 1280,
+      "height": 960,
+      "bytes": 446281,
+      "sha256": "367f2e42e9171a1b2a3389dfd2fd28eb1c508d1df5d51fa6f904ad10d1e46cad",
+      "photo": 0
+    },
+    {
+      "file": "06-boathouse-1.jpg",
+      "variant": 1,
+      "width": 1280,
+      "height": 960,
+      "bytes": 261406,
+      "sha256": "15f8ab8182e9631151016cb8c3bdbd77a1050b5789eba776f10a0f4affa1cfab",
+      "photo": 1
+    },
+    {
+      "file": "07-boathouse-2.jpg",
+      "variant": 2,
+      "width": 1280,
+      "height": 960,
+      "bytes": 261406,
+      "sha256": "15f8ab8182e9631151016cb8c3bdbd77a1050b5789eba776f10a0f4affa1cfab",
+      "photo": 1
+    },
+    {
+      "file": "08-boathouse-3.jpg",
+      "variant": 3,
+      "width": 1280,
+      "height": 960,
+      "bytes": 272321,
+      "sha256": "9c9ab578abbbf0bb87b8d791da167f2e7485e7eac6e1ee89598a3ee68f4cdc7d",
+      "photo": 1
+    },
+    {
+      "file": "09-boathouse-4.jpg",
+      "variant": 4,
+      "width": 1280,
+      "height": 960,
+      "bytes": 266180,
+      "sha256": "9b9344adad4ceea318f22a10b5339f392f934b43befc2de65b03d55a64ad7211",
+      "photo": 1
+    },
+    {
+      "file": "10-boathouse-5.jpg",
+      "variant": 5,
+      "width": 1280,
+      "height": 960,
+      "bytes": 275934,
+      "sha256": "d997f648000620f16c16e8f7471eae3041e830418d5e653dd44585bb421e919a",
+      "photo": 1
+    },
+    {
+      "file": "11-beach-1.jpg",
+      "variant": 1,
+      "width": 1280,
+      "height": 960,
+      "bytes": 162332,
+      "sha256": "f6ad1852cf7f3244c5343bdf9c9f3f7e5b4b30c939e85cfc2925d1f441d616e6",
+      "photo": 2
+    },
+    {
+      "file": "12-beach-2.jpg",
+      "variant": 2,
+      "width": 1280,
+      "height": 960,
+      "bytes": 162332,
+      "sha256": "a79bf5940843757535b78b92b222caca30034d416992ad5481ce327c9cf5094e",
+      "photo": 2
+    },
+    {
+      "file": "13-beach-3.jpg",
+      "variant": 3,
+      "width": 1280,
+      "height": 960,
+      "bytes": 172172,
+      "sha256": "7dc706f569c2ffa2ec87ec911c27a5a3d3419921060cfe86c3b5eb33b6f0c5cc",
+      "photo": 2
+    },
+    {
+      "file": "14-beach-4.jpg",
+      "variant": 4,
+      "width": 1280,
+      "height": 960,
+      "bytes": 171218,
+      "sha256": "895183eaacdb681e1dca52d5d8c1000810fcde9fea431d20b201aa4635103923",
+      "photo": 2
+    },
+    {
+      "file": "15-beach-5.jpg",
+      "variant": 5,
+      "width": 1280,
+      "height": 960,
+      "bytes": 177018,
+      "sha256": "598e8fb07b297a1bd9455ea304d258ec1a55c80f8cd9e5b0554050c01280ce3d",
+      "photo": 2
+    },
+    {
+      "file": "16-peaks-1.jpg",
+      "variant": 1,
+      "width": 1280,
+      "height": 960,
+      "bytes": 307701,
+      "sha256": "bc9a030e07a158852ff5121102d75c0069495eb06fba5bcc2baa5d7762e41498",
+      "photo": 3
+    },
+    {
+      "file": "17-peaks-2.jpg",
+      "variant": 2,
+      "width": 1280,
+      "height": 960,
+      "bytes": 307677,
+      "sha256": "ec13a5b5eb0d5d925b55b56a78a8f6d9514133e3853a14e037531697a759a7b4",
+      "photo": 3
+    },
+    {
+      "file": "18-peaks-3.jpg",
+      "variant": 3,
+      "width": 1280,
+      "height": 960,
+      "bytes": 320079,
+      "sha256": "18a774474d31890426536a58aca6e9fa4a45c14b2405a47cabe96b884176ac26",
+      "photo": 3
+    },
+    {
+      "file": "19-peaks-4.jpg",
+      "variant": 4,
+      "width": 1280,
+      "height": 960,
+      "bytes": 312380,
+      "sha256": "8bdeb1473a4a741337ed3d1d0749dc7115f40def5dea0ee7ff8b59820a676b98",
+      "photo": 3
+    },
+    {
+      "file": "20-peaks-5.jpg",
+      "variant": 5,
+      "width": 1280,
+      "height": 960,
+      "bytes": 323298,
+      "sha256": "aca4ced60672c890bb74b5bc3cccff1eadbfb5af96384f7443de6524a17e19df",
+      "photo": 3
+    },
+    {
+      "file": "21-valley-1.jpg",
+      "variant": 1,
+      "width": 1280,
+      "height": 960,
+      "bytes": 160520,
+      "sha256": "616d41aee07af34ce442e7a45253a918db76555e3bfa26b52ea95c4f9928feec",
+      "photo": 4
+    },
+    {
+      "file": "22-valley-2.jpg",
+      "variant": 2,
+      "width": 1280,
+      "height": 960,
+      "bytes": 160520,
+      "sha256": "616d41aee07af34ce442e7a45253a918db76555e3bfa26b52ea95c4f9928feec",
+      "photo": 4
+    },
+    {
+      "file": "23-valley-3.jpg",
+      "variant": 3,
+      "width": 1280,
+      "height": 960,
+      "bytes": 169433,
+      "sha256": "24f9eb8ec21f8c0fb7af1a542b387fa1964d65128c93fa178a5f4431fb260733",
+      "photo": 4
+    },
+    {
+      "file": "24-valley-4.jpg",
+      "variant": 4,
+      "width": 1280,
+      "height": 960,
+      "bytes": 168493,
+      "sha256": "63ca554b2e78bc4e17f55049b609d3c632d1a47061e2d8dea08210e942d985d3",
+      "photo": 4
+    },
+    {
+      "file": "25-valley-5.jpg",
+      "variant": 5,
+      "width": 1280,
+      "height": 960,
+      "bytes": 175343,
+      "sha256": "6a4e6db8ff20706ae6fec001edc04b096a9604ecaa16a46236e5fa93886b6bd1",
+      "photo": 4
+    },
+    {
+      "file": "26-stars-1.jpg",
+      "variant": 1,
+      "width": 1280,
+      "height": 960,
+      "bytes": 256440,
+      "sha256": "5298a208d9125fa1d219223f9be3a8423025f120dde03c08b2009dced51cf80c",
+      "photo": 5
+    },
+    {
+      "file": "27-stars-2.jpg",
+      "variant": 2,
+      "width": 1280,
+      "height": 960,
+      "bytes": 256457,
+      "sha256": "80fbfcc7d3094b7accf626da066964c31b52e41ab19a672de6d15ecd5b072b7f",
+      "photo": 5
+    },
+    {
+      "file": "28-stars-3.jpg",
+      "variant": 3,
+      "width": 1280,
+      "height": 960,
+      "bytes": 272593,
+      "sha256": "0f21daa9c4b2a5d282b18435b8543a6d5f996decf7bb012c9366da5894b99120",
+      "photo": 5
+    },
+    {
+      "file": "29-stars-4.jpg",
+      "variant": 4,
+      "width": 1280,
+      "height": 960,
+      "bytes": 272131,
+      "sha256": "2a0506fa333989c3a1e2e6389dd72ee444a9b26782af250904c857acbf83d2db",
+      "photo": 5
+    },
+    {
+      "file": "30-stars-5.jpg",
+      "variant": 5,
+      "width": 1280,
+      "height": 960,
+      "bytes": 282864,
+      "sha256": "33f2c6f5bfa6e5da271cf0d8f66e97dcb9144b5cbec3f5d63f23db763305fe42",
+      "photo": 5
+    },
+    {
+      "file": "31-alpine-1.jpg",
+      "variant": 1,
+      "width": 1280,
+      "height": 960,
+      "bytes": 322564,
+      "sha256": "c967cc4134a4b5d07701111cd3d416f17048cc5b35f38e2e76b0906397398c60",
+      "photo": 6
+    },
+    {
+      "file": "32-alpine-2.jpg",
+      "variant": 2,
+      "width": 1280,
+      "height": 960,
+      "bytes": 322564,
+      "sha256": "c967cc4134a4b5d07701111cd3d416f17048cc5b35f38e2e76b0906397398c60",
+      "photo": 6
+    },
+    {
+      "file": "33-alpine-3.jpg",
+      "variant": 3,
+      "width": 1280,
+      "height": 960,
+      "bytes": 338089,
+      "sha256": "41f9bfcc1d8d5f83222671499b8bf173d30bda991ab3a427e6704f3bbb8032cc",
+      "photo": 6
+    },
+    {
+      "file": "34-alpine-4.jpg",
+      "variant": 4,
+      "width": 1280,
+      "height": 960,
+      "bytes": 335463,
+      "sha256": "dac85fd42ef9b495eced6b42cb563f64e463db20e336baa73195b350feed8f6e",
+      "photo": 6
+    },
+    {
+      "file": "35-alpine-5.jpg",
+      "variant": 5,
+      "width": 1280,
+      "height": 960,
+      "bytes": 347968,
+      "sha256": "6624fccf154ddd98574569735da23fd5c95998f9059e382593568c529a9f5bb6",
+      "photo": 6
+    },
+    {
+      "file": "36-ocean-1.jpg",
+      "variant": 1,
+      "width": 1280,
+      "height": 960,
+      "bytes": 111689,
+      "sha256": "fe66bb3954fb7abefb58bdc813330c6c754124e8d93841a0e8b03148363b131d",
+      "photo": 7
+    },
+    {
+      "file": "37-ocean-2.jpg",
+      "variant": 2,
+      "width": 1280,
+      "height": 960,
+      "bytes": 111689,
+      "sha256": "fe66bb3954fb7abefb58bdc813330c6c754124e8d93841a0e8b03148363b131d",
+      "photo": 7
+    },
+    {
+      "file": "38-ocean-3.jpg",
+      "variant": 3,
+      "width": 1280,
+      "height": 960,
+      "bytes": 120028,
+      "sha256": "ee9c43f4fba1c9a49273621b2e5aeeb7ca23c4db9949f3bad9b9be4e2cd609d0",
+      "photo": 7
+    },
+    {
+      "file": "39-ocean-4.jpg",
+      "variant": 4,
+      "width": 1280,
+      "height": 960,
+      "bytes": 119357,
+      "sha256": "4d36c98f14aa553c0a930e6aee17ad0c7ad5672dbe3eaa690c4454e5f4774b74",
+      "photo": 7
+    },
+    {
+      "file": "40-ocean-5.jpg",
+      "variant": 5,
+      "width": 1280,
+      "height": 960,
+      "bytes": 123832,
+      "sha256": "9a18ced0ee3f504c89d37e1fc122ae2d85158e3134cbbb5768702d62f6f375a0",
+      "photo": 7
+    },
+    {
+      "file": "41-desert-1.jpg",
+      "variant": 1,
+      "width": 1280,
+      "height": 960,
+      "bytes": 226232,
+      "sha256": "a648e68569e7f3927b62bf9ae74435fa5c8164739c5836b0b0ef8c2d35a5aace",
+      "photo": 8
+    },
+    {
+      "file": "42-desert-2.jpg",
+      "variant": 2,
+      "width": 1280,
+      "height": 960,
+      "bytes": 226232,
+      "sha256": "a648e68569e7f3927b62bf9ae74435fa5c8164739c5836b0b0ef8c2d35a5aace",
+      "photo": 8
+    },
+    {
+      "file": "43-desert-3.jpg",
+      "variant": 3,
+      "width": 1280,
+      "height": 960,
+      "bytes": 236331,
+      "sha256": "38de1a49ca675fcb3ec2a598c61f6cc88e59663bf8698596c5026d622aa9dc4c",
+      "photo": 8
+    },
+    {
+      "file": "44-desert-4.jpg",
+      "variant": 4,
+      "width": 1280,
+      "height": 960,
+      "bytes": 234594,
+      "sha256": "d3d3231a7052cafa780d12734332dbd7202c44087ff15b1e4f961356c2a0f9d6",
+      "photo": 8
+    },
+    {
+      "file": "45-desert-5.jpg",
+      "variant": 5,
+      "width": 1280,
+      "height": 960,
+      "bytes": 243093,
+      "sha256": "66772128ad756428cb4723a4d565c5cb3d5f341679e09a553fd69771aed0790d",
+      "photo": 8
+    },
+    {
+      "file": "46-waterfall-1.jpg",
+      "variant": 1,
+      "width": 1280,
+      "height": 960,
+      "bytes": 428583,
+      "sha256": "98668dc05b92784342d9559ac57a4daa174dff175c857888c2995634fed1c382",
+      "photo": 9
+    },
+    {
+      "file": "47-waterfall-2.jpg",
+      "variant": 2,
+      "width": 1280,
+      "height": 960,
+      "bytes": 428583,
+      "sha256": "98668dc05b92784342d9559ac57a4daa174dff175c857888c2995634fed1c382",
+      "photo": 9
+    },
+    {
+      "file": "48-waterfall-3.jpg",
+      "variant": 3,
+      "width": 1280,
+      "height": 960,
+      "bytes": 476292,
+      "sha256": "6e9f2618b6e831d4e966299f8f557644255b04ef8c7b396036601366cb5af3d8",
+      "photo": 9
+    },
+    {
+      "file": "49-waterfall-4.jpg",
+      "variant": 4,
+      "width": 1280,
+      "height": 960,
+      "bytes": 478712,
+      "sha256": "9ba2e1a1899b666e53cb0ea5aa796edb7784a1d5b9d62610e8f7225aec2f6002",
+      "photo": 9
+    },
+    {
+      "file": "50-waterfall-5.jpg",
+      "variant": 5,
+      "width": 1280,
+      "height": 960,
+      "bytes": 496457,
+      "sha256": "2661abb1d21892775ea98291e0f6c4029391157e7b56d164cab1b7acd69b59fe",
+      "photo": 9
+    }
+  ]
+}
