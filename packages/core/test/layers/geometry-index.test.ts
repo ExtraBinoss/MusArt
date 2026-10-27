@@ -140,3 +140,64 @@ test("protects cached matrices, bounds and child lists from accidental external 
   }, context);
   expect(context.found).toEqual(["shape"]);
 });
+test("skips invisible mask-source subtrees for canvas picks while retaining explicit layer-panel access", () => {
+  const target = createLayer("rectangle", {
+    id: "target",
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+    mask: { layerId: "source-group", enabled: true, inverted: false },
+  });
+  const source = createLayer("group", {
+    id: "source-group",
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+    maskSource: true,
+  });
+  const sourceChild = createLayer("ellipse", {
+    id: "source-child",
+    parentId: source.id,
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+  });
+  const group = createLayer("group", {
+    id: "painted-group",
+    x: 200,
+    y: 0,
+    width: 100,
+    height: 100,
+  });
+  const attached = createLayer("rectangle", {
+    id: "attached",
+    parentId: group.id,
+    x: 10,
+    y: 10,
+    width: 20,
+    height: 20,
+    maskSource: true,
+  });
+  const engine = new EditorEngine(
+    createProject({
+      pages: [createPage({ layers: [target, source, sourceChild, group, attached] })],
+    }),
+  );
+  const index = createLayerGeometryIndex(engine.getSnapshot().project.pages[0]!);
+  expect(index.hitTest({ x: 50, y: 50 })?.id).toBe(target.id);
+  expect(index.hitTest({ x: 215, y: 15 })?.id).toBe(group.id);
+  expect(index.get(sourceChild.id)).toMatchObject({ id: sourceChild.id, kind: "ellipse" });
+  engine.select([sourceChild.id]);
+  expect(engine.getSnapshot().selection).toEqual([sourceChild.id]);
+  engine.execute({ type: "updateLayers", ids: [group.id], patch: { maskSource: true } });
+  expect(
+    createLayerGeometryIndex(engine.getSnapshot().project.pages[0]!).hitTest({ x: 215, y: 15 }),
+  ).toBeNull();
+  engine.undo();
+  expect(
+    createLayerGeometryIndex(engine.getSnapshot().project.pages[0]!).hitTest({ x: 215, y: 15 })?.id,
+  ).toBe(group.id);
+});

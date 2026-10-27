@@ -64,6 +64,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
+- Canvas picking skips attached mask sources and their hidden subtrees, so visible masked artwork receives the click; masks remain directly selectable and editable in the layers panel.
+
 - Enforced mask dependency depth independently of layer ordering and protected cached geometry from shallow-frozen documents and external mutations of matrices, bounds, child lists or lookup maps.
 - Deferred layer menu operations retain the invoking selection and reject changed document/selection scopes instead of retargeting a later selection.
 - Blend selectors preview hovered and keyboard-focused modes without changing the document, restore on cancellation and commit one selected choice. Shared Select chevrons animate their Radix open state and honor reduced-motion preferences.

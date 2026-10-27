@@ -112,7 +112,8 @@ export function hitTest(page: Composition, point: Point): Layer | null {
     const children = page.layers.filter((layer) => layer.parentId === parentId);
     for (let index = children.length - 1; index >= 0; index -= 1) {
       const layer = children[index];
-      if (!layer || !layer.visible || layer.locked || layer.opacity === 0) continue;
+      if (!layer || layer.maskSource || !layer.visible || layer.locked || layer.opacity === 0)
+        continue;
       const world = multiplyMatrices(matrix, layerTransform(layer));
       const local = transformPoint(invertMatrix(world), point);
       if (local.x < 0 || local.y < 0 || local.x > layer.width || local.y > layer.height) continue;

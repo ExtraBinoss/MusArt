@@ -162,7 +162,7 @@ export class LayerGeometryIndex {
         continue;
       }
       const layer = frame.children[frame.at--]!;
-      if (this.isLocked(layer.id) || !this.isVisible(layer.id)) continue;
+      if (layer.maskSource || this.isLocked(layer.id) || !this.isVisible(layer.id)) continue;
       const bounds = this.worldBounds(layer.id);
       if (
         point.x < bounds.x ||
