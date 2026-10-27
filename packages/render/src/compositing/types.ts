@@ -18,6 +18,7 @@ export interface GpuStats {
   cacheBytes: number;
   frames: number;
   cacheHits: number;
+  vectorParses: number;
   maxBytes: number;
 }
 export function assertRenderSize(page: Composition, scale: number): void {

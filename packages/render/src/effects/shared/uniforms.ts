@@ -9,6 +9,7 @@ export function createEffectUniforms(effect: Effect, width: number, height: numb
     levels: uniform(Math.max(1, effect.levels - 1)),
     color: uniform(effect.color ? 1 : 0),
     sourceFlipY: uniform(0),
+    randomSeed: uniform(effect.seed),
     seed: uniform(new Vector2(effect.seed % 4, Math.floor(effect.seed / 4) % 4)),
     resolution: uniform(new Vector2(width, height)),
   };
@@ -26,6 +27,7 @@ export function updateEffectUniforms(
   controls.scale.value = Math.max(1, effect.scale);
   controls.levels.value = Math.max(1, effect.levels - 1);
   controls.color.value = effect.color ? 1 : 0;
+  controls.randomSeed.value = effect.seed;
   controls.seed.value.set(effect.seed % 4, Math.floor(effect.seed / 4) % 4);
   controls.resolution.value.set(width, height);
 }

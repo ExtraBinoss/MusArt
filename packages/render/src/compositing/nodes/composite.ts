@@ -1,7 +1,8 @@
 import { Matrix3, Texture, Vector2, type TextureNode } from "three/webgpu";
-import { clamp, max, mix, step, texture, uniform, uv, vec2, vec3, vec4 } from "three/tsl";
+import { clamp, dot, max, mix, step, texture, uniform, uv, vec2, vec3, vec4 } from "three/tsl";
 
 import { textureUv } from "./uv";
+import { blendRGB } from "../blends/registry";
 
 export function sourceControls() {
   return {
@@ -34,14 +35,36 @@ export function maskControls() {
     mask: texture(new Texture()),
     inverted: uniform(0),
     maskFlipY: uniform(0),
+    maskPremultiplied: uniform(0),
+    maskOpacity: uniform(1),
+    luminance: uniform(0),
+    transformed: uniform(0),
+    targetSize: uniform(new Vector2(1, 1)),
+    sourceSize: uniform(new Vector2(1, 1)),
+    inverse: uniform(new Matrix3()),
     premultiplied: uniform(0),
     flipY: uniform(0),
   };
 }
 export function maskNode(controls: ReturnType<typeof maskControls>) {
   const sample = controls.source.sample(textureUv(controls.flipY));
-  const mask = controls.mask.sample(textureUv(controls.maskFlipY));
-  const alpha = mix(mask.a, mask.a.oneMinus(), controls.inverted);
+  const point = controls.inverse.mul(
+    vec3(uv().x.mul(controls.targetSize.x), uv().y.oneMinus().mul(controls.targetSize.y), 1),
+  );
+  const mapped = vec2(
+    point.x.div(controls.sourceSize.x),
+    point.y.div(controls.sourceSize.y).oneMinus(),
+  );
+  const coord = mix(uv(), mapped, controls.transformed);
+  const inside = step(0, coord.x).mul(step(coord.x, 1)).mul(step(0, coord.y)).mul(step(coord.y, 1));
+  const bounded = clamp(coord, 0, 1);
+  const mask = controls.mask.sample(
+    vec2(bounded.x, mix(bounded.y, bounded.y.oneMinus(), controls.maskFlipY)),
+  );
+  const rgb = mix(mask.rgb, mask.rgb.div(max(mask.a, 0.000001)), controls.maskPremultiplied);
+  const intensity = mix(1, dot(rgb, vec3(0.2126, 0.7152, 0.0722)), controls.luminance);
+  const coverage = clamp(mask.a.mul(intensity).mul(controls.maskOpacity).mul(inside), 0, 1);
+  const alpha = mix(coverage, coverage.oneMinus(), controls.inverted);
   return vec4(sample.rgb.mul(mix(1, alpha, controls.premultiplied)), sample.a.mul(alpha));
 }
 export function blendControls() {
@@ -81,16 +104,7 @@ export function blendNode(controls: ReturnType<typeof blendControls>) {
   const b = controls.backdrop.sample(textureUv(controls.backdropFlipY));
   const cs = mix(s.rgb, s.rgb.div(max(s.a, 0.000001)), controls.premultiplied);
   const cb = b.rgb.div(max(b.a, 0.000001));
-  const multiply = cb.mul(cs);
-  const screen = cb.add(cs).sub(cb.mul(cs));
-  const overlay = mix(
-    cb.mul(cs).mul(2),
-    cb.oneMinus().mul(cs.oneMinus()).mul(2).oneMinus(),
-    step(0.5, cb),
-  );
-  const blended = controls.mode
-    .equal(1)
-    .select(multiply, controls.mode.equal(2).select(screen, overlay));
+  const blended = blendRGB(cb, cs, controls.mode);
   const alpha = s.a.mul(controls.opacity);
   const color = cs
     .mul(b.a.oneMinus())

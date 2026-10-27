@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPage } from "@musart/core";
 import { Texture } from "three/webgpu";
-import { disposeExportRenderers, snapshotComposition } from "../../src/export/standalone";
+import {
+  createRenderSession,
+  disposeExportRenderers,
+  snapshotComposition,
+} from "../../src/export/standalone";
 const gpu = vi.hoisted(() => ({
   init: vi.fn(),
   dispose: vi.fn(),
@@ -33,11 +37,17 @@ vi.mock("../../src/compositing/GpuCompositor", () => ({
   GpuCompositor: class {
     render = gpu.render;
     dispose = gpu.compositorDispose;
+    stats = () => ({ readbacks: 0, frames: 2 });
   },
 }));
 vi.mock("../../src/export/presentation", () => ({
   GpuPresentation: class {
-    render = gpu.present;
+    constructor(private readonly renderer: { domElement: HTMLCanvasElement }) {}
+    render(frame: { width: number; height: number }) {
+      this.renderer.domElement.width = frame.width;
+      this.renderer.domElement.height = frame.height;
+      gpu.present(frame);
+    }
     dispose = gpu.presentationDispose;
   },
 }));
@@ -110,4 +120,46 @@ describe("GPU-backed durable export snapshots", () => {
     await expect(snapshot).rejects.toThrow("fermé");
     await disposal;
   });
+});
+
+it("holds a retained native GPU canvas inside the atomic consumer queue without bitmap copies", async () => {
+  const session = createRenderSession({ forceWebGL: true, maxBytes: 1024 });
+  expect(session.stats()).toBeNull();
+  let release!: () => void;
+  const hold = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let entered!: () => void;
+  const ready = new Promise<void>((resolve) => {
+    entered = resolve;
+  });
+  const first = session.withCanvasFrame(createPage(), {}, async (canvas) => {
+    entered();
+    await hold;
+    return canvas;
+  });
+  await ready;
+  const second = session.render(createPage(), {});
+  await Promise.resolve();
+  expect(gpu.render).toHaveBeenCalledOnce();
+  release();
+  const canvas = await first;
+  expect(await second).toBe(canvas);
+  expect(gpu.render).toHaveBeenCalledTimes(2);
+  expect(gpu.init).toHaveBeenCalledOnce();
+  expect(createImageBitmap).not.toHaveBeenCalled();
+  expect(session.stats()).toMatchObject({ readbacks: 0 });
+  await session.dispose();
+  await expect(session.render(createPage(), {})).rejects.toThrow("fermé");
+});
+it("shares disposal completion and releases a retained context only once", async () => {
+  const session = createRenderSession();
+  await session.render(createPage(), {});
+  const first = session.dispose(),
+    second = session.dispose();
+  expect(second).toBe(first);
+  await Promise.all([first, second]);
+  expect(gpu.dispose).toHaveBeenCalledOnce();
+  expect(gpu.presentationDispose).toHaveBeenCalledOnce();
+  expect(session.stats()).toBeNull();
 });

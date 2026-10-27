@@ -58,3 +58,20 @@ describe("bounded layer source cache", () => {
     expect(sourceKey(layer, page, { asset }, 1)).not.toBe(initial);
   });
 });
+it("invalidates referenced mask paints and world transforms while rejecting render cycles", () => {
+  const source = createLayer("rectangle", { id: "mask", maskSource: true }),
+    target = createLayer("rectangle", {
+      id: "target",
+      mask: { layerId: "mask", enabled: true, inverted: false },
+    }),
+    page = createPage({ layers: [source, target] });
+  const key = sourceKey(target, page, {}, 1);
+  expect(sourceKey(target, { ...page, layers: [{ ...source, x: 10 }, target] }, {}, 1)).not.toBe(
+    key,
+  );
+  expect(
+    sourceKey(target, { ...page, layers: [{ ...source, opacity: 0.2 }, target] }, {}, 1),
+  ).not.toBe(key);
+  const cyclic = { ...source, mask: { layerId: "target", enabled: true, inverted: false } };
+  expect(() => sourceKey(target, { ...page, layers: [cyclic, target] }, {}, 1)).toThrow("Cycle");
+});

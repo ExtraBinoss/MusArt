@@ -4,6 +4,8 @@ it("exposes renderer, pixel, export and lifecycle ports without importing React"
   expect(Object.keys(renderer).sort()).toEqual(
     [
       "GpuEffects",
+      "createRenderSession",
+      "RENDER_CAPABILITIES",
       "GpuCompositor",
       "clearRenderCaches",
       "exportComposition",

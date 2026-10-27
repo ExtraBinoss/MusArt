@@ -169,3 +169,63 @@ describe("retained GPU document graph", () => {
     expect(fake.dispose).not.toHaveBeenCalled();
   });
 });
+it("renders retained vector geometry, transformed referenced masks and truthful document color spaces", async () => {
+  const { renderer, fake } = makeGpuRenderer(),
+    graph = new GpuCompositor(renderer);
+  const vector = createLayer("vector", {
+      id: "vector",
+      width: 12,
+      height: 12,
+      vector: { viewBox: "0 0 12 12", path: "M0 0h12v12H0z" },
+    }),
+    mask = createLayer("group", {
+      id: "mask",
+      x: 3,
+      y: 1,
+      width: 8,
+      height: 8,
+      maskSource: true,
+      opacity: 0.5,
+    }),
+    child = createLayer("rectangle", {
+      id: "mask-child",
+      parentId: mask.id,
+      width: 8,
+      height: 8,
+      x: 0,
+      y: 0,
+    });
+  const target = {
+    ...vector,
+    mask: { layerId: "mask", mode: "luminance" as const, enabled: true, inverted: false },
+  };
+  const page = createPage({ width: 20, height: 20, layers: [target, mask, child] });
+  await graph.render(page, {});
+  expect(graph.stats().vectorParses).toBe(1);
+  await graph.render({ ...page, layers: [{ ...target, fill: "#ff0000" }, mask, child] }, {});
+  expect(graph.stats().vectorParses).toBe(1);
+  await graph.render({ ...page, layers: [target, { ...mask, visible: false }, child] }, {});
+  await graph.render(
+    { ...page, colorSpace: "display-p3", layers: [createLayer("image", { assetId: asset.id })] },
+    { image: asset },
+  );
+  await graph.render({ ...page, colorSpace: "cmyk-proof" }, {});
+  expect(graph.stats().readbacks).toBe(0);
+  expect(fake.readRenderTargetPixelsAsync).not.toHaveBeenCalled();
+  await expect(
+    graph.render(
+      {
+        ...page,
+        layers: [{ ...target, mask: { layerId: "absent", enabled: true, inverted: false } }],
+      },
+      {},
+    ),
+  ).rejects.toThrow("introuvable");
+  await expect(
+    graph.render(
+      { ...page, layers: [{ ...target, mask: { enabled: true, inverted: false } }] },
+      {},
+    ),
+  ).rejects.toThrow("absente");
+  await graph.dispose();
+});

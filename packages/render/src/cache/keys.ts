@@ -1,4 +1,10 @@
-import type { Asset, Composition, Layer } from "@musart/core";
+import {
+  getAncestors,
+  getWorldMatrix,
+  type Asset,
+  type Composition,
+  type Layer,
+} from "@musart/core";
 
 const assetIds = new Map<string, number>();
 let nextAssetId = 0;
@@ -17,7 +23,11 @@ export function sourceKey(
   page: Composition,
   assets: Record<string, Asset>,
   scale: number,
+  trail: ReadonlySet<string> = new Set(),
 ): string {
+  if (trail.has(layer.id)) throw new Error("Cycle du graphe de rendu.");
+  const nextTrail = new Set(trail);
+  nextTrail.add(layer.id);
   const {
     id: _id,
     name: _name,
@@ -40,13 +50,30 @@ export function sourceKey(
       child.opacity,
       child.visible,
       child.blendMode,
-      sourceKey(child, page, assets, scale),
+      sourceKey(child, page, assets, scale, nextTrail),
     ]);
+  const maskSource =
+    layer.mask?.enabled && layer.mask.layerId
+      ? page.layers.find((item) => item.id === layer.mask!.layerId)
+      : undefined;
+  const maskKey = maskSource
+    ? [
+        getWorldMatrix(page, layer.id),
+        getWorldMatrix(page, maskSource.id),
+        [...getAncestors(page, maskSource.id), maskSource].map((node) => [
+          node.visible,
+          node.opacity,
+        ]),
+        sourceKey(maskSource, page, assets, scale, nextTrail),
+      ]
+    : null;
   return JSON.stringify([
     source,
     scale,
+    page.colorSpace ?? "srgb",
+    maskKey,
     assetIdentity(layer.assetId ? assets[layer.assetId] : undefined),
-    assetIdentity(layer.mask ? assets[layer.mask.assetId] : undefined),
+    assetIdentity(layer.mask?.assetId ? assets[layer.mask.assetId] : undefined),
     children,
   ]);
 }

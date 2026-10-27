@@ -22,9 +22,11 @@ import {
   maskControls,
   maskNode,
 } from "./nodes/composite";
+import { blendModeId } from "./blends/registry";
 import { textureFlip } from "./nodes/uv";
 import { parseColor } from "./nodes/color";
 import { shapeControls, shapeNode, updateShape } from "../surface/shapes";
+import type { MaskMapping } from "./mask-binding";
 import type { FrameTexture } from "./types";
 
 function material() {
@@ -89,13 +91,37 @@ export class GpuPasses {
     this.copy.normalize.value = normalize ? 1 : 0;
     this.draw(this.copyMaterial, target);
   }
-  maskTo(source: FrameTexture, mask: Texture, inverted: boolean, target: RenderTarget): void {
+  maskTo(
+    source: FrameTexture,
+    mask: Texture,
+    inverted: boolean,
+    target: RenderTarget,
+    mapping?: Partial<MaskMapping>,
+  ): void {
     this.mask.source.value = source.texture;
     this.mask.flipY.value = textureFlip(source.texture);
     this.mask.maskFlipY.value = textureFlip(mask);
     this.mask.mask.value = mask;
     this.mask.inverted.value = inverted ? 1 : 0;
     this.mask.premultiplied.value = source.premultiplied ? 1 : 0;
+    this.mask.maskPremultiplied.value = mapping?.premultiplied ? 1 : 0;
+    this.mask.maskOpacity.value = mapping?.opacity ?? 1;
+    this.mask.luminance.value = mapping?.luminance ? 1 : 0;
+    this.mask.transformed.value = mapping?.transformed ? 1 : 0;
+    this.mask.targetSize.value.set(mapping?.targetWidth ?? 1, mapping?.targetHeight ?? 1);
+    this.mask.sourceSize.value.set(mapping?.sourceWidth ?? 1, mapping?.sourceHeight ?? 1);
+    const matrix = mapping?.matrix ?? [1, 0, 0, 1, 0, 0];
+    this.mask.inverse.value.set(
+      matrix[0]!,
+      matrix[2]!,
+      matrix[4]!,
+      matrix[1]!,
+      matrix[3]!,
+      matrix[5]!,
+      0,
+      0,
+      1,
+    );
     this.draw(this.maskMaterial, target);
   }
   shapeTo(layer: Layer, scale: number, target: RenderTarget): void {
@@ -116,8 +142,7 @@ export class GpuPasses {
     this.blend.source.value = source.texture;
     this.blend.opacity.value = layer.opacity;
     this.blend.premultiplied.value = source.premultiplied ? 1 : 0;
-    this.blend.mode.value =
-      layer.blendMode === "multiply" ? 1 : layer.blendMode === "screen" ? 2 : 3;
+    this.blend.mode.value = blendModeId(layer.blendMode);
     this.blend.parentSize.value.set(parentWidth, parentHeight);
     this.blend.sourceSize.value.set(layer.width, layer.height);
     const m = invertMatrix(layerTransform(layer));

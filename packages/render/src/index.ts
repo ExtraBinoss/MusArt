@@ -6,3 +6,7 @@ export { sourcePixels } from "./surface/sources";
 export { GpuEffects } from "./effects/GpuEffects";
 export { GpuCompositor } from "./compositing/GpuCompositor";
 export type { FrameTexture, GpuStats } from "./compositing/types";
+
+export { createRenderSession } from "./export/standalone";
+
+export { RENDER_CAPABILITIES } from "./color/capabilities";

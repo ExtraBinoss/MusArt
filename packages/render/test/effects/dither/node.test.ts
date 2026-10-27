@@ -7,7 +7,10 @@ describe("dither node", () => {
     const node = ditherNode(fixture);
     const graph = graphNodes(node);
     expectSourceAlpha(node, fixture.input);
-    for (const control of Object.values(fixture.controls)) expect(graph.has(control)).toBe(true);
+    for (const control of Object.entries(fixture.controls)
+      .filter(([name]) => name !== "randomSeed")
+      .map(([, node]) => node))
+      expect(graph.has(control)).toBe(true);
     expect(fixture.getGlyphAtlas).not.toHaveBeenCalled();
     fixture.dispose();
   });

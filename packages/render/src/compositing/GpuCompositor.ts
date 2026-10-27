@@ -1,8 +1,12 @@
 import type { Asset, Composition, Layer } from "@musart/core";
 import type { RenderTarget, WebGPURenderer } from "three/webgpu";
+import { ColorPipeline } from "../color/ColorPipeline";
 import { GpuResourceCache } from "../cache/GpuResourceCache";
 import { sourceKey } from "../cache/keys";
+import { PIXEL_SCALE_EFFECTS } from "../effects/registry";
+import { maskLayerMapping } from "./mask-binding";
 import { EffectResources } from "./effect-resources";
+import { VectorSources } from "../surface/vector/source";
 import { TextureSources } from "../surface/TextureSources";
 import { NormalBatch } from "./normal-batch";
 import { GpuPasses } from "./passes";
@@ -16,6 +20,8 @@ export class GpuCompositor {
   private effects: EffectResources | null = null;
   private passes: GpuPasses | null = null;
   private normal: NormalBatch | null = null;
+  private vectors: VectorSources | null = null;
+  private color: ColorPipeline | null = null;
   private queue: Promise<unknown> = Promise.resolve();
   private disposed = false;
   private disposal: Promise<void> | null = null;
@@ -47,6 +53,8 @@ export class GpuCompositor {
       // No await below this point: R3F cannot observe intermediate targets or altered state.
       this.passes ??= new GpuPasses(this.renderer);
       this.normal ??= new NormalBatch(this.renderer);
+      this.vectors ??= new VectorSources(this.renderer, this.cache);
+      this.color ??= new ColorPipeline(this.renderer);
       if (!this.effects) {
         this.effects = new EffectResources(this.renderer);
         this.cache.set("shared-effects", this.effects);
@@ -58,6 +66,7 @@ export class GpuCompositor {
         page.width,
         page.height,
         page.background,
+        page.colorSpace ?? "srgb",
         roots.map((layer) => [
           layer.id,
           layer.x,
@@ -88,7 +97,9 @@ export class GpuCompositor {
         scale,
       );
       const target = this.target(entry, rootKey, "presentation", composed.width, composed.height);
-      this.passes.copyTo(composed, target);
+      if (page.colorSpace === "display-p3") this.color.render(composed, target, "to-srgb");
+      else if (page.colorSpace === "cmyk-proof") this.color.render(composed, target, "cmyk-proof");
+      else this.passes.copyTo(composed, target);
       entry.output = {
         texture: target.texture,
         width: target.width,
@@ -164,6 +175,11 @@ export class GpuCompositor {
         premultiplied: false,
       };
       this.cache.synchronize(key);
+    } else if (layer.kind === "vector") {
+      const target = this.target(entry, key, "vector", width, height);
+      this.passes!.clear(target);
+      this.vectors!.render(layer, target, page.colorSpace === "display-p3");
+      source = { texture: target.texture, width, height, premultiplied: true };
     } else {
       const target = this.target(entry, key, "shape", width, height);
       const paint = JSON.stringify([
@@ -182,6 +198,11 @@ export class GpuCompositor {
       }
       source = { texture: target.texture, width, height, premultiplied: false };
     }
+    if (page.colorSpace === "display-p3" && layer.kind === "image") {
+      const converted = this.target(entry, key, "working-color", width, height);
+      this.color!.render(source, converted, "to-p3");
+      source = { ...source, texture: converted.texture };
+    }
     if (layer.effects.some((effect) => effect.enabled)) {
       if (source.premultiplied) {
         const straight = this.target(entry, key, "straight", width, height);
@@ -189,7 +210,10 @@ export class GpuCompositor {
         source = { texture: straight.texture, width, height, premultiplied: false };
       }
       const output = this.target(entry, key, "effects", width, height);
-      const effects = layer.effects.map((effect) => ({ ...effect, scale: effect.scale * scale }));
+      const effects = layer.effects.map((effect) => ({
+        ...effect,
+        scale: PIXEL_SCALE_EFFECTS.has(effect.type) ? effect.scale * scale : effect.scale,
+      }));
       this.cache.ensureCapacity(
         "shared-effects",
         this.effects!.projectedBytes(width, height, effects),
@@ -205,12 +229,21 @@ export class GpuCompositor {
     }
     if (layer.mask?.enabled) {
       const target = this.target(entry, key, "mask", width, height);
-      this.passes!.maskTo(
-        source,
-        this.sources.image(layer.mask.assetId),
-        layer.mask.inverted,
-        target,
-      );
+      const mask = layer.mask;
+      if (mask.assetId)
+        this.passes!.maskTo(source, this.sources.image(mask.assetId), mask.inverted, target, {
+          luminance: mask.mode === "luminance",
+        });
+      else if (mask.layerId) {
+        const maskLayer = page.layers.find((item) => item.id === mask.layerId);
+        if (!maskLayer) throw new Error(`Calque masque introuvable : ${mask.layerId}`);
+        const mapping = maskLayerMapping(page, layer, maskLayer, false);
+        const content = mapping.opacity > 0 ? this.layer(maskLayer, page, assets, scale) : source;
+        this.passes!.maskTo(source, content.texture, mask.inverted, target, {
+          ...mapping,
+          premultiplied: content.premultiplied,
+        });
+      } else throw new Error("Source de masque absente.");
       source = { ...source, texture: target.texture };
     }
     entry.output = source;
@@ -234,7 +267,10 @@ export class GpuCompositor {
     let target = this.target(entry, key, "children-a", pixelWidth, pixelHeight);
     this.passes!.clear(target, background);
     const items = page.layers
-      .filter((layer) => layer.parentId === parentId && layer.visible && layer.opacity > 0)
+      .filter(
+        (layer) =>
+          layer.parentId === parentId && layer.visible && layer.opacity > 0 && !layer.maskSource,
+      )
       .map((layer) => ({ layer, source: this.layer(layer, page, assets, scale) }));
     let batch: typeof items = [];
     const flush = () => {
@@ -266,13 +302,19 @@ export class GpuCompositor {
     const cache = this.cache.stats();
     const effects = this.effects?.stats();
     return {
-      passes: (this.passes?.passes ?? 0) + (this.normal?.passes ?? 0) + (effects?.passes ?? 0),
+      passes:
+        (this.passes?.passes ?? 0) +
+        (this.normal?.passes ?? 0) +
+        (this.vectors?.passes ?? 0) +
+        (this.color?.passes ?? 0) +
+        (effects?.passes ?? 0),
       readbacks: 0,
       uploads: this.sources.uploads,
       targets: cache.targets,
       cacheBytes: cache.cacheBytes,
       frames: this.frames,
       cacheHits: this.cacheHits,
+      vectorParses: this.vectors?.parses ?? 0,
       maxBytes: cache.maxBytes,
     };
   }
@@ -283,9 +325,12 @@ export class GpuCompositor {
       this.cache.clear();
       this.passes?.dispose();
       this.normal?.dispose();
+      this.color?.dispose();
       this.effects = null;
       this.passes = null;
       this.normal = null;
+      this.vectors = null;
+      this.color = null;
     });
     return this.disposal;
   }
