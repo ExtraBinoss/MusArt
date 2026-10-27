@@ -104,10 +104,12 @@ function ungroupLayers(page: Composition, ids: string[]): string[] {
       layer.parentId = group.parentId;
       nextSelection.push(layer.id);
     }
-    const insertion = page.layers.indexOf(group);
     const childIds = new Set(children.map((layer) => layer.id));
+    const insertion = page.layers
+      .slice(0, page.layers.indexOf(group))
+      .filter((layer) => !childIds.has(layer.id)).length;
     page.layers = page.layers.filter((layer) => layer.id !== group.id && !childIds.has(layer.id));
-    page.layers.splice(Math.min(insertion, page.layers.length), 0, ...children);
+    page.layers.splice(insertion, 0, ...children);
   }
   return nextSelection;
 }

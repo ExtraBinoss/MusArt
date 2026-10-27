@@ -227,4 +227,22 @@ describe("document commands", () => {
     const unknown = { type: "updateLayers", ids: ["unknown"], patch: { x: 1 } } satisfies Command;
     expect(() => applyCommand(project, pageId, unknown, () => "id")).toThrow("introuvable");
   });
+  it("keeps ungrouped children in the group's paint slot before later siblings", () => {
+    const a = createLayer("rectangle", { id: "back" });
+    const b = createLayer("rectangle", { id: "middle" });
+    const c = createLayer("rectangle", { id: "front" });
+    const { engine, page } = setup([a, b, c]);
+    engine.execute({ type: "groupLayers", ids: [a.id, b.id] });
+    const groupId = engine.getSnapshot().selection[0]!;
+    engine.execute({ type: "ungroupLayers", ids: [groupId] });
+    expect(
+      page()
+        .layers.filter((layer) => layer.parentId === null)
+        .map((layer) => layer.id),
+    ).toEqual([a.id, b.id, c.id]);
+    engine.undo();
+    expect(page().layers.find((layer) => layer.id === a.id)?.parentId).toBe(groupId);
+    engine.redo();
+    expect(page().layers.map((layer) => layer.id)).toEqual([a.id, b.id, c.id]);
+  });
 });
