@@ -1,150 +1,152 @@
-# Plan universel — Éditeur de composition créative 2D
+# Universal plan — 2D creative composition editor
 
-> **Nature du document :** spécification produit, architecture logique et feuille de route, volontairement **indépendantes de toute technologie**.
+> **Document type:** product specification, logical architecture, and roadmap, deliberately **independent of any technology**.
 >
-> **À qui il s'adresse :** un développeur, un agent de programmation ou une équipe chargée de construire le projet.
+> **Audience:** a developer, coding agent, or team responsible for building the project.
 >
-> **Règle absolue :** ce document décrit **ce que le produit doit faire**, **comment ses responsabilités sont séparées** et **comment vérifier son fonctionnement**. Il n'impose aucun langage, framework, moteur graphique, bibliothèque ni système de build.
+> **Absolute rule:** this document describes **what the product must do**, **how its responsibilities are separated**, and **how to verify its behavior**. It does not prescribe a language, framework, graphics engine, library, or build system.
+>
+> **Role in this repository:** this is the technology-neutral reference specification. Later direct user instructions and project contracts govern implementation-specific choices.
 
 ## 1. Vision
 
-Créer un éditeur de composition 2D **local-first, léger, extrêmement fluide et agréable à utiliser** : un espace de création où l'on assemble librement des images, du texte, des groupes, des masques et des effets, sans la complexité accumulée des grands logiciels de création.
+Create a **local-first, lightweight, extremely responsive, enjoyable** 2D composition editor: a creative workspace for freely assembling images, text, groups, masks, and effects without the accumulated complexity of large graphics applications.
 
-L'expérience recherchée est celle d'un outil artistique moderne : interface propre, composants cohérents, canvas réactif, raccourcis intuitifs, manipulations directes, changements immédiatement visibles et absence de ralentissements perceptibles dans les usages courants.
+The intended experience is a modern artistic tool: a clean interface, consistent components, responsive canvas, intuitive shortcuts, direct manipulation, immediately visible changes, and no perceptible slowdowns during ordinary use.
 
-L'utilisateur est un artiste qui travaille notamment sous Linux et veut retrouver le plaisir de composer des images sans dépendre d'une suite graphique lourde.
+The user is an artist who works on Linux among other platforms and wants to enjoy composing images without depending on a heavyweight graphics suite.
 
-### Piliers
+### Pillars
 
-1. **Création d'abord :** atteindre le résultat visuel rapidement.
-2. **Performances réelles :** réactivité, mémoire maîtrisée et aucun travail inutile au repos.
-3. **Architecture durable :** fonctionnalités ajoutables sans réécrire les autres parties.
-4. **Même moteur partout :** interface native, navigateur, automatisation et exécution sans interface utilisent les mêmes règles.
-5. **Local-first :** projets et ressources sous le contrôle de l'utilisateur ; aucun compte ni serveur obligatoire.
-6. **Non destructif :** conserver la capacité de modifier, retirer et réordonner les effets et les masques.
+1. **Creation first:** reach the visual result quickly.
+2. **Real performance:** responsiveness, controlled memory use, and no unnecessary idle work.
+3. **Durable architecture:** add features without rewriting unrelated parts.
+4. **The same engine everywhere:** native interface, browser, automation, and headless execution follow the same rules.
+5. **Local-first:** users control their projects and assets; no mandatory account or server.
+6. **Non-destructive:** effects and masks remain editable, removable, and reorderable.
 
-### Hors périmètre initial
+### Initially out of scope
 
-- Reproduire toutes les capacités d'Affinity, de Photoshop ou de Figma.
-- Édition 3D, collaboration en ligne, cloud obligatoire, marketplace et fonctions sociales.
-- Timeline vidéo complète, système de plugins exécutant du code arbitraire ou segmentation par IA dans le premier prototype.
-- Faire dépendre les règles métier des composants de l'interface.
+- Reproducing every capability of Affinity, Photoshop, or Figma.
+- 3D editing, online collaboration, mandatory cloud services, a marketplace, and social features.
+- A complete video timeline, arbitrary-code plugins, or AI segmentation in the first prototype.
+- Making domain rules depend on interface components.
 
-## 2. Résultat attendu au premier vrai prototype
+## 2. Expected outcome of the first real prototype
 
-Une personne doit pouvoir :
+A person must be able to:
 
-1. Ouvrir l'application et retrouver une **galerie locale de projets**.
-2. Créer une composition avec dimensions, fond et unités explicites.
-3. Coller une image ou du texte ; déposer **plusieurs images à la fois**.
-4. Positionner, déplacer, transformer et réordonner les éléments sans saccades évidentes.
-5. Créer des **calques et groupes imbriqués** ; masquer/afficher et verrouiller n'importe quel élément.
-6. Ajouter un **masque** à un calque ou à un groupe.
-7. Appliquer un **effet de dither** paramétrable à un calque ou un groupe, sans déborder sur les autres.
-8. Ajouter et modifier du texte, avec sélection de police et propriétés essentielles.
-9. Ajouter des guides/marges et bénéficier de l'alignement magnétique.
-10. Utiliser des raccourcis, annuler/rétablir, sauvegarder et rouvrir la composition.
-11. Exporter une image fidèle au canvas.
+1. Open the application and find a **local project gallery**.
+2. Create a composition with explicit dimensions, background, and units.
+3. Paste an image or text; drop **multiple images at once**.
+4. Position, move, transform, and reorder elements without obvious stuttering.
+5. Create **nested layers and groups**; hide/show and lock any element.
+6. Add a **mask** to a layer or group.
+7. Apply a configurable **dither effect** to a layer or group without affecting others.
+8. Add and edit text, including font selection and essential properties.
+9. Add guides/margins and use magnetic alignment.
+10. Use shortcuts, undo/redo, save, and reopen a composition.
+11. Export an image that matches the canvas.
 
-Ce même document doit pouvoir être créé, modifié, enregistré et exporté **sans interface graphique**.
+The same document must be creatable, editable, savable, and exportable **without a graphical interface**.
 
-## 3. Architecture logique : les frontières à ne jamais casser
+## 3. Logical architecture: boundaries that must never be broken
 
-Séparer cinq responsabilités fondamentales :
+Separate five fundamental responsibilities:
 
-| Domaine | Responsabilité | Ce qu'il ne doit pas connaître |
+| Domain | Responsibility | Must not know about |
 | --- | --- | --- |
-| **Modèle de document** | Décrire les données, identités, calques, propriétés et relations | Fenêtres, widgets, périphériques, rendu |
-| **Moteur de document** | Appliquer les commandes, valider les règles, gérer l'historique | Placement des boutons ou menus |
-| **Moteur de rendu** | Transformer une scène en pixels et effectuer les exports | Choix du framework UI |
-| **Services et adaptateurs** | Fichiers, clipboard, polices, stockage, plateforme | Règles de composition des calques |
-| **Interfaces clientes** | Afficher l'état et transmettre les intentions de l'utilisateur | Mutations directes de l'état interne |
+| **Document model** | Describe data, identities, layers, properties, and relationships | Windows, widgets, input devices, rendering |
+| **Document engine** | Apply commands, validate rules, manage history | Button and menu placement |
+| **Rendering engine** | Turn a scene into pixels and produce exports | The UI framework choice |
+| **Services and adapters** | Files, clipboard, fonts, storage, platform | Layer-composition domain rules |
+| **Client interfaces** | Display state and forward user intentions | Direct mutation of internal state |
 
-### Graphe de responsabilité
+### Responsibility graph
 
 ```mermaid
 flowchart TB
-    UI["Interfaces : native / web"] --> API["API de session : commandes et lectures"]
-    AUTO["CLI / automatisation"] --> API
-    API --> ENGINE["Moteur de document"]
-    ENGINE --> MODEL["Modèle versionné"]
-    RENDER["Rendu interactif / offscreen"] --> MODEL
+    UI["Interfaces: native / web"] --> API["Session API: commands and queries"]
+    AUTO["CLI / automation"] --> API
+    API --> ENGINE["Document engine"]
+    ENGINE --> MODEL["Versioned model"]
+    RENDER["Interactive / offscreen rendering"] --> MODEL
     API --> RENDER
-    SERVICES["Services de plateforme"] --> API
+    SERVICES["Platform services"] --> API
 ```
 
-**Principe :** les flèches indiquent l'utilisation de contrats explicites, pas la permission de partager librement des structures internes.
+**Principle:** arrows represent explicit contracts, not permission to share internal structures freely.
 
-### Invariants incontournables
+### Required invariants
 
-- Le moteur peut fonctionner sans fenêtre et sans environnement graphique.
-- La manipulation des documents ne nécessite pas de dispositif de rendu actif.
-- Le moteur de rendu produit le même résultat logique pour le canvas, les miniatures et l'export.
-- Un raccourci clavier, un bouton et une opération automatisée déclenchent **la même commande**.
-- L'interface ne modifie jamais directement le document : elle soumet une intention et reçoit un nouvel état.
-- Les modules sont découplés par des contrats explicites et remplaçables ; aucun module « utilitaire géant » n'absorbe tout.
-- Toute fonctionnalité documentée a un moyen de validation qui ne dépend pas d'une souris.
+- The engine can operate without a window or graphics environment.
+- Document manipulation does not require an active renderer.
+- The rendering engine produces the same logical result for the canvas, thumbnails, and export.
+- A keyboard shortcut, button, and automated operation invoke **the same command**.
+- The interface never changes a document directly: it submits an intention and receives new state.
+- Modules are decoupled by explicit, replaceable contracts; no giant utility module absorbs everything.
+- Every documented feature has a verification path that does not require a mouse.
 
-## 4. Organisation des responsabilités en dossiers
+## 4. Organizing responsibilities into directories
 
-Arborescence **conceptuelle** à adapter au langage choisi ; il ne s'agit pas de noms de packages ou de fichiers imposés.
+This is a **conceptual** tree to adapt to the chosen language, not a mandatory list of package or file names.
 
 ```text
 project/
 ├── apps/
-│   ├── native/                   # Démarrage et intégration bureau
-│   ├── browser/                  # Démarrage et intégration navigateur
-│   └── headless/                 # CLI et automatisation sans fenêtre
+│   ├── native/                   # Desktop startup and integration
+│   ├── browser/                  # Browser startup and integration
+│   └── headless/                 # CLI and windowless automation
 ├── core/
-│   ├── document/                 # Métadonnées, version, identité
-│   ├── layers/                   # Types de calques et hiérarchie
-│   ├── groups/                   # Isolation, enfants, ordre
-│   ├── masks/                    # Masques et opérations alpha
-│   ├── geometry/                 # Transformations, bounds, repères
-│   ├── text/                     # Contenus et styles typographiques
-│   ├── guides/                   # Guides, marges et snapping
-│   ├── effects/                  # Instances d'effets et paramètres
-│   └── animation/                # Données de tracks et keyframes
+│   ├── document/                 # Metadata, version, identity
+│   ├── layers/                   # Layer types and hierarchy
+│   ├── groups/                   # Isolation, children, order
+│   ├── masks/                    # Masks and alpha operations
+│   ├── geometry/                 # Transforms, bounds, coordinate systems
+│   ├── text/                     # Content and typography styles
+│   ├── guides/                   # Guides, margins, snapping
+│   ├── effects/                  # Effect instances and parameters
+│   └── animation/                # Track and keyframe data
 ├── engine/
-│   ├── session/                  # Document actif et requêtes
-│   ├── commands/                 # API publique des opérations
-│   ├── validation/               # Invariants et permissions
-│   ├── transactions/             # Regroupement des gestes
-│   ├── history/                  # Undo/Redo et checkpoints
-│   ├── selection/                # Cibles, sélection multiple
-│   └── events/                   # Changements observables
+│   ├── session/                  # Active document and queries
+│   ├── commands/                 # Public operations API
+│   ├── validation/               # Invariants and permissions
+│   ├── transactions/             # Grouping gestures into operations
+│   ├── history/                  # Undo/redo and checkpoints
+│   ├── selection/                # Targets and multiple selection
+│   └── events/                   # Observable changes
 ├── rendering/
-│   ├── scene/                    # Évaluation de la composition
-│   ├── compositing/              # Mélange et transparence
-│   ├── graph/                    # Dépendances entre passes
-│   ├── clipping/                 # Bornes, groupes et masques
-│   ├── effects/                  # Exécution du catalogue d'effets
-│   ├── cache/                    # Réutilisation et invalidation
-│   ├── thumbnails/               # Prévisualisations de calques
-│   └── export/                   # Rendu hors écran
+│   ├── scene/                    # Composition evaluation
+│   ├── compositing/              # Blending and transparency
+│   ├── graph/                    # Dependencies between passes
+│   ├── clipping/                 # Bounds, groups, and masks
+│   ├── effects/                  # Effect catalog execution
+│   ├── cache/                    # Reuse and invalidation
+│   ├── thumbnails/               # Layer previews
+│   └── export/                   # Offscreen rendering
 ├── effect-library/
-│   ├── registry/                 # Catalogue et versions
-│   ├── parameters/               # Définitions génériques de contrôles
-│   ├── dither/                   # Premier effet
-│   └── future-effects/           # Effets indépendants à venir
+│   ├── registry/                 # Catalog and versions
+│   ├── parameters/               # Generic control definitions
+│   ├── dither/                   # First effect
+│   └── future-effects/           # Future independent effects
 ├── services/
-│   ├── assets/                   # Images, typographies, métadonnées
-│   ├── projects/                 # Ouverture, sauvegarde, migrations
-│   ├── clipboard/                # Texte et images collés
-│   ├── import/                   # Import et dépôt multiple
-│   ├── storage/                  # Stockage local abstrait
-│   ├── jobs/                     # Travail asynchrone et annulation
-│   └── platform/                 # Adaptateurs et capacités
+│   ├── assets/                   # Images, fonts, metadata
+│   ├── projects/                 # Opening, saving, migrations
+│   ├── clipboard/                # Pasted text and images
+│   ├── import/                   # Import and bulk drops
+│   ├── storage/                  # Abstract local storage
+│   ├── jobs/                     # Asynchronous work and cancellation
+│   └── platform/                 # Adapters and capabilities
 ├── interface/
-│   ├── design-system/            # Tokens, thèmes et composants
-│   ├── navigation/               # Galerie et topbar
-│   ├── canvas/                   # Vue et gestes utilisateur
-│   ├── layers-panel/             # Arbre interactif
-│   ├── properties-panel/         # Inspecteur contextuel
-│   ├── toolbar/                  # Outils
-│   ├── shortcuts/                # Raccourcis configurables
-│   ├── popovers/                 # Menus et contrôles flottants
-│   └── timeline/                 # Interface future d'animation
+│   ├── design-system/            # Tokens, themes, components
+│   ├── navigation/               # Gallery and topbar
+│   ├── canvas/                   # View and user gestures
+│   ├── layers-panel/             # Interactive tree
+│   ├── properties-panel/         # Contextual inspector
+│   ├── toolbar/                  # Tools
+│   ├── shortcuts/                # Configurable shortcuts
+│   ├── popovers/                 # Floating menus and controls
+│   └── timeline/                 # Future animation interface
 ├── tests/
 │   ├── unit/
 │   ├── integration/
@@ -158,42 +160,42 @@ project/
     └── testing/
 ```
 
-**Règle d'extension :** chaque grand domaine possède son dossier et ses sous-modules. Éviter les dizaines de fichiers de fonctionnalités sans rapport au même niveau. Le noyau ne dépend jamais de `interface/`.
+**Extension rule:** each major domain owns its directory and submodules. Avoid dozens of unrelated feature files at the same level. The core never depends on `interface/`.
 
-## 5. Modèle du document
+## 5. Document model
 
-Un **projet** contient un ou plusieurs documents (un seul suffit au MVP), une galerie de miniatures, des métadonnées et des ressources locales. Un **document** contient :
+A **project** contains one or more documents (one is sufficient for the MVP), a thumbnail gallery, metadata, and local assets. A **document** contains:
 
-- Un identifiant stable et une version de format.
-- Dimensions, fond, profil/paramètres de couleur et unités.
-- Un arbre ordonné de nœuds : calques, groupes, masques et éventuellement objets spécialisés.
-- Des liens vers les ressources d'origine, sans duplication inutile.
-- Des guides, marges et réglages d'affichage.
-- Des métadonnées compatibles avec de futurs tracks d'animation.
+- A stable identifier and format version.
+- Dimensions, background, color profile/settings, and units.
+- An ordered tree of nodes: layers, groups, masks, and potentially specialized objects.
+- References to original assets without unnecessary duplication.
+- Guides, margins, and display settings.
+- Metadata compatible with future animation tracks.
 
-### Types de nœuds du MVP
+### MVP node types
 
-| Type | Données minimales |
+| Type | Minimum data |
 | --- | --- |
-| Image | Référence d'asset, taille intrinsèque, transformation |
-| Texte | Contenu, familles/polices, taille, graisse, espacement, alignement, couleur, transformation |
-| Groupe | Liste ordonnée d'enfants, transformation, mode de composition |
-| Masque | Source et cible, mode de combinaison, activation |
+| Image | Asset reference, intrinsic size, transformation |
+| Text | Content, font family/fonts, size, weight, spacing, alignment, color, transformation |
+| Group | Ordered children, transformation, compositing mode |
+| Mask | Source and target, combination mode, enabled state |
 
-Tous les nœuds exposent des propriétés communes : identifiant, nom, parent, ordre, visible, verrouillé, opacité, transformation, masques éventuels, liste ordonnée d'effets et métadonnées.
+All nodes expose shared properties: identifier, name, parent, order, visible, locked, opacity, transformation, optional masks, ordered effects, and metadata.
 
-### Invariants du graphe
+### Graph invariants
 
-- Aucun cycle de parenté ou de masque.
-- Un nœud a au maximum un parent direct ; les identifiants ne sont pas réutilisés dans un document ouvert.
-- Modifier un groupe respecte ses enfants et leurs transformations relatives.
-- Verrouiller un parent empêche les opérations de modification de ses descendants, selon une règle explicite.
-- Masquer un parent masque ses descendants sans modifier leurs propres flags de visibilité.
-- Les opérations invalides sont rejetées avec une erreur explicite, sans document à moitié modifié.
+- No parenting or mask cycles.
+- A node has at most one direct parent; identifiers are not reused within an open document.
+- Editing a group respects its children and their relative transformations.
+- Locking a parent prevents modifications to its descendants according to an explicit rule.
+- Hiding a parent hides its descendants without changing their individual visibility flags.
+- Invalid operations fail with an explicit error and leave no partially modified document.
 
-## 6. Commandes, état et historique
+## 6. Commands, state, and history
 
-Le moteur présente une **API orientée intentions** :
+The engine exposes an **intention-oriented API**:
 
 - `CreateDocument`, `InsertImage`, `InsertText`.
 - `SelectNodes`, `MoveNodes`, `TransformNodes`, `ReorderNodes`.
@@ -203,377 +205,377 @@ Le moteur présente une **API orientée intentions** :
 - `AddGuide`, `UpdateMargins`, `DeleteGuide`.
 - `SaveProject`, `ExportDocument`.
 
-Ces noms sont des **intentions abstraites**, pas une syntaxe ni une interface de programmation imposée.
+These names represent **abstract intentions**, not prescribed syntax or programming interfaces.
 
-Chaque commande possède : un type, une cible stable, des paramètres validés, un résultat clair et un ensemble de changements observables.
+Each command has a type, stable target, validated parameters, clear result, and observable changes.
 
 ### Transactions
 
-- Un déplacement de souris composé de centaines de petits mouvements donne **une seule entrée Undo** lorsque le geste se termine.
-- Une opération sur plusieurs calques est atomique : tout réussit ou rien ne change.
-- Undo/Redo rétablit aussi les relations parent/enfant, les masques et l'ordre des effets.
-- Les aperçus transitoires pendant le drag peuvent être affichés avant le commit final, sans polluer l'historique.
-- L'état de sélection appartient à une couche de session clairement définie, et non aux données persistantes sauf choix explicite.
+- A drag containing hundreds of small pointer movements produces **one Undo entry** when the gesture finishes.
+- A multi-layer operation is atomic: either everything succeeds or nothing changes.
+- Undo/redo restores parent/child relationships, masks, and effect order as well.
+- Transient drag previews may display before the final commit without polluting history.
+- Selection belongs to a clearly defined session layer rather than persistent data unless explicitly chosen otherwise.
 
-## 7. Calques, groupes et masques : règles visuelles
+## 7. Layers, groups, and masks: visual rules
 
-### Ordre de composition
+### Composition order
 
-Pour chaque calque :
+For each layer:
 
-1. Lire et préparer sa source (image ou texte).
-2. Appliquer les transformations définies.
-3. Appliquer ses effets **dans l'ordre choisi**.
-4. Appliquer ses masques et son opacité selon un ordre contractuel documenté.
-5. Composer le résultat dans son parent, en respectant le mode de mélange.
+1. Read and prepare its source image or text.
+2. Apply the specified transformations.
+3. Apply its effects **in the chosen order**.
+4. Apply masks and opacity in a documented contractual order.
+5. Composite the result into its parent using the specified blend mode.
 
-Pour un groupe :
+For a group:
 
-1. Évaluer les enfants dans leur ordre de superposition.
-2. Construire le résultat intermédiaire du groupe lorsque son mode est **isolé**.
-3. Appliquer les effets et masques du groupe au **résultat combiné**.
-4. Composer ce résultat dans son groupe parent.
+1. Evaluate children in stacking order.
+2. Build an intermediate group result when its mode is **isolated**.
+3. Apply the group's effects and masks to the **combined result**.
+4. Composite that result into its parent group.
 
-Le mode de groupe « traversant » ou *pass-through* est une évolution possible ; il doit avoir une sémantique explicite et des tests dédiés.
+A *pass-through* group mode is a possible extension; it requires explicit semantics and dedicated tests.
 
-### Clipping : règle non négociable
+### Clipping: a non-negotiable rule
 
-**Un effet attaché à un calque ne modifie jamais les pixels d'un autre calque.** Un effet attaché à un groupe n'agit que sur le résultat de ce groupe.
+**An effect attached to one layer never changes another layer's pixels.** A group effect affects only that group's result.
 
-Attention à distinguer deux notions :
+Distinguish two concepts:
 
-- **Zone d'influence :** l'effet n'affecte aucune autre branche de l'arbre.
-- **Limite géométrique :** certains effets futurs (ombre, glow, blur) peuvent étendre visuellement la zone du calque. Leur dépassement doit être contrôlé par un mode de confinement clairement indiqué, activable au niveau de l'effet ou du groupe.
+- **Influence:** the effect does not affect another branch of the tree.
+- **Geometric bounds:** some future effects, such as shadows, glow, or blur, may visually extend a layer. Their overflow must be controlled by an explicitly labeled confinement mode available at the effect or group level.
 
-Pour le MVP, le dither **préserve l'alpha et le masque d'origine** : aucun pixel transparent ne devient visible et l'effet ne fuit pas hors du calque/groupe ciblé.
+For the MVP, dither **preserves original alpha and masks**: transparent pixels never become visible and the effect never leaks outside its target layer/group.
 
-## 8. Système d'effets : banque extensible
+## 8. Effect system: an extensible library
 
-Un effet n'est pas un panneau spécialisé codé en dur. Il se présente comme un module avec :
+An effect is not a specialized hardcoded panel. It is a module containing:
 
-- Identifiant et version stables.
-- Nom, catégorie et description.
-- Liste typée de paramètres, bornes, valeurs par défaut et unités.
-- Règles d'application : source, opacité, confinement, compatibilité.
-- Fonction d'évaluation visuelle et, si nécessaire, fonction de préparation des ressources.
-- Déclaration de ses dépendances et de ce qui doit être recalculé quand un paramètre change.
+- Stable identifier and version.
+- Name, category, and description.
+- Typed parameters, bounds, defaults, and units.
+- Application rules: source, opacity, confinement, and compatibility.
+- A visual evaluation function and resource preparation function when necessary.
+- Declared dependencies and rules for what must be recalculated when parameters change.
 
-L'inspecteur construit ses contrôles à partir de cette description. Ajouter un effet doit généralement se limiter à **enregistrer sa définition et son exécution**, sans modifier toutes les vues.
+The inspector builds its controls from this description. Adding an effect should generally require only **registering its definition and execution**, without modifying every view.
 
-### Premier effet : Dither
+### First effect: Dither
 
-Utiliser un **dither perceptuellement agréable**, avec distribution de bruit bleu (*blue noise*) ou algorithme de qualité comparable, reproductible pour des paramètres identiques.
+Use **perceptually pleasing dither**, with blue-noise distribution or an algorithm of comparable quality, reproducible for identical parameters.
 
-Paramètres initiaux possibles :
+Possible initial parameters:
 
-- Intensité du dither.
-- Nombre de niveaux par canal.
-- Échelle du motif.
-- Graine de génération stable.
-- Mode monochrome ou couleur.
-- Mélange avec l'image d'origine.
+- Dither amount.
+- Number of levels per channel.
+- Pattern scale.
+- Stable generation seed.
+- Monochrome or color mode.
+- Blend with the original image.
 
-### Cas de test essentiels
+### Essential test cases
 
-1. Dither sur une image seule : les autres images ne changent pas.
-2. Dither sur un groupe : tous les enfants participent au calcul, rien hors du groupe ne change.
-3. Masque transparent : aucune trace de dither hors de l'alpha autorisé.
-4. Déplacement du calque : aucun motif parasite non souhaité ni scintillement aléatoire.
-5. Même document, mêmes réglages : même résultat après sauvegarde puis réouverture.
+1. Dither on one image: other images remain unchanged.
+2. Dither on a group: all children participate; nothing outside the group changes.
+3. Transparent mask: no dither appears outside the permitted alpha.
+4. Moving a layer: no unwanted pattern artifacts or random flickering.
+5. Same document and settings: identical results after save and reopen.
 
-### Effets suivants (pas au MVP)
+### Later effects, outside the MVP
 
-Corrections de couleur, courbes, teinte/saturation, contraste, niveaux, halftone, ASCII, displacement, glow, blur, verre, aberration chromatique, posterization, grain, contours, texture procédurale.
+Color correction, curves, hue/saturation, contrast, levels, halftone, ASCII, displacement, glow, blur, glass, chromatic aberration, posterization, grain, outlines, and procedural textures.
 
-## 9. Moteur de rendu : pipeline et invalidation
+## 9. Rendering engine: pipeline and invalidation
 
-Le moteur de rendu reçoit **un état de scène cohérent** et produit un résultat ; il ne décide pas quelles commandes utilisateur sont valides.
+The rendering engine receives **coherent scene state** and produces a result; it does not decide which user commands are valid.
 
-### Responsabilités
+### Responsibilities
 
-- Construire une représentation de la scène et de l'ordre de composition.
-- Évaluer les dépendances de calques, masques, groupes et effets.
-- Calculer les portions nécessaires en fonction du viewport, du zoom et des modifications.
-- Réutiliser les résultats intermédiaires encore valides.
-- Préparer miniatures et exports via des chemins de rendu cohérents.
-- Contrôler la mémoire disponible et libérer les ressources devenues inutiles.
+- Build a scene representation and composition order.
+- Evaluate layer, mask, group, and effect dependencies.
+- Calculate the necessary portions based on viewport, zoom, and changes.
+- Reuse intermediate results that remain valid.
+- Prepare thumbnails and exports through consistent rendering paths.
+- Control available memory and release resources that are no longer needed.
 
-### Graphe de dépendances
+### Dependency graph
 
-Une modification ne doit invalider que ce qu'elle affecte :
+A change must invalidate only what it affects:
 
-| Action | Recalcul minimal attendu |
+| Action | Minimum expected recalculation |
 | --- | --- |
-| Renommer un calque | Arbre UI, pas ses pixels |
-| Déplacer un calque | Sa transformation et les compositions parentes concernées |
-| Changer le dither | Ce pass d'effet et ses sorties dépendantes |
-| Masquer un groupe | Composition des ancêtres ; conserver les caches réutilisables |
-| Modifier une couleur du texte | Texte concerné, effets associés et composites parents |
-| Déplacer un guide | Overlay du canvas, pas l'image exportée |
+| Rename a layer | UI tree, not its pixels |
+| Move a layer | Its transformation and affected parent compositions |
+| Change dither | That effect pass and its dependent outputs |
+| Hide a group | Ancestor composition; retain reusable caches |
+| Change text color | The affected text, its effects, and parent composites |
+| Move a guide | Canvas overlay, not the exported image |
 
-### Priorités de rendu
+### Rendering priorities
 
-1. **Réactivité du geste :** afficher en priorité ce qui est visible et manipulé.
-2. **Qualité définitive :** compléter les détails après ou entre les interactions.
-3. **Travaux secondaires :** miniatures, préchargement et cache quand les ressources le permettent.
+1. **Gesture responsiveness:** prioritize visible, directly manipulated content.
+2. **Final quality:** complete details after or between interactions.
+3. **Secondary jobs:** thumbnails, preloading, and caching when resources permit.
 
-Si une composition est très lourde, un aperçu temporairement moins coûteux est acceptable **s'il est clairement borné au geste** et que le résultat final reste fidèle.
+For a very heavy composition, a cheaper temporary preview is acceptable **only if limited to the gesture** and the final result remains faithful.
 
-### Repos et consommation
+### Idle state and resource consumption
 
-- Rendu **à la demande** : une image immobile ne doit pas être recomposée en boucle.
-- Tant que l'utilisateur interagit ou qu'une animation est active, produire les mises à jour nécessaires.
-- Dès que l'interaction et les tâches sont terminées, suspendre les redraws non indispensables.
-- Un travail d'arrière-plan ne doit pas maintenir une boucle d'affichage inutile.
-- Viser un CPU proche de zéro au repos, sans promettre artificiellement un **0 % absolu**, qui dépend de la plateforme.
+- Render **on demand**: an unchanged image must not be recomposed continuously.
+- Produce the necessary updates while the user interacts or an animation is active.
+- Suspend unnecessary redraws as soon as interaction and pending jobs finish.
+- Background work must not sustain an unnecessary display loop.
+- Aim for near-zero idle CPU without promising **absolute 0%**, which depends on the platform.
 
-### Cas de charge à mesurer
+### Workloads to measure
 
-Une composition avec **au moins 15 images**, des groupes, plusieurs masques et effets ; zoom/pan rapides ; sélection multiple ; import simultané ; undo/redo en rafale ; export haute résolution ; ouverture d'un gros projet.
+A composition with **at least 15 images**, groups, several masks and effects; rapid zoom/pan; multiple selection; simultaneous import; bursts of undo/redo; high-resolution export; and opening a large project.
 
-Mesurer les durées des opérations, les latences d'entrée, la stabilité des frames, la consommation mémoire et les pics lors des imports. **Aucun chiffre de performance ne doit être présenté comme acquis sans mesure.**
+Measure operation duration, input latency, frame stability, memory use, and import peaks. **No performance number may be presented as established without measurement.**
 
-## 10. Interface et design system
+## 10. Interface and design system
 
-Direction visuelle : **application créative premium, sobre, légèrement arrondie, lisible**, avec un accent bleu `#2C6BF9`, proche de la précision de Figma et de l'approche artistique d'Affinity.
+Visual direction: a **premium, restrained, slightly rounded, readable creative application**, with blue accent `#2C6BF9`, combining Figma's precision with Affinity's artistic approach.
 
 ### Structure
 
-| Zone | Contenu |
+| Area | Content |
 | --- | --- |
-| Topbar | Fichier, sauvegarde, annuler/rétablir, titre, réglages |
-| Gauche — outils | Sélection, main, texte, guides et outils de manipulation |
-| Gauche — calques | Arbre hiérarchique, miniatures, verrouillage, visibilité, groupes |
-| Centre | Canvas, zoom, pan, repères, grille, sélections et handles |
-| Droite — propriétés | Transformations, dimensions, opacité, texte, masques, effets |
-| Popovers | Réglages courts, menus contextuels, sélecteurs et sous-options |
+| Topbar | File, save, undo/redo, title, settings |
+| Left — tools | Selection, hand, text, guides, manipulation tools |
+| Left — layers | Hierarchical tree, thumbnails, locking, visibility, groups |
+| Center | Canvas, zoom, pan, rulers, grid, selections, handles |
+| Right — properties | Transformations, dimensions, opacity, text, masks, effects |
+| Popovers | Short settings, contextual menus, pickers, sub-options |
 
-### Composants réutilisables
+### Reusable components
 
-Boutons, champs, sliders, sélecteurs de couleur, unités, interrupteurs, icônes, états actif/inactif, menus, listes réordonnables, arbres, tooltips, panneaux redimensionnables, fenêtres de confirmation et notifications.
+Buttons, fields, sliders, color pickers, units, switches, icons, active/inactive states, menus, reorderable lists, trees, tooltips, resizable panels, confirmation dialogs, and notifications.
 
-Les composants utilisent les mêmes tokens de couleurs, espacements, bordures, rayons et durées d'animation ; éviter les styles locaux incohérents.
+Components share color, spacing, border, radius, and animation-duration tokens; avoid inconsistent local styles.
 
-### Animations et blur
+### Animation and blur
 
-- Animations courtes pour popovers, menus, survols, sélections et transitions de panneaux.
-- Sensation de vélocité lors des gestes, sans flottement qui compromet la précision.
-- Léger flou derrière certains popovers **si disponible** ; repli visuel propre et contrasté si non disponible.
-- Aucune animation décorative permanente qui empêche le retour au repos.
-- Respect d'une préférence de réduction des animations.
+- Short animations for popovers, menus, hover, selections, and panel transitions.
+- Responsive gestures without motion that compromises precision.
+- A light blur behind some popovers **when supported**, with a clean, contrasting fallback otherwise.
+- No continuous decorative animation that prevents returning to idle.
+- Respect reduced-motion preferences.
 
-## 11. Interactions fondamentales
+## 11. Fundamental interactions
 
 ### Canvas
 
-- Zoom centré sur le curseur, pan intuitif, coordonnées stables.
-- Sélection simple/multiple, rectangle de sélection, handles de transformation.
-- Affichage des dimensions, bornes, alignements, guides et marges.
-- Grille optionnelle, snapping configurable et désactivation temporaire via raccourci.
-- Événements de sélection synchronisés avec l'arbre des calques et l'inspecteur.
+- Cursor-anchored zoom, intuitive pan, stable coordinates.
+- Single/multiple selection, selection rectangle, transformation handles.
+- Display dimensions, bounds, alignments, guides, and margins.
+- Optional grid, configurable snapping, and temporary shortcut-based snapping bypass.
+- Selection events synchronize the canvas, layer tree, and inspector.
 
-### Arbre de calques
+### Layer tree
 
-- Drag-and-drop pour réordonner ou déplacer dans un groupe.
-- Prévisualisation précise de la destination avant dépôt.
-- Rejet clair des déplacements interdits (cycle, parent verrouillé, emplacement invalide).
-- Miniatures mises à jour quasi en temps réel, **sans bloquer l'interface**.
-- Clic sur œil/cadenas sans changer par accident la sélection courante.
+- Drag and drop to reorder or move into a group.
+- Precise destination preview before dropping.
+- Clear rejection of forbidden moves: cycles, locked parents, or invalid destinations.
+- Near-real-time thumbnails **without blocking the interface**.
+- Eye/lock controls must not accidentally change the current selection.
 
-### Clipboard et import
+### Clipboard and import
 
-Un même service logique décrit les actions `PasteText`, `PasteImage`, `PasteMultipleAssets`, `DropAssets`, `ImportFiles`.
+One logical service describes `PasteText`, `PasteImage`, `PasteMultipleAssets`, `DropAssets`, and `ImportFiles`.
 
-- Coller du texte crée un élément texte éditable.
-- Coller une image crée un calque à la position prévue.
-- Déposer plusieurs images en crée plusieurs, regroupées en une transaction Undo.
-- Si l'origine fournit différents formats, définir une priorité documentée et, si utile, proposer un choix.
-- Protéger l'utilisateur des imports partiels silencieux ; afficher les fichiers rejetés.
-- Les restrictions de sécurité et permissions de chaque plateforme sont gérées par ses adaptateurs, pas par le moteur.
+- Pasting text creates an editable text element.
+- Pasting an image creates a layer at the intended position.
+- Dropping multiple images creates multiple layers within one Undo transaction.
+- If the source supplies multiple formats, define a documented priority and offer a choice when useful.
+- Protect the user from silent partial imports; identify rejected files.
+- Platform security restrictions and permissions belong in adapters, not the engine.
 
-## 12. Texte et typographie
+## 12. Text and typography
 
-Le texte n'est pas un simple bitmap figé. Un élément texte conserve : contenu, styles, police(s), corps, graisse, italique, interlignage, espacement des lettres, alignement, couleur, dimensions de la zone et transformation.
+Text is not a permanently flattened bitmap. A text element retains content, styles, fonts, size, weight, italic state, line height, letter spacing, alignment, color, text-box dimensions, and transformation.
 
-- Édition directe sur canvas et dans l'inspecteur.
-- Substitution explicite et prévisible si une police manque.
-- Gestion future de plusieurs styles dans un même bloc.
-- Miniatures et export basés sur les mêmes règles de disposition du texte.
-- Les règles de mesure, de reflow et de bounds sont indépendantes des widgets d'édition.
+- Direct editing on the canvas and in the inspector.
+- Explicit, predictable substitution when a font is missing.
+- Future support for multiple styles inside one text block.
+- Thumbnails and export follow the same text-layout rules.
+- Measurement, reflow, and bounds are independent of editing widgets.
 
-## 13. Guides, marges et alignement
+## 13. Guides, margins, and alignment
 
-Un système de guides transversal doit pouvoir :
+A shared guide system must support:
 
-- Ajouter/supprimer/déplacer des guides horizontaux et verticaux.
-- Définir des marges de sécurité en une action.
-- Réinitialiser et masquer temporairement les repères.
-- Utiliser les bords, centres et points d'intérêt des calques pour le snapping.
-- Présenter clairement la valeur retenue pendant l'alignement.
+- Adding, deleting, and moving horizontal and vertical guides.
+- Setting safety margins in one action.
+- Resetting and temporarily hiding guides.
+- Snapping to layer edges, centers, and points of interest.
+- Clearly displaying the chosen alignment value.
 
-Les guides sont des **éléments d'édition**, exclus par défaut de l'export final.
+Guides are **editing elements**, excluded from final export by default.
 
-## 14. Projet local-first, galerie et sauvegarde
+## 14. Local-first projects, gallery, and saving
 
-### Galerie
+### Gallery
 
-Au lancement : liste locale de projets récents avec miniature, nom, date de modification, dimensions et actions `Créer`, `Ouvrir`, `Dupliquer`, `Renommer`, `Supprimer` (avec confirmation).
+At startup, show recent local projects with thumbnail, name, modification date, dimensions, and `Create`, `Open`, `Duplicate`, `Rename`, and `Delete` actions; deletion requires confirmation.
 
-### Format logique
+### Logical format
 
-Un projet contient au minimum :
+A project contains at least:
 
-- Un manifeste versionné.
-- L'état complet du document et des nœuds.
-- Les références aux ressources et leurs identités/contenus selon le mode de portabilité choisi.
-- Les miniatures régénérables et métadonnées utiles.
+- A versioned manifest.
+- Complete document and node state.
+- Asset references and identities/content according to the chosen portability mode.
+- Regenerable thumbnails and useful metadata.
 
-### Fiabilité
+### Reliability
 
-- Sauvegarde atomique ou récupérable autant que le permet la plateforme.
-- Autosave avec indicateur d'état et récupération après fermeture brutale.
-- Migrations de schéma testées : ouvrir un ancien document ne doit pas le détruire.
-- Ne jamais réencoder de manière destructive une image originale à chaque sauvegarde.
-- Aucun envoi réseau requis pour créer, éditer, sauvegarder ou exporter un projet.
+- Atomic or recoverable saving as far as the platform permits.
+- Autosave with status feedback and recovery after an abrupt shutdown.
+- Tested schema migrations: opening an old document must not destroy it.
+- Never destructively reencode an original image on every save.
+- No network upload is required to create, edit, save, or export a project.
 
-## 15. Futures animations par keyframes
+## 15. Future keyframe animation
 
-Prévoir dès maintenant un **moteur d'animation de document séparé de l'interface**. Il n'est pas nécessaire d'afficher une timeline complète au MVP.
+Plan a **document animation engine separate from the interface** now. The MVP does not require a complete timeline UI.
 
-Schéma futur :
+Future schema:
 
-- `Timeline` : durée, cadence de référence et marqueurs.
-- `Track` : cible stable et chemin de propriété animable.
-- `Keyframe` : temps, valeur, interpolation et éventuelles tangentes.
-- `Evaluator` : état du document à l'instant demandé, sans mutation destructive des valeurs de base.
+- `Timeline`: duration, reference frame rate, markers.
+- `Track`: stable target and animatable property path.
+- `Keyframe`: time, value, interpolation, optional tangents.
+- `Evaluator`: document state at the requested time without destructively changing base values.
 
-Les objets animables potentiels : transformations, opacité, paramètres d'effets, masques et valeurs de texte pertinentes.
+Potential animation targets include transformations, opacity, effect parameters, masks, and relevant text values.
 
-**Deux moteurs distincts :** les petites animations de popover restent des animations d'interface ; les keyframes transforment l'évaluation du document et doivent fonctionner en headless.
+**Two separate engines:** small popover animations remain interface animations; keyframes transform document evaluation and must work headlessly.
 
-## 16. Extensions prévues sans les implémenter immédiatement
+## 16. Planned extensions without immediate implementation
 
-- Nouvelle banque d'effets (couleur, shader, traitement spatial).
-- Nouveaux types de calques et modes de mélange.
-- Segmentation d'objets/personnes, éventuellement locale et optionnelle, représentée par une opération qui produit un masque éditable.
-- Animation temporelle et exports séquentiels.
-- Scripts, batch processing, automatisations et traitements sans interface.
-- Import/export de formats supplémentaires et meilleure interopérabilité.
+- New effect libraries: color, shader, spatial processing.
+- New layer types and blend modes.
+- Object/person segmentation, potentially local and optional, represented by an operation producing an editable mask.
+- Temporal animation and sequential exports.
+- Scripts, batch processing, automation, and headless processing.
+- Additional import/export formats and improved interoperability.
 
-Une extension doit **ajouter une capacité via un contrat connu**, pas obliger à réécrire les panneaux, l'historique ou le cœur des documents.
+An extension must **add a capability through a known contract**, without requiring panels, history, or the document core to be rewritten.
 
-## 17. API de session et exécution sans interface
+## 17. Session API and headless execution
 
-Tout client dialogue avec un service logique commun :
+Every client uses one shared logical service:
 
-- **Create / Load / Save** : cycle de vie des documents.
-- **Execute** : commande validée, éventuellement transactionnelle.
-- **Query** : obtenir un snapshot immuable, des propriétés ou une sous-partie de l'arbre.
-- **Subscribe** : connaître les changements pertinents sans tout relire.
-- **Render / Export** : produire le résultat d'une scène, y compris sans fenêtre.
-- **Capabilities** : connaître les fonctions disponibles selon le contexte (import, stockage, rendu, permissions).
+- **Create / Load / Save:** document lifecycle.
+- **Execute:** validated command, potentially transactional.
+- **Query:** immutable snapshots, properties, or part of the tree.
+- **Subscribe:** relevant changes without rereading everything.
+- **Render / Export:** scene output, including without a window.
+- **Capabilities:** context-dependent support for import, storage, rendering, and permissions.
 
-Le mode headless peut modifier et sérialiser un document **même sans accélérateur graphique**. Une opération de rendu visuel nécessite un backend de rendu disponible ; si aucun backend n'est disponible, renvoyer une erreur claire plutôt que simuler une réussite.
+Headless execution can edit and serialize documents **even without a graphics accelerator**. Visual rendering requires an available rendering backend; when none exists, return a clear error rather than simulating success.
 
-## 18. Stratégie de validation
+## 18. Verification strategy
 
-### Ce que l'agent doit tester automatiquement
+### What the agent must test automatically
 
-- Création, sérialisation, sauvegarde et rechargement de projets.
-- Invariants de l'arbre : groupes imbriqués, cycles impossibles, ordre des enfants.
-- Verrouillage, visibilité et sélection ; multi-opérations atomiques.
-- Masques et effets correctement confinés ; ordre de composition déterministe.
-- Undo/Redo y compris drag, groupage et ajout/retrait d'effets.
-- Guide snapping et transformations avec valeurs connues.
-- Même sortie d'export sur des scènes de référence quand un backend de rendu est disponible.
-- Évolution du format et lecture d'anciennes versions représentatives.
-- Fonctionnement des commandes sans aucune interface.
+- Project creation, serialization, saving, and reloading.
+- Tree invariants: nested groups, impossible cycles, child order.
+- Locking, visibility, selection, and atomic multi-operations.
+- Correct mask/effect confinement and deterministic composition order.
+- Undo/redo, including dragging, grouping, and effect insertion/removal.
+- Guide snapping and transformations with known values.
+- Identical reference-scene exports when a rendering backend is available.
+- Format evolution and representative older documents.
+- Commands operating without an interface.
 
-### Ce que l'utilisateur testera personnellement
+### What the user will test personally
 
-- Fenêtres natives : fluidité, comportements visuels, drag/drop, clipboard, clavier, rendu réel.
-- Navigateur : interactions, permissions, import/paste, export et fonctionnement du rendu sur sa machine.
-- Ressenti de performance à forte charge, stabilité, consommation mémoire et cohérence des animations.
+- Native windows: fluidity, visual behavior, drag/drop, clipboard, keyboard, real rendering.
+- Browser: interactions, permissions, import/paste, export, and rendering on their machine.
+- Perceived performance under load, stability, memory use, and animation consistency.
 
-**L'agent ne doit pas présenter un build réussi comme un test interactif réussi.** Après chaque étape, il fournit les tests headless effectivement exécutés et une checklist de validation manuelle pour l'utilisateur. Une fonctionnalité UI n'est acceptée définitivement qu'après ce retour.
+**The agent must not present a successful build as a successful interactive test.** After each stage, report the headless tests actually executed and provide the user with a manual verification checklist. A UI feature receives final acceptance only after that feedback.
 
-## 19. Roadmap par incréments vérifiables
+## 19. Roadmap through verifiable increments
 
-Chaque étape doit aboutir à un résultat exploitable, pas à une accumulation de fichiers vides.
+Every stage must produce a usable outcome rather than an accumulation of empty files.
 
-### Phase 0 — Contrats et squelette
+### Phase 0 — Contracts and skeleton
 
-- Définir les responsabilités, l'arbre conceptuel, les interfaces communes et les interdictions de dépendance.
-- Définir le schéma minimal du document et les contrats des commandes.
-- Mettre en place la validation automatique des frontières.
+- Define responsibilities, the conceptual tree, shared interfaces, and forbidden dependencies.
+- Define the minimum document schema and command contracts.
+- Implement automated boundary validation.
 
-**Validation :** l'application headless peut créer un document vide, le sauvegarder et le recharger.
+**Verification:** the headless application creates an empty document, saves it, and reloads it.
 
-### Phase 1 — Noyau utilisable
+### Phase 1 — Usable core
 
-- Images, textes simples, transformations, calques, groupes, visibilité et verrouillage.
-- Commandes atomiques, snapshots, événements et Undo/Redo.
+- Images, simple text, transformations, layers, groups, visibility, and locking.
+- Atomic commands, snapshots, events, and undo/redo.
 
-**Validation :** tests headless de l'arbre, des propriétés et des transactions ; aucun frontend requis.
+**Verification:** headless tree, property, and transaction tests; no frontend required.
 
-### Phase 2 — Premier rendu de composition
+### Phase 2 — First composition rendering
 
-- Rendu hors écran, transparence, ordre des calques, transformations et groupes isolés.
-- Premier export et images de référence.
+- Offscreen rendering, transparency, layer order, transformations, and isolated groups.
+- Initial export and reference images.
 
-**Validation :** une composition de plusieurs calques exporte l'image attendue et conserve ses pixels hors modification.
+**Verification:** a multi-layer composition exports the expected image and preserves unaffected pixels.
 
-### Phase 3 — Masques et premier effet
+### Phase 3 — Masks and the first effect
 
-- Masques, confinement, banque d'effets et dither paramétrable.
-- Miniatures utilisant le même pipeline visuel.
+- Masks, confinement, effect library, and configurable dither.
+- Thumbnails use the same visual pipeline.
 
-**Validation :** tests de non-débordement et tests golden pour le calque et le groupe.
+**Verification:** confinement tests and golden tests for layers and groups.
 
-### Phase 4 — Interface de création minimale
+### Phase 4 — Minimum creative interface
 
-- Galerie, canvas, topbar, toolbar, panneau des calques et inspecteur.
-- Sélection, déplacement, zoom/pan, réordonnancement et contrôles de propriétés.
+- Gallery, canvas, topbar, toolbar, layer panel, and inspector.
+- Selection, movement, zoom/pan, reordering, and property controls.
 
-**Validation :** l'agent teste le noyau ; l'utilisateur teste les interactions native et navigateur.
+**Verification:** the agent tests the core; the user tests native/browser interactions.
 
-### Phase 5 — Productivité et finition
+### Phase 5 — Productivity and polish
 
-- Clipboard texte/images, drop multiple, guides/marges/snapping, raccourcis.
-- Composants réutilisables, bleu `#2C6BF9`, miniatures asynchrones, transitions sobres, flou de popover si possible.
-- Sauvegarde robuste, état de chargement, erreurs compréhensibles.
+- Text/image clipboard, bulk drops, guides/margins/snapping, shortcuts.
+- Reusable components, blue `#2C6BF9`, asynchronous thumbnails, restrained transitions, popover blur when supported.
+- Robust persistence, loading state, understandable errors.
 
-**Validation :** scénario de création artistique complet de l'import à l'export.
+**Verification:** a complete creative workflow from import to export.
 
-### Phase 6 — Performance et fiabilité
+### Phase 6 — Performance and reliability
 
-- Profiling, invalidation fine, cache borné, purge mémoire, gros documents.
-- Tests de compositions avec 15+ images, groupes, masques et effets.
-- Vérifications de comportement au repos et après longue session.
+- Profiling, precise invalidation, bounded caches, memory cleanup, large documents.
+- Tests with 15+ images, groups, masks, and effects.
+- Idle behavior and long-session verification.
 
-**Validation :** tableau de mesures reproduisibles, bugs connus consignés, ressenti confirmé par l'utilisateur.
+**Verification:** a reproducible measurement table, documented known issues, and user-confirmed interaction quality.
 
-### Plus tard
+### Later
 
-Timeline/keyframes, effets avancés, segmentation facultative, interopérabilité étendue et automatisations.
+Timeline/keyframes, advanced effects, optional segmentation, extended interoperability, and automation.
 
-## 20. Définition de terminé (*Definition of Done*)
+## 20. Definition of Done
 
-Une fonctionnalité ne peut être déclarée prête à livrer que si :
+A feature can be declared ready for delivery only when:
 
-1. Elle répond à un besoin utilisateur précis et à un scénario décrit.
-2. Elle respecte les frontières entre document, moteur, rendu, plateformes et interface.
-3. Elle possède un comportement clair pour erreurs et cas limites.
-4. Elle reste undoable quand elle modifie le document, et sérialisable si nécessaire.
-5. Elle ne recalcule pas inutilement les données non affectées.
-6. Ses tests headless ont été exécutés ou leurs limites clairement signalées.
-7. Une checklist de validation manuelle est disponible pour les aspects visuels.
-8. Elle ne crée pas une nouvelle dépendance inutile entre des domaines séparés.
+1. It meets a specific user need and a described scenario.
+2. It respects boundaries between document, engine, rendering, platforms, and interface.
+3. Its errors and edge cases have clear behavior.
+4. Document changes remain undoable and serializable where necessary.
+5. It does not unnecessarily recompute unaffected data.
+6. Its headless tests have run, or their limits are clearly stated.
+7. A manual visual-verification checklist is available.
+8. It introduces no unnecessary dependencies between separate domains.
 
 ---
 
-## Première mission à donner à l'agent
+## First assignment for the agent
 
-**Commencer par un petit noyau vertical complet** : document → deux calques → groupe → commande transactionnelle → rendu hors écran → export → sauvegarde/rechargement → tests headless. Ensuite seulement brancher la première interface visuelle.
+**Start with a small, complete vertical slice:** document → two layers → group → transactional command → offscreen rendering → export → save/reload → headless tests. Only then connect the first visual interface.
 
-**Ne prendre aucune décision de stack à partir de ce document** : la technologie sera choisie séparément. Conserver cette architecture métier et ces comportements comme référence même si l'implémentation change complètement.
+**Do not choose a stack from this document:** technology is selected separately. Preserve this domain architecture and these behaviors as the reference even if implementation changes completely.
