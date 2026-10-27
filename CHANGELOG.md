@@ -46,6 +46,9 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
+- Single layer-patch transactions use isolated shallow layer drafts over immutable document resources; unrelated command domains retain deep draft isolation. Replay batches copy each modified container once while preserving sequential move/set/remove semantics.
+- Selection changes retain the genuine color-slider elements instead of remounting and synchronously measuring them. Optional offscreen layer reveals coalesce after the selected canvas/inspector paint and cancel superseded scopes. Scroll-shadow mutation observers leave size measurements to the browser resize phase.
+
 - Plain rectangle/ellipse runs use one retained Three.js InstancedMesh and the shared TSL shape graph, preserving alpha, rotation, radius, stroke, order and isolated groups without per-primitive source targets or materials. A bounded shared buffer grows to 16,384 instances and is charged before allocation; complex compositing retains its isolated path.
 - Selection reveals reuse cached layer-viewport metrics, while small selections resolve through the immutable geometry index. Closed spotlights reuse prepared catalog rows and command gates without scoring document results; closed named-font pickers avoid full-catalog and installed-font reads. Visible thumbnail CPU preparation shares cancellable idle slots and yields to pending input or insufficient budget.
 
@@ -67,6 +70,13 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
+- Rejected prototype-changing JSON layer patches before mutation, preserving portable rendering and replay behavior.
+- Project saves capture an immutable input snapshot and compare durable document-write revisions after asynchronous hashing. Overlapping stale saves are rejected across store instances; rename/journal commits renew the same revision, and failed transactions roll it back with the document.
+
+- Kept optional thumbnail work behind pointer-approach quieting, queued native-input guards and a real idle budget. Completed frames yield and recheck activity before native encoding, cancel owned pending tasks on disposal and reject late encodes; explicit foreground export previews still bypass hover quiet after active gestures finish.
+- Pointer hit testing traverses parent-local coordinates and rejects plain bounds before allocating world geometry; selected-layer spacing reuses one geometry index instead of rescanning the document for each arrow.
+
+- Removed quadratic identity scans from replay recording, avoided allocating paths for unchanged fields, and reused canonical fingerprint key layouts without changing stored SHA-256 values. Document cloning now copies fields directly while preserving prototype-looking JSON keys safely.
 - Validated queued image exports against their original page, revision and selection at execution time, preventing a delayed adapter from exporting a replacement document.
 - Canvas picking and marquee selection skip attached mask sources and their hidden subtrees, so visible masked artwork receives the click; marquee also reads current committed opacity rather than a cached paint snapshot. Masks remain directly selectable and editable in the layers panel.
 

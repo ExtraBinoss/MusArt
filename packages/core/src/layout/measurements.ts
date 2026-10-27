@@ -1,12 +1,6 @@
 import type { Composition, Layer } from "../document/model";
-import { getLayer } from "../layers/access";
-import {
-  getWorldBounds,
-  getWorldMatrix,
-  transformPoint,
-  type Bounds,
-  type Point,
-} from "../layers/geometry";
+import { createLayerGeometryIndex, type LayerGeometryIndex } from "../layers/geometry-index";
+import { transformPoint, type Bounds, type Point } from "../layers/geometry";
 import { ZERO_INSETS } from "./model";
 export interface MeasurementArrow {
   axis: "x" | "y";
@@ -41,8 +35,8 @@ export function layoutBoxes(layer: Layer): { border: Bounds; content: Bounds; ou
     },
   };
 }
-function worldBox(page: Composition, id: string, box: Bounds): Bounds {
-  const matrix = getWorldMatrix(page, id),
+function worldBox(geometry: LayerGeometryIndex, id: string, box: Bounds): Bounds {
+  const matrix = geometry.worldMatrix(id),
     points = [
       { x: box.x, y: box.y },
       { x: box.x + box.width, y: box.y },
@@ -58,9 +52,13 @@ function worldBox(page: Composition, id: string, box: Bounds): Bounds {
     height: Math.max(...points.map((p) => p.y)) - y,
   };
 }
-export function measureLayer(page: Composition, id: string): LayerMeasurement {
-  const layer = getLayer(page, id),
-    parent = layer.parentId ? getLayer(page, layer.parentId) : page,
+export function measureLayer(
+  page: Composition,
+  id: string,
+  geometry: LayerGeometryIndex = createLayerGeometryIndex(page),
+): LayerMeasurement {
+  const layer = geometry.get(id),
+    parent = layer.parentId ? geometry.get(layer.parentId) : page,
     boxes = layoutBoxes(layer),
     distances = {
       left: layer.x,
@@ -69,9 +67,9 @@ export function measureLayer(page: Composition, id: string): LayerMeasurement {
       bottom: parent.height - layer.y - layer.height,
     };
   const parentPoint = (point: Point) =>
-    layer.parentId ? transformPoint(getWorldMatrix(page, layer.parentId), point) : point;
+    layer.parentId ? transformPoint(geometry.worldMatrix(layer.parentId), point) : point;
   const spacing = layer.parentId
-    ? (getLayer(page, layer.parentId).padding ?? ZERO_INSETS)
+    ? (geometry.get(layer.parentId).padding ?? ZERO_INSETS)
     : (page.margins ?? ZERO_INSETS);
   distances.left -= spacing.left;
   distances.right -= spacing.right;
@@ -81,9 +79,9 @@ export function measureLayer(page: Composition, id: string): LayerMeasurement {
     cy = layer.y + layer.height / 2;
   return {
     layerId: id,
-    bounds: getWorldBounds(page, id),
-    content: worldBox(page, id, boxes.content),
-    outer: worldBox(page, id, boxes.outer),
+    bounds: { ...geometry.worldBounds(id) },
+    content: worldBox(geometry, id, boxes.content),
+    outer: worldBox(geometry, id, boxes.outer),
     distances,
     arrows: [
       {

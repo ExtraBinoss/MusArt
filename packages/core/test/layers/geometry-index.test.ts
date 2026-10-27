@@ -1,4 +1,4 @@
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import { createLayer, createPage, createProject } from "../../src/document/factories";
 import { EditorEngine } from "../../src/session/engine";
 import { createLayerGeometryIndex } from "../../src/layers/geometry-index";
@@ -200,4 +200,56 @@ test("skips invisible mask-source subtrees for canvas picks while retaining expl
   expect(
     createLayerGeometryIndex(engine.getSnapshot().project.pages[0]!).hitTest({ x: 215, y: 15 })?.id,
   ).toBe(group.id);
+});
+
+test("flat ten-thousand-layer picks reject misses without calculating world matrices or bounds", () => {
+  const layers = Array.from({ length: 10000 }, (_, index) =>
+    createLayer("rectangle", { id: `flat-${index}`, x: index * 4, y: 10, width: 3, height: 3 }),
+  );
+  const geometry = createLayerGeometryIndex(createPage({ layers }));
+  const matrices = vi.spyOn(geometry, "worldMatrix"),
+    bounds = vi.spyOn(geometry, "worldBounds");
+  expect(geometry.hitTest({ x: 1, y: 11 })?.id).toBe("flat-0");
+  expect(geometry.hitTest({ x: -10, y: 11 })).toBeNull();
+  expect(matrices).not.toHaveBeenCalled();
+  expect(bounds).not.toHaveBeenCalled();
+});
+test("parent-local picking agrees with canonical rotations, clipping, ellipse holes and ancestor flags", () => {
+  const base = [
+    createLayer("rectangle", { id: "back", x: 0, y: 0, width: 500, height: 500 }),
+    createLayer("group", { id: "g", x: 80, y: 100, width: 200, height: 100, rotation: 37 }),
+    createLayer("group", {
+      id: "nested",
+      parentId: "g",
+      x: 10,
+      y: 20,
+      width: 90,
+      height: 70,
+      rotation: -15,
+    }),
+    createLayer("ellipse", {
+      id: "ellipse",
+      parentId: "nested",
+      x: 20,
+      y: 12,
+      width: 40,
+      height: 30,
+      rotation: 20,
+    }),
+  ];
+  for (const patch of [
+    {},
+    { visible: false },
+    { opacity: 0 },
+    { locked: true },
+    { maskSource: true },
+  ]) {
+    const page = createPage({
+      layers: base.map((layer) => (layer.id === "g" ? { ...layer, ...patch } : { ...layer })),
+    });
+    const geometry = createLayerGeometryIndex(page);
+    for (let y = 0; y < 400; y += 13)
+      for (let x = 0; x < 400; x += 17)
+        expect(geometry.hitTest({ x, y })?.id).toBe(hitTest(page, { x, y })?.id);
+  }
 });

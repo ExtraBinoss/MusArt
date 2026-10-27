@@ -1,5 +1,6 @@
-import { it, expect } from "vitest";
+import { it, expect, vi } from "vitest";
 import { createPage } from "../../src/document/factories";
+import { createLayerGeometryIndex } from "../../src/layers/geometry-index";
 import { layoutBoxes, measureLayer } from "../../src/layout/measurements";
 import { box } from "../support/fixture";
 import { transformPoint, getWorldMatrix } from "../../src/layers/geometry";
@@ -47,4 +48,19 @@ it("transforms arrows through rotated ancestors and uses their padding bounds", 
   expect(result.arrows[0]!.from.y).toBeCloseTo(expected.y);
   expect(result.bounds.width).toBeCloseTo(80);
   expect(() => measureLayer(page, "absent")).toThrow();
+});
+
+it("reuses one index for ten thousand siblings without rescanning layer arrays for each arrow", () => {
+  const layers = Array.from({ length: 10000 }, (_, index) => box(`measure-${index}`, index, 20));
+  const page = createPage({ layers, width: 12000, height: 1000 }),
+    geometry = createLayerGeometryIndex(page);
+  const find = vi.spyOn(page.layers, "find"),
+    map = vi.spyOn(page.layers, "map");
+  const result = measureLayer(page, "measure-9999", geometry);
+  expect(result.distances.left).toBe(9999);
+  expect(result.arrows[0]!.to.x).toBe(9999);
+  expect(find).not.toHaveBeenCalled();
+  expect(map).not.toHaveBeenCalled();
+  result.bounds.x = 0;
+  expect(geometry.worldBounds("measure-9999").x).toBe(9999);
 });

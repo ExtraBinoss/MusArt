@@ -46,7 +46,7 @@ export class LayerGeometryIndex {
   readonly byId: ReadonlyMap<string, Layer>;
   private readonly childLists = new Map<string | null, readonly Layer[]>();
   private readonly matrices = new Map<string, Matrix>();
-  private readonly inverses = new Map<string, Matrix>();
+  private readonly localInverses = new Map<string, Matrix>();
   private readonly bounds = new Map<string, Readonly<Bounds>>();
   private readonly flags = new Map<string, { locked: boolean; visible: boolean }>();
   constructor(page: Composition) {
@@ -148,11 +148,11 @@ export class LayerGeometryIndex {
     this.bounds.set(id, bounds);
     return bounds;
   }
-  /** Iterative front-to-back traversal preserves group clipping and fallback selection. */
+  /** Parent-local traversal rejects cheap bounds before allocating any world geometry. */
   hitTest(point: Point): Layer | null {
     const roots = this.children(null);
-    const stack: { children: readonly Layer[]; at: number; fallback?: Layer }[] = [
-      { children: roots, at: roots.length - 1 },
+    const stack: { children: readonly Layer[]; at: number; point: Point; fallback?: Layer }[] = [
+      { children: roots, at: roots.length - 1, point },
     ];
     while (stack.length) {
       const frame = stack[stack.length - 1]!;
@@ -162,22 +162,29 @@ export class LayerGeometryIndex {
         continue;
       }
       const layer = frame.children[frame.at--]!;
-      if (layer.maskSource || this.isLocked(layer.id) || !this.isVisible(layer.id)) continue;
-      const bounds = this.worldBounds(layer.id);
-      if (
-        point.x < bounds.x ||
-        point.y < bounds.y ||
-        point.x > bounds.x + bounds.width ||
-        point.y > bounds.y + bounds.height
-      )
-        continue;
-      let inverse = this.inverses.get(layer.id);
-      if (!inverse) {
-        inverse = invertMatrix(this.worldMatrix(layer.id));
-        this.inverses.set(layer.id, inverse);
+      if (layer.maskSource || layer.locked || !layer.visible || layer.opacity <= 0) continue;
+      let local: Point;
+      if (layer.rotation === 0) {
+        const x = frame.point.x - layer.x,
+          y = frame.point.y - layer.y;
+        if (x < 0 || y < 0 || x > layer.width || y > layer.height) continue;
+        local = { x, y };
+      } else {
+        // A conservative square contains every rotation of the local rectangle.
+        const radius = (layer.width + layer.height) / 2;
+        if (
+          Math.abs(frame.point.x - layer.x - layer.width / 2) > radius ||
+          Math.abs(frame.point.y - layer.y - layer.height / 2) > radius
+        )
+          continue;
+        let inverse = this.localInverses.get(layer.id);
+        if (!inverse) {
+          inverse = invertMatrix(layerTransform(layer));
+          this.localInverses.set(layer.id, inverse);
+        }
+        local = transformPoint(inverse, frame.point);
+        if (local.x < 0 || local.y < 0 || local.x > layer.width || local.y > layer.height) continue;
       }
-      const local = transformPoint(inverse, point);
-      if (local.x < 0 || local.y < 0 || local.x > layer.width || local.y > layer.height) continue;
       if (
         layer.kind === "ellipse" &&
         ((local.x - layer.width / 2) / (layer.width / 2)) ** 2 +
@@ -187,7 +194,7 @@ export class LayerGeometryIndex {
         continue;
       if (layer.kind !== "group") return layer;
       const children = this.children(layer.id);
-      stack.push({ children, at: children.length - 1, fallback: layer });
+      stack.push({ children, at: children.length - 1, point: local, fallback: layer });
     }
     return null;
   }

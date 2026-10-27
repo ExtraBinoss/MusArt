@@ -70,3 +70,18 @@ test("rolls invalid values back atomically and releases unused mask sources once
   engine.execute({ type: "updateLayerPatches", patches: [{ id: "a", patch: { mask: null } }] });
   expect(engine.getSnapshot().project.pages[0]!.layers[1]!.maskSource).toBe(false);
 });
+
+test("rejects prototype-changing JSON patches without mutating a layer or the undo history", () => {
+  const engine = new EditorEngine(
+    createProject({ pages: [createPage({ layers: [createLayer("rectangle", { id: "a" })] })] }),
+  );
+  const before = engine.getSnapshot();
+  for (const key of ["__proto__", "prototype", "constructor"]) {
+    const patch = JSON.parse(`{"${key}":{"fill":"#ff0000"}}`) as object;
+    expect(() =>
+      engine.execute({ type: "updateLayerPatches", patches: [{ id: "a", patch }] }),
+    ).toThrow("immuables");
+    expect(engine.getSnapshot()).toBe(before);
+  }
+  expect(Object.getPrototypeOf(before.project.pages[0]!.layers[0]!)).toBe(Object.prototype);
+});

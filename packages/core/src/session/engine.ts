@@ -7,6 +7,7 @@ import { validateProject } from "../document/validation";
 import { cloneValue as clone, freezeValue as freeze } from "../document/immutable";
 import type { CommandCommit } from "../animation/model";
 import { createLayerGeometryIndex } from "../layers/geometry-index";
+import { createCommandDraft } from "./drafts";
 
 function collectExplicitIds(value: unknown, occupied: Set<string>): void {
   if (Array.isArray(value)) {
@@ -70,6 +71,7 @@ export class EditorEngine implements EnginePort {
     };
   };
   private notifyCommands(kind: CommandCommit["kind"], commands: readonly Command[] = []): void {
+    if (!this.commandListeners.size) return;
     const event = freeze({ kind, commands: clone(commands), snapshot: this.snapshot });
     for (const listener of this.commandListeners) listener(event);
   }
@@ -105,7 +107,7 @@ export class EditorEngine implements EnginePort {
     );
     if (commands.length === 0) return;
     const before = this.snapshot;
-    const project = clone(before.project);
+    const project = createCommandDraft(before.project, before.pageId, commands);
     let pageId = before.pageId;
     let selection = before.selection;
     let sequence = this.sequence;

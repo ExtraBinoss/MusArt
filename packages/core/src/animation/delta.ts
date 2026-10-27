@@ -7,9 +7,13 @@ function object(value: unknown): value is Record<string, unknown> {
 }
 function identities(items: unknown[]): string[] | null {
   const ids: string[] = [];
+  const seen = new Set<string>();
   for (const item of items) {
-    if (!object(item) || typeof item.id !== "string" || ids.includes(item.id)) return null;
-    ids.push(item.id);
+    if (!object(item)) return null;
+    const id = item.id;
+    if (typeof id !== "string" || seen.has(id)) return null;
+    seen.add(id);
+    ids.push(id);
   }
   return ids;
 }
@@ -53,7 +57,7 @@ export function diffReplayState(before: ReplayState, after: ReplayState): Replay
       for (const key of Object.keys(a))
         if (b[key] === undefined) output.push({ op: "remove", path: [...path, key] });
       for (const [key, value] of Object.entries(b))
-        if (value !== undefined) walk(a[key], value, [...path, key]);
+        if (value !== undefined && !Object.is(a[key], value)) walk(a[key], value, [...path, key]);
       return;
     }
     output.push({ op: "set", path, value: cloneValue(b) });
@@ -82,11 +86,14 @@ function change(
   root: unknown,
   path: ReplayPath,
   op: "set" | "insert" | "remove",
-  value?: unknown,
+  value: unknown,
+  owned: WeakSet<object>,
 ): unknown {
   if (path.length === 0) {
     ensure(op === "set", "INVALID_DOCUMENT", "Cannot insert/remove the replay root");
-    return cloneValue(value);
+    const replacement = cloneValue(value);
+    if (replacement !== null && typeof replacement === "object") owned.add(replacement);
+    return replacement;
   }
   const [key, ...rest] = path;
   ensure(
@@ -95,12 +102,16 @@ function change(
     "Unsafe replay path",
   );
   ensure(root !== null && typeof root === "object", "INVALID_DOCUMENT", "Replay path is missing");
-  const next: Array<unknown> | Record<string | number, unknown> = Array.isArray(root)
-    ? [...root]
-    : { ...root };
+  // Containers copied by an earlier operation are private to this batch and can be reused.
+  const next: Array<unknown> | Record<string | number, unknown> = owned.has(root)
+    ? (root as Array<unknown> | Record<string | number, unknown>)
+    : Array.isArray(root)
+      ? [...root]
+      : { ...root };
+  owned.add(next);
   if (rest.length) {
     const child = (root as Record<string | number, unknown>)[key];
-    (next as Record<string | number, unknown>)[key] = change(child, rest, op, value);
+    (next as Record<string | number, unknown>)[key] = change(child, rest, op, value, owned);
     return next;
   }
   if (Array.isArray(next)) {
@@ -126,17 +137,19 @@ function change(
 }
 export function applyReplayDelta(state: ReplayState, delta: readonly ReplayDelta[]): ReplayState {
   let result: unknown = state;
+  const owned = new WeakSet<object>();
   for (const operation of delta) {
     if (operation.op === "move") {
       const value = at(result, operation.from);
-      result = change(result, operation.from, "remove");
-      result = change(result, operation.path, "insert", value);
+      result = change(result, operation.from, "remove", undefined, owned);
+      result = change(result, operation.path, "insert", value, owned);
     } else
       result = change(
         result,
         operation.path,
         operation.op,
         "value" in operation ? operation.value : undefined,
+        owned,
       );
   }
   return result as ReplayState;

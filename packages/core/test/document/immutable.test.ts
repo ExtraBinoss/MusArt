@@ -16,3 +16,15 @@ it("copies nested structured data without retaining mutable aliases and freezes 
   expect(freezeValue(copy)).toBe(copy);
   expect(freezeValue(null)).toBeNull();
 });
+
+it("preserves prototype-looking JSON data as own fields without changing object prototypes", () => {
+  const source = JSON.parse(
+    '{"__proto__":{"polluted":true},"constructor":{"name":"custom"},"prototype":7}',
+  ) as Record<string, unknown>;
+  const copy = cloneValue(source);
+  expect(Object.getPrototypeOf(copy)).toBe(Object.prototype);
+  expect(Object.hasOwn(copy, "__proto__")).toBe(true);
+  expect(copy).toEqual(source);
+  expect(copy.__proto__).not.toBe(source.__proto__);
+  expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+});

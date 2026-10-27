@@ -25,7 +25,8 @@ export function applyLayerPatches(
         !Array.isArray(patch) &&
         !("id" in patch) &&
         !("kind" in patch) &&
-        !("parentId" in patch),
+        !("parentId" in patch) &&
+        !["__proto__", "prototype", "constructor"].some((key) => Object.hasOwn(patch, key)),
       "INVALID_COMMAND",
       "Identité et parenté immuables par cette commande",
     );
