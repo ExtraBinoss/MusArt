@@ -1,0 +1,85 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createLayer, createPage, type Asset } from "@musart/core";
+import { TextureSources } from "../../src/surface/TextureSources";
+import { GpuResourceCache } from "../../src/cache/GpuResourceCache";
+import { LayerTargets } from "../../src/compositing/targets";
+import { clearSourceCache } from "../../src/surface/sources";
+import { installCanvasMock } from "../canvas-fixture";
+const asset: Asset = {
+  id: "image",
+  name: "original",
+  width: 1280,
+  height: 960,
+  mime: "image/png",
+  dataUrl: "original:pixels",
+};
+let context: ReturnType<typeof installCanvasMock>;
+beforeEach(() => {
+  context = installCanvasMock();
+  clearSourceCache();
+});
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
+describe("GPU texture preparation", () => {
+  it("uploads decoded originals directly once and shares a texture across transformed layers", async () => {
+    const cache = new GpuResourceCache();
+    const sources = new TextureSources(cache);
+    const layer = createLayer("image", { assetId: "image", width: 320, height: 220 });
+    const page = createPage({ layers: [layer, { ...layer, id: "second", x: 200 }] });
+    await sources.prepare(page, { image: asset });
+    const texture = sources.image("image");
+    await sources.prepare(page, { image: asset });
+    expect(sources.image("image")).toBe(texture);
+    expect(sources.uploads).toBe(1);
+    expect(cache.stats().cacheBytes).toBe(1280 * 960 * 4);
+    expect(texture.generateMipmaps).toBe(false);
+    expect(context.drawImage).not.toHaveBeenCalled();
+    expect(context.getImageData).not.toHaveBeenCalled();
+    cache.clear();
+  });
+  it("rasterizes only changed text paint and loads local fonts before measuring", async () => {
+    const previous = Object.getOwnPropertyDescriptor(document, "fonts");
+    const load = vi.fn().mockResolvedValue([]);
+    Object.defineProperty(document, "fonts", {
+      configurable: true,
+      value: { load, ready: Promise.resolve() },
+    });
+    try {
+      const sources = new TextureSources(new GpuResourceCache());
+      const layer = createLayer("text", {
+        fontFamily: "Space Grotesk",
+        fontSize: 32,
+        fontWeight: 600,
+      });
+      await sources.prepare(createPage({ layers: [layer] }), {});
+      expect(load).toHaveBeenCalledWith('600 32px "Space Grotesk"');
+      const entry = new LayerTargets();
+      const texture = sources.text(layer, 2, entry);
+      expect(sources.text({ ...layer, x: 100 }, 2, entry)).toBe(texture);
+      expect(sources.text({ ...layer, text: "new" }, 2, entry)).not.toBe(texture);
+      expect(sources.uploads).toBe(2);
+      entry.dispose();
+    } finally {
+      if (previous) Object.defineProperty(document, "fonts", previous);
+      else Reflect.deleteProperty(document, "fonts");
+    }
+  });
+  it("prepares alpha masks and rejects missing assets rather than substituting empty pixels", async () => {
+    const sources = new TextureSources(new GpuResourceCache());
+    const layer = createLayer("rectangle", {
+      mask: { assetId: "image", enabled: true, inverted: false },
+    });
+    await sources.prepare(createPage({ layers: [layer] }), { image: asset });
+    expect(sources.image("image").isTexture).toBe(true);
+    await expect(sources.prepare(createPage({ layers: [layer] }), {})).rejects.toThrow("Ressource");
+    expect(() => sources.image("missing")).toThrow("introuvable");
+    expect(() => sources.image(null)).toThrow("introuvable");
+    await sources.prepare(createPage({ layers: [{ ...layer, visible: false }] }), {});
+    await sources.prepare(
+      createPage({ layers: [{ ...layer, mask: { ...layer.mask!, enabled: false } }] }),
+      {},
+    );
+  });
+});

@@ -1,0 +1,113 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createPage } from "@musart/core";
+import { Texture } from "three/webgpu";
+import { disposeExportRenderers, snapshotComposition } from "../../src/export/standalone";
+const gpu = vi.hoisted(() => ({
+  init: vi.fn(),
+  dispose: vi.fn(),
+  constructors: vi.fn(),
+  render: vi.fn(),
+  compositorDispose: vi.fn(),
+  present: vi.fn(),
+  presentationDispose: vi.fn(),
+}));
+vi.mock("three/webgpu", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("three/webgpu")>();
+  return {
+    ...actual,
+    WebGPURenderer: class {
+      domElement = document.createElement("canvas");
+      toneMapping = 0;
+      outputColorSpace = "";
+      constructor(options: unknown) {
+        gpu.constructors(options);
+      }
+      init = gpu.init;
+      dispose = gpu.dispose;
+      setPixelRatio = vi.fn();
+      setClearColor = vi.fn();
+    },
+  };
+});
+vi.mock("../../src/compositing/GpuCompositor", () => ({
+  GpuCompositor: class {
+    render = gpu.render;
+    dispose = gpu.compositorDispose;
+  },
+}));
+vi.mock("../../src/export/presentation", () => ({
+  GpuPresentation: class {
+    render = gpu.present;
+    dispose = gpu.presentationDispose;
+  },
+}));
+let transfer: ReturnType<typeof vi.fn>;
+let close: ReturnType<typeof vi.fn>;
+beforeEach(async () => {
+  await disposeExportRenderers();
+  gpu.init.mockReset().mockResolvedValue(undefined);
+  gpu.dispose.mockReset().mockResolvedValue(undefined);
+  gpu.constructors.mockClear();
+  gpu.render
+    .mockReset()
+    .mockResolvedValue({ texture: new Texture(), width: 16, height: 12, premultiplied: true });
+  gpu.compositorDispose.mockReset().mockResolvedValue(undefined);
+  gpu.present.mockClear();
+  gpu.presentationDispose.mockClear();
+  transfer = vi.fn();
+  close = vi.fn();
+  vi.stubGlobal("createImageBitmap", vi.fn().mockResolvedValue({ close }));
+  vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation((() => ({
+    transferFromImageBitmap: transfer,
+  })) as unknown as HTMLCanvasElement["getContext"]);
+});
+afterEach(async () => {
+  await disposeExportRenderers();
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
+describe("GPU-backed durable export snapshots", () => {
+  it("copies GPU pixels through ImageBitmap and bitmaprenderer without CPU arrays", async () => {
+    const canvas = await snapshotComposition(createPage(), {}, {});
+    expect([canvas.width, canvas.height]).toEqual([16, 12]);
+    expect(transfer).toHaveBeenCalledOnce();
+    expect(close).not.toHaveBeenCalled();
+    expect(gpu.present).toHaveBeenCalledWith(expect.objectContaining({ width: 16 }));
+    const again = await snapshotComposition(createPage(), {}, {});
+    expect(again).not.toBe(canvas);
+    expect(gpu.init).toHaveBeenCalledOnce();
+    await snapshotComposition(createPage(), {}, { forceWebGL: true });
+    expect(gpu.init).toHaveBeenCalledTimes(2);
+  });
+  it("retries renderer initialization on the same Three WebGL2 fallback and can recover after failures", async () => {
+    gpu.init.mockRejectedValueOnce(new Error("no adapter"));
+    await snapshotComposition(createPage(), {}, { forceWebGL: false });
+    expect(gpu.constructors).toHaveBeenLastCalledWith(
+      expect.objectContaining({ forceWebGL: true }),
+    );
+    await disposeExportRenderers();
+    gpu.init.mockRejectedValueOnce(new Error("webgpu")).mockRejectedValueOnce(new Error("webgl"));
+    await expect(snapshotComposition(createPage(), {}, {})).rejects.toThrow("webgl");
+    await expect(snapshotComposition(createPage(), {}, {})).resolves.toBeInstanceOf(
+      HTMLCanvasElement,
+    );
+  });
+  it("closes an unconsumed bitmap and rejects unavailable bitmap-transfer support", async () => {
+    vi.mocked(HTMLCanvasElement.prototype.getContext).mockReturnValue(null);
+    await expect(snapshotComposition(createPage(), {}, {})).rejects.toThrow("transfert GPU");
+    expect(close).toHaveBeenCalledOnce();
+  });
+  it("closes an unconsumed bitmap when browser transfer throws", async () => {
+    transfer.mockImplementationOnce(() => {
+      throw new Error("transfer failed");
+    });
+    await expect(snapshotComposition(createPage(), {}, {})).rejects.toThrow("transfer failed");
+    expect(close).toHaveBeenCalledOnce();
+  });
+  it("finishes or cancels pending work before disposing its context", async () => {
+    const snapshot = snapshotComposition(createPage(), {}, {});
+    const disposal = disposeExportRenderers();
+    await expect(snapshot).rejects.toThrow("fermé");
+    await disposal;
+  });
+});

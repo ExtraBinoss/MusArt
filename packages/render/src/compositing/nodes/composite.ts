@@ -1,0 +1,101 @@
+import { Matrix3, Texture, Vector2, type TextureNode } from "three/webgpu";
+import { clamp, max, mix, step, texture, uniform, uv, vec2, vec3, vec4 } from "three/tsl";
+
+import { textureUv } from "./uv";
+
+export function sourceControls() {
+  return {
+    source: texture(new Texture()),
+    opacity: uniform(1),
+    premultiplied: uniform(0),
+    flipY: uniform(0),
+  };
+}
+export type SourceControls = ReturnType<typeof sourceControls>;
+export function normalNode(controls: SourceControls) {
+  const sample = controls.source.sample(textureUv(controls.flipY));
+  const straight = mix(sample.rgb, sample.rgb.div(max(sample.a, 0.000001)), controls.premultiplied);
+  // NodeMaterial.premultipliedAlpha applies the multiplication and selects ONE blend factors.
+  return vec4(straight, sample.a.mul(controls.opacity));
+}
+export function copyControls() {
+  return { source: texture(new Texture()), normalize: uniform(0), flipY: uniform(0) };
+}
+export function copyNode(controls: ReturnType<typeof copyControls>) {
+  const sample = controls.source.sample(textureUv(controls.flipY));
+  return vec4(
+    mix(sample.rgb, sample.rgb.div(max(sample.a, 0.000001)), controls.normalize),
+    sample.a,
+  );
+}
+export function maskControls() {
+  return {
+    source: texture(new Texture()),
+    mask: texture(new Texture()),
+    inverted: uniform(0),
+    maskFlipY: uniform(0),
+    premultiplied: uniform(0),
+    flipY: uniform(0),
+  };
+}
+export function maskNode(controls: ReturnType<typeof maskControls>) {
+  const sample = controls.source.sample(textureUv(controls.flipY));
+  const mask = controls.mask.sample(textureUv(controls.maskFlipY));
+  const alpha = mix(mask.a, mask.a.oneMinus(), controls.inverted);
+  return vec4(sample.rgb.mul(mix(1, alpha, controls.premultiplied)), sample.a.mul(alpha));
+}
+export function blendControls() {
+  return {
+    source: texture(new Texture()),
+    backdrop: texture(new Texture()),
+    backdropFlipY: uniform(0),
+    opacity: uniform(1),
+    premultiplied: uniform(0),
+    flipY: uniform(0),
+    mode: uniform(0),
+    parentSize: uniform(new Vector2(1, 1)),
+    sourceSize: uniform(new Vector2(1, 1)),
+    inverse: uniform(new Matrix3()),
+  };
+}
+function sampleSource(source: TextureNode<"vec4">, controls: ReturnType<typeof blendControls>) {
+  const dest = vec3(
+    uv().x.mul(controls.parentSize.x),
+    uv().y.oneMinus().mul(controls.parentSize.y),
+    1,
+  );
+  const local = controls.inverse.mul(dest);
+  const coord = vec2(
+    local.x.div(controls.sourceSize.x),
+    local.y.div(controls.sourceSize.y).oneMinus(),
+  );
+  const inside = step(0, coord.x).mul(step(coord.x, 1)).mul(step(0, coord.y)).mul(step(coord.y, 1));
+  const bounded = clamp(coord, 0, 1);
+  const corrected = vec2(bounded.x, mix(bounded.y, bounded.y.oneMinus(), controls.flipY));
+  const pixel = source.sample(corrected);
+  return vec4(pixel.rgb, pixel.a.mul(inside));
+}
+/** W3C blend function followed by Porter-Duff source-over, output premultiplied. */
+export function blendNode(controls: ReturnType<typeof blendControls>) {
+  const s = sampleSource(controls.source, controls);
+  const b = controls.backdrop.sample(textureUv(controls.backdropFlipY));
+  const cs = mix(s.rgb, s.rgb.div(max(s.a, 0.000001)), controls.premultiplied);
+  const cb = b.rgb.div(max(b.a, 0.000001));
+  const multiply = cb.mul(cs);
+  const screen = cb.add(cs).sub(cb.mul(cs));
+  const overlay = mix(
+    cb.mul(cs).mul(2),
+    cb.oneMinus().mul(cs.oneMinus()).mul(2).oneMinus(),
+    step(0.5, cb),
+  );
+  const blended = controls.mode
+    .equal(1)
+    .select(multiply, controls.mode.equal(2).select(screen, overlay));
+  const alpha = s.a.mul(controls.opacity);
+  const color = cs
+    .mul(b.a.oneMinus())
+    .add(blended.mul(b.a))
+    .mul(alpha)
+    .add(b.rgb.mul(alpha.oneMinus()));
+  return vec4(color, alpha.add(b.a.mul(alpha.oneMinus())));
+}
