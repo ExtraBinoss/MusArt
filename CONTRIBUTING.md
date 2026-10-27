@@ -20,9 +20,17 @@ Run the relevant focused tests while developing, then run `bun run check` before
 
 ## Commit and review
 
+Every delivered feature and fix needs an English entry under `Unreleased` in [CHANGELOG.md](CHANGELOG.md). Describe the resulting behavior and meaningful limitations. Keep completed-work lists and measured results in the changelog or supporting documentation; `AGENTS.md` contains lasting contribution rules.
+
 Commit each verified feature or milestone separately with a descriptive message, such as `feat(render): add an isolated effect pass` or `fix(core): preserve layer order when ungrouping`. Stage the files belonging to that change and preserve unrelated user work.
 
 A review should explain the concrete behavior, why it changed, what was tested, and any remaining limitation. Performance reports should identify the browser, adapter, scene, warmup, and measurement boundaries. A mocked renderer or a successful build alone is not evidence of correct GPU pixels.
+
+## Prepare a release
+
+The root and every workspace share one Semantic Versioning release number. `bun run version:check` detects mismatches and runs as part of the quality gate. After validation, run `bun run release -- patch`, `minor`, `major`, or an explicit `X.Y.Z` to synchronize the manifests and move `Unreleased` notes into a dated release. The first release may use the current version, for example `bun run release -- 0.1.0`.
+
+The script requires release notes and refuses invalid versions, downgrades and duplicate releases. Review the generated diff, run `bun install` if versions changed, verify the frozen installation and quality gate, then commit the notes, manifests and any lockfile change together. This command prepares local files; it does not create a Git tag, publish packages or push commits.
 
 ## Report an issue
 

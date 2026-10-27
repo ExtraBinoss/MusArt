@@ -27,13 +27,15 @@ bun run preview
 ## Create
 
 - Import multiple images together through the file picker, drag and drop, or clipboard. Pasted text becomes an editable text layer.
-- Arrange image, text, rectangle, ellipse, and nested group layers. Select multiple layers, reorder them, rename them, toggle visibility and locks, duplicate, group, and ungroup.
+- Arrange image, text, vector, rectangle, ellipse, and nested group layers. Select multiple layers, reorder them, rename them, toggle visibility and locks, duplicate, group, and ungroup.
 - Edit position, dimensions, rotation, opacity, blend mode, typography, fill, and stroke. Draw and transform directly on the canvas.
-- Apply ordered, non-destructive dither, ASCII, brightness, contrast, grayscale, and blur effects. Effects and masks stay confined to the target layer or group.
+- Apply twenty GPU effects and color adjustments, including dither, ASCII, blur, grain, halftone, exposure, hue and vibrance. Choose among 24 blend modes with isolated group compositing.
 - Use a connected-color magic wand or local object segmentation to create image masks. Invert, disable, or remove a mask without changing the original image.
-- Keep multiple compositions in one project, each with its own dimensions, background, and guides. Choose common print and social presets.
+- Keep multiple pages in project tabs. Choose social and print presets, drag guides from rulers, and edit layer/group margins, padding, alignment and spacing.
+- Search the local ResumI shape, Lucide icon and brand libraries from one shape tool. Long-press or right-click to change the last-used artwork; import supported SVG paths with original paints and credits.
 - Save projects in IndexedDB or download a portable `.musart` project containing its original assets. Autosave stores lightweight document changes separately from image originals.
 - Export PNG, WebP, or JPEG using browser encoders, or export all compositions as a ZIP. The interface offers up to 4× export; the renderer enforces 16,384 pixels per side and 64 megapixels per image.
+- Replay completed edits in Animate and export MP4 or WebM timelapses through Mediabunny. A separate paginated IndexedDB journal retains 10,000 entries by default, adjustable to 100,000; it loads independently from the document. [History design and tests](docs/history.md).
 
 The logo menu contains projects, file operations, and settings. Export sits at the top right. The right panel is pinned and resizable, with properties and the color picker above the layers list. The interface supports English and French, light and dark themes, and keyboard-accessible shadcn/Radix controls.
 
@@ -41,15 +43,15 @@ The logo menu contains projects, file operations, and settings. Export sits at t
 
 Regular wheel and trackpad gestures pan on **both axes**. **Ctrl/Cmd + wheel** zooms around the pointer. The percentage button restores **100% zoom and recenters**; adjacent controls change zoom or fit the composition. A recenter button appears after panning. Hold Space and drag to pan.
 
-| Action                     | Shortcut                             |
-| -------------------------- | ------------------------------------ |
-| Select / hand              | V / H                                |
-| Rectangle / ellipse / text | R / O / T                            |
-| Magic wand / segmentation  | W / S                                |
-| Undo / redo                | Ctrl/Cmd Z / Ctrl/Cmd Shift Z        |
-| Save / duplicate           | Ctrl/Cmd S / Ctrl/Cmd D              |
-| Group / ungroup            | Ctrl/Cmd G / Ctrl/Cmd Shift G        |
-| Move selection             | Arrow keys; Shift for 10-pixel steps |
+| Action                    | Shortcut                             |
+| ------------------------- | ------------------------------------ |
+| Select / hand             | V / H                                |
+| Shape / text              | U / T                                |
+| Magic wand / segmentation | W / S                                |
+| Undo / redo               | Ctrl/Cmd Z / Ctrl/Cmd Shift Z        |
+| Save / duplicate          | Ctrl/Cmd S / Ctrl/Cmd D              |
+| Group / ungroup           | Ctrl/Cmd G / Ctrl/Cmd Shift G        |
+| Move selection            | Arrow keys; Shift for 10-pixel steps |
 
 Local segmentation downloads pinned SlimSAM weights on first use. Image encoding is the expensive first step; later clicks reuse the cached embedding. Images stay on the device. See [local segmentation and offline validation](docs/SEGMENTATION.md).
 
@@ -58,6 +60,8 @@ Local segmentation downloads pinned SlimSAM weights on first use. Image encoding
 MusArt uses **Three.js `WebGPURenderer`**, **React Three Fiber**, and **TSL**. The same node materials support Three's WebGL2 fallback. There is no separately implemented native WebGPU renderer or handwritten WGSL/GLSL shader pipeline.
 
 Images upload directly as textures. Shapes are evaluated on the GPU; text prepares a source when its content changes. Layer effects, group composition, alpha masks, transforms, and blending stay in GPU textures and render targets. Compatible normal layers are batched; effects and complex blends use additional GPU passes and ping-pong targets. Interactive parameters use stable uniforms.
+
+Live inspector previews use stable imperative subscriptions to the scene and GPU uniforms. Continuous gestures do not rerender the canvas or unrelated panels; the active control may update its own cursor or draft. A validated document change and one undo entry are committed at the gesture boundary.
 
 R3F presents the final texture with demand rendering. The production renderer does not read GPU pixels into JavaScript arrays. Exports present the same graph to a GPU canvas, transfer a browser image bitmap, and use native canvas encoders. Image decoding, text preparation, document commands, and browser file encoding still perform their necessary platform work.
 
@@ -87,6 +91,8 @@ apps/web/src/
 
 See [architecture contracts](docs/CONTRACTS.md), [Three/WebGPU notes](docs/rendering/three-webgpu.md), [TSL notes](docs/rendering/tsl.md), and [contribution rules](AGENTS.md).
 
+Working-space options include sRGB, Display-P3 converted to the current sRGB output, and a generic CMYK soft proof. PNG/JPEG/WebP exports remain RGB; the proof is not an ICC print profile. [Color and compositing details](docs/rendering/compositing.md).
+
 ## Test the 50-image scene
 
 Open **http://localhost:6100/?benchmark=50** for the local contact sheet: **50 image layers, 100 effects, five groups, ten masks, and editable captions** on a 2400 × 1500 composition.
@@ -102,9 +108,12 @@ The browser test verifies actual preview pixels, effect changes, undo/redo, auto
 
 Results are written to `artifacts/performance-50.json`; captures and traces stay under `artifacts/`. Timings are specific to the recorded browser and adapter. See the [measurement protocol](docs/rendering/performance-protocol.md).
 
+The native IndexedDB stress test uses 100,000 history entries and writes `artifacts/performance-history.json`. Run `bun run test:browser -- test/browser/history-performance.spec.ts` to repeat it. Live-property tests separately check changing pixels, zero editor React commits during scrubbing, and one undo entry, including a 50-image workload.
+
 ## Quality checks
 
 ```sh
+bun run version:check
 bun run check:rules
 bun run typecheck
 bun run lint
@@ -145,5 +154,7 @@ Options include `--url`, `--page`, and `--webgl` for the TSL fallback. The autom
 ## Contribute and license
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before making changes. Keep modules organized by responsibility, add mirrored tests, and commit each verified feature or milestone separately.
+
+Features and fixes are recorded in the English [changelog](CHANGELOG.md). All workspaces share one Semantic Versioning release number, checked with `bun run version:check`; the [release workflow](CONTRIBUTING.md#prepare-a-release) prepares dated notes after validation.
 
 MusArt source code is available under the **[MIT License](LICENSE)**. Third-party components, model weights, fonts, and Unsplash photographs retain their own licenses; see [provenance and notices](docs/PROVENANCE.md) and [third-party notices](THIRD_PARTY_NOTICES.md).

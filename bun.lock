@@ -59,6 +59,7 @@
     },
     "apps/web": {
       "name": "@musart/web",
+      "version": "0.1.0",
       "dependencies": {
         "@musart/assets": "workspace:*",
         "@musart/core": "workspace:*",
