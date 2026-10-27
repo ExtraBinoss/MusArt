@@ -44,6 +44,11 @@ export function assertList(value: unknown, maximum: number): asserts value is un
 }
 export function assertUniqueId(value: unknown, ids: Set<string>): void {
   assertText(value);
+  ensure(
+    !["__proto__", "prototype", "constructor"].includes(value),
+    "INVALID_DOCUMENT",
+    "Identifiant réservé",
+  );
   ensure(!ids.has(value), "INVALID_DOCUMENT", `Identifiant dupliqué : ${value}`);
   ids.add(value);
 }
