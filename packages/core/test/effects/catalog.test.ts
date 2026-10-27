@@ -12,6 +12,20 @@ describe("portable effect definitions", () => {
       "contrast",
       "grayscale",
       "blur",
+      "saturation",
+      "hue",
+      "exposure",
+      "vibrance",
+      "temperature",
+      "tint",
+      "gamma",
+      "invert",
+      "sepia",
+      "threshold",
+      "posterize",
+      "grain",
+      "halftone",
+      "vignette",
     ]);
     expect(getEffectDefinition("dither")).toMatchObject({
       type: "dither",
@@ -37,12 +51,31 @@ describe("portable effect definitions", () => {
       contrast: ["amount"],
       grayscale: ["amount"],
       blur: ["amount", "scale"],
+      saturation: ["amount"],
+      hue: ["amount"],
+      exposure: ["amount"],
+      vibrance: ["amount"],
+      temperature: ["amount"],
+      tint: ["amount"],
+      gamma: ["amount"],
+      invert: ["amount"],
+      sepia: ["amount"],
+      threshold: ["amount"],
+      posterize: ["amount", "levels"],
+      grain: ["amount", "scale", "color"],
+      halftone: ["amount", "scale", "color"],
+      vignette: ["amount", "scale"],
     };
     for (const definition of Object.values(EFFECT_CATALOG)) {
       expect(definition.parameters.map((parameter) => parameter.key)).toEqual(
         expected[definition.type],
       );
       expect(getEffectDefinition(definition.type)).toBe(definition);
+      expect(definition.category).toBe(
+        ["dither", "ascii", "blur", "grain", "halftone", "vignette"].includes(definition.type)
+          ? "effect"
+          : "adjustment",
+      );
       for (const parameter of definition.parameters) {
         expect(parameter.labelKey.length).toBeGreaterThan(0);
         if (parameter.kind === "boolean")

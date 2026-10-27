@@ -24,6 +24,7 @@ export function reserveProjectIds(project: Project): void {
     for (const layer of page.layers) {
       reserved.add(layer.id);
       for (const effect of layer.effects) reserved.add(effect.id);
+      for (const guide of layer.guides ?? []) reserved.add(guide.id);
     }
   }
 }

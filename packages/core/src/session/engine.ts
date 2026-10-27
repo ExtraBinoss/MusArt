@@ -4,22 +4,9 @@ import { createProject } from "../document/factories";
 import { reserveProjectIds } from "../document/identity";
 import type { Command, EnginePort, Project, SessionSnapshot } from "../document/model";
 import { validateProject } from "../document/validation";
+import { cloneValue as clone, freezeValue as freeze } from "../document/immutable";
+import type { CommandCommit } from "../animation/model";
 
-function clone<T>(value: T): T {
-  if (Array.isArray(value)) return value.map((item: unknown) => clone(item)) as T;
-  if (value !== null && typeof value === "object")
-    return Object.fromEntries(
-      Object.entries(value).map(([key, child]) => [key, clone(child)]),
-    ) as T;
-  return value;
-}
-function freeze<T>(value: T): T {
-  if (value !== null && typeof value === "object" && !Object.isFrozen(value)) {
-    for (const child of Object.values(value)) freeze(child);
-    Object.freeze(value);
-  }
-  return value;
-}
 function collectExplicitIds(value: unknown, occupied: Set<string>): void {
   if (Array.isArray(value)) {
     for (const item of value) collectExplicitIds(item, occupied);
@@ -42,6 +29,7 @@ export interface EngineOptions {
 export class EditorEngine implements EnginePort {
   private snapshot: SessionSnapshot;
   private listeners = new Set<() => void>();
+  private commandListeners = new Set<(event: CommandCommit) => void>();
   private past: SessionSnapshot[] = [];
   private future: SessionSnapshot[] = [];
   private sequence = 0;
@@ -74,6 +62,16 @@ export class EditorEngine implements EnginePort {
       this.listeners.delete(listener);
     };
   };
+  subscribeCommands = (listener: (event: CommandCommit) => void): (() => void) => {
+    this.commandListeners.add(listener);
+    return () => {
+      this.commandListeners.delete(listener);
+    };
+  };
+  private notifyCommands(kind: CommandCommit["kind"], commands: readonly Command[] = []): void {
+    const event = freeze({ kind, commands: clone(commands), snapshot: this.snapshot });
+    for (const listener of this.commandListeners) listener(event);
+  }
   private publish(next: SessionSnapshot): void {
     this.snapshot = freeze(next);
     for (const listener of this.listeners) listener();
@@ -115,6 +113,7 @@ export class EditorEngine implements EnginePort {
       for (const layer of page.layers) {
         occupied.add(layer.id);
         for (const effect of layer.effects) occupied.add(effect.id);
+        for (const guide of layer.guides ?? []) occupied.add(guide.id);
       }
       for (const guide of page.guides) occupied.add(guide.id);
     }
@@ -159,6 +158,7 @@ export class EditorEngine implements EnginePort {
       canUndo: true,
       canRedo: false,
     });
+    this.notifyCommands("commit", commands);
   };
   undo = (): void => {
     const previous = this.past.pop();
@@ -170,6 +170,7 @@ export class EditorEngine implements EnginePort {
       canUndo: this.past.length > 0,
       canRedo: true,
     });
+    this.notifyCommands("undo");
   };
   redo = (): void => {
     const next = this.future.pop();
@@ -181,6 +182,7 @@ export class EditorEngine implements EnginePort {
       canUndo: true,
       canRedo: this.future.length > 0,
     });
+    this.notifyCommands("redo");
   };
   load = (project: Project): void => {
     validateProject(project);
@@ -197,5 +199,6 @@ export class EditorEngine implements EnginePort {
       canUndo: false,
       canRedo: false,
     });
+    this.notifyCommands("load");
   };
 }

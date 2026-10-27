@@ -1,7 +1,31 @@
+import type { BlendMode } from "../layers/blending/catalog";
+import type { VectorDefinition } from "../vector/model";
+import type { Insets, WorkingColorSpace, Alignment, LayoutReference } from "../layout/model";
+import type { ReplaySpec } from "../animation/model";
 /** Portable document contract. No browser, React or renderer dependencies. */
 export const FORMAT_VERSION = 1 as const;
-export type LayerKind = "rectangle" | "ellipse" | "text" | "image" | "group";
-export type EffectType = "dither" | "ascii" | "brightness" | "contrast" | "grayscale" | "blur";
+export type LayerKind = "rectangle" | "ellipse" | "text" | "image" | "group" | "vector";
+export type EffectType =
+  | "dither"
+  | "ascii"
+  | "brightness"
+  | "contrast"
+  | "grayscale"
+  | "blur"
+  | "saturation"
+  | "hue"
+  | "exposure"
+  | "vibrance"
+  | "temperature"
+  | "tint"
+  | "gamma"
+  | "invert"
+  | "sepia"
+  | "threshold"
+  | "posterize"
+  | "grain"
+  | "halftone"
+  | "vignette";
 export interface Effect {
   id: string;
   type: EffectType;
@@ -13,7 +37,9 @@ export interface Effect {
   seed: number;
 }
 export interface LayerMask {
-  assetId: string;
+  assetId?: string;
+  layerId?: string;
+  mode?: "alpha" | "luminance";
   enabled: boolean;
   inverted: boolean;
 }
@@ -34,7 +60,12 @@ export interface Layer {
   stroke: string;
   strokeWidth: number;
   radius: number;
-  blendMode: "normal" | "multiply" | "screen" | "overlay";
+  blendMode: BlendMode;
+  vector?: VectorDefinition;
+  margin?: Insets;
+  padding?: Insets;
+  guides?: Guide[];
+  maskSource?: boolean;
   text: string;
   fontFamily: string;
   fontSize: number;
@@ -59,6 +90,9 @@ export interface Composition {
   background: string;
   layers: Layer[];
   guides: Guide[];
+  margins?: Insets;
+  rulers?: boolean;
+  colorSpace?: WorkingColorSpace;
 }
 export interface Asset {
   id: string;
@@ -76,6 +110,7 @@ export interface Project {
   updatedAt: string;
   pages: Composition[];
   assets: Record<string, Asset>;
+  replay?: ReplaySpec;
 }
 export interface SessionSnapshot {
   project: Project;
@@ -97,8 +132,31 @@ export type Command =
   | { type: "updatePage"; patch: Partial<Composition> }
   | { type: "deletePage"; id: string }
   | { type: "renameProject"; name: string }
-  | { type: "addGuide"; guide: Guide }
-  | { type: "deleteGuide"; id: string }
+  | { type: "addGuide"; guide: Guide; targetId?: string }
+  | { type: "updateGuide"; id: string; patch: Partial<Guide>; targetId?: string }
+  | { type: "deleteGuide"; id: string; targetId?: string }
+  | {
+      type: "alignLayers";
+      ids: string[];
+      axis: "x" | "y";
+      alignment: Alignment;
+      relativeTo: LayoutReference;
+    }
+  | { type: "distributeLayers"; ids: string[]; axis: "x" | "y" }
+  | { type: "attachLayerMask"; sourceId: string; targetId: string; mode?: "alpha" | "luminance" }
+  | {
+      type: "createMaskFromSelection";
+      ids: string[];
+      targetId?: string;
+      mode?: "alpha" | "luminance";
+    }
+  | {
+      type: "updateMask";
+      targetId: string;
+      patch: Partial<Pick<LayerMask, "enabled" | "inverted" | "mode">>;
+    }
+  | { type: "removeLayerMask"; targetId: string }
+  | { type: "setReplay"; replay: ReplaySpec | null }
   | { type: "addAssets"; assets: Asset[] };
 export interface EnginePort {
   getSnapshot: () => SessionSnapshot;

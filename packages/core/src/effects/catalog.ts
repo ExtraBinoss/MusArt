@@ -21,6 +21,7 @@ export type EffectParameter = NumberEffectParameter | BooleanEffectParameter;
 export interface EffectDefinition {
   readonly type: EffectType;
   readonly nameKey: string;
+  readonly category: "effect" | "adjustment";
   readonly defaults: Readonly<Omit<Effect, "id" | "type">>;
   readonly parameters: readonly EffectParameter[];
 }
@@ -68,10 +69,12 @@ function defineEffect(
   type: EffectType,
   defaults: Partial<EffectDefinition["defaults"]>,
   parameters: readonly EffectParameter[],
+  category: EffectDefinition["category"] = "effect",
 ): EffectDefinition {
   return Object.freeze({
     type,
     nameKey: type,
+    category,
     defaults: Object.freeze({ ...DEFAULTS, ...defaults }),
     parameters: Object.freeze(parameters.map((parameter) => Object.freeze(parameter))),
   });
@@ -85,10 +88,29 @@ export const EFFECT_CATALOG: Readonly<Record<EffectType, EffectDefinition>> = Ob
     { ...SCALE, max: 48 },
     COLOR,
   ]),
-  brightness: defineEffect("brightness", { amount: 0.5 }, [AMOUNT]),
-  contrast: defineEffect("contrast", { amount: 0.5 }, [AMOUNT]),
-  grayscale: defineEffect("grayscale", {}, [AMOUNT]),
+  brightness: defineEffect("brightness", { amount: 0.5 }, [AMOUNT], "adjustment"),
+  contrast: defineEffect("contrast", { amount: 0.5 }, [AMOUNT], "adjustment"),
+  grayscale: defineEffect("grayscale", {}, [AMOUNT], "adjustment"),
   blur: defineEffect("blur", {}, [AMOUNT, SCALE]),
+  saturation: defineEffect("saturation", { amount: 0.5 }, [AMOUNT], "adjustment"),
+  hue: defineEffect("hue", { amount: 0.5 }, [AMOUNT], "adjustment"),
+  exposure: defineEffect("exposure", { amount: 0.5 }, [AMOUNT], "adjustment"),
+  vibrance: defineEffect("vibrance", { amount: 0.5 }, [AMOUNT], "adjustment"),
+  temperature: defineEffect("temperature", { amount: 0.5 }, [AMOUNT], "adjustment"),
+  tint: defineEffect("tint", { amount: 0.5 }, [AMOUNT], "adjustment"),
+  gamma: defineEffect("gamma", { amount: 0.5 }, [AMOUNT], "adjustment"),
+  invert: defineEffect("invert", {}, [AMOUNT], "adjustment"),
+  sepia: defineEffect("sepia", {}, [AMOUNT], "adjustment"),
+  threshold: defineEffect("threshold", { amount: 0.5 }, [AMOUNT], "adjustment"),
+  posterize: defineEffect(
+    "posterize",
+    { levels: 6 },
+    [AMOUNT, { ...LEVELS, max: 32 }],
+    "adjustment",
+  ),
+  grain: defineEffect("grain", { amount: 0.2, scale: 1 }, [AMOUNT, SCALE, COLOR]),
+  halftone: defineEffect("halftone", { scale: 8 }, [AMOUNT, { ...SCALE, max: 48 }, COLOR]),
+  vignette: defineEffect("vignette", { amount: 0.5, scale: 2 }, [AMOUNT, { ...SCALE, max: 8 }]),
 });
 
 export function getEffectDefinition(type: EffectType): EffectDefinition {

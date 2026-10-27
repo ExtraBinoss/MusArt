@@ -10,16 +10,66 @@ import {
 
 import { createId } from "./identity";
 import { getEffectDefinition } from "../effects/catalog";
+import { SOCIAL_PRESETS, type CompositionPreset } from "../layout/preset-catalog";
 export { createId } from "./identity";
 
-export const PRESETS = [
-  { id: "square", name: "Carré social", width: 1080, height: 1080 },
-  { id: "portrait", name: "Portrait", width: 1080, height: 1350 },
-  { id: "story", name: "Story", width: 1080, height: 1920 },
-  { id: "landscape", name: "Paysage", width: 1920, height: 1080 },
-  { id: "a4", name: "A4 · 300 dpi", width: 2480, height: 3508 },
-  { id: "desktop", name: "Écran", width: 1440, height: 900 },
-] as const;
+export const PRESETS: readonly CompositionPreset[] = Object.freeze([
+  {
+    id: "square",
+    name: "Carré social",
+    nameKey: "preset.square",
+    brandId: "generic",
+    category: "social",
+    width: 1080,
+    height: 1080,
+  },
+  {
+    id: "portrait",
+    name: "Portrait",
+    nameKey: "preset.portrait",
+    brandId: "generic",
+    category: "social",
+    width: 1080,
+    height: 1350,
+  },
+  {
+    id: "story",
+    name: "Story",
+    nameKey: "preset.story",
+    brandId: "generic",
+    category: "social",
+    width: 1080,
+    height: 1920,
+  },
+  {
+    id: "landscape",
+    name: "Paysage",
+    nameKey: "preset.landscape",
+    brandId: "generic",
+    category: "screen",
+    width: 1920,
+    height: 1080,
+  },
+  {
+    id: "a4",
+    name: "A4 · 300 dpi",
+    nameKey: "preset.a4",
+    brandId: "print",
+    category: "print",
+    width: 2480,
+    height: 3508,
+  },
+  {
+    id: "desktop",
+    name: "Écran",
+    nameKey: "preset.desktop",
+    brandId: "generic",
+    category: "screen",
+    width: 1440,
+    height: 900,
+  },
+  ...SOCIAL_PRESETS,
+]);
 
 export function createLayer(kind: LayerKind, patch: Partial<Layer> = {}): Layer {
   const labels: Record<LayerKind, string> = {
@@ -27,6 +77,7 @@ export function createLayer(kind: LayerKind, patch: Partial<Layer> = {}): Layer 
     ellipse: "Ellipse",
     text: "Texte",
     image: "Image",
+    vector: "Vector",
     group: "Groupe",
   };
   return {
@@ -57,6 +108,7 @@ export function createLayer(kind: LayerKind, patch: Partial<Layer> = {}): Layer 
     assetId: null,
     mask: null,
     effects: [],
+    ...(kind === "vector" ? { vector: { viewBox: "0 0 100 100", path: "M0 0H100V100H0Z" } } : {}),
     ...patch,
   };
 }

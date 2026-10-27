@@ -49,3 +49,33 @@ export type {
   EffectParameter,
   NumberEffectParameter,
 } from "./effects/catalog";
+export { BLEND_CATALOG, BLEND_MODES, getBlendDefinition } from "./layers/blending/catalog";
+export type { BlendMode, BlendDefinition, BlendCategory } from "./layers/blending/catalog";
+export type { VectorDefinition, VectorPart } from "./vector/model";
+export { ZERO_INSETS } from "./layout/model";
+export type { Insets, WorkingColorSpace, Alignment, LayoutReference } from "./layout/model";
+export type {
+  ReplaySpec,
+  ReplayEvent,
+  ReplayState,
+  ReplayCommand,
+  ReplayCommandSummary,
+  ReplayRecording,
+  CommandCommit,
+} from "./animation/model";
+export { SOCIAL_PRESETS, safeAreaGuides, pageFromPreset } from "./layout/presets";
+export type { CompositionPreset, PresetBrand } from "./layout/presets";
+export { layoutBoxes, measureLayer } from "./layout/measurements";
+export type { LayerMeasurement, MeasurementArrow } from "./layout/measurements";
+export { stateFromProject, normalizeReplayCommands } from "./animation/state";
+export { diffReplayState, applyReplayDelta } from "./animation/delta";
+export { recordSession, observeReplay } from "./animation/recording";
+export type {
+  ReplayDelta,
+  ReplayPath,
+  ReplayObserveOptions,
+  ReplayRecordOptions,
+} from "./animation/model";
+export { evaluateReplay } from "./animation/evaluate";
+
+export { validateReplaySpec, projectFromReplayState } from "./animation/validation";

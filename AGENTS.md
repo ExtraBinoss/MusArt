@@ -9,6 +9,7 @@ This project is a local-first creative editor. Read `PLAN_UNIVERSEL_EDITEUR_CREA
 - `packages/render`: sources and surfaces, isolated composition, GPU passes, caches, and export. Documents never contain GPU resources.
 - `apps/web`: interface, presentation state, R3F viewport, and platform adapters. Every document mutation goes through `EnginePort`; buttons, keyboard shortcuts, and automation use the same commands.
 - Reusable modules expose a small API through package exports. Do not create a giant utility file or artificially divide a behavior into empty wrappers.
+- Dispatch document commands through a typed registry with handlers grouped by domain. Keep layer operations, page operations, guides, masks, and replay logic in their own directories; do not accumulate implementation in a large `switch` or `commands.ts` file.
 
 ## Stack and rendering
 
@@ -17,6 +18,10 @@ This project is a local-first creative editor. Read `PLAN_UNIVERSEL_EDITEUR_CREA
 - Render on demand. No continuous loop while idle. Effects and masks remain confined to their layer or group; preserve alpha.
 - Use transient previews during gestures, with one document/history commit at the end. Bound caches and explicitly release resources, timers, listeners, and workers.
 - Wheel/trackpad: pan on X/Y; Ctrl/Cmd+wheel: zoom around the cursor. The 100% control recenters the view; provide a button to find the document again.
+
+## Live preview contract
+
+Controls may update their own local cursor, thumb, or draft field, but continuous color, opacity, geometry-property, and effect previews must not rerender the canvas or the rest of the editor. Use stable imperative subscriptions from presentation state to GPU uniforms/scene updates; do not propagate preview values through React props or document state. Keep App, Inspector, CanvasArea, EditorCanvas, and EditorScene commit counters unchanged during a preview gesture. Commit the validated document once at the gesture boundary, producing one undo entry. Verify this behavior with real browser counters, changing pixels, stable renderer/context identity, and unchanged source uploads; unit mocks alone are insufficient.
 
 ## Required GPU pipeline
 
