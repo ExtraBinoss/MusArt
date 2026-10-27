@@ -1,0 +1,162 @@
+[
+  {
+    "id": "brand-claude",
+    "name": "Claude",
+    "category": "AI",
+    "source": "https://anthropic.com/press-kit",
+    "brandGuidelines": "https://www.anthropic.com/news",
+    "license": "LicenseRef-Claude-Brand",
+    "sourceFile": "claude.source.svg",
+    "sourceSha256": "6d53db4be375e899c937c26cf16684a80d6e869b1928d72b37748bef2560e219",
+    "archiveMember": "Anthropic media resources/Anthropic logos/Claude logos/3 Claude Spark/SVG/Claude Spark - Clay.svg",
+    "file": "claude.svg",
+    "sha256": "97bd6e3dbce7281f582c83befbf6fb88364dab9aad31a1e16eb0c02226fbd29c",
+    "normalization": "Original paths and solid paints. SVG packaging and non-rendering metadata normalized.",
+    "landingVariants": [
+      {
+        "file": "claude.svg",
+        "sha256": "97bd6e3dbce7281f582c83befbf6fb88364dab9aad31a1e16eb0c02226fbd29c",
+        "output": "claude.svg"
+      }
+    ]
+  },
+  {
+    "id": "brand-openai",
+    "name": "OpenAI",
+    "category": "AI",
+    "source": "https://cdn.openai.com/brand/openai-logos.zip",
+    "brandGuidelines": "https://openai.com/brand/",
+    "license": "LicenseRef-OpenAI-Brand",
+    "sourceFile": "openai.source.svg",
+    "sourceSha256": "75c1e9fffa5e8c437bec1d67197a73992bca45d166c6ff23215185dea8fae92a",
+    "archiveMember": "OpenAI-logos/SVGs/OAI_OpenAI-Blossom_Black.svg",
+    "file": "openai.svg",
+    "sha256": "b42722101a3ff8207893fc634e061376145c4344eeb912b75242858fcef64047",
+    "normalization": "Original paths and solid paints. SVG packaging and non-rendering metadata normalized.",
+    "landingVariants": [
+      {
+        "file": "openai.svg",
+        "sha256": "b42722101a3ff8207893fc634e061376145c4344eeb912b75242858fcef64047",
+        "output": "openai.svg",
+        "viewBox": "180 180 356 356"
+      },
+      {
+        "file": "openai.dark.source.svg",
+        "sha256": "01d158767c4eec0e47bd617e67759c33da0accd1438be1a8d29dfdb99ce87285",
+        "output": "openai-dark.svg",
+        "viewBox": "180 180 356 356",
+        "archiveMember": "OpenAI-logos/SVGs/OAI_OpenAI-Blossom_White.svg"
+      }
+    ]
+  },
+  {
+    "id": "brand-cursor",
+    "name": "Cursor",
+    "category": "AI",
+    "source": "https://ptht05hbb1ssoooe.public.blob.vercel-storage.com/assets/brand/cursor-brand-assets.zip",
+    "brandGuidelines": "https://cursor.com/brand",
+    "license": "LicenseRef-Cursor-Brand",
+    "sourceFile": "cursor.source.svg",
+    "sourceSha256": "c483c02f78eb2619778fdd959e72a9adfac4844854472cd2653d4cbfd60e4d71",
+    "archiveMember": "General Logos/Cube/SVG/CUBE_2D_LIGHT.svg",
+    "file": "cursor.svg",
+    "sha256": "8f9b9f0d12e915779dad8e9f90eabf5db3a7e72b219b8fe1ca8d261aa9154483",
+    "normalization": "Original path with its source .st0 fill #26251e resolved inline.",
+    "landingVariants": [
+      {
+        "file": "cursor.svg",
+        "sha256": "8f9b9f0d12e915779dad8e9f90eabf5db3a7e72b219b8fe1ca8d261aa9154483",
+        "output": "cursor.svg"
+      },
+      {
+        "file": "cursor.dark.source.svg",
+        "sha256": "cd0e3e5d8991a4cdd4577f8896cd063105207665165c73e25a1ff918dd367eb7",
+        "output": "cursor-dark.svg",
+        "archiveMember": "General Logos/Cube/SVG/CUBE_2D_DARK.svg"
+      }
+    ]
+  },
+  {
+    "id": "brand-opencode",
+    "name": "OpenCode",
+    "category": "AI",
+    "source": "https://opencode.ai/opencode-brand-assets.zip",
+    "brandGuidelines": "https://opencode.ai/brand",
+    "license": "LicenseRef-OpenCode-Brand",
+    "sourceFile": "opencode.source.svg",
+    "sourceSha256": "5eeb3a5f14dbbccc03111296ecfd3cd05cc98844150d4f9d77ba921847953380",
+    "archiveMember": "OpenCode Brand Assets/Logo/opencode-logo-light.svg",
+    "file": "opencode.svg",
+    "sha256": "b232c67a227c505d2ec7bb9859247694e73c1aa2dd2b114a426cbd2e3ac26996",
+    "normalization": "Original two painted paths; only full-viewBox mask/clip wrappers and their white mask geometry omitted (no visual effect).",
+    "landingVariants": [
+      {
+        "file": "opencode.svg",
+        "sha256": "b232c67a227c505d2ec7bb9859247694e73c1aa2dd2b114a426cbd2e3ac26996",
+        "output": "opencode.svg"
+      },
+      {
+        "file": "opencode.dark.source.svg",
+        "sha256": "4e84f87aa7bc2a5f8a72eeb08d3d4f1836b422189256d0bd5e7bfabc830d7ed0",
+        "output": "opencode-dark.svg",
+        "archiveMember": "OpenCode Brand Assets/Logo/opencode-logo-dark.svg"
+      }
+    ]
+  },
+  {
+    "id": "brand-grok",
+    "name": "Grok",
+    "category": "AI",
+    "source": "https://grok.com",
+    "brandGuidelines": "https://x.ai/news/designing-grok-bot",
+    "license": "LicenseRef-Grok-Brand",
+    "sourceFile": "grok.source.svg",
+    "sourceSha256": "d2800b32682a5494ce2c9d5b5d203ed16774cfa81d98c28cb8cda79100dbea18",
+    "archiveMember": "Header SVG, paths with id=\"mark\"",
+    "file": "grok.svg",
+    "sha256": "533a0fa146585f85e5018bc31bac122b4315a170c68fa80953a8fe4cac4dfd46",
+    "normalization": "Exact two mark paths from the official responsive header; wordmark paths excluded, viewBox encloses the mark.",
+    "landingVariants": [
+      {
+        "file": "grok.svg",
+        "sha256": "533a0fa146585f85e5018bc31bac122b4315a170c68fa80953a8fe4cac4dfd46",
+        "output": "grok.svg"
+      },
+      {
+        "file": "grok.dark.source.svg",
+        "sha256": "f6fa95a68a8d3c3a41713b58403692123d98e66dbd5678dc55682ab1e1d2f22a",
+        "output": "grok-dark.svg",
+        "archiveMember": "Same currentColor mark paths in the official header, resolved to white."
+      }
+    ]
+  },
+  {
+    "id": "brand-meta",
+    "name": "Meta",
+    "category": "AI",
+    "source": "https://www.meta.com/brand/resources/meta/company-brand/",
+    "brandGuidelines": "https://www.meta.com/brand/resources/meta/company-brand/",
+    "license": "LicenseRef-Meta-Brand",
+    "sourceFile": "meta.source.svg",
+    "sourceSha256": "2c74460b8168dec39f477ec1a4129ebc2ea1ef3951b4df551ca7f187015f7a90",
+    "archiveMember": "Meta_Company Lockup/3 Mono Black/RGB/Meta_lockup_mono_black_RGB.svg",
+    "file": "meta.svg",
+    "sha256": "fed6cd3d0ac70f083b7b6bfd18548aa68ab5b624e406a572b1ee9ecb6ccf9720",
+    "normalization": "Exact path from the official SVG group id=\"Symbol\"; Wordmark and non-rendering Artboard_outline omitted. ViewBox encloses the unchanged infinity symbol geometry. Identifies parent company Meta beside the Muse Code product name, not a distinct Muse Code product logo.",
+    "landingVariants": [
+      {
+        "file": "meta.svg",
+        "sha256": "fed6cd3d0ac70f083b7b6bfd18548aa68ab5b624e406a572b1ee9ecb6ccf9720",
+        "output": "meta.svg"
+      },
+      {
+        "file": "meta-dark.svg",
+        "sha256": "ee58a69faf56e4cdda8e9bca651cf6132063db91ee11dfcd1b768890bfe7a1ba",
+        "output": "meta-dark.svg",
+        "archiveMember": "Meta_Company Lockup/4 Mono White/RGB/Meta_lockup_mono_white_RGB.svg",
+        "originalFile": "meta.dark.source.svg",
+        "originalSha256": "7aee550fa0f690e551029965bb53d32bbba4f40c5b334abd9edc0048d75ad49b"
+      }
+    ]
+  }
+]

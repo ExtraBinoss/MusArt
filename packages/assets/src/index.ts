@@ -1,8 +1,8 @@
 // Adapted from ResumI (MIT); artwork notices are preserved in data/ and docs/legal/.
 import type { AssetKind, CatalogAsset } from "./types";
 import { SHAPE_CATALOG } from "./catalogs/core-shapes";
-import social from "../data/social.json";
-import linkedIn from "../data/linkedin.json";
+import social from "../data/brands/social.json";
+import linkedIn from "../data/brands/linkedin.json";
 
 export type { AssetKind, CatalogAsset, VectorArtwork, VectorPart } from "./types";
 export { createSearchIndex, normalizeSearch } from "./search";
