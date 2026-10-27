@@ -1,0 +1,470 @@
+[
+  {
+    "id": "brand-sketch",
+    "name": "Sketch",
+    "category": "Design",
+    "source": "https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json",
+    "license": "MIT",
+    "path": "M27.93 10.334L64 6.547l36.07 3.788L128 47.517l-64 73.936L0 47.517Z",
+    "viewBox": "0 0 128 128",
+    "parts": [
+      {
+        "path": "M27.93 10.334L64 6.547l36.07 3.788L128 47.517l-64 73.936L0 47.517Z",
+        "fill": "#fdb300"
+      },
+      {
+        "path": "M25.925 47.517L64 121.453L0 47.517Zm76.15 0L64 121.453l64-73.936Z",
+        "fill": "#ea6c00"
+      },
+      {
+        "path": "M25.925 47.517h76.15L64 121.453Z",
+        "fill": "#fdad00"
+      },
+      {
+        "path": "m64 6.547l-36.07 3.787l-2.005 37.183Zm0 0l36.07 3.787l2.005 37.183z",
+        "fill": "#fdd231"
+      },
+      {
+        "path": "m128 47.517l-27.93-37.183l2.005 37.183z",
+        "fill": "#fdad00"
+      },
+      {
+        "path": "m64 6.547l-38.075 40.97h76.15z",
+        "fill": "#feeeb7"
+      },
+      {
+        "path": "m0 47.517l27.93-37.183l-2.005 37.183Z",
+        "fill": "#fdad00"
+      }
+    ],
+    "attribution": "The MIT License (MIT)\n\nCopyright (c) 2015 konpa\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nSource: https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json"
+  },
+  {
+    "id": "brand-photoshop",
+    "name": "Adobe Photoshop",
+    "category": "Design",
+    "source": "https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json",
+    "license": "MIT",
+    "path": "M22.667 1.6h82.666C117.867 1.6 128 11.733 128 24.267v79.466c0 12.534-10.133 22.667-22.667 22.667H22.667C10.133 126.4 0 116.267 0 103.733V24.267C0 11.733 10.133 1.6 22.667 1.6",
+    "viewBox": "0 0 128 128",
+    "parts": [
+      {
+        "path": "M22.667 1.6h82.666C117.867 1.6 128 11.733 128 24.267v79.466c0 12.534-10.133 22.667-22.667 22.667H22.667C10.133 126.4 0 116.267 0 103.733V24.267C0 11.733 10.133 1.6 22.667 1.6",
+        "fill": "#001e36"
+      },
+      {
+        "path": "M45.867 33.333c-1.6 0-3.2 0-4.853.054c-1.654.053-3.201.053-4.641.107c-1.44.053-2.773.053-4.053.106c-1.227.053-2.08.053-2.987.053c-.373 0-.533.213-.533.587v54.88c0 .48.213.694.64.694h10.347c.373-.054.64-.374.586-.747v-17.12c1.013 0 1.76 0 2.294.053c.533.053 1.386.053 2.666.053c4.374 0 8.374-.48 12-1.813c3.467-1.28 6.454-3.52 8.587-6.507q3.2-4.48 3.2-11.36c0-2.4-.426-4.693-1.226-6.933A17 17 0 0 0 64 39.36a19.05 19.05 0 0 0-7.147-4.374c-2.987-1.12-6.613-1.653-10.986-1.653m1.19 10.505c1.9.036 3.75.368 5.476 1.068c1.547.587 2.827 1.654 3.734 3.04a8.8 8.8 0 0 1 1.227 4.748c0 2.346-.534 4.16-1.654 5.493c-1.174 1.333-2.667 2.347-4.373 2.827c-1.974.64-4.054.959-6.134.959h-2.827c-.64 0-1.332-.053-2.079-.106v-17.92c.373-.054 1.12-.107 2.187-.053c1.013-.054 2.239-.054 3.626-.054q.41-.01.817-.002m44.73 2.723c-3.787 0-6.934.586-9.44 1.866c-2.293 1.067-4.267 2.773-5.6 4.906c-1.173 1.974-1.814 4.16-1.814 6.454a11.45 11.45 0 0 0 1.227 5.44a13.8 13.8 0 0 0 4.054 4.533a32.6 32.6 0 0 0 7.573 3.84c2.613 1.013 4.373 1.813 5.227 2.506c.853.694 1.28 1.387 1.28 2.134c0 .96-.587 1.867-1.44 2.24c-.96.48-2.4.747-4.427.747c-2.133 0-4.267-.267-6.294-.8a22.8 22.8 0 0 1-6.613-2.613c-.16-.107-.32-.16-.48-.053c-.16.106-.213.319-.213.479v9.28c-.053.427.213.8.587 1.013a21.5 21.5 0 0 0 5.44 1.707c2.4.48 4.799.693 7.252.693c3.84 0 7.041-.586 9.654-1.706c2.4-.96 4.48-2.613 5.973-4.747a12.4 12.4 0 0 0 2.08-7.093a11.5 11.5 0 0 0-1.226-5.493c-1.014-1.814-2.454-3.307-4.214-4.427a38.6 38.6 0 0 0-8.213-3.894a49 49 0 0 1-3.787-1.76c-.693-.373-1.333-.853-1.813-1.44c-.32-.427-.533-.906-.533-1.386s.16-1.013.426-1.44c.374-.533.96-.907 1.653-1.067c1.014-.266 2.134-.427 3.2-.374c2.027 0 4 .267 5.974.694c1.814.373 3.52.96 5.12 1.814c.213.106.48.106.96 0a.66.66 0 0 0 .267-.534v-8.693c0-.214-.054-.427-.107-.64c-.107-.213-.32-.427-.533-.48A18.8 18.8 0 0 0 98.4 47.04a46 46 0 0 0-6.613-.48z",
+        "fill": "#31a8ff"
+      }
+    ],
+    "attribution": "The MIT License (MIT)\n\nCopyright (c) 2015 konpa\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nSource: https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json"
+  },
+  {
+    "id": "brand-illustrator",
+    "name": "Adobe Illustrator",
+    "category": "Design",
+    "source": "https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json",
+    "license": "MIT",
+    "path": "M22.7 1.6h82.7c12.5 0 22.7 10.1 22.7 22.7v79.5c0 12.5-10.1 22.7-22.7 22.7H22.7C10.1 126.4 0 116.3 0 103.7V24.3C0 11.7 10.1 1.6 22.7 1.6",
+    "viewBox": "0 0 128 128",
+    "parts": [
+      {
+        "path": "M22.7 1.6h82.7c12.5 0 22.7 10.1 22.7 22.7v79.5c0 12.5-10.1 22.7-22.7 22.7H22.7C10.1 126.4 0 116.3 0 103.7V24.3C0 11.7 10.1 1.6 22.7 1.6",
+        "fill": "#330000"
+      },
+      {
+        "path": "M61.9 76.3H42l-4 12.5c-.1.5-.5.8-1 .7H27c-.6 0-.7-.3-.6-1l17.2-49.4c.2-.5.3-1.1.5-1.8c.2-1.1.3-2.3.3-3.5c-.1-.3.2-.5.4-.6h13.8c.4 0 .6.2.7.4l19.5 54.9c.2.6 0 .9-.5.9H67.1c-.4.1-.7-.2-.9-.6zM45.1 65.4h13.5c-.3-1.1-.7-2.5-1.2-3.8c-.5-1.4-1-3-1.4-4.6c-.5-1.7-1-3.3-1.5-4.9c-.5-1.7-1-3.2-1.4-4.7q-.6-2.25-1.2-4.2h-.1q-.75 3.45-1.8 6.9c-.8 2.6-1.6 5.2-2.5 7.9c-.8 2.7-1.6 5.2-2.4 7.4m45.6-22.7c-1.8.1-3.5-.6-4.7-1.9s-1.9-3.1-1.8-4.9c-.1-1.8.6-3.5 1.9-4.7s3-1.9 4.7-1.9c2.1 0 3.7.6 4.9 1.9s1.8 3 1.8 4.7c.1 1.8-.6 3.6-1.9 4.9s-3.1 2-4.9 1.9m-6 46.3V47.9c0-.5.2-.7.7-.7H96c.5 0 .7.3.7.7V89c0 .6-.2.9-.7.9H85.5c-.5-.1-.8-.4-.8-.9",
+        "fill": "#ff9a00"
+      }
+    ],
+    "attribution": "The MIT License (MIT)\n\nCopyright (c) 2015 konpa\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nSource: https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json"
+  },
+  {
+    "id": "brand-xd",
+    "name": "Adobe XD",
+    "category": "Design",
+    "source": "https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json",
+    "license": "MIT",
+    "path": "M22.667 1.6h82.666C117.867 1.6 128 11.733 128 24.267v79.466c0 12.534-10.133 22.667-22.667 22.667H22.667C10.133 126.4 0 116.267 0 103.733V24.267C0 11.733 10.133 1.6 22.667 1.6",
+    "viewBox": "0 0 128 128",
+    "parts": [
+      {
+        "path": "M22.667 1.6h82.666C117.867 1.6 128 11.733 128 24.267v79.466c0 12.534-10.133 22.667-22.667 22.667H22.667C10.133 126.4 0 116.267 0 103.733V24.267C0 11.733 10.133 1.6 22.667 1.6",
+        "fill": "#470137"
+      },
+      {
+        "path": "m67.307 34.4l-16 26.4l17.066 28c.107.213.16.427.107.64s-.267.053-.587.107H55.68c-.853 0-1.44-.054-1.813-.587c-1.12-2.24-2.294-4.427-3.414-6.667c-1.12-2.186-2.346-4.426-3.626-6.72s-2.56-4.586-3.84-6.933h-.107c-1.12 2.293-2.347 4.587-3.573 6.88a899 899 0 0 0-3.627 6.827c-1.227 2.24-2.453 4.533-3.68 6.72c-.213.533-.64.586-1.227.586H19.04c-.213 0-.373.107-.373-.16a.74.74 0 0 1 .106-.586l16.587-27.2l-16.16-27.36c-.16-.214-.213-.427-.107-.534c.107-.16.32-.213.534-.213h12.106c.267 0 .534.053.747.107c.213.106.373.266.533.48c1.014 2.293 2.187 4.586 3.414 6.88c1.28 2.293 2.506 4.533 3.84 6.773c1.28 2.24 2.453 4.48 3.573 6.773h.107c1.12-2.346 2.293-4.64 3.466-6.88s2.4-4.48 3.627-6.72s2.4-4.533 3.573-6.72c.054-.213.16-.426.32-.533c.214-.107.427-.16.694-.107H66.88a.49.49 0 0 1 .587.374c.053.053-.054.266-.16.373m24.64 56.267c-3.947.053-7.894-.747-11.467-2.4c-3.36-1.547-6.133-4.107-8.053-7.254c-1.974-3.253-2.934-7.306-2.934-12.16c-.053-3.946.96-7.84 2.934-11.253c2.026-3.467 4.96-6.347 8.48-8.267c3.733-2.08 8.213-3.093 13.493-3.093c.267 0 .64 0 1.12.053c.48.054 1.013.054 1.653.107V29.547c0-.374.16-.587.534-.587h10.826c.267-.053.48.16.534.373v50.88c0 .96.053 2.027.106 3.2c.107 1.12.16 2.187.214 3.094c0 .373-.16.693-.534.853a40.7 40.7 0 0 1-8.693 2.56c-2.72.48-5.44.747-8.213.747M97.173 80V56.533c-.48-.106-.96-.213-1.44-.266a19 19 0 0 0-1.76-.107c-2.08 0-4.16.427-6.026 1.387a11.96 11.96 0 0 0-4.534 3.946c-1.173 1.707-1.76 4-1.76 6.774a14.9 14.9 0 0 0 .907 5.493c.533 1.44 1.333 2.72 2.4 3.787a9.2 9.2 0 0 0 3.627 2.133c1.44.48 2.933.693 4.426.693c.8 0 1.547-.053 2.24-.106c.694.053 1.28-.054 1.92-.267",
+        "fill": "#ff61f6"
+      }
+    ],
+    "attribution": "The MIT License (MIT)\n\nCopyright (c) 2015 konpa\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nSource: https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json"
+  },
+  {
+    "id": "brand-premierepro",
+    "name": "Adobe Premiere Pro",
+    "category": "Design",
+    "source": "https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json",
+    "license": "MIT",
+    "path": "M0 0h128v128H0z",
+    "viewBox": "0 0 128 128",
+    "parts": [
+      {
+        "path": "M0 0h128v128H0z",
+        "fill": "#2a0634"
+      },
+      {
+        "path": "M0 0v128h128V0zm123 123H5V5h118z",
+        "fill": "#e976b9"
+      },
+      {
+        "path": "M69 47.1c-.1-9.4-7.8-16.9-17.2-16.8H33.3v58.5h9.6V67.5h8.3C61 67.4 69 59.3 69 49.4zm-9.6 3c0 5-4.1 9.1-9.1 9.1h-7.4V38.5h7.4c5 0 9.1 4.1 9.1 9.1zm17.7 38.7V48.9s10.2-5.1 20.2-3.8v8.3s-7 0-10.1 1.3v34.2H77.1z",
+        "fill": "#e976b9"
+      }
+    ],
+    "attribution": "The MIT License (MIT)\n\nCopyright (c) 2015 konpa\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nSource: https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json"
+  },
+  {
+    "id": "brand-aftereffects",
+    "name": "Adobe After Effects",
+    "category": "Design",
+    "source": "https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json",
+    "license": "MIT",
+    "path": "M6.5 6.5h115v115H6.5z",
+    "viewBox": "0 0 128 128",
+    "parts": [
+      {
+        "path": "M6.5 6.5h115v115H6.5z",
+        "fill": "#1f0740"
+      },
+      {
+        "path": "M0 0v128h128V0zm121.5 121.5H6.5V6.5h115z",
+        "fill": "#d490c5"
+      },
+      {
+        "path": "M103.5 59.2s-.6-14.6-16.5-14.6c-16 0-17.3 22-17.3 22v4.7S72.5 89.6 86 89.6s14.8-2.6 14.8-2.6v-8.1s-19.3 9.2-21.2-10h24v-9.7zm-9 2.4h-15s0-8.3 7.5-9.2c8.2 0 7.5 9.2 7.5 9.2m-44-31.7H38.4v3.8l-16 54.9h9.4l4.4-16.1H53l4.5 16.1h10.3zM38.2 63.1l6.4-24.5L51 63.1z",
+        "fill": "#d490c5"
+      }
+    ],
+    "attribution": "The MIT License (MIT)\n\nCopyright (c) 2015 konpa\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nSource: https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json"
+  },
+  {
+    "id": "brand-blender",
+    "name": "Blender",
+    "category": "Design",
+    "source": "https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json",
+    "license": "MIT",
+    "path": "M66.332 70.032c.24-4.242 2.327-7.987 5.485-10.634c3.094-2.602 7.248-4.193 11.809-4.193c4.537 0 8.69 1.59 11.78 4.193c3.163 2.647 5.237 6.392 5.485 10.634c.24 4.35-1.523 8.41-4.605 11.417c-3.158 3.05-7.627 4.977-12.66 4.977c-5.037 0-9.526-1.915-12.664-4.977c-3.094-3.006-4.853-7.044-4.606-11.397zm0 0",
+    "viewBox": "0 0 128 128",
+    "parts": [
+      {
+        "path": "M66.332 70.032c.24-4.242 2.327-7.987 5.485-10.634c3.094-2.602 7.248-4.193 11.809-4.193c4.537 0 8.69 1.59 11.78 4.193c3.163 2.647 5.237 6.392 5.485 10.634c.24 4.35-1.523 8.41-4.605 11.417c-3.158 3.05-7.627 4.977-12.66 4.977c-5.037 0-9.526-1.915-12.664-4.977c-3.094-3.006-4.853-7.044-4.606-11.397zm0 0",
+        "fill": "#235785"
+      },
+      {
+        "path": "M39.245 79.002c.028 1.66.564 4.89 1.36 7.404c1.682 5.336 4.537 10.273 8.49 14.599c4.062 4.465 9.074 8.055 14.85 10.61c6.073 2.67 12.665 4.037 19.505 4.037c6.84-.009 13.432-1.4 19.504-4.102c5.776-2.582 10.79-6.168 14.85-10.657c3.974-4.374 6.82-9.307 8.491-14.647a37 37 0 0 0 1.595-8.163c.208-2.69.12-5.405-.263-8.12a37.5 37.5 0 0 0-5.417-14.714c-2.574-4.15-5.916-7.76-9.89-10.813l.012-.004l-39.955-30.506c-.036-.028-.068-.056-.104-.08c-2.619-2.002-7.044-1.994-9.91.008c-2.914 2.031-3.25 5.385-.656 7.496l-.012.008l16.682 13.484l-50.789.051h-.068c-4.197.004-8.239 2.739-9.03 6.213c-.82 3.521 2.035 6.46 6.412 6.46l-.008.016l25.736-.048l-46.05 34.99c-.056.044-.12.088-.176.132C.069 85.95-1.33 91.446 1.4 94.9c2.778 3.522 8.666 3.546 13.047.02l25.058-20.41s-.368 2.758-.336 4.397zm64.56 9.219c-5.168 5.228-12.416 8.21-20.227 8.21c-7.831.012-15.079-2.918-20.248-8.142c-2.526-2.559-4.377-5.473-5.528-8.591a22.2 22.2 0 0 1-1.271-9.602a22.45 22.45 0 0 1 2.778-9.039c1.507-2.714 3.59-5.18 6.14-7.267c5.033-4.058 11.42-6.28 18.1-6.28c6.709-.008 13.097 2.174 18.13 6.236c2.55 2.075 4.625 4.529 6.14 7.243a22.3 22.3 0 0 1 2.774 9.043a22.3 22.3 0 0 1-1.271 9.598c-1.147 3.142-3.002 6.056-5.533 8.615zm0 0",
+        "fill": "#e87500"
+      }
+    ],
+    "attribution": "The MIT License (MIT)\n\nCopyright (c) 2015 konpa\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nSource: https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json"
+  },
+  {
+    "id": "brand-unity",
+    "name": "Unity",
+    "category": "Design",
+    "source": "https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json",
+    "license": "MIT",
+    "path": "m63.991 128l51.702-29.855l-19.817-11.461l-20.26 11.704a1.15 1.15 0 0 1-1.125-.009a1.15 1.15 0 0 1-.568-.975V69.608c0-.819.424-1.56 1.133-1.968L99.13 53.737a1.12 1.12 0 0 1 1.124.009c.352.195.572.564.576.966V78.11l19.83 11.454V29.855L63.99 62.566Zm0 0",
+    "viewBox": "0 0 128 128",
+    "parts": [
+      {
+        "path": "m63.991 128l51.702-29.855l-19.817-11.461l-20.26 11.704a1.15 1.15 0 0 1-1.125-.009a1.15 1.15 0 0 1-.568-.975V69.608c0-.819.424-1.56 1.133-1.968L99.13 53.737a1.12 1.12 0 0 1 1.124.009c.352.195.572.564.576.966V78.11l19.83 11.454V29.855L63.99 62.566Zm0 0",
+        "fill": "#000000"
+      },
+      {
+        "path": "m52.397 98.401l-20.27-11.718l-19.832 11.46L63.991 128V62.566L7.34 29.854V89.56l19.825-11.45V54.714c.009-.401.225-.77.572-.966a1.13 1.13 0 0 1 1.13-.009L52.953 67.64a2.28 2.28 0 0 1 1.133 1.97v27.8a1.16 1.16 0 0 1-.565.98a1.13 1.13 0 0 1-1.124.012",
+        "fill": "#4d4d4d"
+      },
+      {
+        "path": "M68.959 0v22.9L89.22 34.597c.348.203.555.576.555.984c0 .403-.212.772-.555.975L65.137 50.468a2.3 2.3 0 0 1-2.27 0L38.791 36.556a1.12 1.12 0 0 1-.56-.975a1.13 1.13 0 0 1 .56-.984L59.048 22.9V0L7.339 29.855l56.652 32.711l56.665-32.71Zm0 0",
+        "fill": "#808080"
+      }
+    ],
+    "attribution": "The MIT License (MIT)\n\nCopyright (c) 2015 konpa\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nSource: https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json"
+  },
+  {
+    "id": "brand-cloudflare",
+    "name": "Cloudflare",
+    "category": "Platforms",
+    "source": "https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json",
+    "license": "MIT",
+    "path": "m115.679 69.288l-15.591-8.94l-2.689-1.163l-63.781.436v32.381h82.061z",
+    "viewBox": "0 0 128 128",
+    "parts": [
+      {
+        "path": "m115.679 69.288l-15.591-8.94l-2.689-1.163l-63.781.436v32.381h82.061z",
+        "fill": "#ffffff"
+      },
+      {
+        "path": "M87.295 89.022c.763-2.617.472-5.015-.8-6.796c-1.163-1.635-3.125-2.58-5.488-2.689l-44.737-.581c-.291 0-.545-.145-.691-.363s-.182-.509-.109-.8c.145-.436.581-.763 1.054-.8l45.137-.581c5.342-.254 11.157-4.579 13.192-9.885l2.58-6.723c.109-.291.145-.581.073-.872c-2.906-13.158-14.644-22.97-28.672-22.97c-12.938 0-23.913 8.359-27.838 19.952a13.35 13.35 0 0 0-9.267-2.58c-6.215.618-11.193 5.597-11.811 11.811c-.145 1.599-.036 3.162.327 4.615C10.104 70.051 2 78.337 2 88.549c0 .909.073 1.817.182 2.726a.895.895 0 0 0 .872.763h82.57c.472 0 .909-.327 1.054-.8z",
+        "fill": "#f38020"
+      },
+      {
+        "path": "M101.542 60.275c-.4 0-.836 0-1.236.036c-.291 0-.545.218-.654.509l-1.744 6.069c-.763 2.617-.472 5.015.8 6.796c1.163 1.635 3.125 2.58 5.488 2.689l9.522.581c.291 0 .545.145.691.363s.182.545.109.8c-.145.436-.581.763-1.054.8l-9.924.582c-5.379.254-11.157 4.579-13.192 9.885l-.727 1.853c-.145.363.109.727.509.727h34.089c.4 0 .763-.254.872-.654c.581-2.108.909-4.325.909-6.614c0-13.447-10.975-24.422-24.458-24.422",
+        "fill": "#faae40"
+      }
+    ],
+    "attribution": "The MIT License (MIT)\n\nCopyright (c) 2015 konpa\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nSource: https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json"
+  },
+  {
+    "id": "brand-vercel",
+    "name": "Vercel",
+    "category": "Platforms",
+    "source": "https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json",
+    "license": "MIT",
+    "path": "M64.002 8.576L128 119.424H0Zm0 0",
+    "viewBox": "0 0 128 128",
+    "parts": [
+      {
+        "path": "M64.002 8.576L128 119.424H0Zm0 0",
+        "fill": "#000000"
+      }
+    ],
+    "attribution": "The MIT License (MIT)\n\nCopyright (c) 2015 konpa\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nSource: https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json"
+  },
+  {
+    "id": "brand-netlify",
+    "name": "Netlify",
+    "category": "Platforms",
+    "source": "https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json",
+    "license": "MIT",
+    "path": "M80.46 82.605h-8.777l-.734-.733V61.326c0-3.656-1.436-6.489-5.844-6.588c-2.269-.06-4.864 0-7.638.11l-.416.425v26.589l-.733.733H47.54l-.733-.733V46.764l.733-.733h19.753c7.677 0 13.899 6.22 13.899 13.898v21.943z",
+    "viewBox": "0 0 128 128",
+    "parts": [
+      {
+        "path": "M80.46 82.605h-8.777l-.734-.733V61.326c0-3.656-1.436-6.489-5.844-6.588c-2.269-.06-4.864 0-7.638.11l-.416.425v26.589l-.733.733H47.54l-.733-.733V46.764l.733-.733h19.753c7.677 0 13.899 6.22 13.899 13.898v21.943z",
+        "fill": "#014847"
+      },
+      {
+        "path": "M58.942 119.902v-26.33l.733-.734h8.797l.733.733v26.331l-.733.733h-8.796zm0-84.838V8.734L59.675 8h8.797l.733.733v26.331l-.733.733h-8.796zm68.335 34.385H92.169l-.733-.733V59.92l.733-.733h35.108l.733.733v8.797zm-91.436 0H.733L0 68.716V59.92l.733-.733h35.108l.733.733v8.797zm-8.49-35.633v-1.209l6.034-6.033h1.208l9.223 9.223v6.39l-.852.852h-6.39zm7.242 68.235h-1.208l-6.033-6.033v-1.209l9.223-9.222h6.39l.851.851v6.39z",
+        "fill": "#05bdba"
+      }
+    ],
+    "attribution": "The MIT License (MIT)\n\nCopyright (c) 2015 konpa\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nSource: https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json"
+  },
+  {
+    "id": "brand-amazonwebservices",
+    "name": "AWS",
+    "category": "Platforms",
+    "source": "https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json",
+    "license": "MIT",
+    "path": "M36.379 53.64c0 1.56.168 2.825.465 3.75c.336.926.758 1.938 1.347 3.032c.207.336.293.672.293.969c0 .418-.254.84-.8 1.261l-2.653 1.77c-.379.25-.758.379-1.093.379c-.422 0-.844-.211-1.266-.59a13.3 13.3 0 0 1-1.516-1.98a34 34 0 0 1-1.304-2.485q-4.924 5.813-12.38 5.813c-3.535 0-6.355-1.012-8.421-3.032c-2.063-2.023-3.114-4.718-3.114-8.086c0-3.578 1.262-6.484 3.833-8.671c2.566-2.192 5.976-3.286 10.316-3.286c1.43 0 2.902.125 4.46.336c1.56.211 3.161.547 4.845.926v-3.074c0-3.2-.676-5.43-1.98-6.734C26.061 32.633 23.788 32 20.546 32c-1.473 0-2.988.168-4.547.547a33.4 33.4 0 0 0-4.547 1.433c-.676.293-1.18.461-1.473.547c-.296.082-.507.125-.675.125c-.59 0-.883-.422-.883-1.304v-2.063c0-.676.082-1.18.293-1.476c.21-.293.59-.586 1.18-.883q2.21-1.137 5.304-1.895c2.063-.547 4.254-.8 6.57-.8c5.008 0 8.672 1.136 11.032 3.41c2.316 2.273 3.492 5.726 3.492 10.359v13.64Zm-17.094 6.403c1.387 0 2.82-.254 4.336-.758c1.516-.508 2.863-1.433 4-2.695c.672-.8 1.18-1.684 1.43-2.695c.254-1.012.422-2.23.422-3.665v-1.765a34 34 0 0 0-3.871-.719a32 32 0 0 0-3.961-.25c-2.82 0-4.883.547-6.274 1.684c-1.387 1.136-2.062 2.734-2.062 4.84c0 1.98.504 3.453 1.558 4.464c1.012 1.051 2.485 1.559 4.422 1.559m33.809 4.547c-.758 0-1.262-.125-1.598-.422c-.34-.254-.633-.84-.887-1.64L40.715 29.98c-.25-.843-.38-1.39-.38-1.687c0-.672.337-1.05 1.013-1.05h4.125c.8 0 1.347.124 1.644.421c.336.25.59.84.84 1.64l7.074 27.876l6.57-27.875c.208-.84.462-1.39.797-1.64c.34-.255.93-.423 1.688-.423h3.367c.8 0 1.348.125 1.684.422c.336.25.633.84.8 1.64l6.653 28.212l7.285-28.211c.25-.84.547-1.39.84-1.64c.336-.255.887-.423 1.644-.423h3.914c.676 0 1.055.336 1.055 1.051c0 .21-.043.422-.086.676s-.125.59-.293 1.05L80.801 62.57c-.254.84-.547 1.387-.887 1.64c-.336.255-.883.423-1.598.423h-3.62c-.801 0-1.348-.13-1.684-.422c-.34-.297-.633-.844-.801-1.684l-6.527-27.16l-6.485 27.117c-.21.844-.46 1.391-.8 1.684c-.337.297-.926.422-1.684.422Zm54.105 1.137c-2.187 0-4.379-.254-6.484-.758s-3.746-1.055-4.84-1.684c-.676-.379-1.137-.8-1.305-1.18a2.9 2.9 0 0 1-.254-1.18v-2.148c0-.882.336-1.304.97-1.304q.376 0 .757.129c.25.082.629.25 1.05.418a23 23 0 0 0 4.634 1.476c1.683.336 3.324.504 5.011.504c2.653 0 4.715-.465 6.145-1.39c1.433-.926 2.191-2.274 2.191-4c0-1.18-.379-2.145-1.136-2.946c-.758-.8-2.192-1.516-4.254-2.191l-6.106-1.895c-3.074-.969-5.348-2.398-6.734-4.293c-1.39-1.855-2.106-3.918-2.106-6.105q0-2.655 1.137-4.676a10.8 10.8 0 0 1 3.031-3.453c1.262-.965 2.696-1.684 4.38-2.188s3.452-.715 5.304-.715c.926 0 1.894.043 2.82.168c.969.125 1.852.293 2.738.461c.84.211 1.641.422 2.399.676q1.137.379 1.77.758c.59.336 1.011.672 1.261 1.05q.38.509.379 1.391v1.98c0 .884-.336 1.348-.969 1.348c-.336 0-.883-.171-1.597-.507q-3.604-1.641-8.086-1.641c-2.399 0-4.293.379-5.598 1.18c-1.309.797-1.98 2.02-1.98 3.746c0 1.18.421 2.191 1.261 2.988c.844.8 2.403 1.602 4.633 2.316l5.98 1.895c3.032.969 5.22 2.316 6.524 4.043s1.938 3.707 1.938 5.895c0 1.812-.38 3.453-1.094 4.882c-.758 1.434-1.77 2.696-3.074 3.707c-1.305 1.051-2.864 1.809-4.672 2.36c-1.895.586-3.875.883-6.024.883m0 0",
+    "viewBox": "0 0 128 128",
+    "parts": [
+      {
+        "path": "M36.379 53.64c0 1.56.168 2.825.465 3.75c.336.926.758 1.938 1.347 3.032c.207.336.293.672.293.969c0 .418-.254.84-.8 1.261l-2.653 1.77c-.379.25-.758.379-1.093.379c-.422 0-.844-.211-1.266-.59a13.3 13.3 0 0 1-1.516-1.98a34 34 0 0 1-1.304-2.485q-4.924 5.813-12.38 5.813c-3.535 0-6.355-1.012-8.421-3.032c-2.063-2.023-3.114-4.718-3.114-8.086c0-3.578 1.262-6.484 3.833-8.671c2.566-2.192 5.976-3.286 10.316-3.286c1.43 0 2.902.125 4.46.336c1.56.211 3.161.547 4.845.926v-3.074c0-3.2-.676-5.43-1.98-6.734C26.061 32.633 23.788 32 20.546 32c-1.473 0-2.988.168-4.547.547a33.4 33.4 0 0 0-4.547 1.433c-.676.293-1.18.461-1.473.547c-.296.082-.507.125-.675.125c-.59 0-.883-.422-.883-1.304v-2.063c0-.676.082-1.18.293-1.476c.21-.293.59-.586 1.18-.883q2.21-1.137 5.304-1.895c2.063-.547 4.254-.8 6.57-.8c5.008 0 8.672 1.136 11.032 3.41c2.316 2.273 3.492 5.726 3.492 10.359v13.64Zm-17.094 6.403c1.387 0 2.82-.254 4.336-.758c1.516-.508 2.863-1.433 4-2.695c.672-.8 1.18-1.684 1.43-2.695c.254-1.012.422-2.23.422-3.665v-1.765a34 34 0 0 0-3.871-.719a32 32 0 0 0-3.961-.25c-2.82 0-4.883.547-6.274 1.684c-1.387 1.136-2.062 2.734-2.062 4.84c0 1.98.504 3.453 1.558 4.464c1.012 1.051 2.485 1.559 4.422 1.559m33.809 4.547c-.758 0-1.262-.125-1.598-.422c-.34-.254-.633-.84-.887-1.64L40.715 29.98c-.25-.843-.38-1.39-.38-1.687c0-.672.337-1.05 1.013-1.05h4.125c.8 0 1.347.124 1.644.421c.336.25.59.84.84 1.64l7.074 27.876l6.57-27.875c.208-.84.462-1.39.797-1.64c.34-.255.93-.423 1.688-.423h3.367c.8 0 1.348.125 1.684.422c.336.25.633.84.8 1.64l6.653 28.212l7.285-28.211c.25-.84.547-1.39.84-1.64c.336-.255.887-.423 1.644-.423h3.914c.676 0 1.055.336 1.055 1.051c0 .21-.043.422-.086.676s-.125.59-.293 1.05L80.801 62.57c-.254.84-.547 1.387-.887 1.64c-.336.255-.883.423-1.598.423h-3.62c-.801 0-1.348-.13-1.684-.422c-.34-.297-.633-.844-.801-1.684l-6.527-27.16l-6.485 27.117c-.21.844-.46 1.391-.8 1.684c-.337.297-.926.422-1.684.422Zm54.105 1.137c-2.187 0-4.379-.254-6.484-.758s-3.746-1.055-4.84-1.684c-.676-.379-1.137-.8-1.305-1.18a2.9 2.9 0 0 1-.254-1.18v-2.148c0-.882.336-1.304.97-1.304q.376 0 .757.129c.25.082.629.25 1.05.418a23 23 0 0 0 4.634 1.476c1.683.336 3.324.504 5.011.504c2.653 0 4.715-.465 6.145-1.39c1.433-.926 2.191-2.274 2.191-4c0-1.18-.379-2.145-1.136-2.946c-.758-.8-2.192-1.516-4.254-2.191l-6.106-1.895c-3.074-.969-5.348-2.398-6.734-4.293c-1.39-1.855-2.106-3.918-2.106-6.105q0-2.655 1.137-4.676a10.8 10.8 0 0 1 3.031-3.453c1.262-.965 2.696-1.684 4.38-2.188s3.452-.715 5.304-.715c.926 0 1.894.043 2.82.168c.969.125 1.852.293 2.738.461c.84.211 1.641.422 2.399.676q1.137.379 1.77.758c.59.336 1.011.672 1.261 1.05q.38.509.379 1.391v1.98c0 .884-.336 1.348-.969 1.348c-.336 0-.883-.171-1.597-.507q-3.604-1.641-8.086-1.641c-2.399 0-4.293.379-5.598 1.18c-1.309.797-1.98 2.02-1.98 3.746c0 1.18.421 2.191 1.261 2.988c.844.8 2.403 1.602 4.633 2.316l5.98 1.895c3.032.969 5.22 2.316 6.524 4.043s1.938 3.707 1.938 5.895c0 1.812-.38 3.453-1.094 4.882c-.758 1.434-1.77 2.696-3.074 3.707c-1.305 1.051-2.864 1.809-4.672 2.36c-1.895.586-3.875.883-6.024.883m0 0",
+        "fill": "#252f3e"
+      },
+      {
+        "path": "M118 73.348c-4.432.063-9.664 1.052-13.621 3.832c-1.223.883-1.012 2.062.336 1.894c4.508-.547 14.44-1.726 16.21.547c1.77 2.23-1.976 11.62-3.663 15.79c-.504 1.26.59 1.769 1.726.8c7.41-6.231 9.348-19.242 7.832-21.137c-.757-.925-4.388-1.79-8.82-1.726M1.63 75.859c-.927.116-1.347 1.236-.368 2.121c16.508 14.902 38.359 23.872 62.613 23.872c17.305 0 37.43-5.43 51.281-15.66c2.273-1.688.297-4.254-2.02-3.204c-15.534 6.57-32.421 9.77-47.788 9.77c-22.778 0-44.8-6.273-62.653-16.633c-.39-.231-.755-.304-1.064-.266z",
+        "fill": "#ff9900"
+      }
+    ],
+    "attribution": "The MIT License (MIT)\n\nCopyright (c) 2015 konpa\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nSource: https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json"
+  },
+  {
+    "id": "brand-googlecloud",
+    "name": "Google Cloud",
+    "category": "Platforms",
+    "source": "https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json",
+    "license": "MIT",
+    "path": "M80.6 40.3h.4l-.2-.2l14-14v-.3c-11.8-10.4-28.1-14-43.2-9.5S24.9 32.8 20.7 48c.2-.1.5-.2.8-.2c5.2-3.4 11.4-5.4 17.9-5.4c2.2 0 4.3.2 6.4.6c.1-.1.2-.1.3-.1c9-9.9 24.2-11.1 34.6-2.6z",
+    "viewBox": "0 0 128 128",
+    "parts": [
+      {
+        "path": "M80.6 40.3h.4l-.2-.2l14-14v-.3c-11.8-10.4-28.1-14-43.2-9.5S24.9 32.8 20.7 48c.2-.1.5-.2.8-.2c5.2-3.4 11.4-5.4 17.9-5.4c2.2 0 4.3.2 6.4.6c.1-.1.2-.1.3-.1c9-9.9 24.2-11.1 34.6-2.6z",
+        "fill": "#ea4535"
+      },
+      {
+        "path": "M108.1 47.8c-2.3-8.5-7.1-16.2-13.8-22.1L80 39.9c6 4.9 9.5 12.3 9.3 20v2.5c16.9 0 16.9 25.2 0 25.2H63.9v20h-.1l.1.2h25.4c14.6.1 27.5-9.3 31.8-23.1s-1-28.8-13-36.9",
+        "fill": "#557ebf"
+      },
+      {
+        "path": "M39 107.9h26.3V87.7H39c-1.9 0-3.7-.4-5.4-1.1l-15.2 14.6v.2c6 4.3 13.2 6.6 20.7 6.6z",
+        "fill": "#36a852"
+      },
+      {
+        "path": "M40.2 41.9c-14.9.1-28.1 9.3-32.9 22.8c-4.8 13.6 0 28.5 11.8 37.3l15.6-14.9c-8.6-3.7-10.6-14.5-4-20.8c6.6-6.4 17.8-4.4 21.7 3.8L68 55.2C61.4 46.9 51.1 42 40.2 42.1z",
+        "fill": "#f9bc15"
+      }
+    ],
+    "attribution": "The MIT License (MIT)\n\nCopyright (c) 2015 konpa\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nSource: https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json"
+  },
+  {
+    "id": "brand-npm",
+    "name": "npm",
+    "category": "Development",
+    "source": "https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json",
+    "license": "MIT",
+    "path": "M0 7.062C0 3.225 3.225 0 7.062 0h113.88c3.838 0 7.063 3.225 7.063 7.062v113.88c0 3.838-3.225 7.063-7.063 7.063H7.062c-3.837 0-7.062-3.225-7.062-7.063zm23.69 97.518h40.395l.05-58.532h19.494l-.05 58.581h19.543l.05-78.075l-78.075-.1l-.1 78.126z",
+    "viewBox": "0 0 128 128",
+    "parts": [
+      {
+        "path": "M0 7.062C0 3.225 3.225 0 7.062 0h113.88c3.838 0 7.063 3.225 7.063 7.062v113.88c0 3.838-3.225 7.063-7.063 7.063H7.062c-3.837 0-7.062-3.225-7.062-7.063zm23.69 97.518h40.395l.05-58.532h19.494l-.05 58.581h19.543l.05-78.075l-78.075-.1l-.1 78.126z",
+        "fill": "#cb3837"
+      },
+      {
+        "path": "M25.105 65.52V26.512H40.96c8.72 0 26.274.034 39.008.075l23.153.075v77.866H83.645v-58.54H64.057v58.54H25.105z",
+        "fill": "#ffffff"
+      }
+    ],
+    "attribution": "The MIT License (MIT)\n\nCopyright (c) 2015 konpa\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nSource: https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json"
+  },
+  {
+    "id": "brand-storybook",
+    "name": "Storybook",
+    "category": "Development",
+    "source": "https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json",
+    "license": "MIT",
+    "path": "m107.346 2.012l-6.914.431l.539 14.377c.028.795-.889 1.259-1.514.766l-4.63-3.65l-5.485 4.162a.934.934 0 0 1-1.498-.784l.617-14.123L19.873 7.48a6.264 6.264 0 0 0-5.87 6.488l3.86 102.838a6.264 6.264 0 0 0 5.98 6.023l83.612 3.754a6.27 6.27 0 0 0 4.609-1.73a6.26 6.26 0 0 0 1.936-4.526V8.264a6.26 6.26 0 0 0-1.975-4.566a6.26 6.26 0 0 0-4.679-1.686m-41.46 21.187c16.308 0 25.214 8.723 25.214 25.319c-2.204 1.713-18.62 2.88-18.62.443c.346-9.3-3.817-9.707-6.13-9.707c-2.198 0-5.899.662-5.899 5.644c0 12.288 31.69 11.625 31.69 36.424c0 13.95-11.335 21.655-25.791 21.655c-14.92 0-27.957-6.036-26.485-26.963c.578-2.457 19.545-1.873 19.545 0c-.23 8.635 1.735 11.175 6.707 11.175c3.817 0 5.553-2.103 5.553-5.646c0-12.621-31.227-13.063-31.227-36.201c0-13.285 9.138-22.143 25.444-22.143z",
+    "viewBox": "0 0 128 128",
+    "parts": [
+      {
+        "path": "m107.346 2.012l-6.914.431l.539 14.377c.028.795-.889 1.259-1.514.766l-4.63-3.65l-5.485 4.162a.934.934 0 0 1-1.498-.784l.617-14.123L19.873 7.48a6.264 6.264 0 0 0-5.87 6.488l3.86 102.838a6.264 6.264 0 0 0 5.98 6.023l83.612 3.754a6.27 6.27 0 0 0 4.609-1.73a6.26 6.26 0 0 0 1.936-4.526V8.264a6.26 6.26 0 0 0-1.975-4.566a6.26 6.26 0 0 0-4.679-1.686m-41.46 21.187c16.308 0 25.214 8.723 25.214 25.319c-2.204 1.713-18.62 2.88-18.62.443c.346-9.3-3.817-9.707-6.13-9.707c-2.198 0-5.899.662-5.899 5.644c0 12.288 31.69 11.625 31.69 36.424c0 13.95-11.335 21.655-25.791 21.655c-14.92 0-27.957-6.036-26.485-26.963c.578-2.457 19.545-1.873 19.545 0c-.23 8.635 1.735 11.175 6.707 11.175c3.817 0 5.553-2.103 5.553-5.646c0-12.621-31.227-13.063-31.227-36.201c0-13.285 9.138-22.143 25.444-22.143z",
+        "fill": "#ff4785"
+      }
+    ],
+    "attribution": "The MIT License (MIT)\n\nCopyright (c) 2015 konpa\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nSource: https://github.com/iconify/icon-sets/blob/69ca5094ddd4aad6d797e689bb13ee8b692ae232/json/devicon.json"
+  },
+  {
+    "id": "brand-microsoft",
+    "name": "Microsoft",
+    "category": "Platforms",
+    "source": "https://raw.githubusercontent.com/gilbarbara/logos/4a5b550414be64d5c007574cd395d910d50e8950/logos/microsoft-icon.svg",
+    "license": "CC0-1.0",
+    "path": "M121.666095 121.666095L0 121.666095L0 0L121.666095 0Z",
+    "viewBox": "0 0 256 256",
+    "parts": [
+      {
+        "path": "M121.666095 121.666095L0 121.666095L0 0L121.666095 0Z",
+        "fill": "#F1511B"
+      },
+      {
+        "path": "M256 121.666095L134.335356 121.666095L134.335356 0L256 0Z",
+        "fill": "#80CC28"
+      },
+      {
+        "path": "M121.663194 256.002188L0 256.002188L0 134.336095L121.663194 134.336095Z",
+        "fill": "#00ADEF"
+      },
+      {
+        "path": "M256 256.002188L134.335356 256.002188L134.335356 134.336095L256 134.336095Z",
+        "fill": "#FBBC09"
+      }
+    ],
+    "attribution": "CC0 1.0 Universal\n\nStatement of Purpose\n\nThe laws of most jurisdictions throughout the world automatically confer\nexclusive Copyright and Related Rights (defined below) upon the creator and\nsubsequent owner(s) (each and all, an \"owner\") of an original work of\nauthorship and/or a database (each, a \"Work\").\n\nCertain owners wish to permanently relinquish those rights to a Work for the\npurpose of contributing to a commons of creative, cultural and scientific\nworks (\"Commons\") that the public can reliably and without fear of later\nclaims of infringement build upon, modify, incorporate in other works, reuse\nand redistribute as freely as possible in any form whatsoever and for any\npurposes, including without limitation commercial purposes. These owners may\ncontribute to the Commons to promote the ideal of a free culture and the\nfurther production of creative, cultural and scientific works, or to gain\nreputation or greater distribution for their Work in part through the use and\nefforts of others.\n\nFor these and/or other purposes and motivations, and without any expectation\nof additional consideration or compensation, the person associating CC0 with a\nWork (the \"Affirmer\"), to the extent that he or she is an owner of Copyright\nand Related Rights in the Work, voluntarily elects to apply CC0 to the Work\nand publicly distribute the Work under its terms, with knowledge of his or her\nCopyright and Related Rights in the Work and the meaning and intended legal\neffect of CC0 on those rights.\n\n1. Copyright and Related Rights. A Work made available under CC0 may be\nprotected by copyright and related or neighboring rights (\"Copyright and\nRelated Rights\"). Copyright and Related Rights include, but are not limited\nto, the following:\n\n  i. the right to reproduce, adapt, distribute, perform, display, communicate,\n  and translate a Work;\n\n  ii. moral rights retained by the original author(s) and/or performer(s);\n\n  iii. publicity and privacy rights pertaining to a person's image or likeness\n  depicted in a Work;\n\n  iv. rights protecting against unfair competition in regards to a Work,\n  subject to the limitations in paragraph 4(a), below;\n\n  v. rights protecting the extraction, dissemination, use and reuse of data in\n  a Work;\n\n  vi. database rights (such as those arising under Directive 96/9/EC of the\n  European Parliament and of the Council of 11 March 1996 on the legal\n  protection of databases, and under any national implementation thereof,\n  including any amended or successor version of such directive); and\n\n  vii. other similar, equivalent or corresponding rights throughout the world\n  based on applicable law or treaty, and any national implementations thereof.\n\n2. Waiver. To the greatest extent permitted by, but not in contravention of,\napplicable law, Affirmer hereby overtly, fully, permanently, irrevocably and\nunconditionally waives, abandons, and surrenders all of Affirmer's Copyright\nand Related Rights and associated claims and causes of action, whether now\nknown or unknown (including existing as well as future claims and causes of\naction), in the Work (i) in all territories worldwide, (ii) for the maximum\nduration provided by applicable law or treaty (including future time\nextensions), (iii) in any current or future medium and for any number of\ncopies, and (iv) for any purpose whatsoever, including without limitation\ncommercial, advertising or promotional purposes (the \"Waiver\"). Affirmer makes\nthe Waiver for the benefit of each member of the public at large and to the\ndetriment of Affirmer's heirs and successors, fully intending that such Waiver\nshall not be subject to revocation, rescission, cancellation, termination, or\nany other legal or equitable action to disrupt the quiet enjoyment of the Work\nby the public as contemplated by Affirmer's express Statement of Purpose.\n\n3. Public License Fallback. Should any part of the Waiver for any reason be\njudged legally invalid or ineffective under applicable law, then the Waiver\nshall be preserved to the maximum extent permitted taking into account\nAffirmer's express Statement of Purpose. In addition, to the extent the Waiver\nis so judged Affirmer hereby grants to each affected person a royalty-free,\nnon transferable, non sublicensable, non exclusive, irrevocable and\nunconditional license to exercise Affirmer's Copyright and Related Rights in\nthe Work (i) in all territories worldwide, (ii) for the maximum duration\nprovided by applicable law or treaty (including future time extensions), (iii)\nin any current or future medium and for any number of copies, and (iv) for any\npurpose whatsoever, including without limitation commercial, advertising or\npromotional purposes (the \"License\"). The License shall be deemed effective as\nof the date CC0 was applied by Affirmer to the Work. Should any part of the\nLicense for any reason be judged legally invalid or ineffective under\napplicable law, such partial invalidity or ineffectiveness shall not\ninvalidate the remainder of the License, and in such case Affirmer hereby\naffirms that he or she will not (i) exercise any of his or her remaining\nCopyright and Related Rights in the Work or (ii) assert any associated claims\nand causes of action with respect to the Work, in either case contrary to\nAffirmer's express Statement of Purpose.\n\n4. Limitations and Disclaimers.\n\n  a. No trademark or patent rights held by Affirmer are waived, abandoned,\n  surrendered, licensed or otherwise affected by this document.\n\n  b. Affirmer offers the Work as-is and makes no representations or warranties\n  of any kind concerning the Work, express, implied, statutory or otherwise,\n  including without limitation warranties of title, merchantability, fitness\n  for a particular purpose, non infringement, or the absence of latent or\n  other defects, accuracy, or the present or absence of errors, whether or not\n  discoverable, all to the greatest extent permissible under applicable law.\n\n  c. Affirmer disclaims responsibility for clearing rights of other persons\n  that may apply to the Work or any use thereof, including without limitation\n  any person's Copyright and Related Rights in the Work. Further, Affirmer\n  disclaims responsibility for obtaining any necessary consents, permissions\n  or other rights required for any use of the Work.\n\n  d. Affirmer understands and acknowledges that Creative Commons is not a\n  party to this document and has no duty or obligation with respect to this\n  CC0 or use of the Work.\n\nFor more information, please see\n<http://creativecommons.org/publicdomain/zero/1.0/>\n\nSource: https://raw.githubusercontent.com/gilbarbara/logos/4a5b550414be64d5c007574cd395d910d50e8950/logos/microsoft-icon.svg"
+  },
+  {
+    "id": "brand-claude",
+    "name": "Claude",
+    "category": "AI",
+    "source": "https://anthropic.com/press-kit",
+    "license": "LicenseRef-Claude-Brand",
+    "path": "M18.7657 62.4437L37.1822 52.1167L37.4857 51.2122L37.1822 50.7085H36.2715L33.1852 50.5208L22.6615 50.2391L13.5545 49.8636L4.70044 49.3942L2.47428 48.9248L0.399902 46.1553L0.602281 44.794L2.47428 43.5266L5.15579 43.7613L11.0754 44.1837L19.98 44.794L26.4055 45.1695L35.9679 46.1553H37.4857L37.6881 45.545L37.1822 45.1695L36.7774 44.794L27.5692 38.5508L17.6021 31.9791L12.3908 28.1769L9.60812 26.2524L8.19147 24.4686L7.58433 20.5256L10.1141 17.7091L13.5545 17.9438L14.4146 18.1785L17.9056 20.8542L25.343 26.6279L35.0572 33.7629L36.4739 34.9364L37.0443 34.5514L37.1316 34.2792L36.4739 33.1996L31.212 23.6706L25.596 13.9539L23.0663 9.91695L22.4086 7.52296C22.1538 6.51831 22.0038 5.68714 22.0038 4.65957L24.8877 0.716544L26.5067 0.200195L30.4025 0.716544L32.0215 2.12477L34.4501 7.66379L38.3458 16.3478L44.4172 28.1769L46.188 31.6975L47.1493 34.9364L47.5035 35.9222H48.1106V35.3589L48.6166 28.6933L49.5273 20.5256L50.438 10.0108L50.7415 7.05356L52.2088 3.48605L55.1433 1.56148L57.42 2.64112L59.292 5.31674L59.039 7.05356L57.926 14.2824L55.7504 25.5952L54.3337 33.1996H55.1433L56.1046 32.2138L59.9497 27.1442L66.3752 19.0704L69.2085 15.8784L72.5478 12.3579L74.6728 10.668H78.7203L81.6548 15.0804L80.3394 19.6337L76.1906 24.8911L72.7502 29.3504L67.8172 35.9595L64.7562 41.2734L65.0307 41.7118L65.7681 41.6489L76.8989 39.255L82.9197 38.1753L90.1041 36.9549L93.3422 38.457L93.6963 40.006L92.4315 43.151L84.7411 45.0287L75.7353 46.8594L62.3244 50.0164L62.1759 50.1358L62.3512 50.3958L68.399 50.9432L70.9794 51.084H77.3037L89.0922 51.9759L92.1785 53.9944L93.9999 56.4822L93.6963 58.4068L88.9404 60.8008L82.5655 59.2987L67.6401 55.7312L62.5301 54.4638H61.8217V54.8862L66.0717 59.064L73.9139 66.1051L83.6786 75.2116L84.1845 77.4648L82.9197 79.2485L81.6042 79.0608L73.0032 72.5829L69.6639 69.6726L62.1759 63.3356H61.67V63.9928L63.3902 66.5276L72.5478 80.2812L73.0032 84.5059L72.3454 85.8672L69.9675 86.7121L67.3871 86.2427L61.9735 78.6852L56.4587 70.2359L52.0064 62.6315L51.4687 62.971L48.8189 91.2654L47.6047 92.7206L44.7714 93.8002L42.3934 92.0164L41.1286 89.1061L42.3934 83.3324L43.9113 75.8219L45.1255 69.8604L46.2386 62.4437L46.9184 59.9661L46.8583 59.8003L46.3153 59.8916L40.7238 67.5603L32.2239 79.0608L25.4948 86.2427L23.8758 86.8999L21.0931 85.4447L21.3461 82.863L22.9145 80.5629L32.2239 68.7338L37.8399 61.3641L41.4594 57.1337L41.4242 56.5218L41.2244 56.5048L16.489 72.6299L12.0873 73.1932L10.1647 71.4094L10.4176 68.4991L11.3283 67.5603L18.7657 62.4437Z",
+    "viewBox": "0 0 94 94",
+    "parts": [
+      {
+        "path": "M18.7657 62.4437L37.1822 52.1167L37.4857 51.2122L37.1822 50.7085H36.2715L33.1852 50.5208L22.6615 50.2391L13.5545 49.8636L4.70044 49.3942L2.47428 48.9248L0.399902 46.1553L0.602281 44.794L2.47428 43.5266L5.15579 43.7613L11.0754 44.1837L19.98 44.794L26.4055 45.1695L35.9679 46.1553H37.4857L37.6881 45.545L37.1822 45.1695L36.7774 44.794L27.5692 38.5508L17.6021 31.9791L12.3908 28.1769L9.60812 26.2524L8.19147 24.4686L7.58433 20.5256L10.1141 17.7091L13.5545 17.9438L14.4146 18.1785L17.9056 20.8542L25.343 26.6279L35.0572 33.7629L36.4739 34.9364L37.0443 34.5514L37.1316 34.2792L36.4739 33.1996L31.212 23.6706L25.596 13.9539L23.0663 9.91695L22.4086 7.52296C22.1538 6.51831 22.0038 5.68714 22.0038 4.65957L24.8877 0.716544L26.5067 0.200195L30.4025 0.716544L32.0215 2.12477L34.4501 7.66379L38.3458 16.3478L44.4172 28.1769L46.188 31.6975L47.1493 34.9364L47.5035 35.9222H48.1106V35.3589L48.6166 28.6933L49.5273 20.5256L50.438 10.0108L50.7415 7.05356L52.2088 3.48605L55.1433 1.56148L57.42 2.64112L59.292 5.31674L59.039 7.05356L57.926 14.2824L55.7504 25.5952L54.3337 33.1996H55.1433L56.1046 32.2138L59.9497 27.1442L66.3752 19.0704L69.2085 15.8784L72.5478 12.3579L74.6728 10.668H78.7203L81.6548 15.0804L80.3394 19.6337L76.1906 24.8911L72.7502 29.3504L67.8172 35.9595L64.7562 41.2734L65.0307 41.7118L65.7681 41.6489L76.8989 39.255L82.9197 38.1753L90.1041 36.9549L93.3422 38.457L93.6963 40.006L92.4315 43.151L84.7411 45.0287L75.7353 46.8594L62.3244 50.0164L62.1759 50.1358L62.3512 50.3958L68.399 50.9432L70.9794 51.084H77.3037L89.0922 51.9759L92.1785 53.9944L93.9999 56.4822L93.6963 58.4068L88.9404 60.8008L82.5655 59.2987L67.6401 55.7312L62.5301 54.4638H61.8217V54.8862L66.0717 59.064L73.9139 66.1051L83.6786 75.2116L84.1845 77.4648L82.9197 79.2485L81.6042 79.0608L73.0032 72.5829L69.6639 69.6726L62.1759 63.3356H61.67V63.9928L63.3902 66.5276L72.5478 80.2812L73.0032 84.5059L72.3454 85.8672L69.9675 86.7121L67.3871 86.2427L61.9735 78.6852L56.4587 70.2359L52.0064 62.6315L51.4687 62.971L48.8189 91.2654L47.6047 92.7206L44.7714 93.8002L42.3934 92.0164L41.1286 89.1061L42.3934 83.3324L43.9113 75.8219L45.1255 69.8604L46.2386 62.4437L46.9184 59.9661L46.8583 59.8003L46.3153 59.8916L40.7238 67.5603L32.2239 79.0608L25.4948 86.2427L23.8758 86.8999L21.0931 85.4447L21.3461 82.863L22.9145 80.5629L32.2239 68.7338L37.8399 61.3641L41.4594 57.1337L41.4242 56.5218L41.2244 56.5048L16.489 72.6299L12.0873 73.1932L10.1647 71.4094L10.4176 68.4991L11.3283 67.5603L18.7657 62.4437Z",
+        "fill": "#D97757"
+      }
+    ],
+    "attribution": "Claude is a trademark of its respective owner.\nOfficial brand artwork, retained for product identification. No affiliation or endorsement.\nNo open artwork or trademark license is asserted; the owner's brand guidelines and terms apply.\nBrand resource: https://www.anthropic.com/news\nSource: https://anthropic.com/press-kit\nArchive member: Anthropic media resources/Anthropic logos/Claude logos/3 Claude Spark/SVG/Claude Spark - Clay.svg\nOriginal SHA-256: 6d53db4be375e899c937c26cf16684a80d6e869b1928d72b37748bef2560e219\nOriginal paths and solid paints. SVG packaging and non-rendering metadata normalized.\nSource: https://anthropic.com/press-kit"
+  },
+  {
+    "id": "brand-openai",
+    "name": "OpenAI",
+    "category": "AI",
+    "source": "https://cdn.openai.com/brand/openai-logos.zip",
+    "license": "LicenseRef-OpenAI-Brand",
+    "path": "M508.749 317.399C516.777 287.314 508.991 253.884 485.389 230.282C461.788 206.681 428.36 198.895 398.273 206.923C376.231 184.928 343.39 174.956 311.148 183.596C278.906 192.234 255.45 217.292 247.36 247.361C217.291 255.451 192.233 278.91 183.595 311.149C174.957 343.391 184.927 376.232 206.924 398.274C198.896 428.359 206.683 461.789 230.284 485.391C253.885 508.992 287.313 516.779 317.401 508.75C339.442 530.745 372.286 540.717 404.525 532.079C436.767 523.441 460.223 498.384 468.313 468.315C498.383 460.224 523.44 436.766 532.078 404.526C540.716 372.285 530.747 339.443 508.749 317.402V317.399ZM470.899 244.776C486.892 260.77 493.488 282.601 490.687 303.412L415.577 260.046C412.411 258.218 408.509 258.218 405.345 260.046L317.401 310.82V277.526C317.401 275.191 318.652 273.005 320.676 271.837L387.644 233.174C414.178 218.353 448.346 222.223 470.901 244.776H470.899ZM357.837 311.144L398.275 334.491V381.185L357.837 404.532L317.398 381.185V334.491L357.837 311.144ZM264.776 269.693C265.207 239.305 285.644 211.649 316.453 203.393C338.3 197.54 360.505 202.744 377.127 215.573L302.014 258.937C298.848 260.764 296.898 264.144 296.898 267.798V369.346L268.065 352.699C266.043 351.531 264.776 349.353 264.776 347.017V269.691V269.693ZM203.391 316.454C209.244 294.608 224.854 277.978 244.276 269.999V356.73C244.276 360.384 246.226 363.763 249.392 365.591L337.337 416.365L308.503 433.013C306.481 434.181 303.961 434.188 301.939 433.02L234.971 394.357C208.868 378.789 195.138 347.261 203.391 316.454ZM244.775 470.9C228.781 454.906 222.186 433.075 224.986 412.264L300.096 455.63C303.263 457.457 307.164 457.457 310.328 455.63L398.273 404.856V438.149C398.273 440.485 397.022 442.671 394.997 443.839L328.029 482.502C301.495 497.322 267.327 493.452 244.772 470.9H244.775ZM450.897 445.982C450.466 476.371 430.029 504.027 399.22 512.283C377.373 518.136 355.168 512.932 338.547 500.102L413.659 456.738C416.826 454.911 418.775 451.532 418.775 447.877V346.329L447.609 362.977C449.631 364.145 450.897 366.323 450.897 368.659V445.985V445.982ZM512.282 399.221C506.429 421.068 490.819 437.697 471.397 445.676V358.946C471.397 355.292 469.448 351.912 466.281 350.085L378.336 299.311L407.17 282.663C409.192 281.495 411.712 281.487 413.734 282.655L480.702 321.318C506.805 336.887 520.536 368.415 512.282 399.221Z",
+    "viewBox": "0 0 716 716",
+    "parts": [
+      {
+        "path": "M508.749 317.399C516.777 287.314 508.991 253.884 485.389 230.282C461.788 206.681 428.36 198.895 398.273 206.923C376.231 184.928 343.39 174.956 311.148 183.596C278.906 192.234 255.45 217.292 247.36 247.361C217.291 255.451 192.233 278.91 183.595 311.149C174.957 343.391 184.927 376.232 206.924 398.274C198.896 428.359 206.683 461.789 230.284 485.391C253.885 508.992 287.313 516.779 317.401 508.75C339.442 530.745 372.286 540.717 404.525 532.079C436.767 523.441 460.223 498.384 468.313 468.315C498.383 460.224 523.44 436.766 532.078 404.526C540.716 372.285 530.747 339.443 508.749 317.402V317.399ZM470.899 244.776C486.892 260.77 493.488 282.601 490.687 303.412L415.577 260.046C412.411 258.218 408.509 258.218 405.345 260.046L317.401 310.82V277.526C317.401 275.191 318.652 273.005 320.676 271.837L387.644 233.174C414.178 218.353 448.346 222.223 470.901 244.776H470.899ZM357.837 311.144L398.275 334.491V381.185L357.837 404.532L317.398 381.185V334.491L357.837 311.144ZM264.776 269.693C265.207 239.305 285.644 211.649 316.453 203.393C338.3 197.54 360.505 202.744 377.127 215.573L302.014 258.937C298.848 260.764 296.898 264.144 296.898 267.798V369.346L268.065 352.699C266.043 351.531 264.776 349.353 264.776 347.017V269.691V269.693ZM203.391 316.454C209.244 294.608 224.854 277.978 244.276 269.999V356.73C244.276 360.384 246.226 363.763 249.392 365.591L337.337 416.365L308.503 433.013C306.481 434.181 303.961 434.188 301.939 433.02L234.971 394.357C208.868 378.789 195.138 347.261 203.391 316.454ZM244.775 470.9C228.781 454.906 222.186 433.075 224.986 412.264L300.096 455.63C303.263 457.457 307.164 457.457 310.328 455.63L398.273 404.856V438.149C398.273 440.485 397.022 442.671 394.997 443.839L328.029 482.502C301.495 497.322 267.327 493.452 244.772 470.9H244.775ZM450.897 445.982C450.466 476.371 430.029 504.027 399.22 512.283C377.373 518.136 355.168 512.932 338.547 500.102L413.659 456.738C416.826 454.911 418.775 451.532 418.775 447.877V346.329L447.609 362.977C449.631 364.145 450.897 366.323 450.897 368.659V445.985V445.982ZM512.282 399.221C506.429 421.068 490.819 437.697 471.397 445.676V358.946C471.397 355.292 469.448 351.912 466.281 350.085L378.336 299.311L407.17 282.663C409.192 281.495 411.712 281.487 413.734 282.655L480.702 321.318C506.805 336.887 520.536 368.415 512.282 399.221Z",
+        "fill": "#000000"
+      }
+    ],
+    "attribution": "OpenAI is a trademark of its respective owner.\nOfficial brand artwork, retained for product identification. No affiliation or endorsement.\nNo open artwork or trademark license is asserted; the owner's brand guidelines and terms apply.\nBrand resource: https://openai.com/brand/\nSource: https://cdn.openai.com/brand/openai-logos.zip\nArchive member: OpenAI-logos/SVGs/OAI_OpenAI-Blossom_Black.svg\nOriginal SHA-256: 75c1e9fffa5e8c437bec1d67197a73992bca45d166c6ff23215185dea8fae92a\nOriginal paths and solid paints. SVG packaging and non-rendering metadata normalized.\nSource: https://cdn.openai.com/brand/openai-logos.zip"
+  },
+  {
+    "id": "brand-cursor",
+    "name": "Cursor",
+    "category": "AI",
+    "source": "https://ptht05hbb1ssoooe.public.blob.vercel-storage.com/assets/brand/cursor-brand-assets.zip",
+    "license": "LicenseRef-Cursor-Brand",
+    "path": "M457.43,125.94L244.42,2.96c-6.84-3.95-15.28-3.95-22.12,0L9.3,125.94c-5.75,3.32-9.3,9.46-9.3,16.11v247.99c0,6.65,3.55,12.79,9.3,16.11l213.01,122.98c6.84,3.95,15.28,3.95,22.12,0l213.01-122.98c5.75-3.32,9.3-9.46,9.3-16.11v-247.99c0-6.65-3.55-12.79-9.3-16.11h-.01ZM444.05,151.99l-205.63,356.16c-1.39,2.4-5.06,1.42-5.06-1.36v-233.21c0-4.66-2.49-8.97-6.53-11.31L24.87,145.67c-2.4-1.39-1.42-5.06,1.36-5.06h411.26c5.84,0,9.49,6.33,6.57,11.39h-.01Z",
+    "viewBox": "0 0 466.73 532.09",
+    "parts": [
+      {
+        "path": "M457.43,125.94L244.42,2.96c-6.84-3.95-15.28-3.95-22.12,0L9.3,125.94c-5.75,3.32-9.3,9.46-9.3,16.11v247.99c0,6.65,3.55,12.79,9.3,16.11l213.01,122.98c6.84,3.95,15.28,3.95,22.12,0l213.01-122.98c5.75-3.32,9.3-9.46,9.3-16.11v-247.99c0-6.65-3.55-12.79-9.3-16.11h-.01ZM444.05,151.99l-205.63,356.16c-1.39,2.4-5.06,1.42-5.06-1.36v-233.21c0-4.66-2.49-8.97-6.53-11.31L24.87,145.67c-2.4-1.39-1.42-5.06,1.36-5.06h411.26c5.84,0,9.49,6.33,6.57,11.39h-.01Z",
+        "fill": "#26251e"
+      }
+    ],
+    "attribution": "Cursor is a trademark of its respective owner.\nOfficial brand artwork, retained for product identification. No affiliation or endorsement.\nNo open artwork or trademark license is asserted; the owner's brand guidelines and terms apply.\nBrand resource: https://cursor.com/brand\nSource: https://ptht05hbb1ssoooe.public.blob.vercel-storage.com/assets/brand/cursor-brand-assets.zip\nArchive member: General Logos/Cube/SVG/CUBE_2D_LIGHT.svg\nOriginal SHA-256: c483c02f78eb2619778fdd959e72a9adfac4844854472cd2653d4cbfd60e4d71\nOriginal path with its source .st0 fill #26251e resolved inline.\nSource: https://ptht05hbb1ssoooe.public.blob.vercel-storage.com/assets/brand/cursor-brand-assets.zip"
+  },
+  {
+    "id": "brand-opencode",
+    "name": "OpenCode",
+    "category": "AI",
+    "source": "https://opencode.ai/opencode-brand-assets.zip",
+    "license": "LicenseRef-OpenCode-Brand",
+    "path": "M180 240H60V120H180V240Z",
+    "viewBox": "0 0 240 300",
+    "parts": [
+      {
+        "path": "M180 240H60V120H180V240Z",
+        "fill": "#CFCECD"
+      },
+      {
+        "path": "M180 60H60V240H180V60ZM240 300H0V0H240V300Z",
+        "fill": "#211E1E"
+      }
+    ],
+    "attribution": "OpenCode is a trademark of its respective owner.\nOfficial brand artwork, retained for product identification. No affiliation or endorsement.\nNo open artwork or trademark license is asserted; the owner's brand guidelines and terms apply.\nBrand resource: https://opencode.ai/brand\nSource: https://opencode.ai/opencode-brand-assets.zip\nArchive member: OpenCode Brand Assets/Logo/opencode-logo-light.svg\nOriginal SHA-256: 5eeb3a5f14dbbccc03111296ecfd3cd05cc98844150d4f9d77ba921847953380\nOriginal two painted paths; only full-viewBox mask/clip wrappers and their white mask geometry omitted (no visual effect).\nSource: https://opencode.ai/opencode-brand-assets.zip"
+  },
+  {
+    "id": "brand-grok",
+    "name": "Grok",
+    "category": "AI",
+    "source": "https://grok.com",
+    "license": "LicenseRef-Grok-Brand",
+    "path": "M13.2371 21.0407L24.3186 12.8506C24.8619 12.4491 25.6384 12.6057 25.8973 13.2294C27.2597 16.5185 26.651 20.4712 23.9403 23.1851C21.2297 25.8989 17.4581 26.4941 14.0108 25.1386L10.2449 26.8843C15.6463 30.5806 22.2053 29.6665 26.304 25.5601C29.5551 22.3051 30.562 17.8683 29.6205 13.8673L29.629 13.8758C28.2637 7.99809 29.9647 5.64871 33.449 0.844576C33.5314 0.730667 33.6139 0.616757 33.6964 0.5L29.1113 5.09055V5.07631L13.2343 21.0436",
+    "viewBox": "0 0 34 33",
+    "parts": [
+      {
+        "path": "M13.2371 21.0407L24.3186 12.8506C24.8619 12.4491 25.6384 12.6057 25.8973 13.2294C27.2597 16.5185 26.651 20.4712 23.9403 23.1851C21.2297 25.8989 17.4581 26.4941 14.0108 25.1386L10.2449 26.8843C15.6463 30.5806 22.2053 29.6665 26.304 25.5601C29.5551 22.3051 30.562 17.8683 29.6205 13.8673L29.629 13.8758C28.2637 7.99809 29.9647 5.64871 33.449 0.844576C33.5314 0.730667 33.6139 0.616757 33.6964 0.5L29.1113 5.09055V5.07631L13.2343 21.0436",
+        "fill": "#000000"
+      },
+      {
+        "path": "M10.9503 23.0313C7.07343 19.3235 7.74185 13.5853 11.0498 10.2763C13.4959 7.82722 17.5036 6.82767 21.0021 8.2971L24.7595 6.55998C24.0826 6.07017 23.215 5.54334 22.2195 5.17313C17.7198 3.31926 12.3326 4.24192 8.67479 7.90126C5.15635 11.4239 4.0499 16.8403 5.94992 21.4622C7.36924 24.9165 5.04257 27.3598 2.69884 29.826C1.86829 30.7002 1.0349 31.5745 0.36364 32.5L10.9474 23.0341",
+        "fill": "#000000"
+      }
+    ],
+    "attribution": "Grok is a trademark of its respective owner.\nOfficial brand artwork, retained for product identification. No affiliation or endorsement.\nNo open artwork or trademark license is asserted; the owner's brand guidelines and terms apply.\nBrand resource: https://x.ai/news/designing-grok-bot\nSource: https://grok.com\nArchive member: Header SVG, paths with id=\"mark\"\nOriginal SHA-256: d2800b32682a5494ce2c9d5b5d203ed16774cfa81d98c28cb8cda79100dbea18\nExact two mark paths from the official responsive header; wordmark paths excluded, viewBox encloses the mark.\nSource: https://grok.com"
+  },
+  {
+    "id": "brand-meta",
+    "name": "Meta",
+    "category": "AI",
+    "source": "https://www.meta.com/brand/resources/meta/company-brand/",
+    "license": "LicenseRef-Meta-Brand",
+    "path": "M2080,1000c-123.3911,0-219.8478,92.936-307.164,210.9931C1652.8473,1058.2153,1552.5,1000,1432.4138,1000,1187.5862,1000,1000,1318.6207,1000,1655.8621,1000,1866.8965,1102.0956,2000,1273.1035,2000c123.0805,0,211.6-58.0259,368.9655-333.1034,0,0,65.5973-115.8413,110.7249-195.6386q23.72,38.2978,49.9647,82.5351l73.7931,124.1379C2020.2989,1918.4789,2100.39,2000,2245.5172,2000c166.5959,0,259.31-134.9233,259.31-350.3448C2504.8276,1296.5517,2313.0118,1000,2080,1000ZM1522.069,1592.4138c-127.5862,200-171.7242,244.8276-242.7587,244.8276-73.1034,0-116.5517-64.1784-116.5517-178.6207,0-244.8276,122.069-495.1724,267.5862-495.1724,78.8013,0,144.6539,45.51,245.5224,189.9131C1580.088,1500.2723,1522.069,1592.4138,1522.069,1592.4138Zm481.5283-25.178-88.23-147.1481q-35.8152-58.2482-68.8384-107.23c79.52-122.7353,145.1135-183.8919,223.1261-183.8919,162.0691,0,291.7243,238.6207,291.7243,531.7241,0,111.7242-36.5935,176.5518-112.4139,176.5518C2176.2949,1837.2414,2141.5787,1789.2474,2003.5973,1567.2358Z",
+    "viewBox": "1000 1000 1504.8276 1000",
+    "parts": [
+      {
+        "path": "M2080,1000c-123.3911,0-219.8478,92.936-307.164,210.9931C1652.8473,1058.2153,1552.5,1000,1432.4138,1000,1187.5862,1000,1000,1318.6207,1000,1655.8621,1000,1866.8965,1102.0956,2000,1273.1035,2000c123.0805,0,211.6-58.0259,368.9655-333.1034,0,0,65.5973-115.8413,110.7249-195.6386q23.72,38.2978,49.9647,82.5351l73.7931,124.1379C2020.2989,1918.4789,2100.39,2000,2245.5172,2000c166.5959,0,259.31-134.9233,259.31-350.3448C2504.8276,1296.5517,2313.0118,1000,2080,1000ZM1522.069,1592.4138c-127.5862,200-171.7242,244.8276-242.7587,244.8276-73.1034,0-116.5517-64.1784-116.5517-178.6207,0-244.8276,122.069-495.1724,267.5862-495.1724,78.8013,0,144.6539,45.51,245.5224,189.9131C1580.088,1500.2723,1522.069,1592.4138,1522.069,1592.4138Zm481.5283-25.178-88.23-147.1481q-35.8152-58.2482-68.8384-107.23c79.52-122.7353,145.1135-183.8919,223.1261-183.8919,162.0691,0,291.7243,238.6207,291.7243,531.7241,0,111.7242-36.5935,176.5518-112.4139,176.5518C2176.2949,1837.2414,2141.5787,1789.2474,2003.5973,1567.2358Z",
+        "fill": "#000000"
+      }
+    ],
+    "attribution": "Meta is a trademark of its respective owner.\nOfficial brand artwork, retained for product identification. No affiliation or endorsement.\nNo open artwork or trademark license is asserted; the owner's brand guidelines and terms apply.\nBrand resource: https://www.meta.com/brand/resources/meta/company-brand/\nSource: https://www.meta.com/brand/resources/meta/company-brand/\nArchive member: Meta_Company Lockup/3 Mono Black/RGB/Meta_lockup_mono_black_RGB.svg\nOriginal SHA-256: 2c74460b8168dec39f477ec1a4129ebc2ea1ef3951b4df551ca7f187015f7a90\nExact path from the official SVG group id=\"Symbol\"; Wordmark and non-rendering Artboard_outline omitted. ViewBox encloses the unchanged infinity symbol geometry. Identifies parent company Meta beside the Muse Code product name, not a distinct Muse Code product logo.\nSource: https://www.meta.com/brand/resources/meta/company-brand/"
+  }
+]

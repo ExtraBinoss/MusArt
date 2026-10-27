@@ -1,0 +1,485 @@
+[
+  {
+    "id": "lucide:calendar-minus-2",
+    "name": "Calendar Minus 2",
+    "viewBox": "0 0 24 24",
+    "path": "M8 2v3M16 2v3M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3ZM3 9h18M10 15h4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-off",
+    "name": "Calendar Off",
+    "viewBox": "0 0 24 24",
+    "path": "M16 2v3m2 2 20 20M21 9h-5.5M3 9h6M3.586 3.586A2 2 0 003 5v14a2 2 0 002 2h14a2 2 0 001.414-.586M8.656 3H19a2 2 0 012 2v10.344",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-plus",
+    "name": "Calendar Plus",
+    "viewBox": "0 0 24 24",
+    "path": "M16 18h6M16 2v3M19 15v6M21 11.5V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h8.3M3 9h18M8 2v3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-plus-2",
+    "name": "Calendar Plus 2",
+    "viewBox": "0 0 24 24",
+    "path": "M8 2v3M16 2v3M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3ZM3 9h18M10 15h4M12 13v4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-range",
+    "name": "Calendar Range",
+    "viewBox": "0 0 24 24",
+    "path": "M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3ZM16 2v3M3 9h18M8 2v3M17 13h-6M13 17H7M7 13h.01M17 17h.01",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-search",
+    "name": "Calendar Search",
+    "viewBox": "0 0 24 24",
+    "path": "M16 2v3M21 10.69V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h7.25m22 21-1.875-1.875M3 9h18M8 2v3M15 17A3 3 0 1 0 21 17A3 3 0 1 0 15 17",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-sync",
+    "name": "Calendar Sync",
+    "viewBox": "0 0 24 24",
+    "path": "M11 10v4h4m11 14 1.535-1.605a5 5 0 018 1.5M16 2v3m21 18-1.535 1.605a5 5 0 01-8-1.5M21 22v-4h-4M21 8.517V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h3.517M3 9h4M8 2v3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-x",
+    "name": "Calendar X",
+    "viewBox": "0 0 24 24",
+    "path": "M8 2v3M16 2v3M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3ZM3 9h18m14 13-4 4m10 13 4 4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-x-2",
+    "name": "Calendar X 2",
+    "viewBox": "0 0 24 24",
+    "path": "M16 2v3m17 16 5 5m17 21 5-5M21 12V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h8M3 9h18M8 2v3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendars",
+    "name": "Calendars",
+    "viewBox": "0 0 24 24",
+    "path": "M12 2v2M15.726 21.01A2 2 0 0 1 14 22H4a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2M18 2v2M2 13h2M8 8h14M10 3H20A2 2 0 0 1 22 5V15A2 2 0 0 1 20 17H10A2 2 0 0 1 8 15V5A2 2 0 0 1 10 3Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:camera",
+    "name": "Camera",
+    "viewBox": "0 0 24 24",
+    "path": "M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4zM9 13A3 3 0 1 0 15 13A3 3 0 1 0 9 13",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:camera-off",
+    "name": "Camera Off",
+    "viewBox": "0 0 24 24",
+    "path": "M14.564 14.558a3 3 0 1 1-4.122-4.121m2 2 20 20M20 20H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 .819-.175M9.695 4.024A2 2 0 0 1 10.004 4h3.993a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v7.344",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:can",
+    "name": "Can",
+    "viewBox": "0 0 24 24",
+    "path": "M21 10.5a9 2.5 0 01-18 0v8a9 2.5 0 0018 0zM21 10.5A9 2.5 25.32 004.59 3.47 9 2.5 25.32 0021 10.5M3 10.5a9 2.5 0 016.527-2.405M9 16.858a31 31 0 006 0",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:can-soda",
+    "name": "Can Soda",
+    "viewBox": "0 0 24 24",
+    "path": "m17 22 1.664-2.496a2 2 0 00.336-1.11V5.606a2 2 0 00-.336-1.11L17 2M18 22H6M18 2H6M5 17h14M5 7h14m7 22-1.664-2.496A2 2 0 015 18.394V5.606a2 2 0 01.336-1.11L7 2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:candy",
+    "name": "Candy",
+    "viewBox": "0 0 24 24",
+    "path": "M10 7v10.9M14 6.1V17M16 7V3a1 1 0 0 1 1.707-.707 2.5 2.5 0 0 0 2.152.717 1 1 0 0 1 1.131 1.131 2.5 2.5 0 0 0 .717 2.152A1 1 0 0 1 21 8h-4M16.536 7.465a5 5 0 0 0-7.072 0l-2 2a5 5 0 0 0 0 7.07 5 5 0 0 0 7.072 0l2-2a5 5 0 0 0 0-7.07M8 17v4a1 1 0 0 1-1.707.707 2.5 2.5 0 0 0-2.152-.717 1 1 0 0 1-1.131-1.131 2.5 2.5 0 0 0-.717-2.152A1 1 0 0 1 3 16h4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:candy-cane",
+    "name": "Candy Cane",
+    "viewBox": "0 0 24 24",
+    "path": "m10.8 5 2.111 4.223M17.75 7 15 2.1m4.874 14.647 2.12 4.24M5.7 21a2 2 0 0 1-3.5-2l8.6-14a6 6 0 0 1 10.4 6 2 2 0 1 1-3.464-2 2 2 0 1 0-3.464-2zm7.906 9.712 2.005 4.411",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:candy-off",
+    "name": "Candy Off",
+    "viewBox": "0 0 24 24",
+    "path": "M10 10v7.9M11.802 6.145a5 5 0 0 1 6.053 6.053M14 6.1v2.243m15.5 15.571-.964.964a5 5 0 0 1-7.071 0 5 5 0 0 1 0-7.07l.964-.965M16 7V3a1 1 0 0 1 1.707-.707 2.5 2.5 0 0 0 2.152.717 1 1 0 0 1 1.131 1.131 2.5 2.5 0 0 0 .717 2.152A1 1 0 0 1 21 8h-4m2 2 20 20M8 17v4a1 1 0 0 1-1.707.707 2.5 2.5 0 0 0-2.152-.717 1 1 0 0 1-1.131-1.131 2.5 2.5 0 0 0-.717-2.152A1 1 0 0 1 3 16h4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:cannabis",
+    "name": "Cannabis",
+    "viewBox": "0 0 24 24",
+    "path": "M12 22v-4M7 12c-1.5 0-4.5 1.5-5 3 3.5 1.5 6 1 6 1-1.5 1.5-2 3.5-2 5 2.5 0 4.5-1.5 6-3 1.5 1.5 3.5 3 6 3 0-1.5-.5-3.5-2-5 0 0 2.5.5 6-1-.5-1.5-3.5-3-5-3 1.5-1 4-4 4-6-2.5 0-5.5 1.5-7 3 0-2.5-.5-5-2-7-1.5 2-2 4.5-2 7-1.5-1.5-4.5-3-7-3 0 2 2.5 5 4 6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:cannabis-off",
+    "name": "Cannabis Off",
+    "viewBox": "0 0 24 24",
+    "path": "M12 22v-4c1.5 1.5 3.5 3 6 3 0-1.5-.5-3.5-2-5M13.988 8.327C13.902 6.054 13.365 3.82 12 2a9.3 9.3 0 0 0-1.445 2.9M17.375 11.725C18.882 10.53 21 7.841 21 6c-2.324 0-5.08 1.296-6.662 2.684m2 2 20 20M21.024 15.378A15 15 0 0 0 22 15c-.426-1.279-2.67-2.557-4.25-2.907M6.995 6.992C5.714 6.4 4.29 6 3 6c0 2 2.5 5 4 6-1.5 0-4.5 1.5-5 3 3.5 1.5 6 1 6 1-1.5 1.5-2 3.5-2 5 2.5 0 4.5-1.5 6-3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:captions",
+    "name": "Captions",
+    "viewBox": "0 0 24 24",
+    "path": "M5 5H19A2 2 0 0 1 21 7V17A2 2 0 0 1 19 19H5A2 2 0 0 1 3 17V7A2 2 0 0 1 5 5ZM7 15h4M15 15h2M7 11h2M13 11h4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:captions-off",
+    "name": "Captions Off",
+    "viewBox": "0 0 24 24",
+    "path": "M10.5 5H19a2 2 0 0 1 2 2v8.5M17 11h-.5M19 19H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2m2 2 20 20M7 11h4M7 15h2.5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:car",
+    "name": "Car",
+    "viewBox": "0 0 24 24",
+    "path": "M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2M5 17A2 2 0 1 0 9 17A2 2 0 1 0 5 17M9 17h6M15 17A2 2 0 1 0 19 17A2 2 0 1 0 15 17",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:car-battery",
+    "name": "Car Battery",
+    "viewBox": "0 0 24 24",
+    "path": "M14 13h4M16 15v-4M18 5v2M6 13h4M6 5v2M4 7H20A2 2 0 0 1 22 9V17A2 2 0 0 1 20 19H4A2 2 0 0 1 2 17V9A2 2 0 0 1 4 7Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:car-front",
+    "name": "Car Front",
+    "viewBox": "0 0 24 24",
+    "path": "m21 8-2 2-1.5-3.7A2 2 0 0 0 15.646 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8M7 14h.01M17 14h.01M5 10H19A2 2 0 0 1 21 12V16A2 2 0 0 1 19 18H5A2 2 0 0 1 3 16V12A2 2 0 0 1 5 10ZM5 18v2M19 18v2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:car-taxi-front",
+    "name": "Car Taxi Front",
+    "viewBox": "0 0 24 24",
+    "path": "M10 2h4m21 8-2 2-1.5-3.7A2 2 0 0 0 15.646 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8M7 14h.01M17 14h.01M5 10H19A2 2 0 0 1 21 12V16A2 2 0 0 1 19 18H5A2 2 0 0 1 3 16V12A2 2 0 0 1 5 10ZM5 18v2M19 18v2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:caravan",
+    "name": "Caravan",
+    "viewBox": "0 0 24 24",
+    "path": "M18 19V9a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v8a2 2 0 0 0 2 2h2M2 9h3a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2M22 17v1a1 1 0 0 1-1 1H10v-9a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v9M6 19A2 2 0 1 0 10 19A2 2 0 1 0 6 19",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:card-sim",
+    "name": "Card Sim",
+    "viewBox": "0 0 24 24",
+    "path": "M12 14v4M14.172 2a2 2 0 0 1 1.414.586l3.828 3.828A2 2 0 0 1 20 7.828V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM8 14h8M9 10H15A1 1 0 0 1 16 11V17A1 1 0 0 1 15 18H9A1 1 0 0 1 8 17V11A1 1 0 0 1 9 10Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:carrot",
+    "name": "Carrot",
+    "viewBox": "0 0 24 24",
+    "path": "M15 16a1 1 0 0 0-7-7q-4 4-5.987 12.385a.5.5 0 0 0 .602.602Q11 20 15 16l-3-3M15 9q4 4 7 0-3-4-7 0 4-4 0-7-4 3 0 7m8 15-2.58-2.58",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:carton",
+    "name": "Carton",
+    "viewBox": "0 0 24 24",
+    "path": "M13 22V10a2 2 0 01.539-1.367L16 6H8L5.539 8.633A2 2 0 005 10v10a2 2 0 002 2h10a2 2 0 002-2V10a2 2 0 00-.539-1.367L16 6V3a1 1 0 00-1-1H9a1 1 0 00-1 1v3M5 10h8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:carton-off",
+    "name": "Carton Off",
+    "viewBox": "0 0 24 24",
+    "path": "M10 10H5v10a2 2 0 002 2h10a2 2 0 002-2v-1M13 22v-9M13.902 8.245 16 6h-4.343M19 13.343V10a2 2 0 00-.539-1.367L16 6V3a1 1 0 00-1-1H9a1 1 0 00-.857.486m2 2 20 20M7.034 7.034 5.539 8.633A2 2 0 005 10",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:case-lower",
+    "name": "Case Lower",
+    "viewBox": "0 0 24 24",
+    "path": "M10 9v7M14 6v10M14 12.5A3.5 3.5 0 1 0 21 12.5A3.5 3.5 0 1 0 14 12.5M3 12.5A3.5 3.5 0 1 0 10 12.5A3.5 3.5 0 1 0 3 12.5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:case-sensitive",
+    "name": "Case Sensitive",
+    "viewBox": "0 0 24 24",
+    "path": "m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16M22 9v7M3.304 13h6.392M15 12.5A3.5 3.5 0 1 0 22 12.5A3.5 3.5 0 1 0 15 12.5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:case-upper",
+    "name": "Case Upper",
+    "viewBox": "0 0 24 24",
+    "path": "M15 11h4.5a1 1 0 0 1 0 5h-4a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h3a1 1 0 0 1 0 5m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16M3.304 13h6.392",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:cassette-tape",
+    "name": "Cassette Tape",
+    "viewBox": "0 0 24 24",
+    "path": "M4 4H20A2 2 0 0 1 22 6V18A2 2 0 0 1 20 20H4A2 2 0 0 1 2 18V6A2 2 0 0 1 4 4ZM6 10A2 2 0 1 0 10 10A2 2 0 1 0 6 10M8 12h8M14 10A2 2 0 1 0 18 10A2 2 0 1 0 14 10m6 20 .7-2.9A1.4 1.4 0 0 1 8.1 16h7.8a1.4 1.4 0 0 1 1.4 1l.7 3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:cast",
+    "name": "Cast",
+    "viewBox": "0 0 24 24",
+    "path": "M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6M2 12a9 9 0 0 1 8 8M2 16a5 5 0 0 1 4 4M2 20L2.01 20",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:castle",
+    "name": "Castle",
+    "viewBox": "0 0 24 24",
+    "path": "M10 5V3M14 5V3M15 21v-3a3 3 0 0 0-6 0v3M18 3v8M18 5H6M22 11H2M22 9v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9M6 3v8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:cat",
+    "name": "Cat",
+    "viewBox": "0 0 24 24",
+    "path": "M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3-9-7.56c0-1.25.5-2.4 1-3.44 0 0-1.89-6.42-.5-7 1.39-.58 4.72.23 6.5 2.23A9.04 9.04 0 0 1 12 5ZM8 14v.5M16 14v.5M11.25 16.25h1.5L12 17l-.75-.75Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:cctv",
+    "name": "Cctv",
+    "viewBox": "0 0 24 24",
+    "path": "M16.75 12h3.632a1 1 0 0 1 .894 1.447l-2.034 4.069a1 1 0 0 1-1.708.134l-2.124-2.97M17.106 9.053a1 1 0 0 1 .447 1.341l-3.106 6.211a1 1 0 0 1-1.342.447L3.61 12.3a2.92 2.92 0 0 1-1.3-3.91L3.69 5.6a2.92 2.92 0 0 1 3.92-1.3zM2 19h3.76a2 2 0 0 0 1.8-1.1L9 15M2 21v-4M7 9h.01",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:cctv-off",
+    "name": "Cctv Off",
+    "viewBox": "0 0 24 24",
+    "path": "m12.309 6.652 4.797 2.401a1 1 0 0 1 .447 1.341l-.501 1.001.605.605h2.725a1 1 0 0 1 .894 1.447l-.724 1.448m15.166 15.166-.719 1.439a1 1 0 0 1-1.342.447L3.61 12.3a2.92 2.92 0 0 1-1.3-3.91L3.69 5.6a2.9 2.9 0 0 1 .873-1.037M2 19h3.76a2 2 0 0 0 1.8-1.1l1.441-2.902m2 2 20 20M2 21v-4M7 9h.01",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-area",
+    "name": "Chart Area",
+    "viewBox": "0 0 24 24",
+    "path": "M3 3v16a2 2 0 0 0 2 2h16M7 11.207a.5.5 0 0 1 .146-.353l2-2a.5.5 0 0 1 .708 0l3.292 3.292a.5.5 0 0 0 .708 0l4.292-4.292a.5.5 0 0 1 .854.353V16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-bar",
+    "name": "Chart Bar",
+    "viewBox": "0 0 24 24",
+    "path": "M3 3v16a2 2 0 0 0 2 2h16M7 16h8M7 11h12M7 6h3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-bar-big",
+    "name": "Chart Bar Big",
+    "viewBox": "0 0 24 24",
+    "path": "M3 3v16a2 2 0 0 0 2 2h16M8 13H15A1 1 0 0 1 16 14V16A1 1 0 0 1 15 17H8A1 1 0 0 1 7 16V14A1 1 0 0 1 8 13ZM8 5H18A1 1 0 0 1 19 6V8A1 1 0 0 1 18 9H8A1 1 0 0 1 7 8V6A1 1 0 0 1 8 5Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-bar-decreasing",
+    "name": "Chart Bar Decreasing",
+    "viewBox": "0 0 24 24",
+    "path": "M3 3v16a2 2 0 0 0 2 2h16M7 11h8M7 16h3M7 6h12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-bar-increasing",
+    "name": "Chart Bar Increasing",
+    "viewBox": "0 0 24 24",
+    "path": "M3 3v16a2 2 0 0 0 2 2h16M7 11h8M7 16h12M7 6h3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-bar-stacked",
+    "name": "Chart Bar Stacked",
+    "viewBox": "0 0 24 24",
+    "path": "M11 13v4M15 5v4M3 3v16a2 2 0 0 0 2 2h16M8 13H15A1 1 0 0 1 16 14V16A1 1 0 0 1 15 17H8A1 1 0 0 1 7 16V14A1 1 0 0 1 8 13ZM8 5H18A1 1 0 0 1 19 6V8A1 1 0 0 1 18 9H8A1 1 0 0 1 7 8V6A1 1 0 0 1 8 5Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-candlestick",
+    "name": "Chart Candlestick",
+    "viewBox": "0 0 24 24",
+    "path": "M9 5v4M8 9H10A1 1 0 0 1 11 10V14A1 1 0 0 1 10 15H8A1 1 0 0 1 7 14V10A1 1 0 0 1 8 9ZM9 15v2M17 3v2M16 5H18A1 1 0 0 1 19 6V12A1 1 0 0 1 18 13H16A1 1 0 0 1 15 12V6A1 1 0 0 1 16 5ZM17 13v3M3 3v16a2 2 0 0 0 2 2h16",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-column",
+    "name": "Chart Column",
+    "viewBox": "0 0 24 24",
+    "path": "M3 3v16a2 2 0 0 0 2 2h16M18 17V9M13 17V5M8 17v-3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-column-big",
+    "name": "Chart Column Big",
+    "viewBox": "0 0 24 24",
+    "path": "M3 3v16a2 2 0 0 0 2 2h16M16 5H18A1 1 0 0 1 19 6V16A1 1 0 0 1 18 17H16A1 1 0 0 1 15 16V6A1 1 0 0 1 16 5ZM8 8H10A1 1 0 0 1 11 9V16A1 1 0 0 1 10 17H8A1 1 0 0 1 7 16V9A1 1 0 0 1 8 8Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-column-decreasing",
+    "name": "Chart Column Decreasing",
+    "viewBox": "0 0 24 24",
+    "path": "M13 17V9M18 17v-3M3 3v16a2 2 0 0 0 2 2h16M8 17V5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-column-increasing",
+    "name": "Chart Column Increasing",
+    "viewBox": "0 0 24 24",
+    "path": "M13 17V9M18 17V5M3 3v16a2 2 0 0 0 2 2h16M8 17v-3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-column-stacked",
+    "name": "Chart Column Stacked",
+    "viewBox": "0 0 24 24",
+    "path": "M11 13H7M19 9h-4M3 3v16a2 2 0 0 0 2 2h16M16 5H18A1 1 0 0 1 19 6V16A1 1 0 0 1 18 17H16A1 1 0 0 1 15 16V6A1 1 0 0 1 16 5ZM8 8H10A1 1 0 0 1 11 9V16A1 1 0 0 1 10 17H8A1 1 0 0 1 7 16V9A1 1 0 0 1 8 8Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-gantt",
+    "name": "Chart Gantt",
+    "viewBox": "0 0 24 24",
+    "path": "M10 6h8M12 16h6M3 3v16a2 2 0 0 0 2 2h16M8 11h7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-line",
+    "name": "Chart Line",
+    "viewBox": "0 0 24 24",
+    "path": "M3 3v16a2 2 0 0 0 2 2h16m19 9-5 5-4-4-3 3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-network",
+    "name": "Chart Network",
+    "viewBox": "0 0 24 24",
+    "path": "m13.11 7.664 1.78 2.672m14.162 12.788-3.324 1.424m20 4-6.06 1.515M3 3v16a2 2 0 0 0 2 2h16M10 6A2 2 0 1 0 14 6A2 2 0 1 0 10 6M14 12A2 2 0 1 0 18 12A2 2 0 1 0 14 12M7 15A2 2 0 1 0 11 15A2 2 0 1 0 7 15",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-no-axes-column",
+    "name": "Chart No Axes Column",
+    "viewBox": "0 0 24 24",
+    "path": "M5 21v-6M12 21V3M19 21V9",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-no-axes-column-decreasing",
+    "name": "Chart No Axes Column Decreasing",
+    "viewBox": "0 0 24 24",
+    "path": "M5 21V3M12 21V9M19 21v-6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-no-axes-column-increasing",
+    "name": "Chart No Axes Column Increasing",
+    "viewBox": "0 0 24 24",
+    "path": "M5 21v-6M12 21V9M19 21V3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-no-axes-combined",
+    "name": "Chart No Axes Combined",
+    "viewBox": "0 0 24 24",
+    "path": "M12 16v5M16 14.639V21M20 10.656V21m22 3-8.646 8.646a.5.5 0 0 1-.708 0L9.354 8.354a.5.5 0 0 0-.707 0L2 15M4 18.463V21M8 14.656V21",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-no-axes-gantt",
+    "name": "Chart No Axes Gantt",
+    "viewBox": "0 0 24 24",
+    "path": "M6 5h12M4 12h10M12 19h8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-pie",
+    "name": "Chart Pie",
+    "viewBox": "0 0 24 24",
+    "path": "M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1zM21.21 15.89A10 10 0 1 1 8 2.83",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-scatter",
+    "name": "Chart Scatter",
+    "viewBox": "0 0 24 24",
+    "path": "M7 7.5A0.5 0.5 0 1 0 8 7.5A0.5 0.5 0 1 0 7 7.5M18 5.5A0.5 0.5 0 1 0 19 5.5A0.5 0.5 0 1 0 18 5.5M11 11.5A0.5 0.5 0 1 0 12 11.5A0.5 0.5 0 1 0 11 11.5M7 16.5A0.5 0.5 0 1 0 8 16.5A0.5 0.5 0 1 0 7 16.5M17 14.5A0.5 0.5 0 1 0 18 14.5A0.5 0.5 0 1 0 17 14.5M3 3v16a2 2 0 0 0 2 2h16",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chart-spline",
+    "name": "Chart Spline",
+    "viewBox": "0 0 24 24",
+    "path": "M3 3v16a2 2 0 0 0 2 2h16M7 16c.5-2 1.5-7 4-7 2 0 2 3 4 3 2.5 0 4.5-5 5-7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:check",
+    "name": "Check",
+    "viewBox": "0 0 24 24",
+    "path": "M20 6 9 17l-5-5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:check-check",
+    "name": "Check Check",
+    "viewBox": "0 0 24 24",
+    "path": "M18 6 7 17l-5-5m22 10-7.5 7.5L13 16",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:check-line",
+    "name": "Check Line",
+    "viewBox": "0 0 24 24",
+    "path": "M20 4L9 15M21 19L3 19M9 15L4 10",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chef-hat",
+    "name": "Chef Hat",
+    "viewBox": "0 0 24 24",
+    "path": "M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1ZM6 17h12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:cherry",
+    "name": "Cherry",
+    "viewBox": "0 0 24 24",
+    "path": "M2 17a5 5 0 0 0 10 0c0-2.76-2.5-5-5-3-2.5-2-5 .24-5 3ZM12 17a5 5 0 0 0 10 0c0-2.76-2.5-5-5-3-2.5-2-5 .24-5 3ZM7 14c3.22-2.91 4.29-8.75 5-12 1.66 2.38 4.94 9 5 12M22 9c-4.29 0-7.14-2.33-10-7 5.71 0 10 4.67 10 7Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chess-bishop",
+    "name": "Chess Bishop",
+    "viewBox": "0 0 24 24",
+    "path": "M5 20a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zM15 18c1.5-.615 3-2.461 3-4.923C18 8.769 14.5 4.462 12 2 9.5 4.462 6 8.77 6 13.077 6 15.539 7.5 17.385 9 18m16 7-2.5 2.5M9 2h6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:chess-king",
+    "name": "Chess King",
+    "viewBox": "0 0 24 24",
+    "path": "M4 20a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zm6.7 18-1-1C4.35 15.682 3 14.09 3 12a5 5 0 0 1 4.95-5c1.584 0 2.7.455 4.05 1.818C13.35 7.455 14.466 7 16.05 7A5 5 0 0 1 21 12c0 2.082-1.359 3.673-2.7 5l-1 1M10 4h4M12 2v6.818",
+    "strokeOnly": true
+  }
+]

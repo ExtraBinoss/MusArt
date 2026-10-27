@@ -1,0 +1,380 @@
+[
+  {
+    "id": "lucide:warehouse",
+    "name": "Warehouse",
+    "viewBox": "0 0 24 24",
+    "path": "M18 21V10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v11M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 1.132-1.803l7.95-3.974a2 2 0 0 1 1.837 0l7.948 3.974A2 2 0 0 1 22 8zM6 13h12M6 17h12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:washing-machine",
+    "name": "Washing Machine",
+    "viewBox": "0 0 24 24",
+    "path": "M3 6h3M17 6h.01M5 2H19A2 2 0 0 1 21 4V20A2 2 0 0 1 19 22H5A2 2 0 0 1 3 20V4A2 2 0 0 1 5 2ZM7 13A5 5 0 1 0 17 13A5 5 0 1 0 7 13M12 18a2.5 2.5 0 0 0 0-5 2.5 2.5 0 0 1 0-5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:watch",
+    "name": "Watch",
+    "viewBox": "0 0 24 24",
+    "path": "M12 10v2.2l1.6 1m16.13 7.66-.81-4.05a2 2 0 0 0-2-1.61h-2.68a2 2 0 0 0-2 1.61l-.78 4.05m7.88 16.36.8 4a2 2 0 0 0 2 1.61h2.72a2 2 0 0 0 2-1.61l.81-4.05M6 12A6 6 0 1 0 18 12A6 6 0 1 0 6 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:waves-arrow-down",
+    "name": "Waves Arrow Down",
+    "viewBox": "0 0 24 24",
+    "path": "M12 10L12 2M16 6L12 10L8 6M2 15C2.6 15.5 3.2 16 4.5 16C7 16 7 14 9.5 14C12.1 14 11.9 16 14.5 16C17 16 17 14 19.5 14C20.8 14 21.4 14.5 22 15M2 21C2.6 21.5 3.2 22 4.5 22C7 22 7 20 9.5 20C12.1 20 11.9 22 14.5 22C17 22 17 20 19.5 20C20.8 20 21.4 20.5 22 21",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:waves-arrow-up",
+    "name": "Waves Arrow Up",
+    "viewBox": "0 0 24 24",
+    "path": "M12 2v8M2 15c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1m8 6 4-4 4 4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:waves-horizontal",
+    "name": "Waves Horizontal",
+    "viewBox": "0 0 24 24",
+    "path": "M2 12q2.5 2 5 0t5 0 5 0 5 0M2 19q2.5 2 5 0t5 0 5 0 5 0M2 5q2.5 2 5 0t5 0 5 0 5 0",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:waves-ladder",
+    "name": "Waves Ladder",
+    "viewBox": "0 0 24 24",
+    "path": "M19 5a2 2 0 0 0-2 2v11M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1M7 13h10M7 9h10M9 5a2 2 0 0 0-2 2v11",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:waves-vertical",
+    "name": "Waves Vertical",
+    "viewBox": "0 0 24 24",
+    "path": "M12 2q2 2.5 0 5t0 5 0 5 0 5M19 2q2 2.5 0 5t0 5 0 5 0 5M5 2q2 2.5 0 5t0 5 0 5 0 5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:waypoints",
+    "name": "Waypoints",
+    "viewBox": "0 0 24 24",
+    "path": "m10.586 5.414-5.172 5.172m18.586 13.414-5.172 5.172M6 12h12M10 20A2 2 0 1 0 14 20A2 2 0 1 0 10 20M10 4A2 2 0 1 0 14 4A2 2 0 1 0 10 4M18 12A2 2 0 1 0 22 12A2 2 0 1 0 18 12M2 12A2 2 0 1 0 6 12A2 2 0 1 0 2 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:webcam",
+    "name": "Webcam",
+    "viewBox": "0 0 24 24",
+    "path": "M4 10A8 8 0 1 0 20 10A8 8 0 1 0 4 10M9 10A3 3 0 1 0 15 10A3 3 0 1 0 9 10M7 22h10M12 22v-4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:webcam-off",
+    "name": "Webcam Off",
+    "viewBox": "0 0 24 24",
+    "path": "M12 22v-4M12.754 7.096a3 3 0 0 1 2.15 2.15M12.863 12.873a3 3 0 0 1-3.736-3.735M16.566 16.57A8 8 0 0 1 5.43 5.433m2 2 20 20M7 22h10M8.478 2.817a8 8 0 0 1 10.705 10.705",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:webhook",
+    "name": "Webhook",
+    "viewBox": "0 0 24 24",
+    "path": "M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:webhook-off",
+    "name": "Webhook Off",
+    "viewBox": "0 0 24 24",
+    "path": "M17 17h-5c-1.09-.02-1.94.92-2.5 1.9A3 3 0 1 1 2.57 15M9 3.4a4 4 0 0 1 6.52.66m6 17 3.1-5.8a2.5 2.5 0 0 0 .057-2.05M20.3 20.3a4 4 0 0 1-2.3.7M18.6 13a4 4 0 0 1 3.357 3.414m12 6 .6 1m2 2 20 20",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:weight",
+    "name": "Weight",
+    "viewBox": "0 0 24 24",
+    "path": "M9 5A3 3 0 1 0 15 5A3 3 0 1 0 9 5M6.5 8a2 2 0 0 0-1.905 1.46L2.1 18.5A2 2 0 0 0 4 21h16a2 2 0 0 0 1.925-2.54L19.4 9.5A2 2 0 0 0 17.48 8Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:weight-tilde",
+    "name": "Weight Tilde",
+    "viewBox": "0 0 24 24",
+    "path": "M6.5 8a2 2 0 0 0-1.906 1.46L2.1 18.5A2 2 0 0 0 4 21h16a2 2 0 0 0 1.925-2.54L19.4 9.5A2 2 0 0 0 17.48 8zM7.999 15a2.5 2.5 0 0 1 4 0 2.5 2.5 0 0 0 4 0M9 5A3 3 0 1 0 15 5A3 3 0 1 0 9 5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wheat",
+    "name": "Wheat",
+    "viewBox": "0 0 24 24",
+    "path": "M2 22 16 8M3.47 12.53 5 11l1.53 1.53a3.5 3.5 0 0 1 0 4.94L5 19l-1.53-1.53a3.5 3.5 0 0 1 0-4.94ZM7.47 8.53 9 7l1.53 1.53a3.5 3.5 0 0 1 0 4.94L9 15l-1.53-1.53a3.5 3.5 0 0 1 0-4.94ZM11.47 4.53 13 3l1.53 1.53a3.5 3.5 0 0 1 0 4.94L13 11l-1.53-1.53a3.5 3.5 0 0 1 0-4.94ZM20 2h2v2a4 4 0 0 1-4 4h-2V6a4 4 0 0 1 4-4ZM11.47 17.47 13 19l-1.53 1.53a3.5 3.5 0 0 1-4.94 0L5 19l1.53-1.53a3.5 3.5 0 0 1 4.94 0ZM15.47 13.47 17 15l-1.53 1.53a3.5 3.5 0 0 1-4.94 0L9 15l1.53-1.53a3.5 3.5 0 0 1 4.94 0ZM19.47 9.47 21 11l-1.53 1.53a3.5 3.5 0 0 1-4.94 0L13 11l1.53-1.53a3.5 3.5 0 0 1 4.94 0Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wheat-off",
+    "name": "Wheat Off",
+    "viewBox": "0 0 24 24",
+    "path": "m2 22 10-10m16 8-1.17 1.17M3.47 12.53 5 11l1.53 1.53a3.5 3.5 0 0 1 0 4.94L5 19l-1.53-1.53a3.5 3.5 0 0 1 0-4.94Zm8 8-.53.53a3.5 3.5 0 0 0 0 4.94L9 15l1.53-1.53c.55-.55.88-1.25.98-1.97M10.91 5.26c.15-.26.34-.51.56-.73L13 3l1.53 1.53a3.5 3.5 0 0 1 .28 4.62M20 2h2v2a4 4 0 0 1-4 4h-2V6a4 4 0 0 1 4-4ZM11.47 17.47 13 19l-1.53 1.53a3.5 3.5 0 0 1-4.94 0L5 19l1.53-1.53a3.5 3.5 0 0 1 4.94 0Zm16 16-.53.53a3.5 3.5 0 0 1-4.94 0L9 15l1.53-1.53a3.49 3.49 0 0 1 1.97-.98M18.74 13.09c.26-.15.51-.34.73-.56L21 11l-1.53-1.53a3.5 3.5 0 0 0-4.62-.28M2 2L22 22",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:whistle",
+    "name": "Whistle",
+    "viewBox": "0 0 24 24",
+    "path": "M10 6v4M21 6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-5.675A7 7 0 1 1 9 6z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:whole-word",
+    "name": "Whole Word",
+    "viewBox": "0 0 24 24",
+    "path": "M4 12A3 3 0 1 0 10 12A3 3 0 1 0 4 12M10 9v6M14 12A3 3 0 1 0 20 12A3 3 0 1 0 14 12M14 7v8M22 17v1c0 .5-.5 1-1 1H3c-.5 0-1-.5-1-1v-1",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wifi",
+    "name": "Wifi",
+    "viewBox": "0 0 24 24",
+    "path": "M12 20h.01M2 8.82a15 15 0 0 1 20 0M5 12.859a10 10 0 0 1 14 0M8.5 16.429a5 5 0 0 1 7 0",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wifi-cog",
+    "name": "Wifi Cog",
+    "viewBox": "0 0 24 24",
+    "path": "m14.305 19.53.923-.382m15.228 16.852-.923-.383m16.852 15.228-.383-.923m16.852 20.772-.383.924m19.148 15.228.383-.923m19.53 21.696-.382-.924M2 7.82a15 15 0 0 1 20 0m20.772 16.852.924-.383m20.772 19.148.924.383M5 11.858a10 10 0 0 1 11.5-1.785M8.5 15.429a5 5 0 0 1 2.413-1.31M15 18A3 3 0 1 0 21 18A3 3 0 1 0 15 18",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wifi-high",
+    "name": "Wifi High",
+    "viewBox": "0 0 24 24",
+    "path": "M12 20h.01M5 12.859a10 10 0 0 1 14 0M8.5 16.429a5 5 0 0 1 7 0",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wifi-low",
+    "name": "Wifi Low",
+    "viewBox": "0 0 24 24",
+    "path": "M12 20h.01M8.5 16.429a5 5 0 0 1 7 0",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wifi-off",
+    "name": "Wifi Off",
+    "viewBox": "0 0 24 24",
+    "path": "M12 20h.01M8.5 16.429a5 5 0 0 1 7 0M5 12.859a10 10 0 0 1 5.17-2.69M19 12.859a10 10 0 0 0-2.007-1.523M2 8.82a15 15 0 0 1 4.177-2.643M22 8.82a15 15 0 0 0-11.288-3.764m2 2 20 20",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wifi-pen",
+    "name": "Wifi Pen",
+    "viewBox": "0 0 24 24",
+    "path": "M2 8.82a15 15 0 0 1 20 0M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506zM5 12.859a10 10 0 0 1 10.5-2.222M8.5 16.429a5 5 0 0 1 3-1.406",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wifi-sync",
+    "name": "Wifi Sync",
+    "viewBox": "0 0 24 24",
+    "path": "M11.965 10.105v4L13.5 12.5a5 5 0 0 1 8 1.5M11.965 14.105h4M17.965 18.105h4L20.43 19.71a5 5 0 0 1-8-1.5M2 8.82a15 15 0 0 1 20 0M21.965 22.105v-4M5 12.86a10 10 0 0 1 3-2.032M8.5 16.429h.01",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wifi-zero",
+    "name": "Wifi Zero",
+    "viewBox": "0 0 24 24",
+    "path": "M12 20h.01",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wind",
+    "name": "Wind",
+    "viewBox": "0 0 24 24",
+    "path": "M12.8 19.6A2 2 0 1 0 14 16H2M17.5 8a2.5 2.5 0 1 1 2 4H2M9.8 4.4A2 2 0 1 1 11 8H2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wind-arrow-down",
+    "name": "Wind Arrow Down",
+    "viewBox": "0 0 24 24",
+    "path": "M10 2v8M12.8 21.6A2 2 0 1 0 14 18H2M17.5 10a2.5 2.5 0 1 1 2 4H2m6 6 4 4 4-4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wine",
+    "name": "Wine",
+    "viewBox": "0 0 24 24",
+    "path": "M8 22h8M7 10h10M12 15v7M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wine-off",
+    "name": "Wine Off",
+    "viewBox": "0 0 24 24",
+    "path": "M8 22h8M7 10h3m7 0h-1.343M12 15v7M7.307 7.307A12.33 12.33 0 0 0 7 10a5 5 0 0 0 7.391 4.391M8.638 2.981C8.75 2.668 8.872 2.34 9 2h6c1.5 4 2 6 2 8 0 .407-.05.809-.145 1.198M2 2L22 22",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:workflow",
+    "name": "Workflow",
+    "viewBox": "0 0 24 24",
+    "path": "M5 3H9A2 2 0 0 1 11 5V9A2 2 0 0 1 9 11H5A2 2 0 0 1 3 9V5A2 2 0 0 1 5 3ZM7 11v4a2 2 0 0 0 2 2h4M15 13H19A2 2 0 0 1 21 15V19A2 2 0 0 1 19 21H15A2 2 0 0 1 13 19V15A2 2 0 0 1 15 13Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:worm",
+    "name": "Worm",
+    "viewBox": "0 0 24 24",
+    "path": "m19 12-1.5 3M19.63 18.81 22 20M6.47 8.23a1.68 1.68 0 0 1 2.44 1.93l-.64 2.08a6.76 6.76 0 0 0 10.16 7.67l.42-.27a1 1 0 1 0-2.73-4.21l-.42.27a1.76 1.76 0 0 1-2.63-1.99l.64-2.08A6.66 6.66 0 0 0 3.94 3.9l-.7.4a1 1 0 1 0 2.55 4.34z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wrench",
+    "name": "Wrench",
+    "viewBox": "0 0 24 24",
+    "path": "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wrench-off",
+    "name": "Wrench Off",
+    "viewBox": "0 0 24 24",
+    "path": "M10.747 5.093a6 6 0 0 1 6.841-2.882c.438.12.54.662.219.984L14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-2.882 6.842m13.5 13.5-7.88 7.88a1 1 0 0 1-2.999-3l7.88-7.88m2 2 20 20",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:x",
+    "name": "X",
+    "viewBox": "0 0 24 24",
+    "path": "M18 6 6 18m6 6 12 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:x-line-top",
+    "name": "X Line Top",
+    "viewBox": "0 0 24 24",
+    "path": "M18 4H6M18 8 6 20m6 8 12 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:zap",
+    "name": "Zap",
+    "viewBox": "0 0 24 24",
+    "path": "M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:zap-off",
+    "name": "Zap Off",
+    "viewBox": "0 0 24 24",
+    "path": "M10.768 5.111 13.44 2.44a1.5 1.5 0 012.474 1.561l-1.633 4.625m18.889 13.232.672-.672A1.5 1.5 0 0018.5 10h-2.844m2 2 20 20m7.94 7.94-3.5 3.499A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l5.5-5.5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:zodiac-aquarius",
+    "name": "Zodiac Aquarius",
+    "viewBox": "0 0 24 24",
+    "path": "m2 10 2.456-3.684a.7.7 0 0 1 1.106-.013l2.39 3.413a.7.7 0 0 0 1.096-.001l2.402-3.432a.7.7 0 0 1 1.098 0l2.402 3.432a.7.7 0 0 0 1.098 0l2.389-3.413a.7.7 0 0 1 1.106.013L22 10m2 18.002 2.456-3.684a.7.7 0 0 1 1.106-.013l2.39 3.413a.7.7 0 0 0 1.097 0l2.402-3.432a.7.7 0 0 1 1.098 0l2.402 3.432a.7.7 0 0 0 1.098 0l2.389-3.413a.7.7 0 0 1 1.106.013L22 18.002",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:zodiac-aries",
+    "name": "Zodiac Aries",
+    "viewBox": "0 0 24 24",
+    "path": "M12 7.5a4.5 4.5 0 1 1 5 4.5M7 12a4.5 4.5 0 1 1 5-4.5V21",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:zodiac-cancer",
+    "name": "Zodiac Cancer",
+    "viewBox": "0 0 24 24",
+    "path": "M21 14.5A9 6.5 0 0 1 5.5 19M3 9.5A9 6.5 0 0 1 18.5 5M14 14.5A3.5 3.5 0 1 0 21 14.5A3.5 3.5 0 1 0 14 14.5M3 9.5A3.5 3.5 0 1 0 10 9.5A3.5 3.5 0 1 0 3 9.5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:zodiac-capricorn",
+    "name": "Zodiac Capricorn",
+    "viewBox": "0 0 24 24",
+    "path": "M11 21a3 3 0 0 0 3-3V6.5a1 1 0 0 0-7 0M7 19V6a3 3 0 0 0-3-3h0M14 17A3 3 0 1 0 20 17A3 3 0 1 0 14 17",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:zodiac-gemini",
+    "name": "Zodiac Gemini",
+    "viewBox": "0 0 24 24",
+    "path": "M16 4.525v14.948M20 3A17 17 0 0 1 4 3M4 21a17 17 0 0 1 16 0M8 4.525v14.948",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:zodiac-leo",
+    "name": "Zodiac Leo",
+    "viewBox": "0 0 24 24",
+    "path": "M10 16c0-4-3-4.5-3-8a5 5 0 0 1 10 0c0 3.466-3 6.196-3 10a3 3 0 0 0 6 0M4 16A3 3 0 1 0 10 16A3 3 0 1 0 4 16",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:zodiac-libra",
+    "name": "Zodiac Libra",
+    "viewBox": "0 0 24 24",
+    "path": "M3 16h6.857c.162-.012.19-.323.038-.38a6 6 0 1 1 4.212 0c-.153.057-.125.368.038.38H21M3 20h18",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:zodiac-ophiuchus",
+    "name": "Zodiac Ophiuchus",
+    "viewBox": "0 0 24 24",
+    "path": "M3 10A6.06 6.06 0 0 1 12 10 A6.06 6.06 0 0 0 21 10M6 3v12a6 6 0 0 0 12 0V3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:zodiac-pisces",
+    "name": "Zodiac Pisces",
+    "viewBox": "0 0 24 24",
+    "path": "M19 21a15 15 0 0 1 0-18M20 12H4M5 3a15 15 0 0 1 0 18",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:zodiac-sagittarius",
+    "name": "Zodiac Sagittarius",
+    "viewBox": "0 0 24 24",
+    "path": "M15 3h6v6M21 3 3 21m9 9 6 6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:zodiac-scorpio",
+    "name": "Zodiac Scorpio",
+    "viewBox": "0 0 24 24",
+    "path": "M10 19V5.5a1 1 0 0 1 5 0V17a2 2 0 0 0 2 2h5l-3-3m22 19-3 3M5 19V5.5a1 1 0 0 1 5 0M5 5.5A2.5 2.5 0 0 0 2.5 3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:zodiac-taurus",
+    "name": "Zodiac Taurus",
+    "viewBox": "0 0 24 24",
+    "path": "M6 15A6 6 0 1 0 18 15A6 6 0 1 0 6 15M18 3A6 6 0 0 1 6 3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:zodiac-virgo",
+    "name": "Zodiac Virgo",
+    "viewBox": "0 0 24 24",
+    "path": "M11 5.5a1 1 0 0 1 5 0V16a5 5 0 0 0 5 5M16 11.5a1 1 0 0 1 5 0V16a5 5 0 0 1-5 5M6 19V6a3 3 0 0 0-3-3h0M6 5.5a1 1 0 0 1 5 0V19",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:zoom-in",
+    "name": "Zoom In",
+    "viewBox": "0 0 24 24",
+    "path": "M3 11A8 8 0 1 0 19 11A8 8 0 1 0 3 11M21 21L16.65 16.65M11 8L11 14M8 11L14 11",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:zoom-out",
+    "name": "Zoom Out",
+    "viewBox": "0 0 24 24",
+    "path": "M3 11A8 8 0 1 0 19 11A8 8 0 1 0 3 11M21 21L16.65 16.65M8 11L14 11",
+    "strokeOnly": true
+  }
+]

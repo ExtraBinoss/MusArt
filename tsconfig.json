@@ -18,7 +18,8 @@
     "paths": {
       "@/*": ["./apps/web/src/*"],
       "@musart/core": ["./packages/core/src/index.ts"],
-      "@musart/render": ["./packages/render/src/index.ts"]
+      "@musart/render": ["./packages/render/src/index.ts"],
+      "@musart/assets": ["./packages/assets/src/index.ts"]
     }
   },
   "include": ["apps", "packages", "scripts", "test", "*.ts"],

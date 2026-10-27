@@ -1,0 +1,485 @@
+[
+  {
+    "id": "lucide:key",
+    "name": "Key",
+    "viewBox": "0 0 24 24",
+    "path": "m2 21 9.6-9.6m7.5 15.5 2.3 2.3a1 1 0 0 1 0 1.4l-2.1 2.1a1 1 0 0 1-1.4 0L4 19M10 7.5A5.5 5.5 0 1 0 21 7.5A5.5 5.5 0 1 0 10 7.5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:key-round",
+    "name": "Key Round",
+    "viewBox": "0 0 24 24",
+    "path": "M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4zM16 7.5A0.5 0.5 0 1 0 17 7.5A0.5 0.5 0 1 0 16 7.5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:key-square",
+    "name": "Key Square",
+    "viewBox": "0 0 24 24",
+    "path": "M12.4 2.7a2.5 2.5 0 0 1 3.4 0l5.5 5.5a2.5 2.5 0 0 1 0 3.4l-3.7 3.7a2.5 2.5 0 0 1-3.4 0L8.7 9.8a2.5 2.5 0 0 1 0-3.4zm14 7 3 3m9.4 10.6-6.814 6.814A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:keyboard",
+    "name": "Keyboard",
+    "viewBox": "0 0 24 24",
+    "path": "M10 8h.01M12 12h.01M14 8h.01M16 12h.01M18 8h.01M6 8h.01M7 16h10M8 12h.01M4 4H20A2 2 0 0 1 22 6V18A2 2 0 0 1 20 20H4A2 2 0 0 1 2 18V6A2 2 0 0 1 4 4Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:keyboard-music",
+    "name": "Keyboard Music",
+    "viewBox": "0 0 24 24",
+    "path": "M4 4H20A2 2 0 0 1 22 6V18A2 2 0 0 1 20 20H4A2 2 0 0 1 2 18V6A2 2 0 0 1 4 4ZM6 8h4M14 8h.01M18 8h.01M2 12h20M6 12v4M10 12v4M14 12v4M18 12v4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:keyboard-off",
+    "name": "Keyboard Off",
+    "viewBox": "0 0 24 24",
+    "path": "M 20 4 A2 2 0 0 1 22 6M 22 6 L 22 16.41M 7 16 L 16 16M 9.69 4 L 20 4M14 8h.01M18 8h.01m2 2 20 20M20 20H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2M6 8h.01M8 12h.01",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:lambda",
+    "name": "Lambda",
+    "viewBox": "0 0 24 24",
+    "path": "M11.38 10 5 20M19 18a2 2 0 01-2 2c-4.87-.003-5.052-16-10-16a2 2 0 00-2 2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:lamp",
+    "name": "Lamp",
+    "viewBox": "0 0 24 24",
+    "path": "M12 12v6M4.077 10.615A1 1 0 0 0 5 12h14a1 1 0 0 0 .923-1.385l-3.077-7.384A2 2 0 0 0 15 2H9a2 2 0 0 0-1.846 1.23ZM8 20a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:lamp-ceiling",
+    "name": "Lamp Ceiling",
+    "viewBox": "0 0 24 24",
+    "path": "M12 2v5M14.829 15.998a3 3 0 1 1-5.658 0M20.92 14.606A1 1 0 0 1 20 16H4a1 1 0 0 1-.92-1.394l3-7A1 1 0 0 1 7 7h10a1 1 0 0 1 .92.606z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:lamp-desk",
+    "name": "Lamp Desk",
+    "viewBox": "0 0 24 24",
+    "path": "M10.293 2.293a1 1 0 0 1 1.414 0l2.5 2.5 5.994 1.227a1 1 0 0 1 .506 1.687l-7 7a1 1 0 0 1-1.687-.506l-1.227-5.994-2.5-2.5a1 1 0 0 1 0-1.414zm14.207 4.793-3.414 3.414M3 20a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zm9.086 6.5-4.793 4.793a1 1 0 0 0-.18 1.17L7 18",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:lamp-floor",
+    "name": "Lamp Floor",
+    "viewBox": "0 0 24 24",
+    "path": "M12 10v12M17.929 7.629A1 1 0 0 1 17 9H7a1 1 0 0 1-.928-1.371l2-5A1 1 0 0 1 9 2h6a1 1 0 0 1 .928.629zM9 22h6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:lamp-wall-down",
+    "name": "Lamp Wall Down",
+    "viewBox": "0 0 24 24",
+    "path": "M19.929 18.629A1 1 0 0 1 19 20H9a1 1 0 0 1-.928-1.371l2-5A1 1 0 0 1 11 13h6a1 1 0 0 1 .928.629zM6 3a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM8 6h4a2 2 0 0 1 2 2v5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:lamp-wall-up",
+    "name": "Lamp Wall Up",
+    "viewBox": "0 0 24 24",
+    "path": "M19.929 9.629A1 1 0 0 1 19 11H9a1 1 0 0 1-.928-1.371l2-5A1 1 0 0 1 11 4h6a1 1 0 0 1 .928.629zM6 15a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H5a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1zM8 18h4a2 2 0 0 0 2-2v-5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:land-plot",
+    "name": "Land Plot",
+    "viewBox": "0 0 24 24",
+    "path": "m12 8 6-3-6-3v10m8 11.99-5.5 3.14a1 1 0 0 0 0 1.74l8.5 4.86a2 2 0 0 0 2 0l8.5-4.86a1 1 0 0 0 0-1.74L16 12m6.49 12.85 11.02 6.3M17.51 12.85 6.5 19.15",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:landmark",
+    "name": "Landmark",
+    "viewBox": "0 0 24 24",
+    "path": "M10 18v-7M11.119 2.205a2 2 0 0 1 1.762 0l7.84 3.846A.5.5 0 0 1 20.5 7h-17a.5.5 0 0 1-.22-.949zM14 18v-7M18 18v-7M3 22h18M6 18v-7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:languages",
+    "name": "Languages",
+    "viewBox": "0 0 24 24",
+    "path": "m5 8 6 6m4 14 6-6 2-3M2 5h12M7 2h1m22 22-5-10-5 10M14 18h6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:laptop",
+    "name": "Laptop",
+    "viewBox": "0 0 24 24",
+    "path": "M18 5a2 2 0 0 1 2 2v8.526a2 2 0 0 0 .212.897l1.068 2.127a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45l1.068-2.127A2 2 0 0 0 4 15.526V7a2 2 0 0 1 2-2zM20.054 15.987H3.946",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:laptop-minimal",
+    "name": "Laptop Minimal",
+    "viewBox": "0 0 24 24",
+    "path": "M5 4H19A2 2 0 0 1 21 6V14A2 2 0 0 1 19 16H5A2 2 0 0 1 3 14V6A2 2 0 0 1 5 4ZM2 20L22 20",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:laptop-minimal-check",
+    "name": "Laptop Minimal Check",
+    "viewBox": "0 0 24 24",
+    "path": "M2 20h20m9 10 2 2 4-4M5 4H19A2 2 0 0 1 21 6V14A2 2 0 0 1 19 16H5A2 2 0 0 1 3 14V6A2 2 0 0 1 5 4Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:lasso",
+    "name": "Lasso",
+    "viewBox": "0 0 24 24",
+    "path": "M3.704 14.467a10 8 0 1 1 3.115 2.375M7 22a5 5 0 0 1-2-3.994M3 16A2 2 0 1 0 7 16A2 2 0 1 0 3 16",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:lasso-select",
+    "name": "Lasso Select",
+    "viewBox": "0 0 24 24",
+    "path": "M7 22a5 5 0 0 1-2-4M7 16.93c.96.43 1.96.74 2.99.91M3.34 14A6.8 6.8 0 0 1 2 10c0-4.42 4.48-8 10-8s10 3.58 10 8a7.19 7.19 0 0 1-.33 2M5 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM14.33 22h-.09a.35.35 0 0 1-.24-.32v-10a.34.34 0 0 1 .33-.34c.08 0 .15.03.21.08l7.34 6a.33.33 0 0 1-.21.59h-4.49l-2.57 3.85a.35.35 0 0 1-.28.14z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:layer-arrow-down",
+    "name": "Layer Arrow Down",
+    "viewBox": "0 0 24 24",
+    "path": "M12 10v10M22 10a1 1 0 01-.59.92l-5.077 2.308M22.017 10.005a1 1 0 00-.597-.916l-8.59-3.91a2 2 0 00-1.66.001L2.6 9.08a1 1 0 00-.02 1.831l5.093 2.316m9 17 3 3 3-3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:layer-arrow-up",
+    "name": "Layer Arrow Up",
+    "viewBox": "0 0 24 24",
+    "path": "M12 14V4M7.674 10.774 2.58 13.09a1 1 0 000 1.822l8.6 3.91a2 2 0 001.65 0l8.58-3.9a1 1 0 00.59-.92 1 1 0 00-.59-.922l-5.078-2.308m9 7 3-3 3 3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:layers",
+    "name": "Layers",
+    "viewBox": "0 0 24 24",
+    "path": "M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83zM2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:layers-2",
+    "name": "Layers 2",
+    "viewBox": "0 0 24 24",
+    "path": "M13 13.74a2 2 0 0 1-2 0L2.5 8.87a1 1 0 0 1 0-1.74L11 2.26a2 2 0 0 1 2 0l8.5 4.87a1 1 0 0 1 0 1.74zm20 14.285 1.5.845a1 1 0 0 1 0 1.74L13 21.74a2 2 0 0 1-2 0l-8.5-4.87a1 1 0 0 1 0-1.74l1.5-.845",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:layers-arrow-down",
+    "name": "Layers Arrow Down",
+    "viewBox": "0 0 24 24",
+    "path": "M12 7v15M2 12a1 1 0 00.58.91l5.093 2.316M22 12a1 1 0 01-.59.92l-5.077 2.308M8 10.37 2.6 7.91a1 1 0 010-1.831l8.57-3.9a2 2 0 011.66.001l8.59 3.91a1 1 0 010 1.831l-5.392 2.45m9 19 3 3 3-3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:layers-arrow-up",
+    "name": "Layers Arrow Up",
+    "viewBox": "0 0 24 24",
+    "path": "M12 12V2M2 17.002a1 1 0 00.58.91l8.6 3.91a2 2 0 001.65 0l8.58-3.9a1 1 0 00.59-.92M7.674 8.774 2.58 11.09a1 1 0 000 1.822l8.6 3.91a2 2 0 001.65 0l8.58-3.9a1 1 0 00.59-.92 1 1 0 00-.59-.922l-5.078-2.308m9 5 3-3 3 3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:layers-minus",
+    "name": "Layers Minus",
+    "viewBox": "0 0 24 24",
+    "path": "M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 .83.18 2 2 0 0 0 .83-.18l8.58-3.9a1 1 0 0 0 0-1.832zM16 17h6M2.003 11.995a1 1 0 0 0 .597.915l8.58 3.91a2 2 0 0 0 .83.18M2.003 16.995a1 1 0 0 0 .597.915l8.58 3.91a2 2 0 0 0 .83.18 2 2 0 0 0 .83-.18l2.11-.96M22.018 12.004a1 1 0 0 1-.598.916l-.177.08",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:layers-plus",
+    "name": "Layers Plus",
+    "viewBox": "0 0 24 24",
+    "path": "M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 .83.18 2 2 0 0 0 .83-.18l8.58-3.9a1 1 0 0 0 0-1.831zM16 17h6M19 14v6M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 .825.178M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l2.116-.962",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:layout-arrow-down",
+    "name": "Layout Arrow Down",
+    "viewBox": "0 0 24 24",
+    "path": "M4 3H9A1 1 0 0 1 10 4V9A1 1 0 0 1 9 10H4A1 1 0 0 1 3 9V4A1 1 0 0 1 4 3ZM4 14H9A1 1 0 0 1 10 15V20A1 1 0 0 1 9 21H4A1 1 0 0 1 3 20V15A1 1 0 0 1 4 14ZM18 3v18m21 18-3 3-3-3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:layout-arrow-right",
+    "name": "Layout Arrow Right",
+    "viewBox": "0 0 24 24",
+    "path": "M4 3H9A1 1 0 0 1 10 4V9A1 1 0 0 1 9 10H4A1 1 0 0 1 3 9V4A1 1 0 0 1 4 3ZM15 3H20A1 1 0 0 1 21 4V9A1 1 0 0 1 20 10H15A1 1 0 0 1 14 9V4A1 1 0 0 1 15 3ZM3 18h18m18 21 3-3-3-3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:layout-dashboard",
+    "name": "Layout Dashboard",
+    "viewBox": "0 0 24 24",
+    "path": "M4 3H9A1 1 0 0 1 10 4V11A1 1 0 0 1 9 12H4A1 1 0 0 1 3 11V4A1 1 0 0 1 4 3ZM15 3H20A1 1 0 0 1 21 4V7A1 1 0 0 1 20 8H15A1 1 0 0 1 14 7V4A1 1 0 0 1 15 3ZM15 12H20A1 1 0 0 1 21 13V20A1 1 0 0 1 20 21H15A1 1 0 0 1 14 20V13A1 1 0 0 1 15 12ZM4 16H9A1 1 0 0 1 10 17V20A1 1 0 0 1 9 21H4A1 1 0 0 1 3 20V17A1 1 0 0 1 4 16Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:layout-freeform",
+    "name": "Layout Freeform",
+    "viewBox": "0 0 24 24",
+    "path": "M4 3H9A1 1 0 0 1 10 4V9A1 1 0 0 1 9 10H4A1 1 0 0 1 3 9V4A1 1 0 0 1 4 3ZM15 4H20A1 1 0 0 1 21 5V10A1 1 0 0 1 20 11H15A1 1 0 0 1 14 10V5A1 1 0 0 1 15 4ZM5 14H10A1 1 0 0 1 11 15V20A1 1 0 0 1 10 21H5A1 1 0 0 1 4 20V15A1 1 0 0 1 5 14Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:layout-grid",
+    "name": "Layout Grid",
+    "viewBox": "0 0 24 24",
+    "path": "M4 3H9A1 1 0 0 1 10 4V9A1 1 0 0 1 9 10H4A1 1 0 0 1 3 9V4A1 1 0 0 1 4 3ZM15 3H20A1 1 0 0 1 21 4V9A1 1 0 0 1 20 10H15A1 1 0 0 1 14 9V4A1 1 0 0 1 15 3ZM15 14H20A1 1 0 0 1 21 15V20A1 1 0 0 1 20 21H15A1 1 0 0 1 14 20V15A1 1 0 0 1 15 14ZM4 14H9A1 1 0 0 1 10 15V20A1 1 0 0 1 9 21H4A1 1 0 0 1 3 20V15A1 1 0 0 1 4 14Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:layout-list",
+    "name": "Layout List",
+    "viewBox": "0 0 24 24",
+    "path": "M4 3H9A1 1 0 0 1 10 4V9A1 1 0 0 1 9 10H4A1 1 0 0 1 3 9V4A1 1 0 0 1 4 3ZM4 14H9A1 1 0 0 1 10 15V20A1 1 0 0 1 9 21H4A1 1 0 0 1 3 20V15A1 1 0 0 1 4 14ZM14 4h7M14 9h7M14 15h7M14 20h7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:layout-panel-left",
+    "name": "Layout Panel Left",
+    "viewBox": "0 0 24 24",
+    "path": "M4 3H9A1 1 0 0 1 10 4V20A1 1 0 0 1 9 21H4A1 1 0 0 1 3 20V4A1 1 0 0 1 4 3ZM15 3H20A1 1 0 0 1 21 4V9A1 1 0 0 1 20 10H15A1 1 0 0 1 14 9V4A1 1 0 0 1 15 3ZM15 14H20A1 1 0 0 1 21 15V20A1 1 0 0 1 20 21H15A1 1 0 0 1 14 20V15A1 1 0 0 1 15 14Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:layout-panel-top",
+    "name": "Layout Panel Top",
+    "viewBox": "0 0 24 24",
+    "path": "M4 3H20A1 1 0 0 1 21 4V9A1 1 0 0 1 20 10H4A1 1 0 0 1 3 9V4A1 1 0 0 1 4 3ZM4 14H9A1 1 0 0 1 10 15V20A1 1 0 0 1 9 21H4A1 1 0 0 1 3 20V15A1 1 0 0 1 4 14ZM15 14H20A1 1 0 0 1 21 15V20A1 1 0 0 1 20 21H15A1 1 0 0 1 14 20V15A1 1 0 0 1 15 14Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:layout-template",
+    "name": "Layout Template",
+    "viewBox": "0 0 24 24",
+    "path": "M4 3H20A1 1 0 0 1 21 4V9A1 1 0 0 1 20 10H4A1 1 0 0 1 3 9V4A1 1 0 0 1 4 3ZM4 14H11A1 1 0 0 1 12 15V20A1 1 0 0 1 11 21H4A1 1 0 0 1 3 20V15A1 1 0 0 1 4 14ZM17 14H20A1 1 0 0 1 21 15V20A1 1 0 0 1 20 21H17A1 1 0 0 1 16 20V15A1 1 0 0 1 17 14Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:leaf",
+    "name": "Leaf",
+    "viewBox": "0 0 24 24",
+    "path": "M11 20a10 10 0 0010-10 25.9 25.9 0 00-1.04-7.281 1 1 0 00-1.755-.325C15.833 5.5 13 5.5 9.8 6.1A7 7 0 0011 20M2 21a5 5 0 012.911-4.544C7.613 15.212 8.351 15.24 11 13",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:leafy-green",
+    "name": "Leafy Green",
+    "viewBox": "0 0 24 24",
+    "path": "M2 22c1.25-.987 2.27-1.975 3.9-2.2a5.56 5.56 0 0 1 3.8 1.5 4 4 0 0 0 6.187-2.353 3.5 3.5 0 0 0 3.69-5.116A3.5 3.5 0 0 0 20.95 8 3.5 3.5 0 1 0 16 3.05a3.5 3.5 0 0 0-5.831 1.373 3.5 3.5 0 0 0-5.116 3.69 4 4 0 0 0-2.348 6.155C3.499 15.42 4.409 16.712 4.2 18.1 3.926 19.743 3.014 20.732 2 22M2 22 17 7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:lectern",
+    "name": "Lectern",
+    "viewBox": "0 0 24 24",
+    "path": "M15 13h4a2 2 0 001.901-1.38l1.057-4.333A1 1 0 0021 6H3a1 1 0 00-.958 1.287L3.1 11.621A2 2 0 005.001 13h4M15 22V11a1 1 0 00-1-1h-4a1 1 0 00-1 1v11M18 22H6M18 6V3a1 1 0 00-1-1h-3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:lens-concave",
+    "name": "Lens Concave",
+    "viewBox": "0 0 24 24",
+    "path": "M7 2a1 1 0 0 0-.8 1.6 14 14 0 0 1 0 16.8A1 1 0 0 0 7 22h10a1 1 0 0 0 .8-1.6 14 14 0 0 1 0-16.8A1 1 0 0 0 17 2z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:lens-convex",
+    "name": "Lens Convex",
+    "viewBox": "0 0 24 24",
+    "path": "M13.433 2a1 1 0 0 1 .824.448 18 18 0 0 1 0 19.104 1 1 0 0 1-.824.448h-2.866a1 1 0 0 1-.824-.448 18 18 0 0 1 0-19.104A1 1 0 0 1 10.567 2z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:library",
+    "name": "Library",
+    "viewBox": "0 0 24 24",
+    "path": "m16 6 4 14M12 6v14M8 8v12M4 4v16",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:library-big",
+    "name": "Library Big",
+    "viewBox": "0 0 24 24",
+    "path": "M4 3H10A1 1 0 0 1 11 4V20A1 1 0 0 1 10 21H4A1 1 0 0 1 3 20V4A1 1 0 0 1 4 3ZM7 3v18M20.4 18.9c.2.5-.1 1.1-.6 1.3l-1.9.7c-.5.2-1.1-.1-1.3-.6L11.1 5.1c-.2-.5.1-1.1.6-1.3l1.9-.7c.5-.2 1.1.1 1.3.6Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:life-buoy",
+    "name": "Life Buoy",
+    "viewBox": "0 0 24 24",
+    "path": "M2 12A10 10 0 1 0 22 12A10 10 0 1 0 2 12m4.93 4.93 4.24 4.24m14.83 9.17 4.24-4.24m14.83 14.83 4.24 4.24m9.17 14.83-4.24 4.24M8 12A4 4 0 1 0 16 12A4 4 0 1 0 8 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:ligature",
+    "name": "Ligature",
+    "viewBox": "0 0 24 24",
+    "path": "M14 12h2v8M14 20h4M6 12h4M6 20h4M8 20V8a4 4 0 0 1 7.464-2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:lightbulb",
+    "name": "Lightbulb",
+    "viewBox": "0 0 24 24",
+    "path": "M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5M9 18h6M10 22h4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:lightbulb-off",
+    "name": "Lightbulb Off",
+    "viewBox": "0 0 24 24",
+    "path": "M16.8 11.2c.8-.9 1.2-2 1.2-3.2a6 6 0 0 0-9.3-5m2 2 20 20M6.3 6.3a4.67 4.67 0 0 0 1.2 5.2c.7.7 1.3 1.5 1.5 2.5M9 18h6M10 22h4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:lighthouse",
+    "name": "Lighthouse",
+    "viewBox": "0 0 24 24",
+    "path": "M12 3V2M16.066 16.865 7 22l2-11V6a3 3 0 016 0v5l2 11m19.792 4.5.866-.5m19.797 13.5.866.5M21 9h1M3 9H2m4.203 13.5-.866.5M4.208 4.5 3.342 4M5.5 22h13m7.932 16.875 7.377-4.178M8 11h8M8 7h8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:line-dot-right-horizontal",
+    "name": "Line Dot Right Horizontal",
+    "viewBox": "0 0 24 24",
+    "path": "M 3 12 L 15 12M15 12A3 3 0 1 0 21 12A3 3 0 1 0 15 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:line-squiggle",
+    "name": "Line Squiggle",
+    "viewBox": "0 0 24 24",
+    "path": "M7 3.5c5-2 7 2.5 3 4C1.5 10 2 15 5 16c5 2 9-10 14-7s.5 13.5-4 12c-5-2.5.5-11 6-2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:line-style",
+    "name": "Line Style",
+    "viewBox": "0 0 24 24",
+    "path": "M11 5h2M15 12h6M19 5h2M3 12h6M3 19h18M3 5h2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:link",
+    "name": "Link",
+    "viewBox": "0 0 24 24",
+    "path": "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:link-2",
+    "name": "Link 2",
+    "viewBox": "0 0 24 24",
+    "path": "M9 17H7A5 5 0 0 1 7 7h2M15 7h2a5 5 0 1 1 0 10h-2M8 12L16 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:link-2-off",
+    "name": "Link 2 Off",
+    "viewBox": "0 0 24 24",
+    "path": "M9 17H7A5 5 0 0 1 7 7M15 7h2a5 5 0 0 1 4 8M8 12L12 12M2 2L22 22",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:list",
+    "name": "List",
+    "viewBox": "0 0 24 24",
+    "path": "M3 5h.01M3 12h.01M3 19h.01M8 5h13M8 12h13M8 19h13",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:list-check",
+    "name": "List Check",
+    "viewBox": "0 0 24 24",
+    "path": "M16 5H3M16 12H3M11 19H3m15 18 2 2 4-4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:list-checks",
+    "name": "List Checks",
+    "viewBox": "0 0 24 24",
+    "path": "M13 5h8M13 12h8M13 19h8m3 17 2 2 4-4m3 7 2 2 4-4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:list-chevrons-down-up",
+    "name": "List Chevrons Down Up",
+    "viewBox": "0 0 24 24",
+    "path": "M3 5h8M3 12h8M3 19h8m15 5 3 3 3-3m15 19 3-3 3 3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:list-chevrons-up-down",
+    "name": "List Chevrons Up Down",
+    "viewBox": "0 0 24 24",
+    "path": "M3 5h8M3 12h8M3 19h8m15 8 3-3 3 3m15 16 3 3 3-3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:list-clock",
+    "name": "List Clock",
+    "viewBox": "0 0 24 24",
+    "path": "M16 13v2.2l1.6 1M3 12h3.458M3 19h3.832M3 5h18M10 15A6 6 0 1 0 22 15A6 6 0 1 0 10 15",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:list-collapse",
+    "name": "List Collapse",
+    "viewBox": "0 0 24 24",
+    "path": "M10 5h11M10 12h11M10 19h11m3 10 3-3-3-3m3 20 3-3-3-3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:list-end",
+    "name": "List End",
+    "viewBox": "0 0 24 24",
+    "path": "M16 5H3M16 12H3M9 19H3m16 16-3 3 3 3M21 5v12a2 2 0 0 1-2 2h-6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:list-filter",
+    "name": "List Filter",
+    "viewBox": "0 0 24 24",
+    "path": "M2 5h20M6 12h12M9 19h6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:list-filter-plus",
+    "name": "List Filter Plus",
+    "viewBox": "0 0 24 24",
+    "path": "M12 5H2M6 12h12M9 19h6M16 5h6M19 8V2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:list-indent-decrease",
+    "name": "List Indent Decrease",
+    "viewBox": "0 0 24 24",
+    "path": "M21 5H11M21 12H11M21 19H11m7 8-4 4 4 4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:list-indent-increase",
+    "name": "List Indent Increase",
+    "viewBox": "0 0 24 24",
+    "path": "M21 5H11M21 12H11M21 19H11m3 8 4 4-4 4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:list-minus",
+    "name": "List Minus",
+    "viewBox": "0 0 24 24",
+    "path": "M16 5H3M11 12H3M16 19H3M21 12h-6",
+    "strokeOnly": true
+  }
+]

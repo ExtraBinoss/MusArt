@@ -1,0 +1,485 @@
+[
+  {
+    "id": "lucide:face-grinning",
+    "name": "Face Grinning",
+    "viewBox": "0 0 24 24",
+    "path": "M15 10V9M7.084 14.302a5.12 5.12 0 009.833 0 .24.24 0 00-.235-.302H7.32a.24.24 0 00-.235.302M9 10V9M2 12A10 10 0 1 0 22 12A10 10 0 1 0 2 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:face-neutral",
+    "name": "Face Neutral",
+    "viewBox": "0 0 24 24",
+    "path": "M15 10V9M8 16h8M9 10V9M2 12A10 10 0 1 0 22 12A10 10 0 1 0 2 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:face-slightly-frowning",
+    "name": "Face Slightly Frowning",
+    "viewBox": "0 0 24 24",
+    "path": "M15 10V9M9 10V9M9 16a5 5 0 016 0M2 12A10 10 0 1 0 22 12A10 10 0 1 0 2 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:face-slightly-smiling",
+    "name": "Face Slightly Smiling",
+    "viewBox": "0 0 24 24",
+    "path": "M15 10V9M16.472 15a6 6 0 01-8.943 0M9 10V9M2 12A10 10 0 1 0 22 12A10 10 0 1 0 2 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:face-slightly-smiling-plus",
+    "name": "Face Slightly Smiling Plus",
+    "viewBox": "0 0 24 24",
+    "path": "M13.267 2.08a10 10 0 108.653 8.653M15 10V9M16 5h6M16.472 15a6 6 0 01-8.943 0M19 2v6M9 10V9",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:factory",
+    "name": "Factory",
+    "viewBox": "0 0 24 24",
+    "path": "M12 16h.01M16 16h.01M3 19a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5a.5.5 0 0 0-.769-.422l-4.462 2.844A.5.5 0 0 1 15 10.5v-2a.5.5 0 0 0-.769-.422L9.77 10.922A.5.5 0 0 1 9 10.5V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2zM8 16h.01",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:fan",
+    "name": "Fan",
+    "viewBox": "0 0 24 24",
+    "path": "M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618l1.45-5.412ZM12 12v.01",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:fast-forward",
+    "name": "Fast Forward",
+    "viewBox": "0 0 24 24",
+    "path": "M12 6a2 2 0 0 1 3.414-1.414l6 6a2 2 0 0 1 0 2.828l-6 6A2 2 0 0 1 12 18zM2 6a2 2 0 0 1 3.414-1.414l6 6a2 2 0 0 1 0 2.828l-6 6A2 2 0 0 1 2 18z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:faucet",
+    "name": "Faucet",
+    "viewBox": "0 0 24 24",
+    "path": "M10.083 5.428 5.57 4.083a2 2 0 10.001 3.834l4.512-1.345M12 8v3m13.917 5.428 4.511-1.345a2 2 0 110 3.834l-4.51-1.345M18 17v-4.006M22 11v8M22 12h-3a1 1 0 00-1 .994h-2.539a4 4 0 00-6.915-.012L7 13a5 5 0 00-5 5v1a1 1 0 001 1h2a1 1 0 001-1v-1a1 1 0 01.995-1l1.552.018a4 4 0 006.907 0L18 17a1 1 0 001 1h3M10 6A2 2 0 1 0 14 6A2 2 0 1 0 10 6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:feather",
+    "name": "Feather",
+    "viewBox": "0 0 24 24",
+    "path": "M14.086 18.412A2 2 0 0112.67 19H5v-7.672a2 2 0 01.586-1.414L11.75 3.75a6 6 0 118.49 8.49zM16 8 2 22M17.488 15H9",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:fence",
+    "name": "Fence",
+    "viewBox": "0 0 24 24",
+    "path": "M4 3 2 5v15c0 .6.4 1 1 1h2c.6 0 1-.4 1-1V5ZM6 8h4M6 18h4m12 3-2 2v15c0 .6.4 1 1 1h2c.6 0 1-.4 1-1V5ZM14 8h4M14 18h4m20 3-2 2v15c0 .6.4 1 1 1h2c.6 0 1-.4 1-1V5Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:ferris-wheel",
+    "name": "Ferris Wheel",
+    "viewBox": "0 0 24 24",
+    "path": "M10 12A2 2 0 1 0 14 12A2 2 0 1 0 10 12M12 2v4m6.8 15-3.5 2m20.7 7-3.5 2M6.8 9 3.3 7m20.7 17-3.5-2m9 22 3-8 3 8M8 22h8M18 18.7a9 9 0 1 0-12 0",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file",
+    "name": "File",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-archive",
+    "name": "File Archive",
+    "viewBox": "0 0 24 24",
+    "path": "M13.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v11.5M14 2v5a1 1 0 0 0 1 1h5M8 12v-1M8 18v-2M8 7V6M6 20A2 2 0 1 0 10 20A2 2 0 1 0 6 20",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-axis-3d",
+    "name": "File Axis 3d",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5m8 18 4-4M8 10v8h8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-badge",
+    "name": "File Badge",
+    "viewBox": "0 0 24 24",
+    "path": "M13 22h5a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v3.3M14 2v5a1 1 0 0 0 1 1h5m7.69 16.479 1.29 4.88a.5.5 0 0 1-.698.591l-1.843-.849a1 1 0 0 0-.879.001l-1.846.85a.5.5 0 0 1-.692-.593l1.29-4.88M3 14A3 3 0 1 0 9 14A3 3 0 1 0 3 14",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-box",
+    "name": "File Box",
+    "viewBox": "0 0 24 24",
+    "path": "M14 2v5a1 1 0 001 1h5M14.692 22H18a2 2 0 002-2V8a2.4 2.4 0 00-.706-1.706l-3.588-3.588A2.4 2.4 0 0014 2H6a2 2 0 00-2 2v3.804M2.264 13.752 7 16.5l4.737-2.748M2.995 13.014A2 2 0 002 14.744v3.516a2 2 0 00.996 1.73l3 1.74a2 2 0 002.008 0l3-1.74A2 2 0 0012 18.26v-3.517a2 2 0 00-.995-1.73l-3-1.742a2 2 0 00-1.892-.064zM7 16.5V22",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-braces",
+    "name": "File Braces",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M10 12a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1 1 1 0 0 1 1 1v1a1 1 0 0 0 1 1M14 18a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1 1 1 0 0 1-1-1v-1a1 1 0 0 0-1-1",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-braces-corner",
+    "name": "File Braces Corner",
+    "viewBox": "0 0 24 24",
+    "path": "M14 22h4a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v6M14 2v5a1 1 0 0 0 1 1h5M5 14a1 1 0 0 0-1 1v2a1 1 0 0 1-1 1 1 1 0 0 1 1 1v2a1 1 0 0 0 1 1M9 22a1 1 0 0 0 1-1v-2a1 1 0 0 1 1-1 1 1 0 0 1-1-1v-2a1 1 0 0 0-1-1",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-chart-column",
+    "name": "File Chart Column",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M8 18v-1M12 18v-6M16 18v-3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-chart-column-increasing",
+    "name": "File Chart Column Increasing",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M8 18v-2M12 18v-4M16 18v-6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-chart-line",
+    "name": "File Chart Line",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5m16 13-3.5 3.5-2-2L8 17",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-chart-pie",
+    "name": "File Chart Pie",
+    "viewBox": "0 0 24 24",
+    "path": "M15.941 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.704l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v3.512M14 2v5a1 1 0 0 0 1 1h5M4.017 11.512a6 6 0 1 0 8.466 8.475M9 16a1 1 0 0 1-1-1v-4c0-.552.45-1.008.995-.917a6 6 0 0 1 4.922 4.922c.091.544-.365.995-.917.995z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-check",
+    "name": "File Check",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5m9 15 2 2 4-4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-check-corner",
+    "name": "File Check Corner",
+    "viewBox": "0 0 24 24",
+    "path": "M10.5 22H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v6M14 2v5a1 1 0 0 0 1 1h5m14 20 2 2 4-4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-clock",
+    "name": "File Clock",
+    "viewBox": "0 0 24 24",
+    "path": "M16 22h2a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v2.85M14 2v5a1 1 0 0 0 1 1h5M8 14v2.2l1.6 1M2 16A6 6 0 1 0 14 16A6 6 0 1 0 2 16",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-code",
+    "name": "File Code",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M10 12.5 8 15l2 2.5m14 12.5 2 2.5-2 2.5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-code-corner",
+    "name": "File Code Corner",
+    "viewBox": "0 0 24 24",
+    "path": "M4 12.15V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3.35M14 2v5a1 1 0 0 0 1 1h5m5 16-3 3 3 3m9 22 3-3-3-3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-cog",
+    "name": "File Cog",
+    "viewBox": "0 0 24 24",
+    "path": "M15 8a1 1 0 0 1-1-1V2a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8zM20 8v12a2 2 0 0 1-2 2h-4.182m3.305 19.53.923-.382M4 10.592V4a2 2 0 0 1 2-2h8m4.228 16.852-.924-.383m5.852 15.228-.383-.923m5.852 20.772-.383.924m8.148 15.228.383-.923m8.53 21.696-.382-.924m9.773 16.852.922-.383m9.773 19.148.922.383M4 18A3 3 0 1 0 10 18A3 3 0 1 0 4 18",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-diff",
+    "name": "File Diff",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM9 10h6M12 13V7M9 17h6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-digit",
+    "name": "File Digit",
+    "viewBox": "0 0 24 24",
+    "path": "M4 12V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2M14 2v5a1 1 0 0 0 1 1h5M10 16h2v6M10 22h4M4 16H4A2 2 0 0 1 6 18V20A2 2 0 0 1 4 22H4A2 2 0 0 1 2 20V18A2 2 0 0 1 4 16Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-down",
+    "name": "File Down",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M12 18v-6m9 15 3 3 3-3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-exclamation-point",
+    "name": "File Exclamation Point",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM12 9v4M12 17h.01",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-headphone",
+    "name": "File Headphone",
+    "viewBox": "0 0 24 24",
+    "path": "M4 6.835V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-.343M14 2v5a1 1 0 0 0 1 1h5M2 19a2 2 0 0 1 4 0v1a2 2 0 0 1-4 0v-4a6 6 0 0 1 12 0v4a2 2 0 0 1-4 0v-1a2 2 0 0 1 4 0",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-heart",
+    "name": "File Heart",
+    "viewBox": "0 0 24 24",
+    "path": "M13 22h5a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v7M14 2v5a1 1 0 0 0 1 1h5M3.62 18.8A2.25 2.25 0 1 1 7 15.836a2.25 2.25 0 1 1 3.38 2.966l-2.626 2.856a1 1 0 0 1-1.507 0z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-image",
+    "name": "File Image",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M8 12A2 2 0 1 0 12 12A2 2 0 1 0 8 12m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-input",
+    "name": "File Input",
+    "viewBox": "0 0 24 24",
+    "path": "M4 11V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1M14 2v5a1 1 0 0 0 1 1h5M2 15h10m9 18 3-3-3-3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-key",
+    "name": "File Key",
+    "viewBox": "0 0 24 24",
+    "path": "M14 2v5a1 1 0 0 0 1 1h5M4 12v6M4 14h2M9.65 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v4M2 20A2 2 0 1 0 6 20A2 2 0 1 0 2 20",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-lock",
+    "name": "File Lock",
+    "viewBox": "0 0 24 24",
+    "path": "M4 9.8V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3M14 2v5a1 1 0 0 0 1 1h5M9 17v-2a2 2 0 0 0-4 0v2M4 17H10A1 1 0 0 1 11 18V21A1 1 0 0 1 10 22H4A1 1 0 0 1 3 21V18A1 1 0 0 1 4 17Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-minus",
+    "name": "File Minus",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M9 15h6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-minus-corner",
+    "name": "File Minus Corner",
+    "viewBox": "0 0 24 24",
+    "path": "M20 14V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12M14 2v5a1 1 0 0 0 1 1h5M14 18h6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-music",
+    "name": "File Music",
+    "viewBox": "0 0 24 24",
+    "path": "M11.65 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v10.35M14 2v5a1 1 0 0 0 1 1h5M8 20v-7l3 1.474M4 20A2 2 0 1 0 8 20A2 2 0 1 0 4 20",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-output",
+    "name": "File Output",
+    "viewBox": "0 0 24 24",
+    "path": "M4.226 20.925A2 2 0 0 0 6 22h12a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v3.127M14 2v5a1 1 0 0 0 1 1h5m5 11-3 3m5 17-3-3h10",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-pen",
+    "name": "File Pen",
+    "viewBox": "0 0 24 24",
+    "path": "M12.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v9.34M14 2v5a1 1 0 0 0 1 1h5M10.378 12.622a1 1 0 0 1 3 3.003L8.36 20.637a2 2 0 0 1-.854.506l-2.867.837a.5.5 0 0 1-.62-.62l.836-2.869a2 2 0 0 1 .506-.853z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-pen-line",
+    "name": "File Pen Line",
+    "viewBox": "0 0 24 24",
+    "path": "M14.364 13.634a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506l4.013-4.009a1 1 0 0 0-3.004-3.004zM14.487 7.858A1 1 0 0 1 14 7V2M20 19.645V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l2.516 2.516M8 18h1",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-play",
+    "name": "File Play",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M15.033 13.44a.647.647 0 0 1 0 1.12l-4.065 2.352a.645.645 0 0 1-.968-.56v-4.704a.645.645 0 0 1 .967-.56z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-plus",
+    "name": "File Plus",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M9 15h6M12 18v-6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-plus-corner",
+    "name": "File Plus Corner",
+    "viewBox": "0 0 24 24",
+    "path": "M11.35 22H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v5.35M14 2v5a1 1 0 0 0 1 1h5M14 19h6M17 16v6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-question-mark",
+    "name": "File Question Mark",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM12 17h.01M9.1 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-scan",
+    "name": "File Scan",
+    "viewBox": "0 0 24 24",
+    "path": "M20 10V8a2.4 2.4 0 0 0-.706-1.704l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.35M14 2v5a1 1 0 0 0 1 1h5M16 14a2 2 0 0 0-2 2M16 22a2 2 0 0 1-2-2M20 14a2 2 0 0 1 2 2M20 22a2 2 0 0 0 2-2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-search",
+    "name": "File Search",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M9 14.5A2.5 2.5 0 1 0 14 14.5A2.5 2.5 0 1 0 9 14.5M13.3 16.3 15 18",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-search-corner",
+    "name": "File Search Corner",
+    "viewBox": "0 0 24 24",
+    "path": "M11.1 22H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.589 3.588A2.4 2.4 0 0 1 20 8v3.25M14 2v5a1 1 0 0 0 1 1h5m21 22-2.88-2.88M13 17A3 3 0 1 0 19 17A3 3 0 1 0 13 17",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-signal",
+    "name": "File Signal",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M8 15h.01M11.5 13.5a2.5 2.5 0 0 1 0 3M15 12a5 5 0 0 1 0 6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-sliders",
+    "name": "File Sliders",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M8 12h8M10 11v2M8 17h8M14 16v2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-spreadsheet",
+    "name": "File Spreadsheet",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M8 13h2M14 13h2M8 17h2M14 17h2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-stack",
+    "name": "File Stack",
+    "viewBox": "0 0 24 24",
+    "path": "M11 21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1M16 16a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1M21 6a2 2 0 0 0-.586-1.414l-2-2A2 2 0 0 0 17 2h-3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-symlink",
+    "name": "File Symlink",
+    "viewBox": "0 0 24 24",
+    "path": "M4 11V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h7M14 2v5a1 1 0 0 0 1 1h5m10 18 3-3-3-3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-terminal",
+    "name": "File Terminal",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5m8 16 2-2-2-2M12 18h4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-text",
+    "name": "File Text",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M10 9H8M16 13H8M16 17H8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-type",
+    "name": "File Type",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M11 18h2M12 12v6M9 13v-.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5v.5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-type-corner",
+    "name": "File Type Corner",
+    "viewBox": "0 0 24 24",
+    "path": "M12 22h6a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v6M14 2v5a1 1 0 0 0 1 1h5M3 16v-1.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5V16M6 22h2M7 14v8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-up",
+    "name": "File Up",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M12 12v6m15 15-3-3-3 3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-user",
+    "name": "File User",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M16 22a4 4 0 0 0-8 0M9 15A3 3 0 1 0 15 15A3 3 0 1 0 9 15",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-video-camera",
+    "name": "File Video Camera",
+    "viewBox": "0 0 24 24",
+    "path": "M4 12V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2M14 2v5a1 1 0 0 0 1 1h5m10 17.843 3.033-1.755a.64.64 0 0 1 .967.56v4.704a.65.65 0 0 1-.967.56L10 20.157M4 16H9A1 1 0 0 1 10 17V21A1 1 0 0 1 9 22H4A1 1 0 0 1 3 21V17A1 1 0 0 1 4 16Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-volume",
+    "name": "File Volume",
+    "viewBox": "0 0 24 24",
+    "path": "M4 11.55V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-1.95M14 2v5a1 1 0 0 0 1 1h5M12 15a5 5 0 0 1 0 6M8 14.502a.5.5 0 0 0-.826-.381l-1.893 1.631a1 1 0 0 1-.651.243H3.5a.5.5 0 0 0-.5.501v3.006a.5.5 0 0 0 .5.501h1.129a1 1 0 0 1 .652.243l1.893 1.633a.5.5 0 0 0 .826-.38z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-x",
+    "name": "File X",
+    "viewBox": "0 0 24 24",
+    "path": "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5m14.5 12.5-5 5m9.5 12.5 5 5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:file-x-corner",
+    "name": "File X Corner",
+    "viewBox": "0 0 24 24",
+    "path": "M11 22H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v5M14 2v5a1 1 0 0 0 1 1h5m15 17 5 5m20 17-5 5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:files",
+    "name": "Files",
+    "viewBox": "0 0 24 24",
+    "path": "M15 2h-4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8M16.706 2.706A2.4 2.4 0 0 0 15 2v5a1 1 0 0 0 1 1h5a2.4 2.4 0 0 0-.706-1.706zM5 7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h8a2 2 0 0 0 1.732-1",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:film",
+    "name": "Film",
+    "viewBox": "0 0 24 24",
+    "path": "M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3ZM7 3v18M3 7.5h4M3 12h18M3 16.5h4M17 3v18M17 7.5h4M17 16.5h4",
+    "strokeOnly": true
+  }
+]

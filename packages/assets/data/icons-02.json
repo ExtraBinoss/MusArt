@@ -1,0 +1,485 @@
+[
+  {
+    "id": "lucide:arrow-down-to-line",
+    "name": "Arrow Down To Line",
+    "viewBox": "0 0 24 24",
+    "path": "M12 17V3m6 11 6 6 6-6M19 21H5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-down-up",
+    "name": "Arrow Down Up",
+    "viewBox": "0 0 24 24",
+    "path": "m3 16 4 4 4-4M7 20V4m21 8-4-4-4 4M17 4v16",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-down-wide-narrow",
+    "name": "Arrow Down Wide Narrow",
+    "viewBox": "0 0 24 24",
+    "path": "m3 16 4 4 4-4M7 20V4M11 4h10M11 8h7M11 12h4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-down-z-a",
+    "name": "Arrow Down Z A",
+    "viewBox": "0 0 24 24",
+    "path": "m3 16 4 4 4-4M7 4v16M15 4h5l-5 6h5M15 20v-3.5a2.5 2.5 0 0 1 5 0V20M20 18h-5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-left",
+    "name": "Arrow Left",
+    "viewBox": "0 0 24 24",
+    "path": "m12 19-7-7 7-7M19 12H5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-left-from-line",
+    "name": "Arrow Left From Line",
+    "viewBox": "0 0 24 24",
+    "path": "m9 6-6 6 6 6M3 12h14M21 19V5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-left-right",
+    "name": "Arrow Left Right",
+    "viewBox": "0 0 24 24",
+    "path": "M8 3 4 7l4 4M4 7h16m16 21 4-4-4-4M20 17H4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-left-to-line",
+    "name": "Arrow Left To Line",
+    "viewBox": "0 0 24 24",
+    "path": "M3 19V5m13 6-6 6 6 6M7 12h14",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-right",
+    "name": "Arrow Right",
+    "viewBox": "0 0 24 24",
+    "path": "M5 12h14m12 5 7 7-7 7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-right-from-line",
+    "name": "Arrow Right From Line",
+    "viewBox": "0 0 24 24",
+    "path": "M3 5v14M21 12H7m15 18 6-6-6-6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-right-left",
+    "name": "Arrow Right Left",
+    "viewBox": "0 0 24 24",
+    "path": "m16 3 4 4-4 4M20 7H4m8 21-4-4 4-4M4 17h16",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-right-to-line",
+    "name": "Arrow Right To Line",
+    "viewBox": "0 0 24 24",
+    "path": "M17 12H3m11 18 6-6-6-6M21 5v14",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-up",
+    "name": "Arrow Up",
+    "viewBox": "0 0 24 24",
+    "path": "m5 12 7-7 7 7M12 19V5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-up-0-1",
+    "name": "Arrow Up 0 1",
+    "viewBox": "0 0 24 24",
+    "path": "m3 8 4-4 4 4M7 4v16M17 4H17A2 2 0 0 1 19 6V8A2 2 0 0 1 17 10H17A2 2 0 0 1 15 8V6A2 2 0 0 1 17 4ZM17 20v-6h-2M15 20h4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-up-1-0",
+    "name": "Arrow Up 1 0",
+    "viewBox": "0 0 24 24",
+    "path": "m3 8 4-4 4 4M7 4v16M17 10V4h-2M15 10h4M17 14H17A2 2 0 0 1 19 16V18A2 2 0 0 1 17 20H17A2 2 0 0 1 15 18V16A2 2 0 0 1 17 14Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-up-a-z",
+    "name": "Arrow Up A Z",
+    "viewBox": "0 0 24 24",
+    "path": "m3 8 4-4 4 4M7 4v16M20 8h-5M15 10V6.5a2.5 2.5 0 0 1 5 0V10M15 14h5l-5 6h5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-up-down",
+    "name": "Arrow Up Down",
+    "viewBox": "0 0 24 24",
+    "path": "m21 16-4 4-4-4M17 20V4m3 8 4-4 4 4M7 4v16",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-up-from-dot",
+    "name": "Arrow Up From Dot",
+    "viewBox": "0 0 24 24",
+    "path": "m5 9 7-7 7 7M12 16V2M11 21A1 1 0 1 0 13 21A1 1 0 1 0 11 21",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-up-from-line",
+    "name": "Arrow Up From Line",
+    "viewBox": "0 0 24 24",
+    "path": "m18 9-6-6-6 6M12 3v14M5 21h14",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-up-left",
+    "name": "Arrow Up Left",
+    "viewBox": "0 0 24 24",
+    "path": "M7 17V7h10M17 17 7 7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-up-narrow-wide",
+    "name": "Arrow Up Narrow Wide",
+    "viewBox": "0 0 24 24",
+    "path": "m3 8 4-4 4 4M7 4v16M11 12h4M11 16h7M11 20h10",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-up-right",
+    "name": "Arrow Up Right",
+    "viewBox": "0 0 24 24",
+    "path": "M7 7h10v10M7 17 17 7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-up-to-line",
+    "name": "Arrow Up To Line",
+    "viewBox": "0 0 24 24",
+    "path": "M5 3h14m18 13-6-6-6 6M12 7v14",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-up-wide-narrow",
+    "name": "Arrow Up Wide Narrow",
+    "viewBox": "0 0 24 24",
+    "path": "m3 8 4-4 4 4M7 4v16M11 12h10M11 16h7M11 20h4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrow-up-z-a",
+    "name": "Arrow Up Z A",
+    "viewBox": "0 0 24 24",
+    "path": "m3 8 4-4 4 4M7 4v16M15 4h5l-5 6h5M15 20v-3.5a2.5 2.5 0 0 1 5 0V20M20 18h-5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:arrows-up-from-line",
+    "name": "Arrows Up From Line",
+    "viewBox": "0 0 24 24",
+    "path": "m4 6 3-3 3 3M7 17V3m14 6 3-3 3 3M17 17V3M4 21h16",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:asterisk",
+    "name": "Asterisk",
+    "viewBox": "0 0 24 24",
+    "path": "M12 5v14m18.065 8.496-12.125 7m5.94 8.504 12.125 7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:astroid",
+    "name": "Astroid",
+    "viewBox": "0 0 24 24",
+    "path": "M12.983 21.186a1 1 0 0 1-1.966 0 10 10 0 0 0-8.203-8.203 1 1 0 0 1 0-1.966 10 10 0 0 0 8.203-8.203 1 1 0 0 1 1.966 0 10 10 0 0 0 8.203 8.203 1 1 0 0 1 0 1.966 10 10 0 0 0-8.203 8.203",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:at-sign",
+    "name": "At Sign",
+    "viewBox": "0 0 24 24",
+    "path": "M8 12A4 4 0 1 0 16 12A4 4 0 1 0 8 12M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:atom",
+    "name": "Atom",
+    "viewBox": "0 0 24 24",
+    "path": "M11 12A1 1 0 1 0 13 12A1 1 0 1 0 11 12M20.2 20.2c2.04-2.03.02-7.36-4.5-11.9-4.54-4.52-9.87-6.54-11.9-4.5-2.04 2.03-.02 7.36 4.5 11.9 4.54 4.52 9.87 6.54 11.9 4.5ZM15.7 15.7c4.52-4.54 6.54-9.87 4.5-11.9-2.03-2.04-7.36-.02-11.9 4.5-4.52 4.54-6.54 9.87-4.5 11.9 2.03 2.04 7.36.02 11.9-4.5Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:audio-lines",
+    "name": "Audio Lines",
+    "viewBox": "0 0 24 24",
+    "path": "M2 10v3M6 6v11M10 3v18M14 8v7M18 5v13M22 10v3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:audio-lines-off",
+    "name": "Audio Lines Off",
+    "viewBox": "0 0 24 24",
+    "path": "M10 10v11M10 3v1.35M14 14v1M14 8v.35M18 5v7.35M2 10v3m2 2 20 20M22 10v3M6 6v11",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:audio-lines-x",
+    "name": "Audio Lines X",
+    "viewBox": "0 0 24 24",
+    "path": "M10 3v18M14 8v6.35m17 17 5 5M18 5v8.1M2 10v3M22 10v3m22 17-5 5M6 6v11",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:audio-waveform",
+    "name": "Audio Waveform",
+    "viewBox": "0 0 24 24",
+    "path": "M2 13a2 2 0 0 0 2-2V7a2 2 0 0 1 4 0v13a2 2 0 0 0 4 0V4a2 2 0 0 1 4 0v13a2 2 0 0 0 4 0v-4a2 2 0 0 1 2-2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:award",
+    "name": "Award",
+    "viewBox": "0 0 24 24",
+    "path": "m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526M6 8A6 6 0 1 0 18 8A6 6 0 1 0 6 8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:axe",
+    "name": "Axe",
+    "viewBox": "0 0 24 24",
+    "path": "m14 12-8.381 8.38a1 1 0 0 1-3.001-3L11 9M15 15.5a.5.5 0 0 0 .5.5A6.5 6.5 0 0 0 22 9.5a.5.5 0 0 0-.5-.5h-1.672a2 2 0 0 1-1.414-.586l-5.062-5.062a1.205 1.205 0 0 0-1.704 0L9.352 5.648a1.205 1.205 0 0 0 0 1.704l5.062 5.062A2 2 0 0 1 15 13.828z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:axis-3d",
+    "name": "Axis 3d",
+    "viewBox": "0 0 24 24",
+    "path": "M13.5 10.5 15 9M4 4v15a1 1 0 0 0 1 1h15M4.293 19.707 6 18m9 15 1.5-1.5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:baby",
+    "name": "Baby",
+    "viewBox": "0 0 24 24",
+    "path": "M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5M15 12h.01M19.38 6.813A9 9 0 0 1 20.8 10.2a2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1M9 12h.01",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:backpack",
+    "name": "Backpack",
+    "viewBox": "0 0 24 24",
+    "path": "M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM8 10h8M8 18h8M8 22v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v6M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge",
+    "name": "Badge",
+    "viewBox": "0 0 24 24",
+    "path": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge-alert",
+    "name": "Badge Alert",
+    "viewBox": "0 0 24 24",
+    "path": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76ZM12 8L12 12M12 16L12.01 16",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge-cent",
+    "name": "Badge Cent",
+    "viewBox": "0 0 24 24",
+    "path": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76ZM12 7v10M15.4 10a4 4 0 1 0 0 4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge-check",
+    "name": "Badge Check",
+    "viewBox": "0 0 24 24",
+    "path": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Zm16 9-5.5 5.5L8 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge-dollar-sign",
+    "name": "Badge Dollar Sign",
+    "viewBox": "0 0 24 24",
+    "path": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76ZM16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8M12 18V6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge-euro",
+    "name": "Badge Euro",
+    "viewBox": "0 0 24 24",
+    "path": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76ZM7 12h5M15 9.4a4 4 0 1 0 0 5.2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge-indian-rupee",
+    "name": "Badge Indian Rupee",
+    "viewBox": "0 0 24 24",
+    "path": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76ZM8 8h8M8 12h8m13 17-5-1h1a4 4 0 0 0 0-8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge-info",
+    "name": "Badge Info",
+    "viewBox": "0 0 24 24",
+    "path": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76ZM12 16L12 12M12 8L12.01 8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge-japanese-yen",
+    "name": "Badge Japanese Yen",
+    "viewBox": "0 0 24 24",
+    "path": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Zm9 8 3 3v7m12 11 3-3M9 12h6M9 16h6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge-minus",
+    "name": "Badge Minus",
+    "viewBox": "0 0 24 24",
+    "path": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76ZM8 12L16 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge-percent",
+    "name": "Badge Percent",
+    "viewBox": "0 0 24 24",
+    "path": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Zm15 9-6 6M9 9h.01M15 15h.01",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge-plus",
+    "name": "Badge Plus",
+    "viewBox": "0 0 24 24",
+    "path": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76ZM12 8L12 16M8 12L16 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge-pound-sterling",
+    "name": "Badge Pound Sterling",
+    "viewBox": "0 0 24 24",
+    "path": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76ZM8 12h4M10 16V9.5a2.5 2.5 0 0 1 5 0M8 16h7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge-question-mark",
+    "name": "Badge Question Mark",
+    "viewBox": "0 0 24 24",
+    "path": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76ZM9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17L12.01 17",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge-russian-ruble",
+    "name": "Badge Russian Ruble",
+    "viewBox": "0 0 24 24",
+    "path": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76ZM9 16h5M9 12h5a2 2 0 1 0 0-4h-3v9",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge-swiss-franc",
+    "name": "Badge Swiss Franc",
+    "viewBox": "0 0 24 24",
+    "path": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76ZM11 17V8h4M11 12h3M9 16h4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge-turkish-lira",
+    "name": "Badge Turkish Lira",
+    "viewBox": "0 0 24 24",
+    "path": "M11 7v10a5 5 0 0 0 5-5m15 8-6 3M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:badge-x",
+    "name": "Badge X",
+    "viewBox": "0 0 24 24",
+    "path": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76ZM15 9L9 15M9 9L15 15",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:baggage-claim",
+    "name": "Baggage Claim",
+    "viewBox": "0 0 24 24",
+    "path": "M22 18H6a2 2 0 0 1-2-2V7a2 2 0 0 0-2-2M17 14V4a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2v10M9 6H20A1 1 0 0 1 21 7V13A1 1 0 0 1 20 14H9A1 1 0 0 1 8 13V7A1 1 0 0 1 9 6ZM16 20A2 2 0 1 0 20 20A2 2 0 1 0 16 20M7 20A2 2 0 1 0 11 20A2 2 0 1 0 7 20",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:balloon",
+    "name": "Balloon",
+    "viewBox": "0 0 24 24",
+    "path": "M12 16v1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v1M12 6a2 2 0 0 1 2 2M18 8c0 4-3.5 8-6 8s-6-4-6-8a6 6 0 0 1 12 0",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:ban",
+    "name": "Ban",
+    "viewBox": "0 0 24 24",
+    "path": "M2 12A10 10 0 1 0 22 12A10 10 0 1 0 2 12M4.929 4.929 19.07 19.071",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:banana",
+    "name": "Banana",
+    "viewBox": "0 0 24 24",
+    "path": "M4 13c3.5-2 8-2 10 2a5.5 5.5 0 0 1 8 5M5.15 17.89c5.52-1.52 8.65-6.89 7-12C11.55 4 11.5 2 13 2c3.22 0 5 5.5 5 8 0 6.5-4.2 12-10.49 12C5.11 22 2 22 2 20c0-1.5 1.14-1.55 3.15-2.11Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bandage",
+    "name": "Bandage",
+    "viewBox": "0 0 24 24",
+    "path": "M10 10.01h.01M10 14.01h.01M14 10.01h.01M14 14.01h.01M18 6v12M6 6v12M4 6H20A2 2 0 0 1 22 8V16A2 2 0 0 1 20 18H4A2 2 0 0 1 2 16V8A2 2 0 0 1 4 6Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:banknote",
+    "name": "Banknote",
+    "viewBox": "0 0 24 24",
+    "path": "M4 6H20A2 2 0 0 1 22 8V16A2 2 0 0 1 20 18H4A2 2 0 0 1 2 16V8A2 2 0 0 1 4 6ZM10 12A2 2 0 1 0 14 12A2 2 0 1 0 10 12M6 12h.01M18 12h.01",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:banknote-arrow-down",
+    "name": "Banknote Arrow Down",
+    "viewBox": "0 0 24 24",
+    "path": "M12 18H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5m16 19 3 3 3-3M18 12h.01M19 16v6M6 12h.01M10 12A2 2 0 1 0 14 12A2 2 0 1 0 10 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:banknote-arrow-up",
+    "name": "Banknote Arrow Up",
+    "viewBox": "0 0 24 24",
+    "path": "M12 18H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5M18 12h.01M19 22v-6m22 19-3-3-3 3M6 12h.01M10 12A2 2 0 1 0 14 12A2 2 0 1 0 10 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:banknote-check",
+    "name": "Banknote Check",
+    "viewBox": "0 0 24 24",
+    "path": "M11.748 18H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4.875m16 19 2 2 4-4M18 12h.01M6 12h.01M10 12A2 2 0 1 0 14 12A2 2 0 1 0 10 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:banknote-x",
+    "name": "Banknote X",
+    "viewBox": "0 0 24 24",
+    "path": "M13 18H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5m17 17 5 5M18 12h.01m22 17-5 5M6 12h.01M10 12A2 2 0 1 0 14 12A2 2 0 1 0 10 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:barcode",
+    "name": "Barcode",
+    "viewBox": "0 0 24 24",
+    "path": "M3 5v14M8 5v14M12 5v14M17 5v14M21 5v14",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:barrel",
+    "name": "Barrel",
+    "viewBox": "0 0 24 24",
+    "path": "M10 3a41 41 0 000 18M14 3a41 41 0 010 18M16.997 21a2 2 0 001.68-.92 15.25 15.25 0 000-16.16 2 2 0 00-1.68-.92h-10a2 2 0 00-1.681.92 15.25 15.25 0 000 16.16 2 2 0 001.681.92zM3.54 16h16.914M3.54 8h16.914",
+    "strokeOnly": true
+  }
+]

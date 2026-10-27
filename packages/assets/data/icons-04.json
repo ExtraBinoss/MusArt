@@ -1,0 +1,485 @@
+[
+  {
+    "id": "lucide:book-open-text",
+    "name": "Book Open Text",
+    "viewBox": "0 0 24 24",
+    "path": "M12 5v16M16 13h2M16 9h2M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2zM6 13h2M6 9h2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:book-plus",
+    "name": "Book Plus",
+    "viewBox": "0 0 24 24",
+    "path": "M12 7v6M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20M9 10h6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:book-search",
+    "name": "Book Search",
+    "viewBox": "0 0 24 24",
+    "path": "M11 22H5.5a1 1 0 0 1 0-5h4.501m21 22-1.879-1.878M3 19.5v-15A2.5 2.5 0 0 1 5.5 2H18a1 1 0 0 1 1 1v8M14 18A3 3 0 1 0 20 18A3 3 0 1 0 14 18",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:book-text",
+    "name": "Book Text",
+    "viewBox": "0 0 24 24",
+    "path": "M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20M8 11h8M8 7h6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:book-type",
+    "name": "Book Type",
+    "viewBox": "0 0 24 24",
+    "path": "M10 13h4M12 6v7M16 8V6H8v2M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:book-up",
+    "name": "Book Up",
+    "viewBox": "0 0 24 24",
+    "path": "M12 13V7M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20m9 10 3-3 3 3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:book-up-2",
+    "name": "Book Up 2",
+    "viewBox": "0 0 24 24",
+    "path": "M12 13V7M18 2h1a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20M4 19.5v-15A2.5 2.5 0 0 1 6.5 2m9 10 3-3 3 3m9 5 3-3 3 3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:book-user",
+    "name": "Book User",
+    "viewBox": "0 0 24 24",
+    "path": "M15 13a3 3 0 1 0-6 0M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20M10 8A2 2 0 1 0 14 8A2 2 0 1 0 10 8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:book-x",
+    "name": "Book X",
+    "viewBox": "0 0 24 24",
+    "path": "m14.5 7.5-5 5M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20m9.5 7.5 5 5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bookmark",
+    "name": "Bookmark",
+    "viewBox": "0 0 24 24",
+    "path": "M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bookmark-check",
+    "name": "Bookmark Check",
+    "viewBox": "0 0 24 24",
+    "path": "M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2zm9 10 2 2 4-4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bookmark-minus",
+    "name": "Bookmark Minus",
+    "viewBox": "0 0 24 24",
+    "path": "M15 10H9M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bookmark-off",
+    "name": "Bookmark Off",
+    "viewBox": "0 0 24 24",
+    "path": "M19 19v1a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5m2 2 20 20M8.656 3H17a2 2 0 0 1 2 2v8.344",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bookmark-plus",
+    "name": "Bookmark Plus",
+    "viewBox": "0 0 24 24",
+    "path": "M12 7v6M15 10H9M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bookmark-x",
+    "name": "Bookmark X",
+    "viewBox": "0 0 24 24",
+    "path": "m14.5 7.5-5 5M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2zm9.5 7.5 5 5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:boom-box",
+    "name": "Boom Box",
+    "viewBox": "0 0 24 24",
+    "path": "M4 9V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4M8 8v1M12 8v1M16 8v1M4 9H20A2 2 0 0 1 22 11V19A2 2 0 0 1 20 21H4A2 2 0 0 1 2 19V11A2 2 0 0 1 4 9ZM6 15A2 2 0 1 0 10 15A2 2 0 1 0 6 15M14 15A2 2 0 1 0 18 15A2 2 0 1 0 14 15",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bot",
+    "name": "Bot",
+    "viewBox": "0 0 24 24",
+    "path": "M12 8V4H8M6 8H18A2 2 0 0 1 20 10V18A2 2 0 0 1 18 20H6A2 2 0 0 1 4 18V10A2 2 0 0 1 6 8ZM2 14h2M20 14h2M15 13v2M9 13v2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bot-message-square",
+    "name": "Bot Message Square",
+    "viewBox": "0 0 24 24",
+    "path": "M12 6V2H8M15 11v2M2 12h2M20 12h2M20 16a2 2 0 0 1-2 2H8.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 4 20.286V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2zM9 11v2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bot-off",
+    "name": "Bot Off",
+    "viewBox": "0 0 24 24",
+    "path": "M13.67 8H18a2 2 0 0 1 2 2v4.33M2 14h2M20 14h2M22 22 2 2M8 8H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 1.414-.586M9 13v2M9.67 4H12v2.33",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bottle-wine",
+    "name": "Bottle Wine",
+    "viewBox": "0 0 24 24",
+    "path": "M10 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a6 6 0 0 0 1.2 3.6l.6.8A6 6 0 0 1 17 13v8a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-8a6 6 0 0 1 1.2-3.6l.6-.8A6 6 0 0 0 10 5zM17 13h-4a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bow-arrow",
+    "name": "Bow Arrow",
+    "viewBox": "0 0 24 24",
+    "path": "M17 3h4v4M18.575 11.082a13 13 0 0 1 1.048 9.027 1.17 1.17 0 0 1-1.914.597L14 17M7 10 3.29 6.29a1.17 1.17 0 0 1 .6-1.91 13 13 0 0 1 9.03 1.05M7 14a1.7 1.7 0 0 0-1.207.5l-2.646 2.646A.5.5 0 0 0 3.5 18H5a1 1 0 0 1 1 1v1.5a.5.5 0 0 0 .854.354L9.5 18.207A1.7 1.7 0 0 0 10 17v-2a1 1 0 0 0-1-1zM9.707 14.293 21 3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:box",
+    "name": "Box",
+    "viewBox": "0 0 24 24",
+    "path": "M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Zm3.3 7 8.7 5 8.7-5M12 22V12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:boxes",
+    "name": "Boxes",
+    "viewBox": "0 0 24 24",
+    "path": "M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 .97 1.71l3 1.8a2 2 0 0 0 2.06 0L12 19v-5.5l-5-3-4.03 2.42Zm7 16.5-4.74-2.85m7 16.5 5-3M7 16.5v5.17M12 13.5V19l3.97 2.38a2 2 0 0 0 2.06 0l3-1.8a2 2 0 0 0 .97-1.71v-3.24a2 2 0 0 0-.97-1.71L17 10.5l-5 3Zm17 16.5-5-3m17 16.5 4.74-2.85M17 16.5v5.17M7.97 4.42A2 2 0 0 0 7 6.13v4.37l5 3 5-3V6.13a2 2 0 0 0-.97-1.71l-3-1.8a2 2 0 0 0-2.06 0l-3 1.8ZM12 8 7.26 5.15m12 8 4.74-2.85M12 13.5V8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:braces",
+    "name": "Braces",
+    "viewBox": "0 0 24 24",
+    "path": "M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:brackets",
+    "name": "Brackets",
+    "viewBox": "0 0 24 24",
+    "path": "M16 3h3a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-3M8 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:brain",
+    "name": "Brain",
+    "viewBox": "0 0 24 24",
+    "path": "M12 18V5M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5M17.997 5.125a4 4 0 0 1 2.526 5.77M18 18a4 4 0 0 0 2-7.464M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517M6 18a4 4 0 0 1-2-7.464M6.003 5.125a4 4 0 0 0-2.526 5.77",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:brain-circuit",
+    "name": "Brain Circuit",
+    "viewBox": "0 0 24 24",
+    "path": "M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18ZM9 13a4.5 4.5 0 0 0 3-4M6.003 5.125A3 3 0 0 0 6.401 6.5M3.477 10.896a4 4 0 0 1 .585-.396M6 18a4 4 0 0 1-1.967-.516M12 13h4M12 18h6a2 2 0 0 1 2 2v1M12 8h8M16 8V5a2 2 0 0 1 2-2M15.5 13A0.5 0.5 0 1 0 16.5 13A0.5 0.5 0 1 0 15.5 13M17.5 3A0.5 0.5 0 1 0 18.5 3A0.5 0.5 0 1 0 17.5 3M19.5 21A0.5 0.5 0 1 0 20.5 21A0.5 0.5 0 1 0 19.5 21M19.5 8A0.5 0.5 0 1 0 20.5 8A0.5 0.5 0 1 0 19.5 8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:brain-cog",
+    "name": "Brain Cog",
+    "viewBox": "0 0 24 24",
+    "path": "m10.852 14.772-.383.923m10.852 9.228-.383-.923m13.148 14.772.382.924m13.531 8.305-.383.923m14.772 10.852.923-.383m14.772 13.148.923.383M17.598 6.5A3 3 0 1 0 12 5a3 3 0 0 0-5.63-1.446 3 3 0 0 0-.368 1.571 4 4 0 0 0-2.525 5.771M17.998 5.125a4 4 0 0 1 2.525 5.771M19.505 10.294a4 4 0 0 1-1.5 7.706M4.032 17.483A4 4 0 0 0 11.464 20c.18-.311.892-.311 1.072 0a4 4 0 0 0 7.432-2.516M4.5 10.291A4 4 0 0 0 6 18M6.002 5.125a3 3 0 0 0 .4 1.375m9.228 10.852-.923-.383m9.228 13.148-.923.383M9 12A3 3 0 1 0 15 12A3 3 0 1 0 9 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:brick-wall",
+    "name": "Brick Wall",
+    "viewBox": "0 0 24 24",
+    "path": "M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3ZM12 9v6M16 15v6M16 3v6M3 15h18M3 9h18M8 15v6M8 3v6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:brick-wall-fire",
+    "name": "Brick Wall Fire",
+    "viewBox": "0 0 24 24",
+    "path": "M16 3v2.107M17 9c1 3 2.5 3.5 3.5 4.5A5 5 0 0 1 22 17a5 5 0 0 1-10 0c0-.3 0-.6.1-.9a2 2 0 1 0 3.3-2C13 11.5 16 9 17 9M21 8.274V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.938M3 15h5.253M3 9h8.228M8 15v6M8 3v6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:brick-wall-shield",
+    "name": "Brick Wall Shield",
+    "viewBox": "0 0 24 24",
+    "path": "M12 9v1.258M16 3v5.46M21 9.118V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5.75M22 17.5c0 2.499-1.75 3.749-3.83 4.474a.5.5 0 0 1-.335-.005c-2.085-.72-3.835-1.97-3.835-4.47V14a.5.5 0 0 1 .5-.499c1 0 2.25-.6 3.12-1.36a.6.6 0 0 1 .76-.001c.875.765 2.12 1.36 3.12 1.36a.5.5 0 0 1 .5.5zM3 15h7M3 9h12.142M8 15v6M8 3v6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bridge",
+    "name": "Bridge",
+    "viewBox": "0 0 24 24",
+    "path": "M10 9.728V16M14 9.728V16M18 20V4m22 11-4-4A7.5 7.5 0 0 1 6 7l-4 4M22 16H2M6 20V4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:briefcase",
+    "name": "Briefcase",
+    "viewBox": "0 0 24 24",
+    "path": "M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16M4 6H20A2 2 0 0 1 22 8V18A2 2 0 0 1 20 20H4A2 2 0 0 1 2 18V8A2 2 0 0 1 4 6Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:briefcase-business",
+    "name": "Briefcase Business",
+    "viewBox": "0 0 24 24",
+    "path": "M12 12h.01M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2M22 13a18.15 18.15 0 0 1-20 0M4 6H20A2 2 0 0 1 22 8V18A2 2 0 0 1 20 20H4A2 2 0 0 1 2 18V8A2 2 0 0 1 4 6Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:briefcase-conveyor-belt",
+    "name": "Briefcase Conveyor Belt",
+    "viewBox": "0 0 24 24",
+    "path": "M10 20v2M14 20v2M18 20v2M21 20H3M6 20v2M8 16V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v12M6 6H18A2 2 0 0 1 20 8V14A2 2 0 0 1 18 16H6A2 2 0 0 1 4 14V8A2 2 0 0 1 6 6Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:briefcase-medical",
+    "name": "Briefcase Medical",
+    "viewBox": "0 0 24 24",
+    "path": "M12 11v4M14 13h-4M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2M18 6v14M6 6v14M4 6H20A2 2 0 0 1 22 8V18A2 2 0 0 1 20 20H4A2 2 0 0 1 2 18V8A2 2 0 0 1 4 6Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bring-to-front",
+    "name": "Bring To Front",
+    "viewBox": "0 0 24 24",
+    "path": "M10 8H14A2 2 0 0 1 16 10V14A2 2 0 0 1 14 16H10A2 2 0 0 1 8 14V10A2 2 0 0 1 10 8ZM4 10a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2M14 20a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:broccoli",
+    "name": "Broccoli",
+    "viewBox": "0 0 24 24",
+    "path": "M10 13a3 3 0 01-2.121-5.121M15.606 14.204c-3.5 1.5-5.899 4.503-8.899 7.503A1 1 0 016 22c-2 0-4-2-4-4a1 1 0 01.293-.707c1.911-1.911 3.823-3.578 5.347-5.441M16.573 14.737A4 4 0 0114 11M7.14 10.907a4 4 0 112.756-7.43A4 4 0 0116.7 4.48a2 2 0 012.82 2.82 4 4 0 011.002 6.805 4 4 0 11-7.51 1.59",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:broom",
+    "name": "Broom",
+    "viewBox": "0 0 24 24",
+    "path": "M13.5 10.5 22 2M14.734 13.841a2 2 0 00-.314-2.42L12.58 9.58a2 2 0 00-2.421-.314l-7.657 4.461A1 1 0 002.3 15.3l6.403 6.403a1 1 0 001.571-.204zm5 18 2-2m7.699 10.7 5.602 5.601",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:broom-sparkles",
+    "name": "Broom Sparkles",
+    "viewBox": "0 0 24 24",
+    "path": "M11 2v2M12 3h-2M13.5 10.5 22 2M14.734 13.841a2 2 0 00-.314-2.42L12.58 9.58a2 2 0 00-2.421-.314l-7.657 4.461A1 1 0 002.3 15.3l6.403 6.403a1 1 0 001.571-.204zM20 15v4M22 17h-4M4 4v4m5 18 2-2M6 6H2m7.699 10.7 5.602 5.601",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:brush",
+    "name": "Brush",
+    "viewBox": "0 0 24 24",
+    "path": "m11 10 3 3M6.5 21A3.5 3.5 0 1 0 3 17.5a2.62 2.62 0 0 1-.708 1.792A1 1 0 0 0 3 21zM9.969 17.031 21.378 5.624a1 1 0 0 0-3.002-3.002L6.967 14.031",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:brush-cleaning",
+    "name": "Brush Cleaning",
+    "viewBox": "0 0 24 24",
+    "path": "m16 22-1-4M19 14a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v1a1 1 0 0 0 1 1M19 14H5l-1.973 6.767A1 1 0 0 0 4 22h16a1 1 0 0 0 .973-1.233zm8 22 1-4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bubbles",
+    "name": "Bubbles",
+    "viewBox": "0 0 24 24",
+    "path": "M7.001 15.085A1.5 1.5 0 0 1 9 16.5M15 8.5A3.5 3.5 0 1 0 22 8.5A3.5 3.5 0 1 0 15 8.5M2 16.5A5.5 5.5 0 1 0 13 16.5A5.5 5.5 0 1 0 2 16.5M5 4.5A2.5 2.5 0 1 0 10 4.5A2.5 2.5 0 1 0 5 4.5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bug",
+    "name": "Bug",
+    "viewBox": "0 0 24 24",
+    "path": "M12 20v-9M14 7a4 4 0 0 1 4 4v3a6 6 0 0 1-12 0v-3a4 4 0 0 1 4-4zM14.12 3.88 16 2M21 21a4 4 0 0 0-3.81-4M21 5a4 4 0 0 1-3.55 3.97M22 13h-4M3 21a4 4 0 0 1 3.81-4M3 5a4 4 0 0 0 3.55 3.97M6 13H2m8 2 1.88 1.88M9 7.13V6a3 3 0 1 1 6 0v1.13",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bug-off",
+    "name": "Bug Off",
+    "viewBox": "0 0 24 24",
+    "path": "M12 20v-8M12.656 7H14a4 4 0 0 1 4 4v1.344M14.12 3.88 16 2M17.123 17.123A6 6 0 0 1 6 14v-3a4 4 0 0 1 1.72-3.287m2 2 20 20M21 5a4 4 0 0 1-3.55 3.97M22 13h-3.344M3 21a4 4 0 0 1 3.81-4M3 5a4 4 0 0 0 3.55 3.97M6 13H2m8 2 1.88 1.88M9.712 4.06A3 3 0 0 1 15 6v1.13",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bug-play",
+    "name": "Bug Play",
+    "viewBox": "0 0 24 24",
+    "path": "M10 19.655A6 6 0 0 1 6 14v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 3.97M14 15.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997a1 1 0 0 1-1.517-.86zM14.12 3.88 16 2M21 5a4 4 0 0 1-3.55 3.97M3 21a4 4 0 0 1 3.81-4M3 5a4 4 0 0 0 3.55 3.97M6 13H2m8 2 1.88 1.88M9 7.13V6a3 3 0 1 1 6 0v1.13",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:building",
+    "name": "Building",
+    "viewBox": "0 0 24 24",
+    "path": "M12 10h.01M12 14h.01M12 6h.01M16 10h.01M16 14h.01M16 6h.01M8 10h.01M8 14h.01M8 6h.01M9 22v-3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3M6 2H18A2 2 0 0 1 20 4V20A2 2 0 0 1 18 22H6A2 2 0 0 1 4 20V4A2 2 0 0 1 6 2Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:building-complex",
+    "name": "Building Complex",
+    "viewBox": "0 0 24 24",
+    "path": "M10 12h4M10 8h4M14 21v-3a2 2 0 0 0-4 0v3M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:building-complex-plus",
+    "name": "Building Complex Plus",
+    "viewBox": "0 0 24 24",
+    "path": "M10 12h4M10 21v-3a2 2 0 013.05-1.702M10 8h4M16 19h6M18 7h2a2 2 0 012 2v4.355M19 16v6M6 10H4a2 2 0 00-2 2v7a2 2 0 002 2h8.535M6 21V5a2 2 0 012-2h8a2 2 0 012 2v7.126",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bus",
+    "name": "Bus",
+    "viewBox": "0 0 24 24",
+    "path": "M8 6v6M15 6v6M2 12h19.6M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3M5 18A2 2 0 1 0 9 18A2 2 0 1 0 5 18M9 18h5M14 18A2 2 0 1 0 18 18A2 2 0 1 0 14 18",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:bus-front",
+    "name": "Bus Front",
+    "viewBox": "0 0 24 24",
+    "path": "M4 6 2 7M10 6h4m22 7-2-1M6 3H18A2 2 0 0 1 20 5V17A2 2 0 0 1 18 19H6A2 2 0 0 1 4 17V5A2 2 0 0 1 6 3ZM4 11h16M8 15h.01M16 15h.01M6 19v2M18 21v-2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:cable",
+    "name": "Cable",
+    "viewBox": "0 0 24 24",
+    "path": "M17 19a1 1 0 0 1-1-1v-2a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2a1 1 0 0 1-1 1zM17 21v-2M19 14V6.5a1 1 0 0 0-7 0v11a1 1 0 0 1-7 0V10M21 21v-2M3 5V3M4 10a2 2 0 0 1-2-2V6a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2a2 2 0 0 1-2 2zM7 5V3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:cable-car",
+    "name": "Cable Car",
+    "viewBox": "0 0 24 24",
+    "path": "M10 3h.01M14 2h.01m2 9 20-5M12 12V6.5M7 12H17A3 3 0 0 1 20 15V19A3 3 0 0 1 17 22H7A3 3 0 0 1 4 19V15A3 3 0 0 1 7 12ZM9 12v5M15 12v5M4 17h16",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:cake",
+    "name": "Cake",
+    "viewBox": "0 0 24 24",
+    "path": "M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1M2 21h20M7 8v3M12 8v3M17 8v3M7 4h.01M12 4h.01M17 4h.01",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:cake-slice",
+    "name": "Cake Slice",
+    "viewBox": "0 0 24 24",
+    "path": "M16 13H3M16 17H3m7.2 7.9-3.388 2.5A2 2 0 0 0 3 12.01V20a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-8.654c0-2-2.44-6.026-6.44-8.026a1 1 0 0 0-1.082.057L10.4 5.6M7 7A2 2 0 1 0 11 7A2 2 0 1 0 7 7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calculator",
+    "name": "Calculator",
+    "viewBox": "0 0 24 24",
+    "path": "M6 2H18A2 2 0 0 1 20 4V20A2 2 0 0 1 18 22H6A2 2 0 0 1 4 20V4A2 2 0 0 1 6 2ZM8 6L16 6M16 14L16 18M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar",
+    "name": "Calendar",
+    "viewBox": "0 0 24 24",
+    "path": "M8 2v3M16 2v3M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3ZM3 9h18",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-1",
+    "name": "Calendar 1",
+    "viewBox": "0 0 24 24",
+    "path": "M11 13h1v4M16 2v3M3 9h18M8 2v3M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-arrow-down",
+    "name": "Calendar Arrow Down",
+    "viewBox": "0 0 24 24",
+    "path": "m14 17 4 4 4-4M16 2v3M18 13v8M21 10.354V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h7.343M3 9h18M8 2v3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-arrow-up",
+    "name": "Calendar Arrow Up",
+    "viewBox": "0 0 24 24",
+    "path": "m14 17 4-4 4 4M16 2v3M18 21v-8M21 10.343V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h9M3 9h18M8 2v3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-check",
+    "name": "Calendar Check",
+    "viewBox": "0 0 24 24",
+    "path": "M8 2v3M16 2v3M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3ZM3 9h18m9 15 2 2 4-4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-check-2",
+    "name": "Calendar Check 2",
+    "viewBox": "0 0 24 24",
+    "path": "M 19 3 L 5 3M 21 13 L 21 5M 21 5 A2 2 0 0 0 19 3M 3 19 A2 2 0 0 0 5 21M 3 5 L 3 19M 5 3 A2 2 0 0 0 3 5m16 19 2 2 4-4M16 2v3M3 9h18M5 21 L12.5 21M8 2v3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-chevrons-right",
+    "name": "Calendar Chevrons Right",
+    "viewBox": "0 0 24 24",
+    "path": "m13 21 3-3-3-3M16 2v3m19 21 3-3-3-3M21 11.5V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h4M3 9h18M8 2v3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-clock",
+    "name": "Calendar Clock",
+    "viewBox": "0 0 24 24",
+    "path": "M16 14v2.2l1.6 1M16 2v3M21 7.338V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2.338M3 9h5.859M8 2v3M10 16A6 6 0 1 0 22 16A6 6 0 1 0 10 16",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-cog",
+    "name": "Calendar Cog",
+    "viewBox": "0 0 24 24",
+    "path": "m15.228 16.852-.923-.383m15.228 19.148-.923.383M16 2v3m16.47 14.305.382.923m16.852 20.772-.383.924m19.148 15.228.383-.923m19.53 21.696-.382-.924m20.773 16.852.924-.383m20.773 19.148.924.383M21 10.5V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h5.5M3 9h18M8 2v3M15 18A3 3 0 1 0 21 18A3 3 0 1 0 15 18",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-days",
+    "name": "Calendar Days",
+    "viewBox": "0 0 24 24",
+    "path": "M8 2v3M16 2v3M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3ZM3 9h18M8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01M16 17h.01",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-fold",
+    "name": "Calendar Fold",
+    "viewBox": "0 0 24 24",
+    "path": "M16 2v3M21 15V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h10v-5a1 1 0 011-1za2.4 2.4 0 01-.706 1.706l-3.588 3.588A2.4 2.4 0 0115 21M3 9h18M8 2v3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-heart",
+    "name": "Calendar Heart",
+    "viewBox": "0 0 24 24",
+    "path": "M12.127 21H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v5.125M14.62 17.8A2.25 2.25 0 1118 14.836a2.25 2.25 0 113.38 2.966l-2.626 2.856a.998.998 0 01-1.507 0zM16 2v3M3 9h18M8 2v3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:calendar-minus",
+    "name": "Calendar Minus",
+    "viewBox": "0 0 24 24",
+    "path": "M16 18h6M16 2v3M21 14V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h8.3M3 9h18M8 2v3",
+    "strokeOnly": true
+  }
+]

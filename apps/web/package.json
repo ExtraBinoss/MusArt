@@ -1,10 +1,11 @@
 {
   "name": "@musart/web",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "dependencies": {
+    "@musart/assets": "workspace:*",
     "@musart/core": "workspace:*",
     "@musart/render": "workspace:*"
-  },
-  "license": "MIT"
+  }
 }

@@ -1,0 +1,485 @@
+[
+  {
+    "id": "lucide:unfold-vertical",
+    "name": "Unfold Vertical",
+    "viewBox": "0 0 24 24",
+    "path": "M12 22v-6M12 8V2M4 12H2M10 12H8M16 12h-2M22 12h-2m15 19-3 3-3-3m15 5-3-3-3 3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:ungroup",
+    "name": "Ungroup",
+    "viewBox": "0 0 24 24",
+    "path": "M13 14H19A2 2 0 0 1 21 16V19A2 2 0 0 1 19 21H13A2 2 0 0 1 11 19V16A2 2 0 0 1 13 14ZM5 3H11A2 2 0 0 1 13 5V8A2 2 0 0 1 11 10H5A2 2 0 0 1 3 8V5A2 2 0 0 1 5 3Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:university",
+    "name": "University",
+    "viewBox": "0 0 24 24",
+    "path": "M14 21v-3a2 2 0 0 0-4 0v3M18 12h.01M18 16h.01M22 7a1 1 0 0 0-1-1h-2a2 2 0 0 1-1.143-.359L13.143 2.36a2 2 0 0 0-2.286-.001L6.143 5.64A2 2 0 0 1 5 6H3a1 1 0 0 0-1 1v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2zM6 12h.01M6 16h.01M10 10A2 2 0 1 0 14 10A2 2 0 1 0 10 10",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:unlink",
+    "name": "Unlink",
+    "viewBox": "0 0 24 24",
+    "path": "m18.84 12.25 1.72-1.71h-.02a5.004 5.004 0 0 0-.12-7.07 5.006 5.006 0 0 0-6.95 0l-1.72 1.71m5.17 11.75-1.71 1.71a5.004 5.004 0 0 0 .12 7.07 5.006 5.006 0 0 0 6.95 0l1.71-1.71M8 2L8 5M2 8L5 8M16 19L16 22M19 16L22 16",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:unlink-2",
+    "name": "Unlink 2",
+    "viewBox": "0 0 24 24",
+    "path": "M15 7h2a5 5 0 0 1 0 10h-2m-6 0H7A5 5 0 0 1 7 7h2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:unplug",
+    "name": "Unplug",
+    "viewBox": "0 0 24 24",
+    "path": "m19 5 3-3m2 22 3-3M6.3 20.3a2.4 2.4 0 0 0 3.4 0L12 18l-6-6-2.3 2.3a2.4 2.4 0 0 0 0 3.4ZM7.5 13.5 10 11M10.5 16.5 13 14m12 6 6 6 2.3-2.3a2.4 2.4 0 0 0 0-3.4l-2.6-2.6a2.4 2.4 0 0 0-3.4 0Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:upload",
+    "name": "Upload",
+    "viewBox": "0 0 24 24",
+    "path": "M12 3v12m17 8-5-5-5 5M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:usb",
+    "name": "Usb",
+    "viewBox": "0 0 24 24",
+    "path": "M9 7A1 1 0 1 0 11 7A1 1 0 1 0 9 7M3 20A1 1 0 1 0 5 20A1 1 0 1 0 3 20M4.7 19.3 19 5m21 3-3 1 2 2ZM9.26 7.68 5 12l2 5m10 14 5 2 3.5-3.5m18 12 1-1 1 1-1 1Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:usb-c-port",
+    "name": "Usb C Port",
+    "viewBox": "0 0 24 24",
+    "path": "M6 12h12M6 8H18A4 4 0 0 1 22 12V12A4 4 0 0 1 18 16H6A4 4 0 0 1 2 12V12A4 4 0 0 1 6 8Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user",
+    "name": "User",
+    "viewBox": "0 0 24 24",
+    "path": "M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2M8 7A4 4 0 1 0 16 7A4 4 0 1 0 8 7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-check",
+    "name": "User Check",
+    "viewBox": "0 0 24 24",
+    "path": "m16 11 2 2 4-4M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M5 7A4 4 0 1 0 13 7A4 4 0 1 0 5 7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-cog",
+    "name": "User Cog",
+    "viewBox": "0 0 24 24",
+    "path": "M10 15H6a4 4 0 0 0-4 4v2m14.305 16.53.923-.382m15.228 13.852-.923-.383m16.852 12.228-.383-.923m16.852 17.772-.383.924m19.148 12.228.383-.923m19.53 18.696-.382-.924m20.772 13.852.924-.383m20.772 16.148.924.383M15 15A3 3 0 1 0 21 15A3 3 0 1 0 15 15M5 7A4 4 0 1 0 13 7A4 4 0 1 0 5 7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-group",
+    "name": "User Group",
+    "viewBox": "0 0 24 24",
+    "path": "M17 21v-1a2 2 0 00-2-2H9a2 2 0 00-2 2v1M19 10h1a2 2 0 012 2v1M5 10H4a2 2 0 00-2 2v1M9 11A3 3 0 1 0 15 11A3 3 0 1 0 9 11M16 4A2 2 0 1 0 20 4A2 2 0 1 0 16 4M4 4A2 2 0 1 0 8 4A2 2 0 1 0 4 4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-key",
+    "name": "User Key",
+    "viewBox": "0 0 24 24",
+    "path": "M20 11v6M20 13h2M3 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 2.072.578M6 7A4 4 0 1 0 14 7A4 4 0 1 0 6 7M18 19A2 2 0 1 0 22 19A2 2 0 1 0 18 19",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-lock",
+    "name": "User Lock",
+    "viewBox": "0 0 24 24",
+    "path": "M19 16v-2a2 2 0 0 0-4 0v2M9.5 15H7a4 4 0 0 0-4 4v2M6 7A4 4 0 1 0 14 7A4 4 0 1 0 6 7M13.899000000000001 16H20.101A0.899 0.899 0 0 1 21 16.899V20.101A0.899 0.899 0 0 1 20.101 21H13.899000000000001A0.899 0.899 0 0 1 13 20.101V16.899A0.899 0.899 0 0 1 13.899000000000001 16Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-minus",
+    "name": "User Minus",
+    "viewBox": "0 0 24 24",
+    "path": "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M5 7A4 4 0 1 0 13 7A4 4 0 1 0 5 7M22 11L16 11",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-pen",
+    "name": "User Pen",
+    "viewBox": "0 0 24 24",
+    "path": "M11.5 15H7a4 4 0 0 0-4 4v2M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506zM6 7A4 4 0 1 0 14 7A4 4 0 1 0 6 7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-plus",
+    "name": "User Plus",
+    "viewBox": "0 0 24 24",
+    "path": "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M5 7A4 4 0 1 0 13 7A4 4 0 1 0 5 7M19 8L19 14M22 11L16 11",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-round",
+    "name": "User Round",
+    "viewBox": "0 0 24 24",
+    "path": "M7 8A5 5 0 1 0 17 8A5 5 0 1 0 7 8M20 21a8 8 0 0 0-16 0",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-round-arrow-left",
+    "name": "User Round Arrow Left",
+    "viewBox": "0 0 24 24",
+    "path": "m19 16-3 3M2 21a8 8 0 0 1 12.664-6.5M22 19h-6l3 3M5 8A5 5 0 1 0 15 8A5 5 0 1 0 5 8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-round-check",
+    "name": "User Round Check",
+    "viewBox": "0 0 24 24",
+    "path": "M2 21a8 8 0 0 1 13.292-6M5 8A5 5 0 1 0 15 8A5 5 0 1 0 5 8m16 19 2 2 4-4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-round-cog",
+    "name": "User Round Cog",
+    "viewBox": "0 0 24 24",
+    "path": "m14.305 19.53.923-.382m15.228 16.852-.923-.383m16.852 15.228-.383-.923m16.852 20.772-.383.924m19.148 15.228.383-.923m19.53 21.696-.382-.924M2 21a8 8 0 0 1 10.434-7.62m20.772 16.852.924-.383m20.772 19.148.924.383M5 8A5 5 0 1 0 15 8A5 5 0 1 0 5 8M15 18A3 3 0 1 0 21 18A3 3 0 1 0 15 18",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-round-group",
+    "name": "User Round Group",
+    "viewBox": "0 0 24 24",
+    "path": "M17 21a5 5 0 00-10 0M22 10.5a3.5 3.5 0 00-5.507-2.868M7.507 7.632A3.5 3.5 0 002 10.5M9 13A3 3 0 1 0 15 13A3 3 0 1 0 9 13M16 4.5A2.5 2.5 0 1 0 21 4.5A2.5 2.5 0 1 0 16 4.5M3 4.5A2.5 2.5 0 1 0 8 4.5A2.5 2.5 0 1 0 3 4.5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-round-key",
+    "name": "User Round Key",
+    "viewBox": "0 0 24 24",
+    "path": "M19 11v6M19 13h2M2 21a8 8 0 0 1 12.868-6.349M5 8A5 5 0 1 0 15 8A5 5 0 1 0 5 8M17 19A2 2 0 1 0 21 19A2 2 0 1 0 17 19",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-round-minus",
+    "name": "User Round Minus",
+    "viewBox": "0 0 24 24",
+    "path": "M2 21a8 8 0 0 1 13.292-6M5 8A5 5 0 1 0 15 8A5 5 0 1 0 5 8M22 19h-6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-round-pen",
+    "name": "User Round Pen",
+    "viewBox": "0 0 24 24",
+    "path": "M2 21a8 8 0 0 1 10.821-7.487M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506zM5 8A5 5 0 1 0 15 8A5 5 0 1 0 5 8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-round-plus",
+    "name": "User Round Plus",
+    "viewBox": "0 0 24 24",
+    "path": "M2 21a8 8 0 0 1 13.292-6M5 8A5 5 0 1 0 15 8A5 5 0 1 0 5 8M19 16v6M22 19h-6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-round-search",
+    "name": "User Round Search",
+    "viewBox": "0 0 24 24",
+    "path": "M5 8A5 5 0 1 0 15 8A5 5 0 1 0 5 8M2 21a8 8 0 0 1 10.434-7.62M15 18A3 3 0 1 0 21 18A3 3 0 1 0 15 18m22 22-1.9-1.9",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-round-x",
+    "name": "User Round X",
+    "viewBox": "0 0 24 24",
+    "path": "m16.5 16.5 5 5M2 21a8 8 0 0 1 11.531-7.18m21.5 16.5-5 5M5 8A5 5 0 1 0 15 8A5 5 0 1 0 5 8",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-search",
+    "name": "User Search",
+    "viewBox": "0 0 24 24",
+    "path": "M6 7A4 4 0 1 0 14 7A4 4 0 1 0 6 7M10.3 15H7a4 4 0 0 0-4 4v2M14 17A3 3 0 1 0 20 17A3 3 0 1 0 14 17m21 21-1.9-1.9",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-shield",
+    "name": "User Shield",
+    "viewBox": "0 0 24 24",
+    "path": "M10 15H6a4 4 0 0 0-4 4v2M22 17.5c0 2.499-1.75 3.749-3.83 4.474a.5.5 0 0 1-.335-.005c-2.085-.72-3.835-1.97-3.835-4.47V14a.5.5 0 0 1 .5-.499c1 0 2.25-.6 3.12-1.36a.6.6 0 0 1 .76-.001c.875.765 2.12 1.36 3.12 1.36a.5.5 0 0 1 .5.5zM5 7A4 4 0 1 0 13 7A4 4 0 1 0 5 7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-star",
+    "name": "User Star",
+    "viewBox": "0 0 24 24",
+    "path": "M16.051 12.616a1 1 0 0 1 1.909.024l.737 1.452a1 1 0 0 0 .737.535l1.634.256a1 1 0 0 1 .588 1.806l-1.172 1.168a1 1 0 0 0-.282.866l.259 1.613a1 1 0 0 1-1.541 1.134l-1.465-.75a1 1 0 0 0-.912 0l-1.465.75a1 1 0 0 1-1.539-1.133l.258-1.613a1 1 0 0 0-.282-.866l-1.156-1.153a1 1 0 0 1 .572-1.822l1.633-.256a1 1 0 0 0 .737-.535zM8 15H7a4 4 0 0 0-4 4v2M6 7A4 4 0 1 0 14 7A4 4 0 1 0 6 7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:user-x",
+    "name": "User X",
+    "viewBox": "0 0 24 24",
+    "path": "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M5 7A4 4 0 1 0 13 7A4 4 0 1 0 5 7M17 8L22 13M22 8L17 13",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:users",
+    "name": "Users",
+    "viewBox": "0 0 24 24",
+    "path": "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3.128a4 4 0 0 1 0 7.744M22 21v-2a4 4 0 0 0-3-3.87M5 7A4 4 0 1 0 13 7A4 4 0 1 0 5 7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:users-round",
+    "name": "Users Round",
+    "viewBox": "0 0 24 24",
+    "path": "M18 21a8 8 0 0 0-16 0M5 8A5 5 0 1 0 15 8A5 5 0 1 0 5 8M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:utensils",
+    "name": "Utensils",
+    "viewBox": "0 0 24 24",
+    "path": "M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:utensils-crossed",
+    "name": "Utensils Crossed",
+    "viewBox": "0 0 24 24",
+    "path": "m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7m2.1 21.8 6.4-6.3m19 5-7 7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:utility-pole",
+    "name": "Utility Pole",
+    "viewBox": "0 0 24 24",
+    "path": "M12 2v20M2 5h20M3 3v2M7 3v2M17 3v2M21 3v2m19 5-7 7-7-7",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:van",
+    "name": "Van",
+    "viewBox": "0 0 24 24",
+    "path": "M13 6v5a1 1 0 0 0 1 1h6.102a1 1 0 0 1 .712.298l.898.91a1 1 0 0 1 .288.702V17a1 1 0 0 1-1 1h-3M5 18H3a1 1 0 0 1-1-1V8a2 2 0 0 1 2-2h12c1.1 0 2.1.8 2.4 1.8l1.176 4.2M9 18h5M14 18A2 2 0 1 0 18 18A2 2 0 1 0 14 18M5 18A2 2 0 1 0 9 18A2 2 0 1 0 5 18",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:variable",
+    "name": "Variable",
+    "viewBox": "0 0 24 24",
+    "path": "M8 21s-4-3-4-9 4-9 4-9M16 3s4 3 4 9-4 9-4 9M15 9L9 15M9 9L15 15",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:vault",
+    "name": "Vault",
+    "viewBox": "0 0 24 24",
+    "path": "M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3ZM7 7.5A0.5 0.5 0 1 0 8 7.5A0.5 0.5 0 1 0 7 7.5m7.9 7.9 2.7 2.7M16 7.5A0.5 0.5 0 1 0 17 7.5A0.5 0.5 0 1 0 16 7.5m13.4 10.6 2.7-2.7M7 16.5A0.5 0.5 0 1 0 8 16.5A0.5 0.5 0 1 0 7 16.5m7.9 16.1 2.7-2.7M16 16.5A0.5 0.5 0 1 0 17 16.5A0.5 0.5 0 1 0 16 16.5m13.4 13.4 2.7 2.7M10 12A2 2 0 1 0 14 12A2 2 0 1 0 10 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:vector-polygon",
+    "name": "Vector Polygon",
+    "viewBox": "0 0 24 24",
+    "path": "m12.828 4.813 5.344 2.375m15.769 18.153 3.461-8.306m5.687 14.074 7.625 4.852M9.772 5.579 5.228 11.42M9 4A2 2 0 1 0 13 4A2 2 0 1 0 9 4M13 20A2 2 0 1 0 17 20A2 2 0 1 0 13 20M18 8A2 2 0 1 0 22 8A2 2 0 1 0 18 8M2 13A2 2 0 1 0 6 13A2 2 0 1 0 2 13",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:vector-square",
+    "name": "Vector Square",
+    "viewBox": "0 0 24 24",
+    "path": "M17.055 4.533a24 24 0 00-10.11 0M19.467 17.055a24 24 0 000-10.11M4.533 6.945a24 24 0 000 10.11M6.945 19.467a24 24 0 0010.11 0M17 19A2 2 0 1 0 21 19A2 2 0 1 0 17 19M17 5A2 2 0 1 0 21 5A2 2 0 1 0 17 5M3 19A2 2 0 1 0 7 19A2 2 0 1 0 3 19M3 5A2 2 0 1 0 7 5A2 2 0 1 0 3 5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:vegan",
+    "name": "Vegan",
+    "viewBox": "0 0 24 24",
+    "path": "M16 8q6 0 6-6-6 0-6 6M17.41 3.59a10 10 0 1 0 3 3M2 2a26.6 26.6 0 0 1 10 20c.9-6.82 1.5-9.5 4-14",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:venetian-mask",
+    "name": "Venetian Mask",
+    "viewBox": "0 0 24 24",
+    "path": "M18 11c-1.5 0-2.5.5-3 2M4 6a2 2 0 0 0-2 2v4a5 5 0 0 0 5 5 8 8 0 0 1 5 2 8 8 0 0 1 5-2 5 5 0 0 0 5-5V8a2 2 0 0 0-2-2h-3a8 8 0 0 0-5 2 8 8 0 0 0-5-2zM6 11c1.5 0 2.5.5 3 2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:venus",
+    "name": "Venus",
+    "viewBox": "0 0 24 24",
+    "path": "M12 15v7M9 19h6M6 9A6 6 0 1 0 18 9A6 6 0 1 0 6 9",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:venus-and-mars",
+    "name": "Venus And Mars",
+    "viewBox": "0 0 24 24",
+    "path": "M10 20h4M12 16v6M17 2h4v4m21 2-5.46 5.46M7 11A5 5 0 1 0 17 11A5 5 0 1 0 7 11",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:vibrate",
+    "name": "Vibrate",
+    "viewBox": "0 0 24 24",
+    "path": "m2 8 2 2-2 2 2 2-2 2m22 8-2 2 2 2-2 2 2 2M9 5H15A1 1 0 0 1 16 6V18A1 1 0 0 1 15 19H9A1 1 0 0 1 8 18V6A1 1 0 0 1 9 5Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:vibrate-off",
+    "name": "Vibrate Off",
+    "viewBox": "0 0 24 24",
+    "path": "m2 8 2 2-2 2 2 2-2 2m22 8-2 2 2 2-2 2 2 2M8 8v10c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2M16 10.34V6c0-.55-.45-1-1-1h-4.34M2 2L22 22",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:video",
+    "name": "Video",
+    "viewBox": "0 0 24 24",
+    "path": "m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5M4 6H14A2 2 0 0 1 16 8V16A2 2 0 0 1 14 18H4A2 2 0 0 1 2 16V8A2 2 0 0 1 4 6Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:video-off",
+    "name": "Video Off",
+    "viewBox": "0 0 24 24",
+    "path": "M10.66 6H14a2 2 0 0 1 2 2v2.5l5.248-3.062A.5.5 0 0 1 22 7.87v8.196M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2m2 2 20 20",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:videotape",
+    "name": "Videotape",
+    "viewBox": "0 0 24 24",
+    "path": "M4 4H20A2 2 0 0 1 22 6V18A2 2 0 0 1 20 20H4A2 2 0 0 1 2 18V6A2 2 0 0 1 4 4ZM2 8h20M6 14A2 2 0 1 0 10 14A2 2 0 1 0 6 14M8 12h8M14 14A2 2 0 1 0 18 14A2 2 0 1 0 14 14",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:view",
+    "name": "View",
+    "viewBox": "0 0 24 24",
+    "path": "M21 17v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2M21 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2M11 12A1 1 0 1 0 13 12A1 1 0 1 0 11 12M18.944 12.33a1 1 0 0 0 0-.66 7.5 7.5 0 0 0-13.888 0 1 1 0 0 0 0 .66 7.5 7.5 0 0 0 13.888 0",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:virus",
+    "name": "Virus",
+    "viewBox": "0 0 24 24",
+    "path": "M12 14.991h.01M12 22v-3M12 2v3M13 22h-2M13 2h-2M13.99 10H14m16.5 19.794-1-1.733m16.5 4.205-1 1.732m19.794 16.5-1.732-1m19.794 7.5-1.732 1M2 12h3M2 13v-2M22 12h-3M22 13v-2m4.206 16.5 1.732-1m4.206 7.5 1.732 1m7.5 19.794 1-1.733m7.5 4.205 1 1.732M9 12h.01M5 12A7 7 0 1 0 19 12A7 7 0 1 0 5 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:virus-off",
+    "name": "Virus Off",
+    "viewBox": "0 0 24 24",
+    "path": "M10.01 10h.01M12 14.991h.01M12 22v-3M12 2v3M13 22h-2M13 2h-2m16.5 19.794-1-1.733m16.5 4.205-1 1.732M18.891 13.235a7 7 0 00-8.126-8.126m19.794 7.5-1.732 1M2 12h3M2 13v-2m2 2 20 20M22 12h-3M22 13v-2m4.206 16.5 1.732-1m4.206 7.5 1.732 1M7.05 7.05a7 7 0 009.9 9.9m7.5 19.794 1-1.733M9 12h.01",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:voicemail",
+    "name": "Voicemail",
+    "viewBox": "0 0 24 24",
+    "path": "M2 12A4 4 0 1 0 10 12A4 4 0 1 0 2 12M14 12A4 4 0 1 0 22 12A4 4 0 1 0 14 12M6 16L18 16",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:volleyball",
+    "name": "Volleyball",
+    "viewBox": "0 0 24 24",
+    "path": "M11 7a16 16 20 0 1 10.98 4.362M12 12a13 13 0 0 1-8.66 5M16.83 13.634a16 16 0 0 1-9.267 7.328M20.66 17A13 13 0 0 0 12 12a13 13 0 0 1 0-10M8.17 15.366a16 16 0 0 1-1.713-11.69M2 12A10 10 0 1 0 22 12A10 10 0 1 0 2 12",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:volume",
+    "name": "Volume",
+    "viewBox": "0 0 24 24",
+    "path": "M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:volume-1",
+    "name": "Volume 1",
+    "viewBox": "0 0 24 24",
+    "path": "M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298zM16 9a5 5 0 0 1 0 6",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:volume-2",
+    "name": "Volume 2",
+    "viewBox": "0 0 24 24",
+    "path": "M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298zM16 9a5 5 0 0 1 0 6M19.364 18.364a9 9 0 0 0 0-12.728",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:volume-off",
+    "name": "Volume Off",
+    "viewBox": "0 0 24 24",
+    "path": "M16 9a5 5 0 0 1 .95 2.293M19.364 5.636a9 9 0 0 1 1.889 9.96m2 2 20 20m7 7-.587.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298V11M9.828 4.172A.686.686 0 0 1 11 4.657v.686",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:volume-x",
+    "name": "Volume X",
+    "viewBox": "0 0 24 24",
+    "path": "M11 4.702a.7.7 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.7.7 0 0 0 11 19.298zm16.5 14.5 5-5m16.5 9.5 5 5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:vote",
+    "name": "Vote",
+    "viewBox": "0 0 24 24",
+    "path": "m9 12 2 2 4-4M5 7c0-1.1.9-2 2-2h10a2 2 0 0 1 2 2v12H5V7ZM22 19H2",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wallet",
+    "name": "Wallet",
+    "viewBox": "0 0 24 24",
+    "path": "M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wallet-cards",
+    "name": "Wallet Cards",
+    "viewBox": "0 0 24 24",
+    "path": "M3 11h3.75a2 2 0 0 1 1.6.8l.45.6a4 4 0 0 0 6.4 0l.45-.6a2 2 0 0 1 1.6-.8H21M3 7h18M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wallet-minimal",
+    "name": "Wallet Minimal",
+    "viewBox": "0 0 24 24",
+    "path": "M17 14h.01M7 7h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wallpaper",
+    "name": "Wallpaper",
+    "viewBox": "0 0 24 24",
+    "path": "M12 17v4M8 21h8m9 17 6.1-6.1a2 2 0 0 1 2.81.01L22 15M6 9A2 2 0 1 0 10 9A2 2 0 1 0 6 9M4 3H20A2 2 0 0 1 22 5V15A2 2 0 0 1 20 17H4A2 2 0 0 1 2 15V5A2 2 0 0 1 4 3Z",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wand",
+    "name": "Wand",
+    "viewBox": "0 0 24 24",
+    "path": "M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8 19 13M15 9h.01M17.8 6.2 19 5m3 21 9-9M12.2 6.2 11 5",
+    "strokeOnly": true
+  },
+  {
+    "id": "lucide:wand-sparkles",
+    "name": "Wand Sparkles",
+    "viewBox": "0 0 24 24",
+    "path": "m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72m14 7 3 3M5 6v4M19 14v4M10 2v2M7 8H3M21 16h-4M11 3H9",
+    "strokeOnly": true
+  }
+]
