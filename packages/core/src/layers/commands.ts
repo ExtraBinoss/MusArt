@@ -7,15 +7,10 @@ import {
   invertMatrix,
   multiplyMatrices,
 } from "./geometry";
-import {
-  getLayer,
-  assertEditable,
-  selectedRoots,
-  deleteLayerTree,
-  releaseUnusedMaskSources,
-} from "./access";
+import { getLayer, assertEditable, selectedRoots, deleteLayerTree } from "./access";
 import { groupLayers, ungroupLayers } from "./grouping";
 import type { CommandHandler } from "../session/context";
+import { applyLayerPatches } from "./patches";
 export const addLayers: CommandHandler<"addLayers"> = ({ project, page, pageId }, command) => {
   for (const asset of command.assets ?? []) {
     ensure(!Object.hasOwn(project.assets, asset.id), "INVALID_COMMAND", "Ressource déjà présente");
@@ -37,20 +32,10 @@ export const addLayers: CommandHandler<"addLayers"> = ({ project, page, pageId }
   return { pageId, selection: command.layers.map((layer) => layer.id) };
 };
 export const updateLayers: CommandHandler<"updateLayers"> = ({ page, pageId }, command) => {
-  ensure(
-    !("id" in command.patch) && !("kind" in command.patch) && !("parentId" in command.patch),
-    "INVALID_COMMAND",
-    "Identité et parenté immuables par cette commande",
+  applyLayerPatches(
+    page,
+    [...new Set(command.ids)].map((id) => ({ id, patch: command.patch })),
   );
-  const allowOwnLock = Object.keys(command.patch).every(
-    (key) => key === "locked" || key === "visible",
-  );
-  for (const id of command.ids) {
-    const layer = getLayer(page, id);
-    assertEditable(page, layer, allowOwnLock);
-    Object.assign(layer, command.patch);
-  }
-  if (command.patch.mask === null) releaseUnusedMaskSources(page);
   return { pageId };
 };
 export const deleteLayers: CommandHandler<"deleteLayers"> = ({ page, pageId }, command) => {

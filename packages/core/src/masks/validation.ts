@@ -21,34 +21,42 @@ export function validateMaskSource(mask: unknown, assets: Record<string, unknown
 }
 export function validateMaskGraph(layers: unknown[]): void {
   const nodes = new Map<string, Record<string, unknown>>();
+  const children = new Map<unknown, string[]>();
   for (const layer of layers) {
     assertRecord(layer);
     assertText(layer.id);
     nodes.set(layer.id, layer);
+    const parentId = layer.parentId;
+    const siblings = children.get(parentId) ?? [];
+    siblings.push(layer.id);
+    children.set(parentId, siblings);
   }
-  const visited = new Set<string>(),
+  const remainingDepth = new Map<string, number>(),
     active = new Set<string>();
-  const visit = (id: string, depth: number): void => {
+  const visit = (id: string, depth: number): number => {
     ensure(depth <= 128 && !active.has(id), "INVALID_HIERARCHY", "Cyclic mask/composition graph");
-    if (visited.has(id)) return;
+    const cached = remainingDepth.get(id);
+    if (cached !== undefined) {
+      ensure(depth + cached <= 128, "INVALID_HIERARCHY", "Excessive mask/composition depth");
+      return cached;
+    }
     const layer = nodes.get(id);
     ensure(layer, "INVALID_HIERARCHY", "Mask layer is missing from this page");
     active.add(id);
+    let remaining = 0;
     if (layer.kind === "group")
-      for (const child of nodes.values())
-        if (child.parentId === id) {
-          assertText(child.id);
-          visit(child.id, depth + 1);
-        }
+      for (const childId of children.get(id) ?? [])
+        remaining = Math.max(remaining, 1 + visit(childId, depth + 1));
     if (layer.mask !== null) {
       assertRecord(layer.mask);
       if (layer.mask.layerId !== undefined) {
         assertText(layer.mask.layerId);
-        visit(layer.mask.layerId, depth + 1);
+        remaining = Math.max(remaining, 1 + visit(layer.mask.layerId, depth + 1));
       }
     }
     active.delete(id);
-    visited.add(id);
+    remainingDepth.set(id, remaining);
+    return remaining;
   };
   for (const id of nodes.keys()) visit(id, 0);
 }

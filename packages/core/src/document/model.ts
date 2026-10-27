@@ -2,6 +2,9 @@ import type { BlendMode } from "../layers/blending/catalog";
 import type { VectorDefinition } from "../vector/model";
 import type { Insets, WorkingColorSpace, Alignment, LayoutReference } from "../layout/model";
 import type { ReplaySpec } from "../animation/model";
+import type { FillGradient } from "../paint/gradient";
+import type { GradientSettings } from "../effects/gradient/model";
+import type { EffectCompositeMode } from "../effects/compositing";
 /** Portable document contract. No browser, React or renderer dependencies. */
 export const FORMAT_VERSION = 1 as const;
 export type LayerKind = "rectangle" | "ellipse" | "text" | "image" | "group" | "vector";
@@ -25,7 +28,8 @@ export type EffectType =
   | "posterize"
   | "grain"
   | "halftone"
-  | "vignette";
+  | "vignette"
+  | "gradient";
 export interface Effect {
   id: string;
   type: EffectType;
@@ -35,6 +39,13 @@ export interface Effect {
   levels: number;
   color: boolean;
   seed: number;
+  /** Missing values retain existing document semantics: normal blend and full effect opacity. */
+  blendMode?: BlendMode;
+  opacity?: number;
+  composite?: EffectCompositeMode;
+  /** Explicit seconds; still rendering never reads a wall clock. */
+  time?: number;
+  settings?: Partial<GradientSettings>;
 }
 export interface LayerMask {
   assetId?: string;
@@ -57,6 +68,7 @@ export interface Layer {
   visible: boolean;
   locked: boolean;
   fill: string;
+  fillGradient?: FillGradient;
   stroke: string;
   strokeWidth: number;
   radius: number;
@@ -123,6 +135,7 @@ export interface SessionSnapshot {
 export type Command =
   | { type: "addLayers"; layers: Layer[]; assets?: Asset[] }
   | { type: "updateLayers"; ids: string[]; patch: Partial<Layer> }
+  | { type: "updateLayerPatches"; patches: { id: string; patch: Partial<Layer> }[] }
   | { type: "deleteLayers"; ids: string[] }
   | { type: "duplicateLayers"; ids: string[] }
   | { type: "reorderLayer"; id: string; index: number; parentId?: string | null }

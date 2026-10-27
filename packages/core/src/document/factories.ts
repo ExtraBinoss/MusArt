@@ -114,12 +114,13 @@ export function createLayer(kind: LayerKind, patch: Partial<Layer> = {}): Layer 
 }
 
 export function createEffect(type: EffectType, patch: Partial<Effect> = {}): Effect {
-  return {
+  const effect = {
     id: createId("effect"),
     type,
     ...getEffectDefinition(type).defaults,
     ...patch,
   };
+  return effect.settings ? { ...effect, settings: { ...effect.settings } } : effect;
 }
 
 export function createPage(patch: Partial<Composition> = {}): Composition {

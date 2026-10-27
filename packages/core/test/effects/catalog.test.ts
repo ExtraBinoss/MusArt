@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { EFFECT_CATALOG, getEffectDefinition } from "../../src/effects/catalog";
+import { getEffectParameter } from "../../src/effects/parameters";
+import { GRADIENT_DEFINITION } from "../../src/effects/gradient/definition";
 import { createEffect, createLayer } from "../../src/document/factories";
 import type { EffectType } from "../../src/document/model";
 
@@ -26,6 +28,7 @@ describe("portable effect definitions", () => {
       "grain",
       "halftone",
       "vignette",
+      "gradient",
     ]);
     expect(getEffectDefinition("dither")).toMatchObject({
       type: "dither",
@@ -65,6 +68,7 @@ describe("portable effect definitions", () => {
       grain: ["amount", "scale", "color"],
       halftone: ["amount", "scale", "color"],
       vignette: ["amount", "scale"],
+      gradient: GRADIENT_DEFINITION.parameters.map((parameter) => parameter.key),
     };
     for (const definition of Object.values(EFFECT_CATALOG)) {
       expect(definition.parameters.map((parameter) => parameter.key)).toEqual(
@@ -72,7 +76,9 @@ describe("portable effect definitions", () => {
       );
       expect(getEffectDefinition(definition.type)).toBe(definition);
       expect(definition.category).toBe(
-        ["dither", "ascii", "blur", "grain", "halftone", "vignette"].includes(definition.type)
+        ["dither", "ascii", "blur", "grain", "halftone", "vignette", "gradient"].includes(
+          definition.type,
+        )
           ? "effect"
           : "adjustment",
       );
@@ -80,8 +86,8 @@ describe("portable effect definitions", () => {
         expect(parameter.labelKey.length).toBeGreaterThan(0);
         if (parameter.kind === "boolean")
           expect(typeof definition.defaults[parameter.key]).toBe("boolean");
-        else {
-          const value = definition.defaults[parameter.key];
+        else if (parameter.kind === "number") {
+          const value = getEffectParameter(createEffect(definition.type), parameter);
           expect(value).toBeGreaterThanOrEqual(parameter.min);
           expect(value).toBeLessThanOrEqual(parameter.max);
           expect(parameter.step).toBeGreaterThan(0);
@@ -94,7 +100,8 @@ describe("portable effect definitions", () => {
               displayScale: 100,
               unit: "%",
             });
-          if (parameter.key === "scale") expect(parameter.unit).toBe("px");
+          if (parameter.key === "scale" && definition.type !== "gradient")
+            expect(parameter.unit).toBe("px");
         }
       }
     }

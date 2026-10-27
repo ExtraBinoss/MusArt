@@ -48,7 +48,26 @@ export type {
   EffectDefinition,
   EffectParameter,
   NumberEffectParameter,
+  ChoiceEffectParameter,
+  ColorEffectParameter,
 } from "./effects/catalog";
+export {
+  getEffectParameter,
+  patchEffectParameter,
+  isEffectParameterVisible,
+} from "./effects/parameters";
+export type { EffectParameterValue } from "./effects/parameters";
+export { GRADIENT_STYLES, GRADIENT_TREATMENTS } from "./effects/gradient/model";
+export type {
+  GradientStyle,
+  GradientTreatment,
+  GradientSettings,
+  GradientSettingKey,
+} from "./effects/gradient/model";
+export { GRADIENT_PRESETS } from "./effects/gradient/presets";
+export { GRADIENT_DEFAULT_SETTINGS, resolveGradientSettings } from "./effects/gradient/definition";
+export { EFFECT_COMPOSITE_MODES } from "./effects/compositing";
+export type { EffectCompositeMode } from "./effects/compositing";
 export { BLEND_CATALOG, BLEND_MODES, getBlendDefinition } from "./layers/blending/catalog";
 export type { BlendMode, BlendDefinition, BlendCategory } from "./layers/blending/catalog";
 export type { VectorDefinition, VectorPart } from "./vector/model";
@@ -79,3 +98,7 @@ export type {
 export { evaluateReplay } from "./animation/evaluate";
 
 export { validateReplaySpec, projectFromReplayState } from "./animation/validation";
+export type { FillGradient, GradientStop } from "./paint/gradient";
+export { validateFillGradient, sampleGradientColor } from "./paint/gradient";
+export { selectionComposition } from "./export/selection";
+export { createLayerGeometryIndex, LayerGeometryIndex } from "./layers/geometry-index";

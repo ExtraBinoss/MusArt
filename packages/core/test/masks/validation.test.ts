@@ -31,9 +31,35 @@ it("rejects missing references and cyclic group/mask dependencies, including exc
     ),
   );
   expect(() => validateMaskGraph(chain)).toThrow("Cyclic");
+  expect(() => validateMaskGraph([...chain].reverse())).toThrow("depth");
+  validateMaskGraph(chain.slice(1).reverse());
   validateMaskGraph([
     box("group", 0, 0, { kind: "group" }),
     box("child", 0, 0, { parentId: "group" }),
     box("target", 0, 0, { mask: { layerId: "child", enabled: true, inverted: false } }),
   ]);
+});
+
+it("indexes wide group graphs in one pass without rescanning every parent", () => {
+  let parentReads = 0;
+  const layers = Array.from({ length: 10000 }, (_, index) => {
+    const layer = box(`node-${index}`, 0, 0, {
+      kind: index % 2 ? "rectangle" : "group",
+    });
+    return {
+      ...layer,
+      get parentId() {
+        parentReads++;
+        return index % 2 ? `node-${index - 1}` : null;
+      },
+    };
+  });
+  validateMaskGraph(layers);
+  expect(parentReads).toBe(layers.length);
+  const group = box("group", 0, 0, { kind: "group" });
+  const child = box("child", 0, 0, {
+    parentId: group.id,
+    mask: { layerId: group.id, enabled: true, inverted: false },
+  });
+  expect(() => validateMaskGraph([group, child])).toThrow("Cyclic");
 });

@@ -16,6 +16,8 @@ import { validateVector } from "../vector/validation";
 import { validateMaskSource, validateMaskGraph } from "../masks/validation";
 
 import { validateReplaySpec } from "../animation/validation";
+import { validateFillGradient } from "../paint/gradient";
+import { validateEffectExtensions } from "../effects/validation";
 
 const kinds = ["rectangle", "ellipse", "text", "image", "group", "vector"];
 const effectTypes = Object.keys(EFFECT_CATALOG);
@@ -34,6 +36,7 @@ function validateEffect(value: unknown, ids: Set<string>): void {
   assertNumber(value.scale, 0.1, 128);
   assertNumber(value.levels, 2, 256);
   assertNumber(value.seed, 0, 2147483647);
+  validateEffectExtensions(value);
 }
 
 function validateLayer(value: unknown, ids: Set<string>, assets: Record<string, unknown>): void {
@@ -61,6 +64,7 @@ function validateLayer(value: unknown, ids: Set<string>, assets: Record<string, 
   assertBoolean(value.visible);
   assertBoolean(value.locked);
   assertColor(value.fill);
+  if (value.fillGradient !== undefined) validateFillGradient(value.fillGradient);
   assertColor(value.stroke);
   ensure(
     typeof value.blendMode === "string" && Object.hasOwn(BLEND_CATALOG, value.blendMode),

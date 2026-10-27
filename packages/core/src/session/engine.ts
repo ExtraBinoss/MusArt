@@ -6,6 +6,7 @@ import type { Command, EnginePort, Project, SessionSnapshot } from "../document/
 import { validateProject } from "../document/validation";
 import { cloneValue as clone, freezeValue as freeze } from "../document/immutable";
 import type { CommandCommit } from "../animation/model";
+import { createLayerGeometryIndex } from "../layers/geometry-index";
 
 function collectExplicitIds(value: unknown, occupied: Set<string>): void {
   if (Array.isArray(value)) {
@@ -79,8 +80,9 @@ export class EditorEngine implements EnginePort {
   select = (ids: string[]): void => {
     const page = currentPage(this.snapshot.project, this.snapshot.pageId);
     const selection = [...new Set(ids)];
+    const geometry = createLayerGeometryIndex(page);
     ensure(
-      selection.every((id) => page.layers.some((layer) => layer.id === id)),
+      selection.every((id) => geometry.byId.has(id)),
       "NOT_FOUND",
       "Sélection contenant un calque introuvable",
     );
@@ -144,7 +146,8 @@ export class EditorEngine implements EnginePort {
       );
     }
     const page = currentPage(project, pageId);
-    selection = selection.filter((id) => page.layers.some((layer) => layer.id === id));
+    const remainingIds = new Set(page.layers.map((layer) => layer.id));
+    selection = selection.filter((id) => remainingIds.has(id));
     this.past.push(before);
     if (this.past.length > this.historyLimit) this.past.shift();
     this.future = [];

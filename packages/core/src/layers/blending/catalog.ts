@@ -5,10 +5,12 @@ export const BLEND_MODES = [
   "multiply",
   "color-burn",
   "linear-burn",
+  "darker-color",
   "lighten",
   "screen",
   "color-dodge",
   "linear-dodge",
+  "lighter-color",
   "overlay",
   "soft-light",
   "hard-light",
@@ -41,9 +43,9 @@ export interface BlendDefinition {
 const category = (mode: BlendMode): BlendCategory =>
   mode === "normal"
     ? "normal"
-    : ["darken", "multiply", "color-burn", "linear-burn"].includes(mode)
+    : ["darken", "multiply", "color-burn", "linear-burn", "darker-color"].includes(mode)
       ? "darken"
-      : ["lighten", "screen", "color-dodge", "linear-dodge"].includes(mode)
+      : ["lighten", "screen", "color-dodge", "linear-dodge", "lighter-color"].includes(mode)
         ? "lighten"
         : [
               "overlay",

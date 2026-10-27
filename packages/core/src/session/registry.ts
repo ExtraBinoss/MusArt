@@ -7,10 +7,12 @@ import { renameProject } from "../document/commands";
 import { addAssets } from "../assets/commands";
 import { setReplay } from "../animation/commands";
 import type { CommandHandlers } from "./context";
+import { updateLayerPatches } from "../layers/patches";
 /** Domain handlers are exhaustively checked against the portable command union. */
 export const COMMAND_HANDLERS: CommandHandlers = Object.freeze({
   addLayers: layers.addLayers,
   updateLayers: layers.updateLayers,
+  updateLayerPatches,
   deleteLayers: layers.deleteLayers,
   duplicateLayers: layers.duplicateLayers,
   reorderLayer: layers.reorderLayer,
