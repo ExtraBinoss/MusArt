@@ -1,0 +1,202 @@
+[
+  [
+    "Bruno Ace",
+    "display",
+    [["ofl/brunoace/BrunoAce-Regular.ttf", 400, false, 56748]],
+    "ofl/brunoace/OFL.txt"
+  ],
+  [
+    "Bruno Ace SC",
+    "display",
+    [["ofl/brunoacesc/BrunoAceSC-Regular.ttf", 400, false, 55520]],
+    "ofl/brunoacesc/OFL.txt"
+  ],
+  [
+    "Brygada 1918",
+    "serif",
+    [
+      ["ofl/brygada1918/Brygada1918-Italic[wght].ttf", 400, true, 243716],
+      ["ofl/brygada1918/Brygada1918[wght].ttf", 400, false, 242256]
+    ],
+    "ofl/brygada1918/OFL.txt"
+  ],
+  [
+    "Bubblegum Sans",
+    "display",
+    [["ofl/bubblegumsans/BubblegumSans-Regular.ttf", 400, false, 38844]],
+    "ofl/bubblegumsans/OFL.txt"
+  ],
+  [
+    "Bubbler One",
+    "sans",
+    [["ofl/bubblerone/BubblerOne-Regular.ttf", 400, false, 31260]],
+    "ofl/bubblerone/OFL.txt"
+  ],
+  ["Buda", "display", [["ofl/buda/Buda-Light.ttf", 300, false, 106012]], "ofl/buda/OFL.txt"],
+  [
+    "Buenard",
+    "serif",
+    [["ofl/buenard/Buenard[wght].ttf", 400, false, 72576]],
+    "ofl/buenard/OFL.txt"
+  ],
+  [
+    "Bungee",
+    "display",
+    [["ofl/bungee/Bungee-Regular.ttf", 400, false, 118996]],
+    "ofl/bungee/OFL.txt"
+  ],
+  [
+    "Bungee Hairline",
+    "display",
+    [["ofl/bungeehairline/BungeeHairline-Regular.ttf", 400, false, 104700]],
+    "ofl/bungeehairline/OFL.txt"
+  ],
+  [
+    "Bungee Inline",
+    "display",
+    [["ofl/bungeeinline/BungeeInline-Regular.ttf", 400, false, 152376]],
+    "ofl/bungeeinline/OFL.txt"
+  ],
+  [
+    "Bungee Outline",
+    "display",
+    [["ofl/bungeeoutline/BungeeOutline-Regular.ttf", 400, false, 202152]],
+    "ofl/bungeeoutline/OFL.txt"
+  ],
+  [
+    "Bungee Shade",
+    "display",
+    [["ofl/bungeeshade/BungeeShade-Regular.ttf", 400, false, 304936]],
+    "ofl/bungeeshade/OFL.txt"
+  ],
+  [
+    "Bungee Spice",
+    "display",
+    [["ofl/bungeespice/BungeeSpice-Regular.ttf", 400, false, 1502376]],
+    "ofl/bungeespice/OFL.txt"
+  ],
+  [
+    "Bungee Tint",
+    "display",
+    [["ofl/bungeetint/BungeeTint-Regular.ttf", 400, false, 221864]],
+    "ofl/bungeetint/OFL.txt"
+  ],
+  [
+    "Butcherman",
+    "display",
+    [["ofl/butcherman/Butcherman-Regular.ttf", 400, false, 66100]],
+    "ofl/butcherman/OFL.txt"
+  ],
+  [
+    "Butterfly Kids",
+    "handwriting",
+    [["ofl/butterflykids/ButterflyKids-Regular.ttf", 400, false, 202848]],
+    "ofl/butterflykids/OFL.txt"
+  ],
+  [
+    "Bytesized",
+    "sans",
+    [["ofl/bytesized/Bytesized-Regular.ttf", 400, false, 20792]],
+    "ofl/bytesized/OFL.txt"
+  ],
+  [
+    "Caacupe One",
+    "display",
+    [["ofl/caacupeone/CaacupeOne-Regular.ttf", 400, false, 65148]],
+    "ofl/caacupeone/OFL.txt"
+  ],
+  [
+    "Cabin",
+    "sans",
+    [
+      ["ofl/cabin/Cabin-Italic[wdth,wght].ttf", 400, true, 155412],
+      ["ofl/cabin/Cabin[wdth,wght].ttf", 400, false, 165468]
+    ],
+    "ofl/cabin/OFL.txt"
+  ],
+  [
+    "Cabin Condensed",
+    "sans",
+    [
+      ["ofl/cabincondensed/CabinCondensed-Bold.ttf", 700, false, 97876],
+      ["ofl/cabincondensed/CabinCondensed-Medium.ttf", 500, false, 98504],
+      ["ofl/cabincondensed/CabinCondensed-Regular.ttf", 400, false, 99468],
+      ["ofl/cabincondensed/CabinCondensed-SemiBold.ttf", 600, false, 98996]
+    ],
+    "ofl/cabincondensed/OFL.txt"
+  ],
+  [
+    "Cabin Sketch",
+    "display",
+    [
+      ["ofl/cabinsketch/CabinSketch-Bold.ttf", 700, false, 271012],
+      ["ofl/cabinsketch/CabinSketch-Regular.ttf", 400, false, 156232]
+    ],
+    "ofl/cabinsketch/OFL.txt"
+  ],
+  [
+    "Cactus Classical Serif",
+    "serif",
+    [["ofl/cactusclassicalserif/CactusClassicalSerif-Regular.ttf", 400, false, 28502932]],
+    "ofl/cactusclassicalserif/OFL.txt"
+  ],
+  [
+    "Caesar Dressing",
+    "display",
+    [["ofl/caesardressing/CaesarDressing-Regular.ttf", 400, false, 89628]],
+    "ofl/caesardressing/OFL.txt"
+  ],
+  [
+    "Cagliostro",
+    "sans",
+    [["ofl/cagliostro/Cagliostro-Regular.ttf", 400, false, 37820]],
+    "ofl/cagliostro/OFL.txt"
+  ],
+  ["Cairo", "sans", [["ofl/cairo/Cairo[slnt,wght].ttf", 400, false, 599548]], "ofl/cairo/OFL.txt"],
+  [
+    "Cairo Play",
+    "sans",
+    [["ofl/cairoplay/CairoPlay[slnt,wght].ttf", 400, false, 608152]],
+    "ofl/cairoplay/OFL.txt"
+  ],
+  [
+    "Cal Sans",
+    "sans",
+    [["ofl/calsans/CalSans-Regular.ttf", 400, false, 102768]],
+    "ofl/calsans/OFL.txt"
+  ],
+  [
+    "Caladea",
+    "serif",
+    [
+      ["ofl/caladea/Caladea-Bold.ttf", 700, false, 84492],
+      ["ofl/caladea/Caladea-BoldItalic.ttf", 700, true, 83356],
+      ["ofl/caladea/Caladea-Italic.ttf", 400, true, 83780],
+      ["ofl/caladea/Caladea-Regular.ttf", 400, false, 81600]
+    ],
+    "ofl/caladea/OFL.txt"
+  ],
+  [
+    "Calistoga",
+    "display",
+    [["ofl/calistoga/Calistoga-Regular.ttf", 400, false, 274832]],
+    "ofl/calistoga/OFL.txt"
+  ],
+  [
+    "Calligraffitti",
+    "handwriting",
+    [["apache/calligraffitti/Calligraffitti-Regular.ttf", 400, false, 59860]],
+    "apache/calligraffitti/LICENSE.txt"
+  ],
+  [
+    "Cambay",
+    "sans",
+    [
+      ["ofl/cambay/Cambay-Bold.ttf", 700, false, 231232],
+      ["ofl/cambay/Cambay-BoldItalic.ttf", 700, true, 242084],
+      ["ofl/cambay/Cambay-Italic.ttf", 400, true, 236660],
+      ["ofl/cambay/Cambay-Regular.ttf", 400, false, 224780]
+    ],
+    "ofl/cambay/OFL.txt"
+  ]
+]

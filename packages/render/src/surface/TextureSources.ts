@@ -1,9 +1,8 @@
 import type { Asset, Composition, Layer } from "@musart/core";
-import { CanvasTexture, LinearFilter, NoColorSpace, Texture } from "three/webgpu";
+import { LinearFilter, NoColorSpace, Texture } from "three/webgpu";
 import { assetIdentity } from "../cache/keys";
 import { GpuResourceCache, type GpuResource } from "../cache/GpuResourceCache";
-import { LayerTargets } from "../compositing/targets";
-import { context2d, createSurface, drawText, loadAsset } from "./sources";
+import { loadAsset } from "./sources";
 
 class ImageResource implements GpuResource {
   readonly targets = 0;
@@ -12,11 +11,13 @@ class ImageResource implements GpuResource {
     readonly texture: Texture,
     width: number,
     height: number,
+    private readonly bitmap?: ImageBitmap,
   ) {
     this.bytes = width * height * 4;
   }
   dispose(): void {
     this.texture.dispose();
+    this.bitmap?.close();
   }
 }
 function configure(texture: Texture): Texture {
@@ -30,7 +31,13 @@ function configure(texture: Texture): Texture {
 export class TextureSources {
   uploads = 0;
   private readonly prepared = new Map<string, Texture>();
-  constructor(private readonly cache: GpuResourceCache) {}
+  constructor(
+    private readonly cache: GpuResourceCache,
+    private readonly options: { maxEdge?: number } = {},
+  ) {
+    if (options.maxEdge !== undefined && (!Number.isFinite(options.maxEdge) || options.maxEdge < 1))
+      throw new Error("Invalid source texture limit.");
+  }
   async prepare(page: Composition, assets: Record<string, Asset>): Promise<void> {
     this.prepared.clear();
     const byParent = new Map<string | null, Layer[]>();
@@ -48,18 +55,6 @@ export class TextureSources {
         if (layer.kind === "group") parents.push(layer.id);
       }
     }
-    if (document.fonts) {
-      const faces = new Set(
-        visible
-          .filter((layer) => layer.kind === "text")
-          .map(
-            (layer) =>
-              `${layer.fontWeight} ${layer.fontSize}px "${layer.fontFamily.replaceAll('"', "")}"`,
-          ),
-      );
-      await Promise.all([...faces].map((face) => document.fonts.load(face)));
-      await document.fonts.ready;
-    }
     const active = new Set(
       visible
         .flatMap((layer) => [layer.assetId, layer.mask?.enabled ? layer.mask.assetId : null])
@@ -72,10 +67,28 @@ export class TextureSources {
       let entry = this.cache.get<ImageResource>(key);
       if (!entry) {
         const image = await loadAsset(asset);
+        const width = image.naturalWidth || asset.width,
+          height = image.naturalHeight || asset.height;
+        const ratio = this.options.maxEdge
+          ? Math.min(1, this.options.maxEdge / Math.max(width, height))
+          : 1;
+        const bitmap =
+          ratio < 1
+            ? await createImageBitmap(image, {
+                resizeWidth: Math.max(1, Math.round(width * ratio)),
+                resizeHeight: Math.max(1, Math.round(height * ratio)),
+                resizeQuality: "high",
+                premultiplyAlpha: "none",
+                colorSpaceConversion: "none",
+                // TSL TextureNode compensates ImageBitmap flipY on the WebGL backend.
+                imageOrientation: "none",
+              })
+            : undefined;
         entry = new ImageResource(
-          configure(new Texture(image)),
-          image.naturalWidth || asset.width,
-          image.naturalHeight || asset.height,
+          configure(new Texture(bitmap ?? image)),
+          bitmap?.width ?? width,
+          bitmap?.height ?? height,
+          bitmap,
         );
         this.cache.set(key, entry);
         this.uploads++;
@@ -86,30 +99,6 @@ export class TextureSources {
   image(assetId: string | null): Texture {
     const texture = assetId ? this.prepared.get(assetId) : undefined;
     if (!texture) throw new Error("Image GPU introuvable.");
-    return texture;
-  }
-  text(layer: Layer, scale: number, entry: LayerTargets): Texture {
-    const key = JSON.stringify([
-      layer.text,
-      layer.width,
-      layer.height,
-      layer.fontFamily,
-      layer.fontSize,
-      layer.fontWeight,
-      layer.lineHeight,
-      layer.letterSpacing,
-      layer.textAlign,
-      layer.fill,
-      scale,
-    ]);
-    if (entry.sourceTexture && entry.sourceSignature === key) return entry.sourceTexture;
-    const canvas = createSurface(layer.width * scale, layer.height * scale);
-    const context = context2d(canvas);
-    context.scale(scale, scale);
-    drawText(context, layer);
-    const texture = configure(new CanvasTexture(canvas));
-    entry.setSource(texture, key, canvas.width * canvas.height * 4);
-    this.uploads++;
     return texture;
   }
 }

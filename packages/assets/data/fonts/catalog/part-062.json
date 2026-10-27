@@ -1,0 +1,188 @@
+[
+  [
+    "Rubik Maze",
+    "display",
+    [["ofl/rubikmaze/RubikMaze-Regular.ttf", 400, false, 459040]],
+    "ofl/rubikmaze/OFL.txt"
+  ],
+  [
+    "Rubik Microbe",
+    "display",
+    [["ofl/rubikmicrobe/RubikMicrobe-Regular.ttf", 400, false, 1444176]],
+    "ofl/rubikmicrobe/OFL.txt"
+  ],
+  [
+    "Rubik Mono One",
+    "sans",
+    [["ofl/rubikmonoone/RubikMonoOne-Regular.ttf", 400, false, 141088]],
+    "ofl/rubikmonoone/OFL.txt"
+  ],
+  [
+    "Rubik Moonrocks",
+    "display",
+    [["ofl/rubikmoonrocks/RubikMoonrocks-Regular.ttf", 400, false, 403712]],
+    "ofl/rubikmoonrocks/OFL.txt"
+  ],
+  [
+    "Rubik Pixels",
+    "display",
+    [["ofl/rubikpixels/RubikPixels-Regular.ttf", 400, false, 5627648]],
+    "ofl/rubikpixels/OFL.txt"
+  ],
+  [
+    "Rubik Puddles",
+    "display",
+    [["ofl/rubikpuddles/RubikPuddles-Regular.ttf", 400, false, 404956]],
+    "ofl/rubikpuddles/OFL.txt"
+  ],
+  [
+    "Rubik Scribble",
+    "display",
+    [["ofl/rubikscribble/RubikScribble-Regular.ttf", 400, false, 583828]],
+    "ofl/rubikscribble/OFL.txt"
+  ],
+  [
+    "Rubik Spray Paint",
+    "display",
+    [["ofl/rubikspraypaint/RubikSprayPaint-Regular.ttf", 400, false, 941576]],
+    "ofl/rubikspraypaint/OFL.txt"
+  ],
+  [
+    "Rubik Storm",
+    "display",
+    [["ofl/rubikstorm/RubikStorm-Regular.ttf", 400, false, 795704]],
+    "ofl/rubikstorm/OFL.txt"
+  ],
+  [
+    "Rubik Vinyl",
+    "display",
+    [["ofl/rubikvinyl/RubikVinyl-Regular.ttf", 400, false, 414752]],
+    "ofl/rubikvinyl/OFL.txt"
+  ],
+  [
+    "Rubik Wet Paint",
+    "display",
+    [["ofl/rubikwetpaint/RubikWetPaint-Regular.ttf", 400, false, 442628]],
+    "ofl/rubikwetpaint/OFL.txt"
+  ],
+  ["Ruda", "sans", [["ofl/ruda/Ruda[wght].ttf", 400, false, 84420]], "ofl/ruda/OFL.txt"],
+  [
+    "Rufina",
+    "serif",
+    [
+      ["ofl/rufina/Rufina-Bold.ttf", 700, false, 40056],
+      ["ofl/rufina/Rufina-Regular.ttf", 400, false, 40040]
+    ],
+    "ofl/rufina/OFL.txt"
+  ],
+  [
+    "Ruge Boogie",
+    "handwriting",
+    [["ofl/rugeboogie/RugeBoogie-Regular.ttf", 400, false, 329956]],
+    "ofl/rugeboogie/OFL.txt"
+  ],
+  ["Ruluko", "sans", [["ofl/ruluko/Ruluko-Regular.ttf", 400, false, 27436]], "ofl/ruluko/OFL.txt"],
+  [
+    "Rum Raisin",
+    "sans",
+    [["ofl/rumraisin/RumRaisin-Regular.ttf", 400, false, 61812]],
+    "ofl/rumraisin/OFL.txt"
+  ],
+  [
+    "Ruslan Display",
+    "display",
+    [["ofl/ruslandisplay/RuslanDisplay-Regular.ttf", 400, false, 55048]],
+    "ofl/ruslandisplay/OFL.txt"
+  ],
+  [
+    "Russo One",
+    "sans",
+    [["ofl/russoone/RussoOne-Regular.ttf", 400, false, 39124]],
+    "ofl/russoone/OFL.txt"
+  ],
+  [
+    "Ruthie",
+    "handwriting",
+    [["ofl/ruthie/Ruthie-Regular.ttf", 400, false, 71856]],
+    "ofl/ruthie/OFL.txt"
+  ],
+  [
+    "Ruwudu",
+    "serif",
+    [
+      ["ofl/ruwudu/Ruwudu-Bold.ttf", 700, false, 123240],
+      ["ofl/ruwudu/Ruwudu-Medium.ttf", 500, false, 122416],
+      ["ofl/ruwudu/Ruwudu-Regular.ttf", 400, false, 121440],
+      ["ofl/ruwudu/Ruwudu-SemiBold.ttf", 600, false, 122892]
+    ],
+    "ofl/ruwudu/OFL.txt"
+  ],
+  ["Rye", "display", [["ofl/rye/Rye-Regular.ttf", 400, false, 183244]], "ofl/rye/OFL.txt"],
+  [
+    "SN Pro",
+    "sans",
+    [
+      ["ofl/snpro/SNPro-Italic[wght].ttf", 400, true, 344928],
+      ["ofl/snpro/SNPro[wght].ttf", 400, false, 338948]
+    ],
+    "ofl/snpro/OFL.txt"
+  ],
+  [
+    "STIX Two Math",
+    "serif",
+    [["ofl/stixtwomath/STIXTwoMath-Regular.ttf", 400, false, 1517976]],
+    "ofl/stixtwomath/OFL.txt"
+  ],
+  [
+    "STIX Two Text",
+    "serif",
+    [
+      ["ofl/stixtwotext/STIXTwoText-Italic[wght].ttf", 400, true, 454368],
+      ["ofl/stixtwotext/STIXTwoText[wght].ttf", 400, false, 418956]
+    ],
+    "ofl/stixtwotext/OFL.txt"
+  ],
+  [
+    "SUSE",
+    "sans",
+    [
+      ["ofl/suse/SUSE-Italic[wght].ttf", 400, true, 222772],
+      ["ofl/suse/SUSE[wght].ttf", 400, false, 220292]
+    ],
+    "ofl/suse/OFL.txt"
+  ],
+  [
+    "SUSE Mono",
+    "sans",
+    [
+      ["ofl/susemono/SUSEMono-Italic[wght].ttf", 400, true, 85420],
+      ["ofl/susemono/SUSEMono[wght].ttf", 400, false, 87216]
+    ],
+    "ofl/susemono/OFL.txt"
+  ],
+  [
+    "Sacramento",
+    "handwriting",
+    [["ofl/sacramento/Sacramento-Regular.ttf", 400, false, 79696]],
+    "ofl/sacramento/OFL.txt"
+  ],
+  [
+    "Sahitya",
+    "serif",
+    [
+      ["ofl/sahitya/Sahitya-Bold.ttf", 700, false, 267140],
+      ["ofl/sahitya/Sahitya-Regular.ttf", 400, false, 261652]
+    ],
+    "ofl/sahitya/OFL.txt"
+  ],
+  ["Sail", "display", [["ofl/sail/Sail-Regular.ttf", 400, false, 32656]], "ofl/sail/OFL.txt"],
+  [
+    "Saira",
+    "sans",
+    [
+      ["ofl/saira/Saira-Italic[wdth,wght].ttf", 400, true, 534712],
+      ["ofl/saira/Saira[wdth,wght].ttf", 400, false, 483700]
+    ],
+    "ofl/saira/OFL.txt"
+  ]
+]

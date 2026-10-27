@@ -1,0 +1,166 @@
+[
+  [
+    "Koh Santepheap",
+    "serif",
+    [
+      ["ofl/kohsantepheap/KohSantepheap-Black.ttf", 900, false, 148268],
+      ["ofl/kohsantepheap/KohSantepheap-Bold.ttf", 700, false, 161040],
+      ["ofl/kohsantepheap/KohSantepheap-Light.ttf", 300, false, 164220],
+      ["ofl/kohsantepheap/KohSantepheap-Regular.ttf", 400, false, 171268],
+      ["ofl/kohsantepheap/KohSantepheap-Thin.ttf", 100, false, 168692]
+    ],
+    "ofl/kohsantepheap/OFL.txt"
+  ],
+  [
+    "Kolker Brush",
+    "handwriting",
+    [["ofl/kolkerbrush/KolkerBrush-Regular.ttf", 400, false, 268272]],
+    "ofl/kolkerbrush/OFL.txt"
+  ],
+  [
+    "Konkhmer Sleokchher",
+    "display",
+    [["ofl/konkhmersleokchher/KonkhmerSleokchher-Regular.ttf", 400, false, 1834832]],
+    "ofl/konkhmersleokchher/OFL.txt"
+  ],
+  [
+    "Kosugi",
+    "sans",
+    [["apache/kosugi/Kosugi-Regular.ttf", 400, false, 2288848]],
+    "apache/kosugi/LICENSE.txt"
+  ],
+  [
+    "Kosugi Maru",
+    "sans",
+    [["apache/kosugimaru/KosugiMaru-Regular.ttf", 400, false, 3565716]],
+    "apache/kosugimaru/LICENSE.txt"
+  ],
+  [
+    "Kotta One",
+    "serif",
+    [["ofl/kottaone/KottaOne-Regular.ttf", 400, false, 36624]],
+    "ofl/kottaone/OFL.txt"
+  ],
+  [
+    "Koulen",
+    "display",
+    [["ofl/koulen/Koulen-Regular.ttf", 400, false, 56324]],
+    "ofl/koulen/OFL.txt"
+  ],
+  [
+    "Kranky",
+    "display",
+    [["apache/kranky/Kranky-Regular.ttf", 400, false, 199284]],
+    "apache/kranky/LICENSE.txt"
+  ],
+  ["Kreon", "serif", [["ofl/kreon/Kreon[wght].ttf", 400, false, 79176]], "ofl/kreon/OFL.txt"],
+  ["Kripa", "sans", [["ofl/kripa/Kripa[wght].ttf", 400, false, 344556]], "ofl/kripa/OFL.txt"],
+  [
+    "Kristi",
+    "handwriting",
+    [["ofl/kristi/Kristi-Regular.ttf", 400, false, 47440]],
+    "ofl/kristi/OFL.txt"
+  ],
+  [
+    "Krona One",
+    "sans",
+    [["ofl/kronaone/KronaOne-Regular.ttf", 400, false, 35168]],
+    "ofl/kronaone/OFL.txt"
+  ],
+  [
+    "Krub",
+    "sans",
+    [
+      ["ofl/krub/Krub-Bold.ttf", 700, false, 89564],
+      ["ofl/krub/Krub-BoldItalic.ttf", 700, true, 92728],
+      ["ofl/krub/Krub-ExtraLight.ttf", 200, false, 90732],
+      ["ofl/krub/Krub-ExtraLightItalic.ttf", 200, true, 93724],
+      ["ofl/krub/Krub-Italic.ttf", 400, true, 92976],
+      ["ofl/krub/Krub-Light.ttf", 300, false, 90084],
+      ["ofl/krub/Krub-LightItalic.ttf", 300, true, 93048],
+      ["ofl/krub/Krub-Medium.ttf", 500, false, 89836],
+      ["ofl/krub/Krub-MediumItalic.ttf", 500, true, 92900],
+      ["ofl/krub/Krub-Regular.ttf", 400, false, 89912],
+      ["ofl/krub/Krub-SemiBold.ttf", 600, false, 89748],
+      ["ofl/krub/Krub-SemiBoldItalic.ttf", 600, true, 92832]
+    ],
+    "ofl/krub/OFL.txt"
+  ],
+  [
+    "Kufam",
+    "sans",
+    [
+      ["ofl/kufam/Kufam-Italic[wght].ttf", 400, true, 437568],
+      ["ofl/kufam/Kufam[wght].ttf", 400, false, 428544]
+    ],
+    "ofl/kufam/OFL.txt"
+  ],
+  [
+    "Kulim Park",
+    "sans",
+    [
+      ["ofl/kulimpark/KulimPark-Bold.ttf", 700, false, 60624],
+      ["ofl/kulimpark/KulimPark-BoldItalic.ttf", 700, true, 63220],
+      ["ofl/kulimpark/KulimPark-ExtraLight.ttf", 200, false, 60084],
+      ["ofl/kulimpark/KulimPark-ExtraLightItalic.ttf", 200, true, 62808],
+      ["ofl/kulimpark/KulimPark-Italic.ttf", 400, true, 62920],
+      ["ofl/kulimpark/KulimPark-Light.ttf", 300, false, 60304],
+      ["ofl/kulimpark/KulimPark-LightItalic.ttf", 300, true, 63092],
+      ["ofl/kulimpark/KulimPark-Regular.ttf", 400, false, 60852],
+      ["ofl/kulimpark/KulimPark-SemiBold.ttf", 600, false, 61052],
+      ["ofl/kulimpark/KulimPark-SemiBoldItalic.ttf", 600, true, 63520]
+    ],
+    "ofl/kulimpark/OFL.txt"
+  ],
+  [
+    "Kumar One",
+    "display",
+    [["ofl/kumarone/KumarOne-Regular.ttf", 400, false, 95852]],
+    "ofl/kumarone/OFL.txt"
+  ],
+  [
+    "Kumar One Outline",
+    "display",
+    [["ofl/kumaroneoutline/KumarOneOutline-Regular.ttf", 400, false, 128948]],
+    "https://fonts.google.com/specimen/Kumar%20One%20Outline#license"
+  ],
+  [
+    "Kumbh Sans",
+    "sans",
+    [["ofl/kumbhsans/KumbhSans[YOPQ,wght].ttf", 400, false, 118796]],
+    "ofl/kumbhsans/OFL.txt"
+  ],
+  [
+    "Kurale",
+    "serif",
+    [["ofl/kurale/Kurale-Regular.ttf", 400, false, 265304]],
+    "ofl/kurale/OFL.txt"
+  ],
+  [
+    "LINE Seed JP",
+    "sans",
+    [
+      ["ofl/lineseedjp/LINESeedJP-Bold.ttf", 700, false, 3786144],
+      ["ofl/lineseedjp/LINESeedJP-ExtraBold.ttf", 800, false, 3603732],
+      ["ofl/lineseedjp/LINESeedJP-Regular.ttf", 400, false, 3673280],
+      ["ofl/lineseedjp/LINESeedJP-Thin.ttf", 100, false, 3747104]
+    ],
+    "ofl/lineseedjp/OFL.txt"
+  ],
+  [
+    "LXGW Marker Gothic",
+    "sans",
+    [["ofl/lxgwmarkergothic/LXGWMarkerGothic-Regular.ttf", 400, false, 3187360]],
+    "ofl/lxgwmarkergothic/OFL.txt"
+  ],
+  [
+    "LXGW WenKai Mono TC",
+    "mono",
+    [
+      ["ofl/lxgwwenkaimonotc/LXGWWenKaiMonoTC-Bold.ttf", 700, false, 12885112],
+      ["ofl/lxgwwenkaimonotc/LXGWWenKaiMonoTC-Light.ttf", 300, false, 13769976],
+      ["ofl/lxgwwenkaimonotc/LXGWWenKaiMonoTC-Regular.ttf", 400, false, 13122932]
+    ],
+    "ofl/lxgwwenkaimonotc/OFL.txt"
+  ]
+]

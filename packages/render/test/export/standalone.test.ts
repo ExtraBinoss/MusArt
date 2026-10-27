@@ -14,6 +14,7 @@ const gpu = vi.hoisted(() => ({
   compositorDispose: vi.fn(),
   present: vi.fn(),
   presentationDispose: vi.fn(),
+  compositorConstructors: vi.fn(),
 }));
 vi.mock("three/webgpu", async (importOriginal) => {
   const actual = await importOriginal<typeof import("three/webgpu")>();
@@ -35,6 +36,9 @@ vi.mock("three/webgpu", async (importOriginal) => {
 });
 vi.mock("../../src/compositing/GpuCompositor", () => ({
   GpuCompositor: class {
+    constructor(_renderer: unknown, options: unknown) {
+      gpu.compositorConstructors(options);
+    }
     render = gpu.render;
     dispose = gpu.compositorDispose;
     stats = () => ({ readbacks: 0, frames: 2 });
@@ -58,6 +62,7 @@ beforeEach(async () => {
   gpu.init.mockReset().mockResolvedValue(undefined);
   gpu.dispose.mockReset().mockResolvedValue(undefined);
   gpu.constructors.mockClear();
+  gpu.compositorConstructors.mockClear();
   gpu.render
     .mockReset()
     .mockResolvedValue({ texture: new Texture(), width: 16, height: 12, premultiplied: true });
@@ -114,16 +119,84 @@ describe("GPU-backed durable export snapshots", () => {
     await expect(snapshotComposition(createPage(), {}, {})).rejects.toThrow("transfer failed");
     expect(close).toHaveBeenCalledOnce();
   });
-  it("finishes or cancels pending work before disposing its context", async () => {
+  it("finishes a pending snapshot before disposing its context", async () => {
     const snapshot = snapshotComposition(createPage(), {}, {});
     const disposal = disposeExportRenderers();
-    await expect(snapshot).rejects.toThrow("fermé");
+    await expect(snapshot).resolves.toBeInstanceOf(HTMLCanvasElement);
     await disposal;
+    expect(gpu.dispose).toHaveBeenCalledOnce();
   });
+});
+it("isolates snapshot caches by resolver/backend and retains only two idle contexts", async () => {
+  const first = vi.fn(async () => new ArrayBuffer(0)),
+    second = vi.fn(async () => new ArrayBuffer(0)),
+    page = createPage();
+  await snapshotComposition(page, {}, { fontResolver: first });
+  await snapshotComposition(page, {}, { fontResolver: first });
+  expect(gpu.init).toHaveBeenCalledOnce();
+  expect(gpu.compositorConstructors).toHaveBeenLastCalledWith(
+    expect.objectContaining({ fontResolver: first }),
+  );
+  await snapshotComposition(page, {}, { fontResolver: first, forceWebGL: true });
+  await snapshotComposition(page, {}, { fontResolver: second });
+  expect(gpu.init).toHaveBeenCalledTimes(3);
+  expect(gpu.dispose).toHaveBeenCalledOnce();
+  expect(gpu.compositorConstructors).toHaveBeenLastCalledWith(
+    expect.objectContaining({ fontResolver: second }),
+  );
+  await snapshotComposition(page, {}, { fontResolver: first, forceWebGL: true });
+  expect(gpu.init).toHaveBeenCalledTimes(3);
+  await snapshotComposition(page, {}, { fontResolver: first });
+  expect(gpu.init).toHaveBeenCalledTimes(4);
+  expect(gpu.dispose).toHaveBeenCalledTimes(2);
+});
+it("does not evict active snapshot contexts under pressure from other resolvers", async () => {
+  type Frame = { texture: Texture; width: number; height: number; premultiplied: boolean };
+  let finish!: (frame: Frame) => void;
+  gpu.render.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const first = vi.fn(async () => new ArrayBuffer(0)),
+    page = createPage(),
+    pending = snapshotComposition(page, {}, { fontResolver: first });
+  await vi.waitFor(() => expect(gpu.render).toHaveBeenCalledOnce());
+  await snapshotComposition(page, {}, { fontResolver: async () => new ArrayBuffer(0) });
+  await snapshotComposition(page, {}, { fontResolver: async () => new ArrayBuffer(0) });
+  expect(gpu.dispose).not.toHaveBeenCalled();
+  finish({ texture: new Texture(), width: 16, height: 12, premultiplied: true });
+  await expect(pending).resolves.toBeInstanceOf(HTMLCanvasElement);
+  expect(gpu.dispose).toHaveBeenCalledOnce();
+  await snapshotComposition(page, {}, { fontResolver: first });
+  expect(gpu.init).toHaveBeenCalledTimes(3);
+});
+it("does not let completed old snapshots replace a fresh cache entry after clearing", async () => {
+  type Frame = { texture: Texture; width: number; height: number; premultiplied: boolean };
+  let finish!: (frame: Frame) => void;
+  gpu.render.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const resolver = vi.fn(async () => new ArrayBuffer(0)),
+    page = createPage(),
+    pending = snapshotComposition(page, {}, { fontResolver: resolver });
+  await vi.waitFor(() => expect(gpu.render).toHaveBeenCalledOnce());
+  const cleared = disposeExportRenderers();
+  await snapshotComposition(page, {}, { fontResolver: resolver });
+  finish({ texture: new Texture(), width: 16, height: 12, premultiplied: true });
+  await Promise.all([pending, cleared]);
+  await snapshotComposition(page, {}, { fontResolver: resolver });
+  expect(gpu.init).toHaveBeenCalledTimes(2);
+  expect(gpu.dispose).toHaveBeenCalledOnce();
 });
 
 it("holds a retained native GPU canvas inside the atomic consumer queue without bitmap copies", async () => {
-  const session = createRenderSession({ forceWebGL: true, maxBytes: 1024 });
+  const fontResolver = vi.fn(async () => new ArrayBuffer(0));
+  const session = createRenderSession({ forceWebGL: true, maxBytes: 1024, fontResolver });
   expect(session.stats()).toBeNull();
   let release!: () => void;
   const hold = new Promise<void>((resolve) => {
@@ -147,6 +220,9 @@ it("holds a retained native GPU canvas inside the atomic consumer queue without 
   expect(await second).toBe(canvas);
   expect(gpu.render).toHaveBeenCalledTimes(2);
   expect(gpu.init).toHaveBeenCalledOnce();
+  expect(gpu.compositorConstructors).toHaveBeenCalledWith(
+    expect.objectContaining({ fontResolver }),
+  );
   expect(createImageBitmap).not.toHaveBeenCalled();
   expect(session.stats()).toMatchObject({ readbacks: 0 });
   await session.dispose();
@@ -162,4 +238,12 @@ it("shares disposal completion and releases a retained context only once", async
   expect(gpu.dispose).toHaveBeenCalledOnce();
   expect(gpu.presentationDispose).toHaveBeenCalledOnce();
   expect(session.stats()).toBeNull();
+});
+it("does not create a background context when the activity gate has become busy", async () => {
+  const session = createRenderSession({ sourceMaxEdge: 640 });
+  await expect(
+    session.withCanvasFrame(createPage(), {}, () => {}, { canRender: () => false }),
+  ).rejects.toMatchObject({ name: "AbortError" });
+  expect(gpu.init).not.toHaveBeenCalled();
+  await session.dispose();
 });

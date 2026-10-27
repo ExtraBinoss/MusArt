@@ -1,0 +1,191 @@
+[
+  [
+    "Love Ya Like A Sister",
+    "display",
+    [["ofl/loveyalikeasister/LoveYaLikeASister.ttf", 400, false, 271924]],
+    "ofl/loveyalikeasister/OFL.txt"
+  ],
+  [
+    "Loved by the King",
+    "handwriting",
+    [["ofl/lovedbytheking/LovedbytheKing.ttf", 400, false, 28252]],
+    "ofl/lovedbytheking/OFL.txt"
+  ],
+  [
+    "Lovers Quarrel",
+    "handwriting",
+    [["ofl/loversquarrel/LoversQuarrel-Regular.ttf", 400, false, 110424]],
+    "ofl/loversquarrel/OFL.txt"
+  ],
+  [
+    "Luckiest Guy",
+    "display",
+    [["apache/luckiestguy/LuckiestGuy-Regular.ttf", 400, false, 73320]],
+    "apache/luckiestguy/LICENSE.txt"
+  ],
+  [
+    "Lugrasimo",
+    "handwriting",
+    [["ofl/lugrasimo/Lugrasimo-Regular.ttf", 400, false, 32492]],
+    "ofl/lugrasimo/OFL.txt"
+  ],
+  [
+    "Lumanosimo",
+    "handwriting",
+    [["ofl/lumanosimo/Lumanosimo-Regular.ttf", 400, false, 38736]],
+    "ofl/lumanosimo/OFL.txt"
+  ],
+  [
+    "Lunasima",
+    "sans",
+    [
+      ["ofl/lunasima/Lunasima-Bold.ttf", 700, false, 196420],
+      ["ofl/lunasima/Lunasima-Regular.ttf", 400, false, 195140]
+    ],
+    "ofl/lunasima/OFL.txt"
+  ],
+  [
+    "Lusitana",
+    "serif",
+    [
+      ["ofl/lusitana/Lusitana-Bold.ttf", 700, false, 29284],
+      ["ofl/lusitana/Lusitana-Regular.ttf", 400, false, 30188]
+    ],
+    "ofl/lusitana/OFL.txt"
+  ],
+  [
+    "Lustria",
+    "serif",
+    [["ofl/lustria/Lustria-Regular.ttf", 400, false, 37400]],
+    "ofl/lustria/OFL.txt"
+  ],
+  [
+    "Luxurious Roman",
+    "display",
+    [["ofl/luxuriousroman/LuxuriousRoman-Regular.ttf", 400, false, 143608]],
+    "ofl/luxuriousroman/OFL.txt"
+  ],
+  [
+    "Luxurious Script",
+    "handwriting",
+    [["ofl/luxuriousscript/LuxuriousScript-Regular.ttf", 400, false, 387952]],
+    "ofl/luxuriousscript/OFL.txt"
+  ],
+  [
+    "M PLUS 1",
+    "sans",
+    [["ofl/mplus1/MPLUS1[wght].ttf", 400, false, 4196856]],
+    "ofl/mplus1/OFL.txt"
+  ],
+  [
+    "M PLUS 1 Code",
+    "mono",
+    [["ofl/mplus1code/MPLUS1Code[wght].ttf", 400, false, 3933000]],
+    "ofl/mplus1code/OFL.txt"
+  ],
+  [
+    "M PLUS 1p",
+    "sans",
+    [
+      ["ofl/mplus1p/MPLUS1p-Black.ttf", 900, false, 1774332],
+      ["ofl/mplus1p/MPLUS1p-Bold.ttf", 700, false, 1766552],
+      ["ofl/mplus1p/MPLUS1p-ExtraBold.ttf", 800, false, 1773944],
+      ["ofl/mplus1p/MPLUS1p-Light.ttf", 300, false, 1767184],
+      ["ofl/mplus1p/MPLUS1p-Medium.ttf", 500, false, 1758908],
+      ["ofl/mplus1p/MPLUS1p-Regular.ttf", 400, false, 1758688],
+      ["ofl/mplus1p/MPLUS1p-Thin.ttf", 100, false, 1771656]
+    ],
+    "ofl/mplus1p/OFL.txt"
+  ],
+  [
+    "M PLUS 2",
+    "sans",
+    [["ofl/mplus2/MPLUS2[wght].ttf", 400, false, 4201608]],
+    "ofl/mplus2/OFL.txt"
+  ],
+  [
+    "M PLUS Code Latin",
+    "sans",
+    [["ofl/mpluscodelatin/MPLUSCodeLatin[wdth,wght].ttf", 400, false, 133076]],
+    "ofl/mpluscodelatin/OFL.txt"
+  ],
+  [
+    "M PLUS Rounded 1c",
+    "sans",
+    [
+      ["ofl/mplusrounded1c/MPLUSRounded1c-Black.ttf", 900, false, 3635504],
+      ["ofl/mplusrounded1c/MPLUSRounded1c-Bold.ttf", 700, false, 3542592],
+      ["ofl/mplusrounded1c/MPLUSRounded1c-ExtraBold.ttf", 800, false, 3628512],
+      ["ofl/mplusrounded1c/MPLUSRounded1c-Light.ttf", 300, false, 3294556],
+      ["ofl/mplusrounded1c/MPLUSRounded1c-Medium.ttf", 500, false, 3432624],
+      ["ofl/mplusrounded1c/MPLUSRounded1c-Regular.ttf", 400, false, 3389792],
+      ["ofl/mplusrounded1c/MPLUSRounded1c-Thin.ttf", 100, false, 2907880]
+    ],
+    "https://fonts.google.com/specimen/M%20PLUS%20Rounded%201c#license"
+  ],
+  [
+    "M PLUS U",
+    "sans",
+    [["ofl/mplusu/MPLUSU[wght].ttf", 400, false, 4207732]],
+    "ofl/mplusu/OFL.txt"
+  ],
+  [
+    "Ma Shan Zheng",
+    "handwriting",
+    [["ofl/mashanzheng/MaShanZheng-Regular.ttf", 400, false, 5857936]],
+    "ofl/mashanzheng/OFL.txt"
+  ],
+  [
+    "Macondo",
+    "display",
+    [["ofl/macondo/Macondo-Regular.ttf", 400, false, 48776]],
+    "ofl/macondo/OFL.txt"
+  ],
+  [
+    "Macondo Swash Caps",
+    "display",
+    [["ofl/macondoswashcaps/MacondoSwashCaps-Regular.ttf", 400, false, 33016]],
+    "ofl/macondoswashcaps/OFL.txt"
+  ],
+  ["Mada", "sans", [["ofl/mada/Mada[wght].ttf", 400, false, 181408]], "ofl/mada/OFL.txt"],
+  [
+    "Madimi One",
+    "sans",
+    [["ofl/madimione/MadimiOne-Regular.ttf", 400, false, 98100]],
+    "ofl/madimione/OFL.txt"
+  ],
+  [
+    "Magra",
+    "sans",
+    [
+      ["ofl/magra/Magra-Bold.ttf", 700, false, 44500],
+      ["ofl/magra/Magra-Regular.ttf", 400, false, 45536]
+    ],
+    "ofl/magra/OFL.txt"
+  ],
+  [
+    "Maiden Orange",
+    "serif",
+    [["apache/maidenorange/MaidenOrange-Regular.ttf", 400, false, 60688]],
+    "apache/maidenorange/LICENSE.txt"
+  ],
+  [
+    "Maitree",
+    "serif",
+    [
+      ["ofl/maitree/Maitree-Bold.ttf", 700, false, 210140],
+      ["ofl/maitree/Maitree-ExtraLight.ttf", 200, false, 189756],
+      ["ofl/maitree/Maitree-Light.ttf", 300, false, 191128],
+      ["ofl/maitree/Maitree-Medium.ttf", 500, false, 195424],
+      ["ofl/maitree/Maitree-Regular.ttf", 400, false, 194476],
+      ["ofl/maitree/Maitree-SemiBold.ttf", 600, false, 206972]
+    ],
+    "ofl/maitree/OFL.txt"
+  ],
+  [
+    "Major Mono Display",
+    "mono",
+    [["ofl/majormonodisplay/MajorMonoDisplay-Regular.ttf", 400, false, 126788]],
+    "ofl/majormonodisplay/OFL.txt"
+  ]
+]

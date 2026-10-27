@@ -1,0 +1,187 @@
+[
+  [
+    "Chakra Petch",
+    "sans",
+    [
+      ["ofl/chakrapetch/ChakraPetch-Bold.ttf", 700, false, 78384],
+      ["ofl/chakrapetch/ChakraPetch-BoldItalic.ttf", 700, true, 80828],
+      ["ofl/chakrapetch/ChakraPetch-ExtraLight.ttf", 200, false, 79000],
+      ["ofl/chakrapetch/ChakraPetch-ExtraLightItalic.ttf", 200, true, 81312],
+      ["ofl/chakrapetch/ChakraPetch-Italic.ttf", 400, true, 80764],
+      ["ofl/chakrapetch/ChakraPetch-Light.ttf", 300, false, 78936],
+      ["ofl/chakrapetch/ChakraPetch-LightItalic.ttf", 300, true, 81240],
+      ["ofl/chakrapetch/ChakraPetch-Medium.ttf", 500, false, 78600],
+      ["ofl/chakrapetch/ChakraPetch-MediumItalic.ttf", 500, true, 80960],
+      ["ofl/chakrapetch/ChakraPetch-Regular.ttf", 400, false, 78488],
+      ["ofl/chakrapetch/ChakraPetch-SemiBold.ttf", 600, false, 78604],
+      ["ofl/chakrapetch/ChakraPetch-SemiBoldItalic.ttf", 600, true, 81000]
+    ],
+    "ofl/chakrapetch/OFL.txt"
+  ],
+  ["Changa", "sans", [["ofl/changa/Changa[wght].ttf", 400, false, 132140]], "ofl/changa/OFL.txt"],
+  [
+    "Changa One",
+    "display",
+    [
+      ["ofl/changaone/ChangaOne-Italic.ttf", 400, true, 26748],
+      ["ofl/changaone/ChangaOne-Regular.ttf", 400, false, 22736]
+    ],
+    "ofl/changaone/OFL.txt"
+  ],
+  [
+    "Chango",
+    "display",
+    [["ofl/chango/Chango-Regular.ttf", 400, false, 40732]],
+    "ofl/chango/OFL.txt"
+  ],
+  [
+    "Charis SIL",
+    "serif",
+    [
+      ["ofl/charissil/CharisSIL-Bold.ttf", 700, false, 738488],
+      ["ofl/charissil/CharisSIL-BoldItalic.ttf", 700, true, 802588],
+      ["ofl/charissil/CharisSIL-Italic.ttf", 400, true, 775668],
+      ["ofl/charissil/CharisSIL-Regular.ttf", 400, false, 752900]
+    ],
+    "ofl/charissil/OFL.txt"
+  ],
+  [
+    "Charm",
+    "handwriting",
+    [
+      ["ofl/charm/Charm-Bold.ttf", 700, false, 139104],
+      ["ofl/charm/Charm-Regular.ttf", 400, false, 138160]
+    ],
+    "ofl/charm/OFL.txt"
+  ],
+  [
+    "Charmonman",
+    "handwriting",
+    [
+      ["ofl/charmonman/Charmonman-Bold.ttf", 700, false, 117384],
+      ["ofl/charmonman/Charmonman-Regular.ttf", 400, false, 117644]
+    ],
+    "ofl/charmonman/OFL.txt"
+  ],
+  [
+    "Chathura",
+    "sans",
+    [
+      ["ofl/chathura/Chathura-Bold.ttf", 700, false, 330252],
+      ["ofl/chathura/Chathura-ExtraBold.ttf", 800, false, 330304],
+      ["ofl/chathura/Chathura-Light.ttf", 300, false, 342512],
+      ["ofl/chathura/Chathura-Regular.ttf", 400, false, 332324],
+      ["ofl/chathura/Chathura-Thin.ttf", 100, false, 346360]
+    ],
+    "ofl/chathura/OFL.txt"
+  ],
+  [
+    "Chau Philomene One",
+    "sans",
+    [
+      ["ofl/chauphilomeneone/ChauPhilomeneOne-Italic.ttf", 400, true, 44328],
+      ["ofl/chauphilomeneone/ChauPhilomeneOne-Regular.ttf", 400, false, 40040]
+    ],
+    "ofl/chauphilomeneone/OFL.txt"
+  ],
+  [
+    "Chela One",
+    "display",
+    [["ofl/chelaone/ChelaOne-Regular.ttf", 400, false, 35744]],
+    "ofl/chelaone/OFL.txt"
+  ],
+  [
+    "Chelsea Market",
+    "display",
+    [["ofl/chelseamarket/ChelseaMarket-Regular.ttf", 400, false, 172924]],
+    "ofl/chelseamarket/OFL.txt"
+  ],
+  ["Chenla", "display", [["ofl/chenla/Chenla.ttf", 400, false, 293316]], "ofl/chenla/OFL.txt"],
+  [
+    "Cherish",
+    "handwriting",
+    [["ofl/cherish/Cherish-Regular.ttf", 400, false, 202240]],
+    "ofl/cherish/OFL.txt"
+  ],
+  [
+    "Cherry Bomb One",
+    "display",
+    [["ofl/cherrybombone/CherryBombOne-Regular.ttf", 400, false, 214940]],
+    "ofl/cherrybombone/OFL.txt"
+  ],
+  [
+    "Cherry Cream Soda",
+    "display",
+    [["apache/cherrycreamsoda/CherryCreamSoda-Regular.ttf", 400, false, 50256]],
+    "apache/cherrycreamsoda/LICENSE.txt"
+  ],
+  [
+    "Cherry Swash",
+    "display",
+    [
+      ["ofl/cherryswash/CherrySwash-Bold.ttf", 700, false, 30052],
+      ["ofl/cherryswash/CherrySwash-Regular.ttf", 400, false, 30616]
+    ],
+    "ofl/cherryswash/OFL.txt"
+  ],
+  [
+    "Chewy",
+    "display",
+    [["apache/chewy/Chewy-Regular.ttf", 400, false, 41248]],
+    "apache/chewy/LICENSE.txt"
+  ],
+  [
+    "Chicle",
+    "display",
+    [["ofl/chicle/Chicle-Regular.ttf", 400, false, 41032]],
+    "ofl/chicle/OFL.txt"
+  ],
+  [
+    "Chilanka",
+    "handwriting",
+    [["ofl/chilanka/Chilanka-Regular.ttf", 400, false, 352832]],
+    "ofl/chilanka/OFL.txt"
+  ],
+  [
+    "Chiron GoRound TC",
+    "sans",
+    [["ofl/chirongoroundtc/ChironGoRoundTC[wght].ttf", 400, false, 51170304]],
+    "ofl/chirongoroundtc/OFL.txt"
+  ],
+  [
+    "Chiron Hei HK",
+    "sans",
+    [
+      ["ofl/chironheihk/ChironHeiHK-Italic[wght].ttf", 400, true, 33329960],
+      ["ofl/chironheihk/ChironHeiHK[wght].ttf", 400, false, 31144580]
+    ],
+    "ofl/chironheihk/OFL.txt"
+  ],
+  [
+    "Chiron Sung HK",
+    "serif",
+    [
+      ["ofl/chironsunghk/ChironSungHK-Italic[wght].ttf", 400, true, 51926120],
+      ["ofl/chironsunghk/ChironSungHK[wght].ttf", 400, false, 50652520]
+    ],
+    "ofl/chironsunghk/OFL.txt"
+  ],
+  [
+    "Chivo",
+    "sans",
+    [
+      ["ofl/chivo/Chivo-Italic[wght].ttf", 400, true, 177852],
+      ["ofl/chivo/Chivo[wght].ttf", 400, false, 160636]
+    ],
+    "ofl/chivo/OFL.txt"
+  ],
+  [
+    "Chivo Mono",
+    "mono",
+    [
+      ["ofl/chivomono/ChivoMono-Italic[wght].ttf", 400, true, 131968],
+      ["ofl/chivomono/ChivoMono[wght].ttf", 400, false, 123880]
+    ],
+    "ofl/chivomono/OFL.txt"
+  ]
+]

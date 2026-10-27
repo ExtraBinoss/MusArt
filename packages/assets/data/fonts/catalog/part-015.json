@@ -1,0 +1,196 @@
+[
+  [
+    "Cormorant",
+    "serif",
+    [
+      ["ofl/cormorant/Cormorant-Italic[wght].ttf", 400, true, 350096],
+      ["ofl/cormorant/Cormorant[wght].ttf", 400, false, 572892]
+    ],
+    "ofl/cormorant/OFL.txt"
+  ],
+  [
+    "Cormorant Garamond",
+    "serif",
+    [
+      ["ofl/cormorantgaramond/CormorantGaramond-Italic[wght].ttf", 400, true, 715644],
+      ["ofl/cormorantgaramond/CormorantGaramond[wght].ttf", 400, false, 1195560]
+    ],
+    "ofl/cormorantgaramond/OFL.txt"
+  ],
+  [
+    "Cormorant Infant",
+    "serif",
+    [
+      ["ofl/cormorantinfant/CormorantInfant-Italic[wght].ttf", 400, true, 717948],
+      ["ofl/cormorantinfant/CormorantInfant[wght].ttf", 400, false, 1174156]
+    ],
+    "ofl/cormorantinfant/OFL.txt"
+  ],
+  [
+    "Cormorant SC",
+    "serif",
+    [
+      ["ofl/cormorantsc/CormorantSC-Bold.ttf", 700, false, 763124],
+      ["ofl/cormorantsc/CormorantSC-Light.ttf", 300, false, 764892],
+      ["ofl/cormorantsc/CormorantSC-Medium.ttf", 500, false, 762320],
+      ["ofl/cormorantsc/CormorantSC-Regular.ttf", 400, false, 763624],
+      ["ofl/cormorantsc/CormorantSC-SemiBold.ttf", 600, false, 762872]
+    ],
+    "ofl/cormorantsc/OFL.txt"
+  ],
+  [
+    "Cormorant Unicase",
+    "serif",
+    [
+      ["ofl/cormorantunicase/CormorantUnicase-Bold.ttf", 700, false, 763380],
+      ["ofl/cormorantunicase/CormorantUnicase-Light.ttf", 300, false, 765136],
+      ["ofl/cormorantunicase/CormorantUnicase-Medium.ttf", 500, false, 762560],
+      ["ofl/cormorantunicase/CormorantUnicase-Regular.ttf", 400, false, 763872],
+      ["ofl/cormorantunicase/CormorantUnicase-SemiBold.ttf", 600, false, 763128]
+    ],
+    "ofl/cormorantunicase/OFL.txt"
+  ],
+  [
+    "Cormorant Upright",
+    "serif",
+    [
+      ["ofl/cormorantupright/CormorantUpright-Bold.ttf", 700, false, 224088],
+      ["ofl/cormorantupright/CormorantUpright-Light.ttf", 300, false, 221976],
+      ["ofl/cormorantupright/CormorantUpright-Medium.ttf", 500, false, 222716],
+      ["ofl/cormorantupright/CormorantUpright-Regular.ttf", 400, false, 222732],
+      ["ofl/cormorantupright/CormorantUpright-SemiBold.ttf", 600, false, 225072]
+    ],
+    "ofl/cormorantupright/OFL.txt"
+  ],
+  [
+    "Cossette Texte",
+    "sans",
+    [
+      ["ofl/cossettetexte/CossetteTexte-Bold.ttf", 700, false, 55824],
+      ["ofl/cossettetexte/CossetteTexte-Regular.ttf", 400, false, 54948]
+    ],
+    "ofl/cossettetexte/OFL.txt"
+  ],
+  [
+    "Cossette Titre",
+    "sans",
+    [
+      ["ofl/cossettetitre/CossetteTitre-Bold.ttf", 700, false, 57100],
+      ["ofl/cossettetitre/CossetteTitre-Regular.ttf", 400, false, 53948]
+    ],
+    "ofl/cossettetitre/OFL.txt"
+  ],
+  [
+    "Courgette",
+    "handwriting",
+    [["ofl/courgette/Courgette-Regular.ttf", 400, false, 122072]],
+    "ofl/courgette/OFL.txt"
+  ],
+  [
+    "Courier Prime",
+    "mono",
+    [
+      ["ofl/courierprime/CourierPrime-Bold.ttf", 700, false, 72856],
+      ["ofl/courierprime/CourierPrime-BoldItalic.ttf", 700, true, 80872],
+      ["ofl/courierprime/CourierPrime-Italic.ttf", 400, true, 79980],
+      ["ofl/courierprime/CourierPrime-Regular.ttf", 400, false, 71188]
+    ],
+    "ofl/courierprime/OFL.txt"
+  ],
+  [
+    "Cousine",
+    "mono",
+    [
+      ["ofl/cousine/Cousine-Bold.ttf", 700, false, 298048],
+      ["ofl/cousine/Cousine-BoldItalic.ttf", 700, true, 308292],
+      ["ofl/cousine/Cousine-Italic.ttf", 400, true, 306880],
+      ["ofl/cousine/Cousine-Regular.ttf", 400, false, 296856]
+    ],
+    "ofl/cousine/OFL.txt"
+  ],
+  [
+    "Coustard",
+    "serif",
+    [
+      ["ofl/coustard/Coustard-Black.ttf", 900, false, 78444],
+      ["ofl/coustard/Coustard-Regular.ttf", 400, false, 75432]
+    ],
+    "ofl/coustard/OFL.txt"
+  ],
+  [
+    "Covered By Your Grace",
+    "handwriting",
+    [["ofl/coveredbyyourgrace/CoveredByYourGrace.ttf", 400, false, 57040]],
+    "ofl/coveredbyyourgrace/OFL.txt"
+  ],
+  [
+    "Crafty Girls",
+    "handwriting",
+    [["apache/craftygirls/CraftyGirls-Regular.ttf", 400, false, 75336]],
+    "apache/craftygirls/LICENSE.txt"
+  ],
+  [
+    "Creepster",
+    "display",
+    [["ofl/creepster/Creepster-Regular.ttf", 400, false, 62724]],
+    "ofl/creepster/OFL.txt"
+  ],
+  [
+    "Crete Round",
+    "serif",
+    [
+      ["ofl/creteround/CreteRound-Italic.ttf", 400, true, 67264],
+      ["ofl/creteround/CreteRound-Regular.ttf", 400, false, 59312]
+    ],
+    "ofl/creteround/OFL.txt"
+  ],
+  [
+    "Crimson Pro",
+    "serif",
+    [
+      ["ofl/crimsonpro/CrimsonPro-Italic[wght].ttf", 400, true, 253176],
+      ["ofl/crimsonpro/CrimsonPro[wght].ttf", 400, false, 246324]
+    ],
+    "ofl/crimsonpro/OFL.txt"
+  ],
+  [
+    "Crimson Text",
+    "serif",
+    [
+      ["ofl/crimsontext/CrimsonText-Bold.ttf", 700, false, 112796],
+      ["ofl/crimsontext/CrimsonText-BoldItalic.ttf", 700, true, 115112],
+      ["ofl/crimsontext/CrimsonText-Italic.ttf", 400, true, 110216],
+      ["ofl/crimsontext/CrimsonText-Regular.ttf", 400, false, 107200],
+      ["ofl/crimsontext/CrimsonText-SemiBold.ttf", 600, false, 111176],
+      ["ofl/crimsontext/CrimsonText-SemiBoldItalic.ttf", 600, true, 112120]
+    ],
+    "ofl/crimsontext/OFL.txt"
+  ],
+  [
+    "Croissant One",
+    "display",
+    [["ofl/croissantone/CroissantOne-Regular.ttf", 400, false, 54744]],
+    "ofl/croissantone/OFL.txt"
+  ],
+  [
+    "Crushed",
+    "display",
+    [["apache/crushed/Crushed-Regular.ttf", 400, false, 57792]],
+    "apache/crushed/LICENSE.txt"
+  ],
+  [
+    "Cuprum",
+    "sans",
+    [
+      ["ofl/cuprum/Cuprum-Italic[wght].ttf", 400, true, 84360],
+      ["ofl/cuprum/Cuprum[wght].ttf", 400, false, 84324]
+    ],
+    "ofl/cuprum/OFL.txt"
+  ],
+  [
+    "Cute Font",
+    "display",
+    [["ofl/cutefont/CuteFont-Regular.ttf", 400, false, 1027936]],
+    "ofl/cutefont/OFL.txt"
+  ]
+]

@@ -1,0 +1,176 @@
+[
+  [
+    "Explora",
+    "handwriting",
+    [["ofl/explora/Explora-Regular.ttf", 400, false, 164680]],
+    "ofl/explora/OFL.txt"
+  ],
+  [
+    "Faculty Glyphic",
+    "sans",
+    [["ofl/facultyglyphic/FacultyGlyphic-Regular.ttf", 400, false, 65452]],
+    "ofl/facultyglyphic/OFL.txt"
+  ],
+  [
+    "Fahkwang",
+    "sans",
+    [
+      ["ofl/fahkwang/Fahkwang-Bold.ttf", 700, false, 87808],
+      ["ofl/fahkwang/Fahkwang-BoldItalic.ttf", 700, true, 90980],
+      ["ofl/fahkwang/Fahkwang-ExtraLight.ttf", 200, false, 88424],
+      ["ofl/fahkwang/Fahkwang-ExtraLightItalic.ttf", 200, true, 91104],
+      ["ofl/fahkwang/Fahkwang-Italic.ttf", 400, true, 91048],
+      ["ofl/fahkwang/Fahkwang-Light.ttf", 300, false, 88404],
+      ["ofl/fahkwang/Fahkwang-LightItalic.ttf", 300, true, 91148],
+      ["ofl/fahkwang/Fahkwang-Medium.ttf", 500, false, 88000],
+      ["ofl/fahkwang/Fahkwang-MediumItalic.ttf", 500, true, 91132],
+      ["ofl/fahkwang/Fahkwang-Regular.ttf", 400, false, 88168],
+      ["ofl/fahkwang/Fahkwang-SemiBold.ttf", 600, false, 88028],
+      ["ofl/fahkwang/Fahkwang-SemiBoldItalic.ttf", 600, true, 91212]
+    ],
+    "ofl/fahkwang/OFL.txt"
+  ],
+  [
+    "Familjen Grotesk",
+    "sans",
+    [
+      ["ofl/familjengrotesk/FamiljenGrotesk-Italic[wght].ttf", 400, true, 94272],
+      ["ofl/familjengrotesk/FamiljenGrotesk[wght].ttf", 400, false, 90048]
+    ],
+    "ofl/familjengrotesk/OFL.txt"
+  ],
+  [
+    "Fanwood Text",
+    "serif",
+    [
+      ["ofl/fanwoodtext/FanwoodText-Italic.ttf", 400, true, 96364],
+      ["ofl/fanwoodtext/FanwoodText-Regular.ttf", 400, false, 119216]
+    ],
+    "ofl/fanwoodtext/OFL.txt"
+  ],
+  [
+    "Farro",
+    "sans",
+    [
+      ["ofl/farro/Farro-Bold.ttf", 700, false, 68004],
+      ["ofl/farro/Farro-Light.ttf", 300, false, 68252],
+      ["ofl/farro/Farro-Medium.ttf", 500, false, 68928],
+      ["ofl/farro/Farro-Regular.ttf", 400, false, 68588]
+    ],
+    "ofl/farro/OFL.txt"
+  ],
+  [
+    "Farsan",
+    "display",
+    [["ofl/farsan/Farsan-Regular.ttf", 400, false, 243932]],
+    "ofl/farsan/OFL.txt"
+  ],
+  [
+    "Fascinate",
+    "display",
+    [["ofl/fascinate/Fascinate-Regular.ttf", 400, false, 51900]],
+    "ofl/fascinate/OFL.txt"
+  ],
+  [
+    "Fascinate Inline",
+    "display",
+    [["ofl/fascinateinline/FascinateInline-Regular.ttf", 400, false, 59604]],
+    "ofl/fascinateinline/OFL.txt"
+  ],
+  [
+    "Faster One",
+    "display",
+    [["ofl/fasterone/FasterOne-Regular.ttf", 400, false, 94044]],
+    "ofl/fasterone/OFL.txt"
+  ],
+  [
+    "Fasthand",
+    "display",
+    [["ofl/fasthand/Fasthand-Regular.ttf", 400, false, 213852]],
+    "ofl/fasthand/OFL.txt"
+  ],
+  [
+    "Fauna One",
+    "serif",
+    [["ofl/faunaone/FaunaOne-Regular.ttf", 400, false, 58804]],
+    "ofl/faunaone/OFL.txt"
+  ],
+  [
+    "Faustina",
+    "serif",
+    [
+      ["ofl/faustina/Faustina-Italic[wght].ttf", 400, true, 120744],
+      ["ofl/faustina/Faustina[wght].ttf", 400, false, 118468]
+    ],
+    "ofl/faustina/OFL.txt"
+  ],
+  [
+    "Federant",
+    "display",
+    [["ofl/federant/Federant-Regular.ttf", 400, false, 45588]],
+    "ofl/federant/OFL.txt"
+  ],
+  ["Federo", "sans", [["ofl/federo/Federo-Regular.ttf", 400, false, 145056]], "ofl/federo/OFL.txt"],
+  [
+    "Felipa",
+    "handwriting",
+    [["ofl/felipa/Felipa-Regular.ttf", 400, false, 40000]],
+    "ofl/felipa/OFL.txt"
+  ],
+  ["Fenix", "serif", [["ofl/fenix/Fenix-Regular.ttf", 400, false, 45144]], "ofl/fenix/OFL.txt"],
+  [
+    "Festive",
+    "handwriting",
+    [["ofl/festive/Festive-Regular.ttf", 400, false, 1326792]],
+    "ofl/festive/OFL.txt"
+  ],
+  [
+    "Figtree",
+    "sans",
+    [
+      ["ofl/figtree/Figtree-Italic[wght].ttf", 400, true, 62632],
+      ["ofl/figtree/Figtree[wght].ttf", 400, false, 62712]
+    ],
+    "ofl/figtree/OFL.txt"
+  ],
+  [
+    "Finger Paint",
+    "display",
+    [["ofl/fingerpaint/FingerPaint-Regular.ttf", 400, false, 107440]],
+    "ofl/fingerpaint/OFL.txt"
+  ],
+  [
+    "Finlandica Headline",
+    "sans",
+    [
+      ["ofl/finlandicaheadline/FinlandicaHeadline-Italic[wght].ttf", 400, true, 328692],
+      ["ofl/finlandicaheadline/FinlandicaHeadline[wght].ttf", 400, false, 311120]
+    ],
+    "ofl/finlandicaheadline/OFL.txt"
+  ],
+  [
+    "Finlandica Text",
+    "sans",
+    [
+      ["ofl/finlandicatext/FinlandicaText-Italic[wght].ttf", 400, true, 299416],
+      ["ofl/finlandicatext/FinlandicaText[wght].ttf", 400, false, 288868]
+    ],
+    "ofl/finlandicatext/OFL.txt"
+  ],
+  [
+    "Fira Code",
+    "mono",
+    [["ofl/firacode/FiraCode[wght].ttf", 400, false, 260364]],
+    "ofl/firacode/OFL.txt"
+  ],
+  [
+    "Fira Mono",
+    "mono",
+    [
+      ["ofl/firamono/FiraMono-Bold.ttf", 700, false, 206488],
+      ["ofl/firamono/FiraMono-Medium.ttf", 500, false, 173428],
+      ["ofl/firamono/FiraMono-Regular.ttf", 400, false, 174596]
+    ],
+    "ofl/firamono/OFL.txt"
+  ]
+]

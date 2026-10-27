@@ -1,0 +1,223 @@
+[
+  [
+    "Rasa",
+    "serif",
+    [
+      ["ofl/rasa/Rasa-Italic[wght].ttf", 400, true, 289828],
+      ["ofl/rasa/Rasa[wght].ttf", 400, false, 474404]
+    ],
+    "ofl/rasa/OFL.txt"
+  ],
+  [
+    "Rationale",
+    "sans",
+    [["ofl/rationale/Rationale-Regular.ttf", 400, false, 57156]],
+    "ofl/rationale/OFL.txt"
+  ],
+  [
+    "Ravi Prakash",
+    "display",
+    [["ofl/raviprakash/RaviPrakash-Regular.ttf", 400, false, 313012]],
+    "ofl/raviprakash/OFL.txt"
+  ],
+  [
+    "Readex Pro",
+    "sans",
+    [["ofl/readexpro/ReadexPro[HEXP,wght].ttf", 400, false, 278544]],
+    "ofl/readexpro/OFL.txt"
+  ],
+  [
+    "Recursive",
+    "sans",
+    [["ofl/recursive/Recursive[CASL,CRSV,MONO,slnt,wght].ttf", 400, false, 2379132]],
+    "ofl/recursive/OFL.txt"
+  ],
+  [
+    "Red Hat Display",
+    "sans",
+    [
+      ["ofl/redhatdisplay/RedHatDisplay-Italic[wght].ttf", 400, true, 100788],
+      ["ofl/redhatdisplay/RedHatDisplay[wght].ttf", 400, false, 98360]
+    ],
+    "ofl/redhatdisplay/OFL.txt"
+  ],
+  [
+    "Red Hat Mono",
+    "mono",
+    [
+      ["ofl/redhatmono/RedHatMono-Italic[wght].ttf", 400, true, 71768],
+      ["ofl/redhatmono/RedHatMono[wght].ttf", 400, false, 68356]
+    ],
+    "ofl/redhatmono/OFL.txt"
+  ],
+  [
+    "Red Hat Text",
+    "sans",
+    [
+      ["ofl/redhattext/RedHatText-Italic[wght].ttf", 400, true, 99664],
+      ["ofl/redhattext/RedHatText[wght].ttf", 400, false, 97332]
+    ],
+    "ofl/redhattext/OFL.txt"
+  ],
+  [
+    "Red Rose",
+    "display",
+    [["ofl/redrose/RedRose[wght].ttf", 400, false, 114928]],
+    "ofl/redrose/OFL.txt"
+  ],
+  [
+    "Redacted",
+    "display",
+    [["ofl/redacted/Redacted-Regular.ttf", 400, false, 15920]],
+    "ofl/redacted/OFL.txt"
+  ],
+  [
+    "Redacted Script",
+    "display",
+    [
+      ["ofl/redactedscript/RedactedScript-Bold.ttf", 700, false, 85240],
+      ["ofl/redactedscript/RedactedScript-Light.ttf", 300, false, 83316],
+      ["ofl/redactedscript/RedactedScript-Regular.ttf", 400, false, 86144]
+    ],
+    "ofl/redactedscript/OFL.txt"
+  ],
+  [
+    "Reddit Mono",
+    "mono",
+    [["ofl/redditmono/RedditMono[wght].ttf", 400, false, 203908]],
+    "ofl/redditmono/OFL.txt"
+  ],
+  [
+    "Reddit Sans",
+    "sans",
+    [
+      ["ofl/redditsans/RedditSans-Italic[wght].ttf", 400, true, 242572],
+      ["ofl/redditsans/RedditSans[wght].ttf", 400, false, 262060]
+    ],
+    "ofl/redditsans/OFL.txt"
+  ],
+  [
+    "Reddit Sans Condensed",
+    "sans",
+    [["ofl/redditsanscondensed/RedditSansCondensed[wght].ttf", 400, false, 261768]],
+    "ofl/redditsanscondensed/OFL.txt"
+  ],
+  [
+    "Redressed",
+    "handwriting",
+    [["apache/redressed/Redressed-Regular.ttf", 400, false, 79220]],
+    "apache/redressed/LICENSE.txt"
+  ],
+  [
+    "Reem Kufi",
+    "sans",
+    [["ofl/reemkufi/ReemKufi[wght].ttf", 400, false, 127152]],
+    "ofl/reemkufi/OFL.txt"
+  ],
+  [
+    "Reem Kufi Fun",
+    "sans",
+    [["ofl/reemkufifun/ReemKufiFun[wght].ttf", 400, false, 176328]],
+    "ofl/reemkufifun/OFL.txt"
+  ],
+  [
+    "Reem Kufi Ink",
+    "sans",
+    [["ofl/reemkufiink/ReemKufiInk-Regular.ttf", 400, false, 315764]],
+    "ofl/reemkufiink/OFL.txt"
+  ],
+  [
+    "Reenie Beanie",
+    "handwriting",
+    [["ofl/reeniebeanie/ReenieBeanie.ttf", 400, false, 147036]],
+    "ofl/reeniebeanie/OFL.txt"
+  ],
+  [
+    "Reggae One",
+    "display",
+    [["ofl/reggaeone/ReggaeOne-Regular.ttf", 400, false, 2153256]],
+    "ofl/reggaeone/OFL.txt"
+  ],
+  [
+    "Rethink Sans",
+    "sans",
+    [
+      ["ofl/rethinksans/RethinkSans-Italic[wght].ttf", 400, true, 119908],
+      ["ofl/rethinksans/RethinkSans[wght].ttf", 400, false, 120588]
+    ],
+    "ofl/rethinksans/OFL.txt"
+  ],
+  [
+    "Revalia",
+    "display",
+    [["ofl/revalia/Revalia-Regular.ttf", 400, false, 61436]],
+    "ofl/revalia/OFL.txt"
+  ],
+  [
+    "Rhodium Libre",
+    "serif",
+    [["ofl/rhodiumlibre/RhodiumLibre-Regular.ttf", 400, false, 233792]],
+    "ofl/rhodiumlibre/OFL.txt"
+  ],
+  [
+    "Ribeye",
+    "display",
+    [["ofl/ribeye/Ribeye-Regular.ttf", 400, false, 78492]],
+    "ofl/ribeye/OFL.txt"
+  ],
+  [
+    "Ribeye Marrow",
+    "display",
+    [["ofl/ribeyemarrow/RibeyeMarrow-Regular.ttf", 400, false, 84896]],
+    "ofl/ribeyemarrow/OFL.txt"
+  ],
+  [
+    "Righteous",
+    "display",
+    [["ofl/righteous/Righteous-Regular.ttf", 400, false, 43104]],
+    "ofl/righteous/OFL.txt"
+  ],
+  [
+    "Risque",
+    "display",
+    [["ofl/risque/Risque-Regular.ttf", 400, false, 59392]],
+    "ofl/risque/OFL.txt"
+  ],
+  [
+    "Road Rage",
+    "display",
+    [["ofl/roadrage/RoadRage-Regular.ttf", 400, false, 427472]],
+    "ofl/roadrage/OFL.txt"
+  ],
+  [
+    "Roboto",
+    "sans",
+    [
+      ["ofl/roboto/Roboto-Italic[wdth,wght].ttf", 400, true, 530944],
+      ["ofl/roboto/Roboto[wdth,wght].ttf", 400, false, 488584]
+    ],
+    "ofl/roboto/OFL.txt"
+  ],
+  [
+    "Roboto Condensed",
+    "sans",
+    [
+      ["ofl/robotocondensed/RobotoCondensed-Italic[wght].ttf", 400, true, 388124],
+      ["ofl/robotocondensed/RobotoCondensed[wght].ttf", 400, false, 371616]
+    ],
+    "ofl/robotocondensed/OFL.txt"
+  ],
+  [
+    "Roboto Flex",
+    "sans",
+    [
+      [
+        "ofl/robotoflex/RobotoFlex[GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght].ttf",
+        400,
+        false,
+        1787292
+      ]
+    ],
+    "ofl/robotoflex/OFL.txt"
+  ]
+]

@@ -1,0 +1,171 @@
+[
+  [
+    "Encode Sans Expanded",
+    "sans",
+    [
+      ["ofl/encodesansexpanded/EncodeSansExpanded-Black.ttf", 900, false, 167952],
+      ["ofl/encodesansexpanded/EncodeSansExpanded-Bold.ttf", 700, false, 168296],
+      ["ofl/encodesansexpanded/EncodeSansExpanded-ExtraBold.ttf", 800, false, 169472],
+      ["ofl/encodesansexpanded/EncodeSansExpanded-ExtraLight.ttf", 200, false, 165756],
+      ["ofl/encodesansexpanded/EncodeSansExpanded-Light.ttf", 300, false, 168292],
+      ["ofl/encodesansexpanded/EncodeSansExpanded-Medium.ttf", 500, false, 169304],
+      ["ofl/encodesansexpanded/EncodeSansExpanded-Regular.ttf", 400, false, 167656],
+      ["ofl/encodesansexpanded/EncodeSansExpanded-SemiBold.ttf", 600, false, 170192],
+      ["ofl/encodesansexpanded/EncodeSansExpanded-Thin.ttf", 100, false, 164156]
+    ],
+    "ofl/encodesansexpanded/OFL.txt"
+  ],
+  [
+    "Encode Sans SC",
+    "sans",
+    [["ofl/encodesanssc/EncodeSansSC[wdth,wght].ttf", 400, false, 217392]],
+    "ofl/encodesanssc/OFL.txt"
+  ],
+  [
+    "Encode Sans Semi Condensed",
+    "sans",
+    [
+      ["ofl/encodesanssemicondensed/EncodeSansSemiCondensed-Black.ttf", 900, false, 167572],
+      ["ofl/encodesanssemicondensed/EncodeSansSemiCondensed-Bold.ttf", 700, false, 168628],
+      ["ofl/encodesanssemicondensed/EncodeSansSemiCondensed-ExtraBold.ttf", 800, false, 170384],
+      ["ofl/encodesanssemicondensed/EncodeSansSemiCondensed-ExtraLight.ttf", 200, false, 166556],
+      ["ofl/encodesanssemicondensed/EncodeSansSemiCondensed-Light.ttf", 300, false, 168296],
+      ["ofl/encodesanssemicondensed/EncodeSansSemiCondensed-Medium.ttf", 500, false, 168888],
+      ["ofl/encodesanssemicondensed/EncodeSansSemiCondensed-Regular.ttf", 400, false, 170864],
+      ["ofl/encodesanssemicondensed/EncodeSansSemiCondensed-SemiBold.ttf", 600, false, 171072],
+      ["ofl/encodesanssemicondensed/EncodeSansSemiCondensed-Thin.ttf", 100, false, 162164]
+    ],
+    "ofl/encodesanssemicondensed/OFL.txt"
+  ],
+  [
+    "Encode Sans Semi Expanded",
+    "sans",
+    [
+      ["ofl/encodesanssemiexpanded/EncodeSansSemiExpanded-Black.ttf", 900, false, 168696],
+      ["ofl/encodesanssemiexpanded/EncodeSansSemiExpanded-Bold.ttf", 700, false, 169420],
+      ["ofl/encodesanssemiexpanded/EncodeSansSemiExpanded-ExtraBold.ttf", 800, false, 170916],
+      ["ofl/encodesanssemiexpanded/EncodeSansSemiExpanded-ExtraLight.ttf", 200, false, 166276],
+      ["ofl/encodesanssemiexpanded/EncodeSansSemiExpanded-Light.ttf", 300, false, 169484],
+      ["ofl/encodesanssemiexpanded/EncodeSansSemiExpanded-Medium.ttf", 500, false, 170260],
+      ["ofl/encodesanssemiexpanded/EncodeSansSemiExpanded-Regular.ttf", 400, false, 169488],
+      ["ofl/encodesanssemiexpanded/EncodeSansSemiExpanded-SemiBold.ttf", 600, false, 170788],
+      ["ofl/encodesanssemiexpanded/EncodeSansSemiExpanded-Thin.ttf", 100, false, 163204]
+    ],
+    "ofl/encodesanssemiexpanded/OFL.txt"
+  ],
+  [
+    "Engagement",
+    "handwriting",
+    [["ofl/engagement/Engagement-Regular.ttf", 400, false, 76408]],
+    "ofl/engagement/OFL.txt"
+  ],
+  [
+    "Englebert",
+    "sans",
+    [["ofl/englebert/Englebert-Regular.ttf", 400, false, 52896]],
+    "ofl/englebert/OFL.txt"
+  ],
+  [
+    "Enriqueta",
+    "serif",
+    [
+      ["ofl/enriqueta/Enriqueta-Bold.ttf", 700, false, 74088],
+      ["ofl/enriqueta/Enriqueta-Medium.ttf", 500, false, 74732],
+      ["ofl/enriqueta/Enriqueta-Regular.ttf", 400, false, 74508],
+      ["ofl/enriqueta/Enriqueta-SemiBold.ttf", 600, false, 74272]
+    ],
+    "ofl/enriqueta/OFL.txt"
+  ],
+  [
+    "Ephesis",
+    "handwriting",
+    [["ofl/ephesis/Ephesis-Regular.ttf", 400, false, 142188]],
+    "ofl/ephesis/OFL.txt"
+  ],
+  [
+    "Epilogue",
+    "sans",
+    [
+      ["ofl/epilogue/Epilogue-Italic[wght].ttf", 400, true, 209304],
+      ["ofl/epilogue/Epilogue[wght].ttf", 400, false, 202996]
+    ],
+    "ofl/epilogue/OFL.txt"
+  ],
+  [
+    "Epunda Sans",
+    "sans",
+    [
+      ["ofl/epundasans/EpundaSans-Italic[wght].ttf", 400, true, 156748],
+      ["ofl/epundasans/EpundaSans[wght].ttf", 400, false, 153704]
+    ],
+    "ofl/epundasans/OFL.txt"
+  ],
+  [
+    "Epunda Slab",
+    "serif",
+    [
+      ["ofl/epundaslab/EpundaSlab-Italic[wght].ttf", 400, true, 93032],
+      ["ofl/epundaslab/EpundaSlab[wght].ttf", 400, false, 90220]
+    ],
+    "ofl/epundaslab/OFL.txt"
+  ],
+  [
+    "Erica One",
+    "display",
+    [["ofl/ericaone/EricaOne-Regular.ttf", 400, false, 26244]],
+    "ofl/ericaone/OFL.txt"
+  ],
+  [
+    "Esteban",
+    "serif",
+    [["ofl/esteban/Esteban-Regular.ttf", 400, false, 46504]],
+    "ofl/esteban/OFL.txt"
+  ],
+  [
+    "Estedad",
+    "sans",
+    [["ofl/estedad/Estedad[wght].ttf", 400, false, 328340]],
+    "ofl/estedad/OFL.txt"
+  ],
+  [
+    "Estonia",
+    "handwriting",
+    [["ofl/estonia/Estonia-Regular.ttf", 400, false, 1470272]],
+    "ofl/estonia/OFL.txt"
+  ],
+  [
+    "Euphoria Script",
+    "handwriting",
+    [["ofl/euphoriascript/EuphoriaScript-Regular.ttf", 400, false, 38424]],
+    "ofl/euphoriascript/OFL.txt"
+  ],
+  ["Ewert", "display", [["ofl/ewert/Ewert-Regular.ttf", 400, false, 70752]], "ofl/ewert/OFL.txt"],
+  ["Exile", "display", [["ofl/exile/Exile-Regular.ttf", 400, false, 97560]], "ofl/exile/OFL.txt"],
+  [
+    "Exo",
+    "sans",
+    [
+      ["ofl/exo/Exo-Italic[wght].ttf", 400, true, 181908],
+      ["ofl/exo/Exo[wght].ttf", 400, false, 175092]
+    ],
+    "ofl/exo/OFL.txt"
+  ],
+  [
+    "Exo 2",
+    "sans",
+    [
+      ["ofl/exo2/Exo2-Italic[wght].ttf", 400, true, 302556],
+      ["ofl/exo2/Exo2[wght].ttf", 400, false, 303940]
+    ],
+    "ofl/exo2/OFL.txt"
+  ],
+  [
+    "Expletus Sans",
+    "display",
+    [
+      ["ofl/expletussans/ExpletusSans-Italic[wght].ttf", 400, true, 40088],
+      ["ofl/expletussans/ExpletusSans[wght].ttf", 400, false, 38884]
+    ],
+    "ofl/expletussans/OFL.txt"
+  ]
+]

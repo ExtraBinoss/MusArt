@@ -1,0 +1,123 @@
+[
+  [
+    "IBM Plex Mono",
+    "mono",
+    [
+      ["ofl/ibmplexmono/IBMPlexMono-Bold.ttf", 700, false, 137784],
+      ["ofl/ibmplexmono/IBMPlexMono-BoldItalic.ttf", 700, true, 144512],
+      ["ofl/ibmplexmono/IBMPlexMono-ExtraLight.ttf", 200, false, 135980],
+      ["ofl/ibmplexmono/IBMPlexMono-ExtraLightItalic.ttf", 200, true, 144672],
+      ["ofl/ibmplexmono/IBMPlexMono-Italic.ttf", 400, true, 143920],
+      ["ofl/ibmplexmono/IBMPlexMono-Light.ttf", 300, false, 135216],
+      ["ofl/ibmplexmono/IBMPlexMono-LightItalic.ttf", 300, true, 143432],
+      ["ofl/ibmplexmono/IBMPlexMono-Medium.ttf", 500, false, 136704],
+      ["ofl/ibmplexmono/IBMPlexMono-MediumItalic.ttf", 500, true, 144004],
+      ["ofl/ibmplexmono/IBMPlexMono-Regular.ttf", 400, false, 135580],
+      ["ofl/ibmplexmono/IBMPlexMono-SemiBold.ttf", 600, false, 140216],
+      ["ofl/ibmplexmono/IBMPlexMono-SemiBoldItalic.ttf", 600, true, 147368],
+      ["ofl/ibmplexmono/IBMPlexMono-Thin.ttf", 100, false, 137900],
+      ["ofl/ibmplexmono/IBMPlexMono-ThinItalic.ttf", 100, true, 146100]
+    ],
+    "ofl/ibmplexmono/OFL.txt"
+  ],
+  [
+    "IBM Plex Sans",
+    "sans",
+    [
+      ["ofl/ibmplexsans/IBMPlexSans-Italic[wdth,wght].ttf", 400, true, 599624],
+      ["ofl/ibmplexsans/IBMPlexSans[wdth,wght].ttf", 400, false, 537244]
+    ],
+    "ofl/ibmplexsans/OFL.txt"
+  ],
+  [
+    "IBM Plex Sans Arabic",
+    "sans",
+    [
+      ["ofl/ibmplexsansarabic/IBMPlexSansArabic-Bold.ttf", 700, false, 246992],
+      ["ofl/ibmplexsansarabic/IBMPlexSansArabic-ExtraLight.ttf", 200, false, 241652],
+      ["ofl/ibmplexsansarabic/IBMPlexSansArabic-Light.ttf", 300, false, 238564],
+      ["ofl/ibmplexsansarabic/IBMPlexSansArabic-Medium.ttf", 500, false, 242100],
+      ["ofl/ibmplexsansarabic/IBMPlexSansArabic-Regular.ttf", 400, false, 235924],
+      ["ofl/ibmplexsansarabic/IBMPlexSansArabic-SemiBold.ttf", 600, false, 244616],
+      ["ofl/ibmplexsansarabic/IBMPlexSansArabic-Thin.ttf", 100, false, 242204]
+    ],
+    "ofl/ibmplexsansarabic/OFL.txt"
+  ],
+  [
+    "IBM Plex Sans Condensed",
+    "sans",
+    [
+      ["ofl/ibmplexsanscondensed/IBMPlexSansCondensed-Bold.ttf", 700, false, 112228],
+      ["ofl/ibmplexsanscondensed/IBMPlexSansCondensed-BoldItalic.ttf", 700, true, 117024],
+      ["ofl/ibmplexsanscondensed/IBMPlexSansCondensed-ExtraLight.ttf", 200, false, 114064],
+      ["ofl/ibmplexsanscondensed/IBMPlexSansCondensed-ExtraLightItalic.ttf", 200, true, 118400],
+      ["ofl/ibmplexsanscondensed/IBMPlexSansCondensed-Italic.ttf", 400, true, 117128],
+      ["ofl/ibmplexsanscondensed/IBMPlexSansCondensed-Light.ttf", 300, false, 112100],
+      ["ofl/ibmplexsanscondensed/IBMPlexSansCondensed-LightItalic.ttf", 300, true, 117032],
+      ["ofl/ibmplexsanscondensed/IBMPlexSansCondensed-Medium.ttf", 500, false, 111176],
+      ["ofl/ibmplexsanscondensed/IBMPlexSansCondensed-MediumItalic.ttf", 500, true, 115728],
+      ["ofl/ibmplexsanscondensed/IBMPlexSansCondensed-Regular.ttf", 400, false, 111236],
+      ["ofl/ibmplexsanscondensed/IBMPlexSansCondensed-SemiBold.ttf", 600, false, 111476],
+      ["ofl/ibmplexsanscondensed/IBMPlexSansCondensed-SemiBoldItalic.ttf", 600, true, 116012],
+      ["ofl/ibmplexsanscondensed/IBMPlexSansCondensed-Thin.ttf", 100, false, 115048],
+      ["ofl/ibmplexsanscondensed/IBMPlexSansCondensed-ThinItalic.ttf", 100, true, 119360]
+    ],
+    "ofl/ibmplexsanscondensed/OFL.txt"
+  ],
+  [
+    "IBM Plex Sans Devanagari",
+    "sans",
+    [
+      ["ofl/ibmplexsansdevanagari/IBMPlexSansDevanagari-Bold.ttf", 700, false, 330896],
+      ["ofl/ibmplexsansdevanagari/IBMPlexSansDevanagari-ExtraLight.ttf", 200, false, 374584],
+      ["ofl/ibmplexsansdevanagari/IBMPlexSansDevanagari-Light.ttf", 300, false, 368748],
+      ["ofl/ibmplexsansdevanagari/IBMPlexSansDevanagari-Medium.ttf", 500, false, 343884],
+      ["ofl/ibmplexsansdevanagari/IBMPlexSansDevanagari-Regular.ttf", 400, false, 357812],
+      ["ofl/ibmplexsansdevanagari/IBMPlexSansDevanagari-SemiBold.ttf", 600, false, 343168],
+      ["ofl/ibmplexsansdevanagari/IBMPlexSansDevanagari-Thin.ttf", 100, false, 371416]
+    ],
+    "ofl/ibmplexsansdevanagari/OFL.txt"
+  ],
+  [
+    "IBM Plex Sans Hebrew",
+    "sans",
+    [
+      ["ofl/ibmplexsanshebrew/IBMPlexSansHebrew-Bold.ttf", 700, false, 96716],
+      ["ofl/ibmplexsanshebrew/IBMPlexSansHebrew-ExtraLight.ttf", 200, false, 99676],
+      ["ofl/ibmplexsanshebrew/IBMPlexSansHebrew-Light.ttf", 300, false, 98132],
+      ["ofl/ibmplexsanshebrew/IBMPlexSansHebrew-Medium.ttf", 500, false, 96636],
+      ["ofl/ibmplexsanshebrew/IBMPlexSansHebrew-Regular.ttf", 400, false, 96272],
+      ["ofl/ibmplexsanshebrew/IBMPlexSansHebrew-SemiBold.ttf", 600, false, 96784],
+      ["ofl/ibmplexsanshebrew/IBMPlexSansHebrew-Thin.ttf", 100, false, 99952]
+    ],
+    "ofl/ibmplexsanshebrew/OFL.txt"
+  ],
+  [
+    "IBM Plex Sans JP",
+    "sans",
+    [
+      ["ofl/ibmplexsansjp/IBMPlexSansJP-Bold.ttf", 700, false, 2391376],
+      ["ofl/ibmplexsansjp/IBMPlexSansJP-ExtraLight.ttf", 200, false, 2412964],
+      ["ofl/ibmplexsansjp/IBMPlexSansJP-Light.ttf", 300, false, 2405308],
+      ["ofl/ibmplexsansjp/IBMPlexSansJP-Medium.ttf", 500, false, 2389060],
+      ["ofl/ibmplexsansjp/IBMPlexSansJP-Regular.ttf", 400, false, 2396484],
+      ["ofl/ibmplexsansjp/IBMPlexSansJP-SemiBold.ttf", 600, false, 2388720],
+      ["ofl/ibmplexsansjp/IBMPlexSansJP-Thin.ttf", 100, false, 2418688]
+    ],
+    "ofl/ibmplexsansjp/OFL.txt"
+  ],
+  [
+    "IBM Plex Sans KR",
+    "sans",
+    [
+      ["ofl/ibmplexsanskr/IBMPlexSansKR-Bold.ttf", 700, false, 2875584],
+      ["ofl/ibmplexsanskr/IBMPlexSansKR-ExtraLight.ttf", 200, false, 2860324],
+      ["ofl/ibmplexsanskr/IBMPlexSansKR-Light.ttf", 300, false, 2803868],
+      ["ofl/ibmplexsanskr/IBMPlexSansKR-Medium.ttf", 500, false, 2866736],
+      ["ofl/ibmplexsanskr/IBMPlexSansKR-Regular.ttf", 400, false, 2797100],
+      ["ofl/ibmplexsanskr/IBMPlexSansKR-SemiBold.ttf", 600, false, 2854744],
+      ["ofl/ibmplexsanskr/IBMPlexSansKR-Thin.ttf", 100, false, 2519952]
+    ],
+    "ofl/ibmplexsanskr/OFL.txt"
+  ]
+]

@@ -1,4 +1,4 @@
-import type { Asset, Layer } from "@musart/core";
+import type { Asset } from "@musart/core";
 
 const images = new Map<string, Promise<HTMLImageElement>>();
 
@@ -42,29 +42,6 @@ export async function sourcePixels(asset: Asset): Promise<ImageData> {
   const context = context2d(canvas);
   context.drawImage(image, 0, 0, canvas.width, canvas.height);
   return context.getImageData(0, 0, canvas.width, canvas.height);
-}
-
-export function drawText(context: CanvasRenderingContext2D, layer: Layer): void {
-  context.fillStyle = layer.fill;
-  context.font = `${layer.fontWeight} ${layer.fontSize}px "${layer.fontFamily.replaceAll('"', "")}", sans-serif`;
-  context.textBaseline = "top";
-  context.textAlign = layer.textAlign;
-  context.letterSpacing = `${layer.letterSpacing}px`;
-  const x =
-    layer.textAlign === "center" ? layer.width / 2 : layer.textAlign === "right" ? layer.width : 0;
-  const lineHeight = layer.fontSize * layer.lineHeight;
-  let lineIndex = 0;
-  for (const paragraph of layer.text.split("\n")) {
-    let line = "";
-    for (const word of paragraph.split(" ")) {
-      const next = line ? `${line} ${word}` : word;
-      if (line && context.measureText(next).width > layer.width) {
-        context.fillText(line, x, lineIndex++ * lineHeight);
-        line = word;
-      } else line = next;
-    }
-    context.fillText(line, x, lineIndex++ * lineHeight);
-  }
 }
 
 export function clearSourceCache(): void {

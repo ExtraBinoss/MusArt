@@ -1,0 +1,198 @@
+[
+  [
+    "Ancizar Serif",
+    "serif",
+    [
+      ["ofl/ancizarserif/AncizarSerif-Italic[wght].ttf", 400, true, 197960],
+      ["ofl/ancizarserif/AncizarSerif[wght].ttf", 400, false, 193212]
+    ],
+    "ofl/ancizarserif/OFL.txt"
+  ],
+  [
+    "Andada Pro",
+    "serif",
+    [
+      ["ofl/andadapro/AndadaPro-Italic[wght].ttf", 400, true, 268388],
+      ["ofl/andadapro/AndadaPro[wght].ttf", 400, false, 271784]
+    ],
+    "ofl/andadapro/OFL.txt"
+  ],
+  [
+    "Andika",
+    "sans",
+    [
+      ["ofl/andika/Andika-Bold.ttf", 700, false, 681008],
+      ["ofl/andika/Andika-BoldItalic.ttf", 700, true, 709628],
+      ["ofl/andika/Andika-Italic.ttf", 400, true, 700596],
+      ["ofl/andika/Andika-Regular.ttf", 400, false, 669828]
+    ],
+    "ofl/andika/OFL.txt"
+  ],
+  [
+    "Anek Bangla",
+    "sans",
+    [["ofl/anekbangla/AnekBangla[wdth,wght].ttf", 400, false, 1344456]],
+    "ofl/anekbangla/OFL.txt"
+  ],
+  [
+    "Anek Devanagari",
+    "sans",
+    [["ofl/anekdevanagari/AnekDevanagari[wdth,wght].ttf", 400, false, 2190532]],
+    "ofl/anekdevanagari/OFL.txt"
+  ],
+  [
+    "Anek Gujarati",
+    "sans",
+    [["ofl/anekgujarati/AnekGujarati[wdth,wght].ttf", 400, false, 1621452]],
+    "ofl/anekgujarati/OFL.txt"
+  ],
+  [
+    "Anek Gurmukhi",
+    "sans",
+    [["ofl/anekgurmukhi/AnekGurmukhi[wdth,wght].ttf", 400, false, 357420]],
+    "ofl/anekgurmukhi/OFL.txt"
+  ],
+  [
+    "Anek Kannada",
+    "sans",
+    [["ofl/anekkannada/AnekKannada[wdth,wght].ttf", 400, false, 1346860]],
+    "ofl/anekkannada/OFL.txt"
+  ],
+  [
+    "Anek Latin",
+    "sans",
+    [["ofl/aneklatin/AnekLatin[wdth,wght].ttf", 400, false, 404880]],
+    "ofl/aneklatin/OFL.txt"
+  ],
+  [
+    "Anek Malayalam",
+    "sans",
+    [["ofl/anekmalayalam/AnekMalayalam[wdth,wght].ttf", 400, false, 668244]],
+    "ofl/anekmalayalam/OFL.txt"
+  ],
+  [
+    "Anek Odia",
+    "sans",
+    [["ofl/anekodia/AnekOdia[wdth,wght].ttf", 400, false, 858180]],
+    "ofl/anekodia/OFL.txt"
+  ],
+  [
+    "Anek Tamil",
+    "sans",
+    [["ofl/anektamil/AnekTamil[wdth,wght].ttf", 400, false, 899668]],
+    "ofl/anektamil/OFL.txt"
+  ],
+  [
+    "Anek Telugu",
+    "sans",
+    [["ofl/anektelugu/AnekTelugu[wdth,wght].ttf", 400, false, 1806540]],
+    "ofl/anektelugu/OFL.txt"
+  ],
+  [
+    "Angkor",
+    "display",
+    [["ofl/angkor/Angkor-Regular.ttf", 400, false, 79720]],
+    "ofl/angkor/OFL.txt"
+  ],
+  [
+    "Annapurna SIL",
+    "serif",
+    [
+      ["ofl/annapurnasil/AnnapurnaSIL-Bold.ttf", 700, false, 524904],
+      ["ofl/annapurnasil/AnnapurnaSIL-Regular.ttf", 400, false, 530928]
+    ],
+    "ofl/annapurnasil/OFL.txt"
+  ],
+  [
+    "Annie Use Your Telescope",
+    "handwriting",
+    [["ofl/annieuseyourtelescope/AnnieUseYourTelescope-Regular.ttf", 400, false, 51068]],
+    "ofl/annieuseyourtelescope/OFL.txt"
+  ],
+  [
+    "Anonymous Pro",
+    "mono",
+    [
+      ["ofl/anonymouspro/AnonymousPro-Bold.ttf", 700, false, 153616],
+      ["ofl/anonymouspro/AnonymousPro-BoldItalic.ttf", 700, true, 141924],
+      ["ofl/anonymouspro/AnonymousPro-Italic.ttf", 400, true, 144424],
+      ["ofl/anonymouspro/AnonymousPro-Regular.ttf", 400, false, 158100]
+    ],
+    "ofl/anonymouspro/OFL.txt"
+  ],
+  ["Anta", "sans", [["ofl/anta/Anta-Regular.ttf", 400, false, 74304]], "ofl/anta/OFL.txt"],
+  ["Antic", "sans", [["ofl/antic/Antic-Regular.ttf", 400, false, 39240]], "ofl/antic/OFL.txt"],
+  [
+    "Antic Didone",
+    "serif",
+    [["ofl/anticdidone/AnticDidone-Regular.ttf", 400, false, 39668]],
+    "ofl/anticdidone/OFL.txt"
+  ],
+  [
+    "Antic Slab",
+    "serif",
+    [["ofl/anticslab/AnticSlab-Regular.ttf", 400, false, 36948]],
+    "ofl/anticslab/OFL.txt"
+  ],
+  ["Anton", "sans", [["ofl/anton/Anton-Regular.ttf", 400, false, 170812]], "ofl/anton/OFL.txt"],
+  [
+    "Anton SC",
+    "sans",
+    [["ofl/antonsc/AntonSC-Regular.ttf", 400, false, 162116]],
+    "ofl/antonsc/OFL.txt"
+  ],
+  [
+    "Antonio",
+    "sans",
+    [["ofl/antonio/Antonio[wght].ttf", 400, false, 74104]],
+    "ofl/antonio/OFL.txt"
+  ],
+  [
+    "Anuphan",
+    "sans",
+    [["ofl/anuphan/Anuphan[wght].ttf", 400, false, 231712]],
+    "ofl/anuphan/OFL.txt"
+  ],
+  [
+    "Anybody",
+    "display",
+    [
+      ["ofl/anybody/Anybody-Italic[wdth,wght].ttf", 400, true, 209060],
+      ["ofl/anybody/Anybody[wdth,wght].ttf", 400, false, 201352]
+    ],
+    "ofl/anybody/OFL.txt"
+  ],
+  [
+    "Aoboshi One",
+    "serif",
+    [["ofl/aoboshione/AoboshiOne-Regular.ttf", 400, false, 117976]],
+    "ofl/aoboshione/OFL.txt"
+  ],
+  [
+    "Arapey",
+    "serif",
+    [
+      ["ofl/arapey/Arapey-Italic.ttf", 400, true, 29588],
+      ["ofl/arapey/Arapey-Regular.ttf", 400, false, 26784]
+    ],
+    "ofl/arapey/OFL.txt"
+  ],
+  [
+    "Arbutus",
+    "serif",
+    [["ofl/arbutus/Arbutus-Regular.ttf", 400, false, 80964]],
+    "ofl/arbutus/OFL.txt"
+  ],
+  [
+    "Arbutus Slab",
+    "serif",
+    [["ofl/arbutusslab/ArbutusSlab-Regular.ttf", 400, false, 69268]],
+    "ofl/arbutusslab/OFL.txt"
+  ],
+  [
+    "Architects Daughter",
+    "handwriting",
+    [["ofl/architectsdaughter/ArchitectsDaughter-Regular.ttf", 400, false, 43352]],
+    "ofl/architectsdaughter/OFL.txt"
+  ]
+]

@@ -1,0 +1,176 @@
+[
+  ["Mako", "sans", [["ofl/mako/Mako-Regular.ttf", 400, false, 70284]], "ofl/mako/OFL.txt"],
+  [
+    "Mali",
+    "handwriting",
+    [
+      ["ofl/mali/Mali-Bold.ttf", 700, false, 112176],
+      ["ofl/mali/Mali-BoldItalic.ttf", 700, true, 115724],
+      ["ofl/mali/Mali-ExtraLight.ttf", 200, false, 112596],
+      ["ofl/mali/Mali-ExtraLightItalic.ttf", 200, true, 115592],
+      ["ofl/mali/Mali-Italic.ttf", 400, true, 115980],
+      ["ofl/mali/Mali-Light.ttf", 300, false, 112788],
+      ["ofl/mali/Mali-LightItalic.ttf", 300, true, 115752],
+      ["ofl/mali/Mali-Medium.ttf", 500, false, 112880],
+      ["ofl/mali/Mali-MediumItalic.ttf", 500, true, 115992],
+      ["ofl/mali/Mali-Regular.ttf", 400, false, 112756],
+      ["ofl/mali/Mali-SemiBold.ttf", 600, false, 112924],
+      ["ofl/mali/Mali-SemiBoldItalic.ttf", 600, true, 116020]
+    ],
+    "ofl/mali/OFL.txt"
+  ],
+  [
+    "Mallanna",
+    "sans",
+    [["ofl/mallanna/Mallanna-Regular.ttf", 400, false, 722912]],
+    "ofl/mallanna/OFL.txt"
+  ],
+  [
+    "Maname",
+    "serif",
+    [["ofl/maname/Maname-Regular.ttf", 400, false, 501400]],
+    "ofl/maname/OFL.txt"
+  ],
+  [
+    "Mandali",
+    "sans",
+    [["ofl/mandali/Mandali-Regular.ttf", 400, false, 619212]],
+    "ofl/mandali/OFL.txt"
+  ],
+  [
+    "Manjari",
+    "sans",
+    [
+      ["ofl/manjari/Manjari-Bold.ttf", 700, false, 151864],
+      ["ofl/manjari/Manjari-Regular.ttf", 400, false, 151056],
+      ["ofl/manjari/Manjari-Thin.ttf", 100, false, 152332]
+    ],
+    "ofl/manjari/OFL.txt"
+  ],
+  [
+    "Manrope",
+    "sans",
+    [["ofl/manrope/Manrope[wght].ttf", 400, false, 164700]],
+    "ofl/manrope/OFL.txt"
+  ],
+  [
+    "Mansalva",
+    "handwriting",
+    [["ofl/mansalva/Mansalva-Regular.ttf", 400, false, 355776]],
+    "ofl/mansalva/OFL.txt"
+  ],
+  [
+    "Manuale",
+    "serif",
+    [
+      ["ofl/manuale/Manuale-Italic[wght].ttf", 400, true, 203060],
+      ["ofl/manuale/Manuale[wght].ttf", 400, false, 185992]
+    ],
+    "ofl/manuale/OFL.txt"
+  ],
+  [
+    "Manufacturing Consent",
+    "display",
+    [["ofl/manufacturingconsent/ManufacturingConsent-Regular.ttf", 400, false, 61796]],
+    "ofl/manufacturingconsent/OFL.txt"
+  ],
+  [
+    "Marcellus",
+    "serif",
+    [["ofl/marcellus/Marcellus-Regular.ttf", 400, false, 46004]],
+    "ofl/marcellus/OFL.txt"
+  ],
+  [
+    "Marcellus SC",
+    "serif",
+    [["ofl/marcellussc/MarcellusSC-Regular.ttf", 400, false, 47888]],
+    "ofl/marcellussc/OFL.txt"
+  ],
+  [
+    "Marck Script",
+    "handwriting",
+    [["ofl/marckscript/MarckScript-Regular.ttf", 400, false, 83664]],
+    "ofl/marckscript/OFL.txt"
+  ],
+  [
+    "Margarine",
+    "display",
+    [["ofl/margarine/Margarine-Regular.ttf", 400, false, 148820]],
+    "ofl/margarine/OFL.txt"
+  ],
+  [
+    "Marhey",
+    "display",
+    [["ofl/marhey/Marhey[wght].ttf", 400, false, 198704]],
+    "ofl/marhey/OFL.txt"
+  ],
+  [
+    "Markazi Text",
+    "serif",
+    [["ofl/markazitext/MarkaziText[wght].ttf", 400, false, 296896]],
+    "ofl/markazitext/OFL.txt"
+  ],
+  [
+    "Marko One",
+    "serif",
+    [["ofl/markoone/MarkoOne-Regular.ttf", 400, false, 34484]],
+    "ofl/markoone/OFL.txt"
+  ],
+  [
+    "Marmelad",
+    "sans",
+    [["ofl/marmelad/Marmelad-Regular.ttf", 400, false, 142764]],
+    "ofl/marmelad/OFL.txt"
+  ],
+  [
+    "Martel",
+    "serif",
+    [
+      ["ofl/martel/Martel-Bold.ttf", 700, false, 170240],
+      ["ofl/martel/Martel-DemiBold.ttf", 600, false, 170100],
+      ["ofl/martel/Martel-ExtraBold.ttf", 800, false, 170900],
+      ["ofl/martel/Martel-Heavy.ttf", 900, false, 164364],
+      ["ofl/martel/Martel-Light.ttf", 300, false, 170540],
+      ["ofl/martel/Martel-Regular.ttf", 400, false, 170196],
+      ["ofl/martel/Martel-UltraLight.ttf", 200, false, 168700]
+    ],
+    "ofl/martel/OFL.txt"
+  ],
+  [
+    "Martel Sans",
+    "sans",
+    [
+      ["ofl/martelsans/MartelSans-Black.ttf", 900, false, 152156],
+      ["ofl/martelsans/MartelSans-Bold.ttf", 700, false, 152352],
+      ["ofl/martelsans/MartelSans-ExtraBold.ttf", 800, false, 152748],
+      ["ofl/martelsans/MartelSans-ExtraLight.ttf", 200, false, 153652],
+      ["ofl/martelsans/MartelSans-Light.ttf", 300, false, 153172],
+      ["ofl/martelsans/MartelSans-Regular.ttf", 400, false, 153396],
+      ["ofl/martelsans/MartelSans-SemiBold.ttf", 600, false, 152724]
+    ],
+    "ofl/martelsans/OFL.txt"
+  ],
+  [
+    "Martian Mono",
+    "mono",
+    [["ofl/martianmono/MartianMono[wdth,wght].ttf", 400, false, 148460]],
+    "ofl/martianmono/OFL.txt"
+  ],
+  [
+    "Marvel",
+    "sans",
+    [
+      ["ofl/marvel/Marvel-Bold.ttf", 700, false, 36968],
+      ["ofl/marvel/Marvel-BoldItalic.ttf", 700, true, 40080],
+      ["ofl/marvel/Marvel-Italic.ttf", 400, true, 40668],
+      ["ofl/marvel/Marvel-Regular.ttf", 400, false, 38220]
+    ],
+    "ofl/marvel/OFL.txt"
+  ],
+  [
+    "Matangi",
+    "sans",
+    [["ofl/matangi/Matangi[wght].ttf", 400, false, 711948]],
+    "ofl/matangi/OFL.txt"
+  ]
+]

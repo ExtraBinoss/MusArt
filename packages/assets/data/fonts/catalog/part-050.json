@@ -1,0 +1,209 @@
+[
+  [
+    "Noto Serif KR",
+    "serif",
+    [["ofl/notoserifkr/NotoSerifKR[wght].ttf", 400, false, 23795420]],
+    "ofl/notoserifkr/OFL.txt"
+  ],
+  [
+    "Noto Serif Kannada",
+    "serif",
+    [["ofl/notoserifkannada/NotoSerifKannada[wght].ttf", 400, false, 495384]],
+    "ofl/notoserifkannada/OFL.txt"
+  ],
+  [
+    "Noto Serif Khitan Small Script",
+    "serif",
+    [["ofl/notoserifkhitansmallscript/NotoSerifKhitanSmallScript-Regular.ttf", 400, false, 851848]],
+    "ofl/notoserifkhitansmallscript/OFL.txt"
+  ],
+  [
+    "Noto Serif Khmer",
+    "serif",
+    [["ofl/notoserifkhmer/NotoSerifKhmer[wdth,wght].ttf", 400, false, 498288]],
+    "ofl/notoserifkhmer/OFL.txt"
+  ],
+  [
+    "Noto Serif Khojki",
+    "serif",
+    [["ofl/notoserifkhojki/NotoSerifKhojki[wght].ttf", 400, false, 233136]],
+    "ofl/notoserifkhojki/OFL.txt"
+  ],
+  [
+    "Noto Serif Lao",
+    "serif",
+    [["ofl/notoseriflao/NotoSerifLao[wdth,wght].ttf", 400, false, 217332]],
+    "ofl/notoseriflao/OFL.txt"
+  ],
+  [
+    "Noto Serif Makasar",
+    "serif",
+    [["ofl/notoserifmakasar/NotoSerifMakasar-Regular.ttf", 400, false, 57888]],
+    "ofl/notoserifmakasar/OFL.txt"
+  ],
+  [
+    "Noto Serif Malayalam",
+    "serif",
+    [["ofl/notoserifmalayalam/NotoSerifMalayalam[wght].ttf", 400, false, 242048]],
+    "ofl/notoserifmalayalam/OFL.txt"
+  ],
+  [
+    "Noto Serif Myanmar",
+    "serif",
+    [
+      ["ofl/notoserifmyanmar/NotoSerifMyanmar-Black.ttf", 900, false, 258784],
+      ["ofl/notoserifmyanmar/NotoSerifMyanmar-Bold.ttf", 700, false, 270276],
+      ["ofl/notoserifmyanmar/NotoSerifMyanmar-ExtraBold.ttf", 800, false, 255928],
+      ["ofl/notoserifmyanmar/NotoSerifMyanmar-ExtraLight.ttf", 200, false, 235964],
+      ["ofl/notoserifmyanmar/NotoSerifMyanmar-Light.ttf", 300, false, 244356],
+      ["ofl/notoserifmyanmar/NotoSerifMyanmar-Medium.ttf", 500, false, 246872],
+      ["ofl/notoserifmyanmar/NotoSerifMyanmar-Regular.ttf", 400, false, 260396],
+      ["ofl/notoserifmyanmar/NotoSerifMyanmar-SemiBold.ttf", 600, false, 247700],
+      ["ofl/notoserifmyanmar/NotoSerifMyanmar-Thin.ttf", 100, false, 235484]
+    ],
+    "ofl/notoserifmyanmar/OFL.txt"
+  ],
+  [
+    "Noto Serif NP Hmong",
+    "serif",
+    [["ofl/notoserifnphmong/NotoSerifNPHmong[wght].ttf", 400, false, 133168]],
+    "ofl/notoserifnphmong/OFL.txt"
+  ],
+  [
+    "Noto Serif Old Uyghur",
+    "serif",
+    [["ofl/notoserifolduyghur/NotoSerifOldUyghur-Regular.ttf", 400, false, 76584]],
+    "ofl/notoserifolduyghur/OFL.txt"
+  ],
+  [
+    "Noto Serif Oriya",
+    "serif",
+    [["ofl/notoseriforiya/NotoSerifOriya[wght].ttf", 400, false, 241144]],
+    "ofl/notoseriforiya/OFL.txt"
+  ],
+  [
+    "Noto Serif Ottoman Siyaq",
+    "serif",
+    [["ofl/notoserifottomansiyaq/NotoSerifOttomanSiyaq-Regular.ttf", 400, false, 80000]],
+    "ofl/notoserifottomansiyaq/OFL.txt"
+  ],
+  [
+    "Noto Serif SC",
+    "serif",
+    [["ofl/notoserifsc/NotoSerifSC[wght].ttf", 400, false, 25125512]],
+    "ofl/notoserifsc/OFL.txt"
+  ],
+  [
+    "Noto Serif Sinhala",
+    "serif",
+    [["ofl/notoserifsinhala/NotoSerifSinhala[wdth,wght].ttf", 400, false, 1026928]],
+    "ofl/notoserifsinhala/OFL.txt"
+  ],
+  [
+    "Noto Serif TC",
+    "serif",
+    [["ofl/notoseriftc/NotoSerifTC[wght].ttf", 400, false, 16851596]],
+    "ofl/notoseriftc/OFL.txt"
+  ],
+  [
+    "Noto Serif Tamil",
+    "serif",
+    [
+      ["ofl/notoseriftamil/NotoSerifTamil-Italic[wdth,wght].ttf", 400, true, 422328],
+      ["ofl/notoseriftamil/NotoSerifTamil[wdth,wght].ttf", 400, false, 420124]
+    ],
+    "ofl/notoseriftamil/OFL.txt"
+  ],
+  [
+    "Noto Serif Tangut",
+    "serif",
+    [["ofl/notoseriftangut/NotoSerifTangut-Regular.ttf", 400, false, 5687188]],
+    "ofl/notoseriftangut/OFL.txt"
+  ],
+  [
+    "Noto Serif Telugu",
+    "serif",
+    [["ofl/notoseriftelugu/NotoSerifTelugu[wght].ttf", 400, false, 543100]],
+    "ofl/notoseriftelugu/OFL.txt"
+  ],
+  [
+    "Noto Serif Thai",
+    "serif",
+    [["ofl/notoserifthai/NotoSerifThai[wdth,wght].ttf", 400, false, 292188]],
+    "ofl/notoserifthai/OFL.txt"
+  ],
+  [
+    "Noto Serif Tibetan",
+    "serif",
+    [["ofl/notoseriftibetan/NotoSerifTibetan[wght].ttf", 400, false, 2063504]],
+    "ofl/notoseriftibetan/OFL.txt"
+  ],
+  [
+    "Noto Serif Todhri",
+    "serif",
+    [["ofl/notoseriftodhri/NotoSerifTodhri-Regular.ttf", 400, false, 66440]],
+    "ofl/notoseriftodhri/OFL.txt"
+  ],
+  [
+    "Noto Serif Toto",
+    "serif",
+    [["ofl/notoseriftoto/NotoSerifToto[wght].ttf", 400, false, 62536]],
+    "ofl/notoseriftoto/OFL.txt"
+  ],
+  [
+    "Noto Serif Vithkuqi",
+    "serif",
+    [["ofl/notoserifvithkuqi/NotoSerifVithkuqi[wght].ttf", 400, false, 134540]],
+    "ofl/notoserifvithkuqi/OFL.txt"
+  ],
+  [
+    "Noto Serif Yezidi",
+    "serif",
+    [["ofl/notoserifyezidi/NotoSerifYezidi[wght].ttf", 400, false, 112384]],
+    "ofl/notoserifyezidi/OFL.txt"
+  ],
+  [
+    "Noto Traditional Nushu",
+    "sans",
+    [["ofl/nototraditionalnushu/NotoTraditionalNushu[wght].ttf", 400, false, 292524]],
+    "ofl/nototraditionalnushu/OFL.txt"
+  ],
+  [
+    "Noto Znamenny Musical Notation",
+    "sans",
+    [
+      [
+        "ofl/notoznamennymusicalnotation/NotoZnamennyMusicalNotation-Regular.ttf",
+        400,
+        false,
+        104040
+      ]
+    ],
+    "ofl/notoznamennymusicalnotation/OFL.txt"
+  ],
+  ["Nova Cut", "display", [["ofl/novacut/NovaCut.ttf", 400, false, 94488]], "ofl/novacut/OFL.txt"],
+  [
+    "Nova Flat",
+    "display",
+    [["ofl/novaflat/NovaFlat.ttf", 400, false, 93844]],
+    "ofl/novaflat/OFL.txt"
+  ],
+  [
+    "Nova Mono",
+    "mono",
+    [["ofl/novamono/NovaMono.ttf", 400, false, 302380]],
+    "ofl/novamono/OFL.txt"
+  ],
+  [
+    "Nova Oval",
+    "display",
+    [["ofl/novaoval/NovaOval.ttf", 400, false, 96656]],
+    "ofl/novaoval/OFL.txt"
+  ],
+  [
+    "Nova Round",
+    "display",
+    [["ofl/novaround/NovaRound.ttf", 400, false, 93212]],
+    "ofl/novaround/OFL.txt"
+  ]
+]

@@ -1,0 +1,160 @@
+[
+  [
+    "Pragati Narrow",
+    "sans",
+    [
+      ["ofl/pragatinarrow/PragatiNarrow-Bold.ttf", 700, false, 419792],
+      ["ofl/pragatinarrow/PragatiNarrow-Regular.ttf", 400, false, 377784]
+    ],
+    "ofl/pragatinarrow/OFL.txt"
+  ],
+  [
+    "Praise",
+    "handwriting",
+    [["ofl/praise/Praise-Regular.ttf", 400, false, 694316]],
+    "ofl/praise/OFL.txt"
+  ],
+  ["Prata", "serif", [["ofl/prata/Prata-Regular.ttf", 400, false, 101284]], "ofl/prata/OFL.txt"],
+  [
+    "Preahvihear",
+    "sans",
+    [["ofl/preahvihear/Preahvihear-Regular.ttf", 400, false, 91520]],
+    "ofl/preahvihear/OFL.txt"
+  ],
+  [
+    "Press Start 2P",
+    "display",
+    [["ofl/pressstart2p/PressStart2P-Regular.ttf", 400, false, 118204]],
+    "ofl/pressstart2p/OFL.txt"
+  ],
+  [
+    "Pridi",
+    "serif",
+    [
+      ["ofl/pridi/Pridi-Bold.ttf", 700, false, 212956],
+      ["ofl/pridi/Pridi-ExtraLight.ttf", 200, false, 188316],
+      ["ofl/pridi/Pridi-Light.ttf", 300, false, 211748],
+      ["ofl/pridi/Pridi-Medium.ttf", 500, false, 225316],
+      ["ofl/pridi/Pridi-Regular.ttf", 400, false, 222368],
+      ["ofl/pridi/Pridi-SemiBold.ttf", 600, false, 220084]
+    ],
+    "ofl/pridi/OFL.txt"
+  ],
+  [
+    "Princess Sofia",
+    "handwriting",
+    [["ofl/princesssofia/PrincessSofia-Regular.ttf", 400, false, 272628]],
+    "ofl/princesssofia/OFL.txt"
+  ],
+  [
+    "Prociono",
+    "serif",
+    [["ofl/prociono/Prociono-Regular.ttf", 400, false, 31136]],
+    "ofl/prociono/OFL.txt"
+  ],
+  [
+    "Prompt",
+    "sans",
+    [
+      ["ofl/prompt/Prompt-Black.ttf", 900, false, 176388],
+      ["ofl/prompt/Prompt-BlackItalic.ttf", 900, true, 199068],
+      ["ofl/prompt/Prompt-Bold.ttf", 700, false, 178804],
+      ["ofl/prompt/Prompt-BoldItalic.ttf", 700, true, 186428],
+      ["ofl/prompt/Prompt-ExtraBold.ttf", 800, false, 176172],
+      ["ofl/prompt/Prompt-ExtraBoldItalic.ttf", 800, true, 186668],
+      ["ofl/prompt/Prompt-ExtraLight.ttf", 200, false, 163680],
+      ["ofl/prompt/Prompt-ExtraLightItalic.ttf", 200, true, 175300],
+      ["ofl/prompt/Prompt-Italic.ttf", 400, true, 179208],
+      ["ofl/prompt/Prompt-Light.ttf", 300, false, 161980],
+      ["ofl/prompt/Prompt-LightItalic.ttf", 300, true, 173496],
+      ["ofl/prompt/Prompt-Medium.ttf", 500, false, 176444],
+      ["ofl/prompt/Prompt-MediumItalic.ttf", 500, true, 183936],
+      ["ofl/prompt/Prompt-Regular.ttf", 400, false, 168932],
+      ["ofl/prompt/Prompt-SemiBold.ttf", 600, false, 175300],
+      ["ofl/prompt/Prompt-SemiBoldItalic.ttf", 600, true, 185108],
+      ["ofl/prompt/Prompt-Thin.ttf", 100, false, 164456],
+      ["ofl/prompt/Prompt-ThinItalic.ttf", 100, true, 176092]
+    ],
+    "ofl/prompt/OFL.txt"
+  ],
+  [
+    "Prosto One",
+    "display",
+    [["ofl/prostoone/ProstoOne-Regular.ttf", 400, false, 96868]],
+    "ofl/prostoone/OFL.txt"
+  ],
+  [
+    "Protest Guerrilla",
+    "display",
+    [["ofl/protestguerrilla/ProtestGuerrilla-Regular.ttf", 400, false, 85604]],
+    "ofl/protestguerrilla/OFL.txt"
+  ],
+  [
+    "Protest Revolution",
+    "display",
+    [["ofl/protestrevolution/ProtestRevolution-Regular.ttf", 400, false, 803236]],
+    "ofl/protestrevolution/OFL.txt"
+  ],
+  [
+    "Protest Riot",
+    "display",
+    [["ofl/protestriot/ProtestRiot-Regular.ttf", 400, false, 109708]],
+    "ofl/protestriot/OFL.txt"
+  ],
+  [
+    "Protest Strike",
+    "display",
+    [["ofl/proteststrike/ProtestStrike-Regular.ttf", 400, false, 84524]],
+    "ofl/proteststrike/OFL.txt"
+  ],
+  [
+    "Proza Libre",
+    "sans",
+    [
+      ["ofl/prozalibre/ProzaLibre-Bold.ttf", 700, false, 102672],
+      ["ofl/prozalibre/ProzaLibre-BoldItalic.ttf", 700, true, 101248],
+      ["ofl/prozalibre/ProzaLibre-ExtraBold.ttf", 800, false, 116944],
+      ["ofl/prozalibre/ProzaLibre-ExtraBoldItalic.ttf", 800, true, 114252],
+      ["ofl/prozalibre/ProzaLibre-Italic.ttf", 400, true, 98044],
+      ["ofl/prozalibre/ProzaLibre-Medium.ttf", 500, false, 100744],
+      ["ofl/prozalibre/ProzaLibre-MediumItalic.ttf", 500, true, 100832],
+      ["ofl/prozalibre/ProzaLibre-Regular.ttf", 400, false, 98400],
+      ["ofl/prozalibre/ProzaLibre-SemiBold.ttf", 600, false, 122408],
+      ["ofl/prozalibre/ProzaLibre-SemiBoldItalic.ttf", 600, true, 101668]
+    ],
+    "ofl/prozalibre/OFL.txt"
+  ],
+  [
+    "Public Sans",
+    "sans",
+    [
+      ["ofl/publicsans/PublicSans-Italic[wght].ttf", 400, true, 107940],
+      ["ofl/publicsans/PublicSans[wght].ttf", 400, false, 103316]
+    ],
+    "ofl/publicsans/OFL.txt"
+  ],
+  [
+    "Puppies Play",
+    "handwriting",
+    [["ofl/puppiesplay/PuppiesPlay-Regular.ttf", 400, false, 167944]],
+    "ofl/puppiesplay/OFL.txt"
+  ],
+  [
+    "Puritan",
+    "sans",
+    [
+      ["ofl/puritan/Puritan-Bold.ttf", 700, false, 54564],
+      ["ofl/puritan/Puritan-BoldItalic.ttf", 700, true, 59236],
+      ["ofl/puritan/Puritan-Italic.ttf", 400, true, 59596],
+      ["ofl/puritan/Puritan-Regular.ttf", 400, false, 54748]
+    ],
+    "ofl/puritan/OFL.txt"
+  ],
+  [
+    "Purple Purse",
+    "display",
+    [["ofl/purplepurse/PurplePurse-Regular.ttf", 400, false, 62868]],
+    "ofl/purplepurse/OFL.txt"
+  ],
+  ["Qahiri", "sans", [["ofl/qahiri/Qahiri-Regular.ttf", 400, false, 40728]], "ofl/qahiri/OFL.txt"]
+]

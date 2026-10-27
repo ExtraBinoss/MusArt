@@ -1,25 +1,39 @@
-import type { Asset, Composition, Layer } from "@musart/core";
+import { createLayerGeometryIndex, type Asset, type Composition, type Layer } from "@musart/core";
 import type { RenderTarget, WebGPURenderer } from "three/webgpu";
 import { ColorPipeline } from "../color/ColorPipeline";
 import { GpuResourceCache } from "../cache/GpuResourceCache";
-import { sourceKey } from "../cache/keys";
-import { PIXEL_SCALE_EFFECTS } from "../effects/registry";
+import { createSourceKeys } from "../cache/keys";
+import { scaleEffectPixels } from "../effects/registry";
 import { maskLayerMapping } from "./mask-binding";
 import { EffectResources } from "./effect-resources";
 import { VectorSources } from "../surface/vector/source";
 import { TextureSources } from "../surface/TextureSources";
+import { TextSources } from "../surface/text/source";
+import type { FontResolver } from "../surface/text/fonts";
+import { PrimitiveBatch } from "./primitives/batch";
+import { isInstancedPrimitive, primitivePaintKey } from "./primitives/eligibility";
 import { NormalBatch } from "./normal-batch";
 import { GpuPasses } from "./passes";
 import { LayerTargets } from "./targets";
 import { assertRenderSize, type FrameTexture, type GpuStats, type RenderOptions } from "./types";
 
+interface RenderFrame {
+  readonly page: Composition;
+  readonly scale: number;
+  readonly keyFor: (layer: Layer) => string;
+  readonly geometry: ReturnType<typeof createLayerGeometryIndex>;
+}
+
 /** Retained GPU graph. Only font/image preparation awaits; all GPU submissions are synchronous. */
 export class GpuCompositor {
   private readonly cache: GpuResourceCache;
   private readonly sources: TextureSources;
+  private readonly texts: TextSources;
   private effects: EffectResources | null = null;
   private passes: GpuPasses | null = null;
   private normal: NormalBatch | null = null;
+  private primitives: PrimitiveBatch | null = null;
+  private readonly normalIds = new Set<string>();
   private vectors: VectorSources | null = null;
   private color: ColorPipeline | null = null;
   private queue: Promise<unknown> = Promise.resolve();
@@ -31,16 +45,19 @@ export class GpuCompositor {
 
   constructor(
     private readonly renderer: WebGPURenderer,
-    options: { maxBytes?: number } = {},
+    options: { maxBytes?: number; sourceMaxEdge?: number; fontResolver?: FontResolver } = {},
   ) {
     this.cache = new GpuResourceCache(options.maxBytes);
-    this.sources = new TextureSources(this.cache);
+    this.sources = new TextureSources(this.cache, {
+      maxEdge: options.sourceMaxEdge,
+    });
+    this.texts = new TextSources(renderer, this.cache, { fontResolver: options.fontResolver });
   }
 
   render(
     page: Composition,
     assets: Record<string, Asset>,
-    options: Pick<RenderOptions, "scale"> = {},
+    options: Pick<RenderOptions, "scale" | "canRender"> = {},
   ): Promise<FrameTexture> {
     if (this.disposed) return Promise.reject(new Error("Le compositeur GPU est fermé."));
     const job = this.queue.then(async () => {
@@ -48,7 +65,13 @@ export class GpuCompositor {
       assertRenderSize(page, scale);
       this.cache.beginFrame(this.retainedRoot);
       this.cache.get("shared-effects");
+      this.cache.get("shared-primitives");
+      if (options.canRender && !options.canRender())
+        throw new DOMException("Rendering deferred.", "AbortError");
       await this.sources.prepare(page, assets);
+      await this.texts.prepare(page);
+      if (options.canRender && !options.canRender())
+        throw new DOMException("Rendering deferred.", "AbortError");
       if (this.disposed) throw new Error("Le compositeur GPU est fermé.");
       // No await below this point: R3F cannot observe intermediate targets or altered state.
       this.passes ??= new GpuPasses(this.renderer);
@@ -59,9 +82,20 @@ export class GpuCompositor {
         this.effects = new EffectResources(this.renderer);
         this.cache.set("shared-effects", this.effects);
       }
+      if (!this.primitives) {
+        this.primitives = new PrimitiveBatch(this.renderer);
+        this.cache.set("shared-primitives", this.primitives);
+      }
+      const frame: RenderFrame = {
+        page,
+        scale,
+        keyFor: createSourceKeys(page, assets, scale),
+        geometry: createLayerGeometryIndex(page),
+      };
+      const { keyFor, geometry } = frame;
       const rootKey = `page:${page.id}:${scale}`;
       const entry = this.entry(rootKey);
-      const roots = page.layers.filter((layer) => layer.parentId === null);
+      const roots = geometry.children(null);
       const signature = JSON.stringify([
         page.width,
         page.height,
@@ -75,7 +109,7 @@ export class GpuCompositor {
           layer.opacity,
           layer.visible,
           layer.blendMode,
-          sourceKey(layer, page, assets, scale),
+          isInstancedPrimitive(layer) ? primitivePaintKey(layer) : keyFor(layer),
         ]),
       ]);
       if (entry.signature === signature && entry.output) {
@@ -85,6 +119,7 @@ export class GpuCompositor {
         return entry.output;
       }
       entry.signature = "";
+      this.normalIds.clear();
       const composed = this.children(
         null,
         page.width,
@@ -92,9 +127,7 @@ export class GpuCompositor {
         page.background,
         entry,
         rootKey,
-        page,
-        assets,
-        scale,
+        frame,
       );
       const target = this.target(entry, rootKey, "presentation", composed.width, composed.height);
       if (page.colorSpace === "display-p3") this.color.render(composed, target, "to-srgb");
@@ -109,7 +142,7 @@ export class GpuCompositor {
       entry.signature = signature;
       this.retainedRoot = rootKey;
       this.frames++;
-      this.normal.retain(new Set(page.layers.map((layer) => layer.id)));
+      this.normal.retain(this.normalIds);
       return entry.output;
     });
     this.queue = job.catch(() => undefined);
@@ -136,15 +169,11 @@ export class GpuCompositor {
     this.cache.synchronize(key);
     return target;
   }
-  private layer(
-    layer: Layer,
-    page: Composition,
-    assets: Record<string, Asset>,
-    scale: number,
-  ): FrameTexture {
+  private layer(layer: Layer, frame: RenderFrame): FrameTexture {
+    const { page, scale, keyFor, geometry } = frame;
     const key = `layer:${page.id}:${layer.id}:${scale}`;
     const entry = this.entry(key);
-    const signature = sourceKey(layer, page, assets, scale);
+    const signature = keyFor(layer);
     if (entry.signature === signature && entry.output) {
       this.cacheHits++;
       return entry.output;
@@ -154,27 +183,19 @@ export class GpuCompositor {
     const height = Math.max(1, Math.ceil(layer.height * scale));
     let source: FrameTexture;
     if (layer.kind === "group")
-      source = this.children(
-        layer.id,
-        layer.width,
-        layer.height,
-        "transparent",
-        entry,
-        key,
-        page,
-        assets,
-        scale,
-      );
+      source = this.children(layer.id, layer.width, layer.height, "transparent", entry, key, frame);
     else if (layer.kind === "image")
       source = { texture: this.sources.image(layer.assetId), width, height, premultiplied: false };
     else if (layer.kind === "text") {
+      const target = this.target(entry, key, "text", width, height);
+      this.passes!.clear(target);
+      this.texts.render(layer, target);
       source = {
-        texture: this.sources.text(layer, scale, entry),
+        texture: target.texture,
         width,
         height,
-        premultiplied: false,
+        premultiplied: true,
       };
-      this.cache.synchronize(key);
     } else if (layer.kind === "vector") {
       const target = this.target(entry, key, "vector", width, height);
       this.passes!.clear(target);
@@ -210,10 +231,7 @@ export class GpuCompositor {
         source = { texture: straight.texture, width, height, premultiplied: false };
       }
       const output = this.target(entry, key, "effects", width, height);
-      const effects = layer.effects.map((effect) => ({
-        ...effect,
-        scale: PIXEL_SCALE_EFFECTS.has(effect.type) ? effect.scale * scale : effect.scale,
-      }));
+      const effects = layer.effects.map((effect) => scaleEffectPixels(effect, scale));
       this.cache.ensureCapacity(
         "shared-effects",
         this.effects!.projectedBytes(width, height, effects),
@@ -235,10 +253,10 @@ export class GpuCompositor {
           luminance: mask.mode === "luminance",
         });
       else if (mask.layerId) {
-        const maskLayer = page.layers.find((item) => item.id === mask.layerId);
+        const maskLayer = geometry.byId.get(mask.layerId);
         if (!maskLayer) throw new Error(`Calque masque introuvable : ${mask.layerId}`);
         const mapping = maskLayerMapping(page, layer, maskLayer, false);
-        const content = mapping.opacity > 0 ? this.layer(maskLayer, page, assets, scale) : source;
+        const content = mapping.opacity > 0 ? this.layer(maskLayer, frame) : source;
         this.passes!.maskTo(source, content.texture, mask.inverted, target, {
           ...mapping,
           premultiplied: content.premultiplied,
@@ -258,28 +276,45 @@ export class GpuCompositor {
     background: string,
     entry: LayerTargets,
     key: string,
-    page: Composition,
-    assets: Record<string, Asset>,
-    scale: number,
+    frame: RenderFrame,
   ): FrameTexture {
+    const { scale, geometry } = frame;
     const pixelWidth = Math.max(1, Math.ceil(width * scale));
     const pixelHeight = Math.max(1, Math.ceil(height * scale));
     let target = this.target(entry, key, "children-a", pixelWidth, pixelHeight);
     this.passes!.clear(target, background);
-    const items = page.layers
-      .filter(
-        (layer) =>
-          layer.parentId === parentId && layer.visible && layer.opacity > 0 && !layer.maskSource,
-      )
-      .map((layer) => ({ layer, source: this.layer(layer, page, assets, scale) }));
-    let batch: typeof items = [];
+    const layers = geometry.children(parentId);
+    let batch: { layer: Layer; source: FrameTexture }[] = [],
+      primitiveRun: Layer[] = [];
     const flush = () => {
       this.normal!.draw(batch, width, height, target);
+      for (const { layer } of batch) this.normalIds.add(layer.id);
       batch = [];
     };
-    for (const item of items) {
-      if (item.layer.blendMode === "normal") {
-        batch.push(item);
+    const flushPrimitives = () => {
+      if (!primitiveRun.length) return;
+      this.cache.ensureCapacity(
+        "shared-primitives",
+        this.primitives!.projectedBytes(primitiveRun.length),
+      );
+      try {
+        this.primitives!.draw(primitiveRun, width, height, scale, target);
+      } finally {
+        this.cache.synchronize("shared-primitives");
+      }
+      primitiveRun = [];
+    };
+    for (const layer of layers) {
+      if (!layer.visible || layer.opacity <= 0 || layer.maskSource) continue;
+      if (isInstancedPrimitive(layer)) {
+        flush();
+        primitiveRun.push(layer);
+        continue;
+      }
+      flushPrimitives();
+      const source = this.layer(layer, frame);
+      if (layer.blendMode === "normal") {
+        batch.push({ layer, source });
         continue;
       }
       flush();
@@ -292,9 +327,10 @@ export class GpuCompositor {
         pixelWidth,
         pixelHeight,
       );
-      this.passes!.blendTo(target.texture, item.source, item.layer, width, height, next);
+      this.passes!.blendTo(target.texture, source, layer, width, height, next);
       target = next;
     }
+    flushPrimitives();
     flush();
     return { texture: target.texture, width: pixelWidth, height: pixelHeight, premultiplied: true };
   }
@@ -305,17 +341,22 @@ export class GpuCompositor {
       passes:
         (this.passes?.passes ?? 0) +
         (this.normal?.passes ?? 0) +
+        (this.primitives?.passes ?? 0) +
         (this.vectors?.passes ?? 0) +
+        this.texts.passes +
         (this.color?.passes ?? 0) +
         (effects?.passes ?? 0),
       readbacks: 0,
-      uploads: this.sources.uploads,
+      uploads: this.sources.uploads + this.texts.parses,
       targets: cache.targets,
       cacheBytes: cache.cacheBytes,
       frames: this.frames,
       cacheHits: this.cacheHits,
       vectorParses: this.vectors?.parses ?? 0,
       maxBytes: cache.maxBytes,
+      primitiveDraws: this.primitives?.passes ?? 0,
+      primitiveInstances: this.primitives?.instances ?? 0,
+      primitiveBytes: this.primitives?.bytes ?? 0,
     };
   }
   dispose(): Promise<void> {
@@ -326,9 +367,12 @@ export class GpuCompositor {
       this.passes?.dispose();
       this.normal?.dispose();
       this.color?.dispose();
+      this.texts.dispose();
       this.effects = null;
       this.passes = null;
       this.normal = null;
+      this.primitives = null;
+      this.normalIds.clear();
       this.vectors = null;
       this.color = null;
     });

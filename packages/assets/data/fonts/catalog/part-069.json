@@ -1,0 +1,163 @@
+[
+  [
+    "Syne Tactile",
+    "display",
+    [["ofl/synetactile/SyneTactile-Regular.ttf", 400, false, 129820]],
+    "ofl/synetactile/OFL.txt"
+  ],
+  [
+    "TASA Explorer",
+    "sans",
+    [["ofl/tasaexplorer/TASAExplorer[wght].ttf", 400, false, 164284]],
+    "ofl/tasaexplorer/OFL.txt"
+  ],
+  [
+    "TASA Orbiter",
+    "sans",
+    [["ofl/tasaorbiter/TASAOrbiter[wght].ttf", 400, false, 174528]],
+    "ofl/tasaorbiter/OFL.txt"
+  ],
+  [
+    "Tac One",
+    "sans",
+    [["ofl/tacone/TacOne-Regular.ttf", 400, false, 146436]],
+    "ofl/tacone/OFL.txt"
+  ],
+  [
+    "Tagesschrift",
+    "display",
+    [["ofl/tagesschrift/Tagesschrift-Regular.ttf", 400, false, 146216]],
+    "ofl/tagesschrift/OFL.txt"
+  ],
+  [
+    "Tai Heritage Pro",
+    "serif",
+    [
+      ["ofl/taiheritagepro/TaiHeritagePro-Bold.ttf", 700, false, 303432],
+      ["ofl/taiheritagepro/TaiHeritagePro-Regular.ttf", 400, false, 273952]
+    ],
+    "ofl/taiheritagepro/OFL.txt"
+  ],
+  [
+    "Tajawal",
+    "sans",
+    [
+      ["ofl/tajawal/Tajawal-Black.ttf", 900, false, 59028],
+      ["ofl/tajawal/Tajawal-Bold.ttf", 700, false, 59988],
+      ["ofl/tajawal/Tajawal-ExtraBold.ttf", 800, false, 59648],
+      ["ofl/tajawal/Tajawal-ExtraLight.ttf", 200, false, 55784],
+      ["ofl/tajawal/Tajawal-Light.ttf", 300, false, 61864],
+      ["ofl/tajawal/Tajawal-Medium.ttf", 500, false, 62280],
+      ["ofl/tajawal/Tajawal-Regular.ttf", 400, false, 60364]
+    ],
+    "ofl/tajawal/OFL.txt"
+  ],
+  [
+    "Tangerine",
+    "handwriting",
+    [
+      ["ofl/tangerine/Tangerine-Bold.ttf", 700, false, 65464],
+      ["ofl/tangerine/Tangerine-Regular.ttf", 400, false, 60648]
+    ],
+    "ofl/tangerine/OFL.txt"
+  ],
+  [
+    "Tapestry",
+    "handwriting",
+    [["ofl/tapestry/Tapestry-Regular.ttf", 400, false, 137716]],
+    "ofl/tapestry/OFL.txt"
+  ],
+  [
+    "Taprom",
+    "display",
+    [["ofl/taprom/Taprom-Regular.ttf", 400, false, 203652]],
+    "ofl/taprom/OFL.txt"
+  ],
+  ["Tauri", "sans", [["ofl/tauri/Tauri-Regular.ttf", 400, false, 35140]], "ofl/tauri/OFL.txt"],
+  [
+    "Taviraj",
+    "serif",
+    [
+      ["ofl/taviraj/Taviraj-Black.ttf", 900, false, 229644],
+      ["ofl/taviraj/Taviraj-BlackItalic.ttf", 900, true, 244484],
+      ["ofl/taviraj/Taviraj-Bold.ttf", 700, false, 220668],
+      ["ofl/taviraj/Taviraj-BoldItalic.ttf", 700, true, 244760],
+      ["ofl/taviraj/Taviraj-ExtraBold.ttf", 800, false, 219592],
+      ["ofl/taviraj/Taviraj-ExtraBoldItalic.ttf", 800, true, 245772],
+      ["ofl/taviraj/Taviraj-ExtraLight.ttf", 200, false, 215484],
+      ["ofl/taviraj/Taviraj-ExtraLightItalic.ttf", 200, true, 230616],
+      ["ofl/taviraj/Taviraj-Italic.ttf", 400, true, 233280],
+      ["ofl/taviraj/Taviraj-Light.ttf", 300, false, 211048],
+      ["ofl/taviraj/Taviraj-LightItalic.ttf", 300, true, 211844],
+      ["ofl/taviraj/Taviraj-Medium.ttf", 500, false, 227068],
+      ["ofl/taviraj/Taviraj-MediumItalic.ttf", 500, true, 241116],
+      ["ofl/taviraj/Taviraj-Regular.ttf", 400, false, 220824],
+      ["ofl/taviraj/Taviraj-SemiBold.ttf", 600, false, 214616],
+      ["ofl/taviraj/Taviraj-SemiBoldItalic.ttf", 600, true, 232244],
+      ["ofl/taviraj/Taviraj-Thin.ttf", 100, false, 211404],
+      ["ofl/taviraj/Taviraj-ThinItalic.ttf", 100, true, 225008]
+    ],
+    "ofl/taviraj/OFL.txt"
+  ],
+  [
+    "Teachers",
+    "sans",
+    [
+      ["ofl/teachers/Teachers-Italic[wght].ttf", 400, true, 69364],
+      ["ofl/teachers/Teachers[wght].ttf", 400, false, 67184]
+    ],
+    "ofl/teachers/OFL.txt"
+  ],
+  ["Teko", "sans", [["ofl/teko/Teko[wght].ttf", 400, false, 292108]], "ofl/teko/OFL.txt"],
+  [
+    "Tektur",
+    "display",
+    [["ofl/tektur/Tektur[wdth,wght].ttf", 400, false, 163160]],
+    "ofl/tektur/OFL.txt"
+  ],
+  ["Telex", "sans", [["ofl/telex/Telex-Regular.ttf", 400, false, 38940]], "ofl/telex/OFL.txt"],
+  [
+    "Tenali Ramakrishna",
+    "sans",
+    [["ofl/tenaliramakrishna/TenaliRamakrishna-Regular.ttf", 400, false, 710220]],
+    "ofl/tenaliramakrishna/OFL.txt"
+  ],
+  [
+    "Tenor Sans",
+    "sans",
+    [["ofl/tenorsans/TenorSans-Regular.ttf", 400, false, 131896]],
+    "ofl/tenorsans/OFL.txt"
+  ],
+  [
+    "Text Me One",
+    "sans",
+    [["ofl/textmeone/TextMeOne-Regular.ttf", 400, false, 37352]],
+    "ofl/textmeone/OFL.txt"
+  ],
+  [
+    "Texturina",
+    "serif",
+    [
+      ["ofl/texturina/Texturina-Italic[opsz,wght].ttf", 400, true, 292320],
+      ["ofl/texturina/Texturina[opsz,wght].ttf", 400, false, 288320]
+    ],
+    "ofl/texturina/OFL.txt"
+  ],
+  [
+    "Thasadith",
+    "sans",
+    [
+      ["ofl/thasadith/Thasadith-Bold.ttf", 700, false, 95692],
+      ["ofl/thasadith/Thasadith-BoldItalic.ttf", 700, true, 98752],
+      ["ofl/thasadith/Thasadith-Italic.ttf", 400, true, 98268],
+      ["ofl/thasadith/Thasadith-Regular.ttf", 400, false, 95336]
+    ],
+    "ofl/thasadith/OFL.txt"
+  ],
+  [
+    "The Girl Next Door",
+    "handwriting",
+    [["ofl/thegirlnextdoor/TheGirlNextDoor.ttf", 400, false, 53364]],
+    "ofl/thegirlnextdoor/OFL.txt"
+  ]
+]

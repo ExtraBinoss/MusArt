@@ -1,0 +1,268 @@
+[
+  [
+    "Besley",
+    "serif",
+    [
+      ["ofl/besley/Besley-Italic[wght].ttf", 400, true, 112792],
+      ["ofl/besley/Besley[wght].ttf", 400, false, 108640]
+    ],
+    "ofl/besley/OFL.txt"
+  ],
+  [
+    "Betania Patmos",
+    "handwriting",
+    [["ofl/betaniapatmos/BetaniaPatmos-Regular.ttf", 400, false, 195312]],
+    "ofl/betaniapatmos/OFL.txt"
+  ],
+  [
+    "Betania Patmos GDL",
+    "handwriting",
+    [["ofl/betaniapatmosgdl/BetaniaPatmosGDL-Regular.ttf", 400, false, 304756]],
+    "ofl/betaniapatmosgdl/OFL.txt"
+  ],
+  [
+    "Betania Patmos In",
+    "handwriting",
+    [["ofl/betaniapatmosin/BetaniaPatmosIn-Regular.ttf", 400, false, 195924]],
+    "ofl/betaniapatmosin/OFL.txt"
+  ],
+  [
+    "Betania Patmos In GDL",
+    "handwriting",
+    [["ofl/betaniapatmosingdl/BetaniaPatmosInGDL-Regular.ttf", 400, false, 305300]],
+    "ofl/betaniapatmosingdl/OFL.txt"
+  ],
+  [
+    "Beth Ellen",
+    "handwriting",
+    [["ofl/bethellen/BethEllen-Regular.ttf", 400, false, 116988]],
+    "ofl/bethellen/OFL.txt"
+  ],
+  [
+    "Bevan",
+    "serif",
+    [
+      ["ofl/bevan/Bevan-Italic.ttf", 400, true, 118940],
+      ["ofl/bevan/Bevan-Regular.ttf", 400, false, 118004]
+    ],
+    "ofl/bevan/OFL.txt"
+  ],
+  [
+    "BhuTuka Expanded One",
+    "serif",
+    [["ofl/bhutukaexpandedone/BhuTukaExpandedOne-Regular.ttf", 400, false, 138740]],
+    "ofl/bhutukaexpandedone/OFL.txt"
+  ],
+  [
+    "Big Shoulders",
+    "display",
+    [["ofl/bigshoulders/BigShoulders[opsz,wght].ttf", 400, false, 320800]],
+    "ofl/bigshoulders/OFL.txt"
+  ],
+  [
+    "Big Shoulders Inline",
+    "display",
+    [["ofl/bigshouldersinline/BigShouldersInline[opsz,wght].ttf", 400, false, 642132]],
+    "ofl/bigshouldersinline/OFL.txt"
+  ],
+  [
+    "Big Shoulders Stencil",
+    "display",
+    [["ofl/bigshouldersstencil/BigShouldersStencil[opsz,wght].ttf", 400, false, 329916]],
+    "ofl/bigshouldersstencil/OFL.txt"
+  ],
+  [
+    "Bigelow Rules",
+    "display",
+    [["ofl/bigelowrules/BigelowRules-Regular.ttf", 400, false, 59476]],
+    "ofl/bigelowrules/OFL.txt"
+  ],
+  [
+    "Bigshot One",
+    "display",
+    [["ofl/bigshotone/BigshotOne-Regular.ttf", 400, false, 44836]],
+    "ofl/bigshotone/OFL.txt"
+  ],
+  [
+    "Bilbo",
+    "handwriting",
+    [["ofl/bilbo/Bilbo-Regular.ttf", 400, false, 100216]],
+    "ofl/bilbo/OFL.txt"
+  ],
+  [
+    "Bilbo Swash Caps",
+    "handwriting",
+    [["ofl/bilboswashcaps/BilboSwashCaps-Regular.ttf", 400, false, 58072]],
+    "ofl/bilboswashcaps/OFL.txt"
+  ],
+  [
+    "BioRhyme",
+    "serif",
+    [["ofl/biorhyme/BioRhyme[wdth,wght].ttf", 400, false, 188500]],
+    "ofl/biorhyme/OFL.txt"
+  ],
+  [
+    "BioRhyme Expanded",
+    "serif",
+    [
+      ["ofl/biorhymeexpanded/BioRhymeExpanded-Bold.ttf", 700, false, 101904],
+      ["ofl/biorhymeexpanded/BioRhymeExpanded-ExtraBold.ttf", 800, false, 102320],
+      ["ofl/biorhymeexpanded/BioRhymeExpanded-ExtraLight.ttf", 200, false, 92336],
+      ["ofl/biorhymeexpanded/BioRhymeExpanded-Light.ttf", 300, false, 96840],
+      ["ofl/biorhymeexpanded/BioRhymeExpanded-Regular.ttf", 400, false, 100672]
+    ],
+    "ofl/biorhymeexpanded/OFL.txt"
+  ],
+  [
+    "Birthstone",
+    "handwriting",
+    [["ofl/birthstone/Birthstone-Regular.ttf", 400, false, 381092]],
+    "ofl/birthstone/OFL.txt"
+  ],
+  [
+    "Birthstone Bounce",
+    "handwriting",
+    [
+      ["ofl/birthstonebounce/BirthstoneBounce-Medium.ttf", 500, false, 322404],
+      ["ofl/birthstonebounce/BirthstoneBounce-Regular.ttf", 400, false, 326712]
+    ],
+    "ofl/birthstonebounce/OFL.txt"
+  ],
+  [
+    "Biryani",
+    "sans",
+    [
+      ["ofl/biryani/Biryani-Black.ttf", 900, false, 178060],
+      ["ofl/biryani/Biryani-Bold.ttf", 700, false, 178968],
+      ["ofl/biryani/Biryani-ExtraBold.ttf", 800, false, 178960],
+      ["ofl/biryani/Biryani-ExtraLight.ttf", 200, false, 177264],
+      ["ofl/biryani/Biryani-Light.ttf", 300, false, 180716],
+      ["ofl/biryani/Biryani-Regular.ttf", 400, false, 179936],
+      ["ofl/biryani/Biryani-SemiBold.ttf", 600, false, 179216]
+    ],
+    "ofl/biryani/OFL.txt"
+  ],
+  [
+    "Bitcount",
+    "display",
+    [["ofl/bitcount/Bitcount[CRSV,ELSH,ELXP,slnt,wght].ttf", 400, false, 257212]],
+    "ofl/bitcount/OFL.txt"
+  ],
+  [
+    "Bitcount Grid Double",
+    "display",
+    [
+      [
+        "ofl/bitcountgriddouble/BitcountGridDouble[CRSV,ELSH,ELXP,slnt,wght].ttf",
+        400,
+        false,
+        168224
+      ]
+    ],
+    "ofl/bitcountgriddouble/OFL.txt"
+  ],
+  [
+    "Bitcount Grid Double Ink",
+    "display",
+    [
+      [
+        "ofl/bitcountgriddoubleink/BitcountGridDoubleInk[CRSV,ELSH,ELXP,SZP1,SZP2,XPN1,XPN2,YPN1,YPN2,slnt,wght].ttf",
+        400,
+        false,
+        207728
+      ]
+    ],
+    "ofl/bitcountgriddoubleink/OFL.txt"
+  ],
+  [
+    "Bitcount Grid Single",
+    "display",
+    [
+      [
+        "ofl/bitcountgridsingle/BitcountGridSingle[CRSV,ELSH,ELXP,slnt,wght].ttf",
+        400,
+        false,
+        226168
+      ]
+    ],
+    "ofl/bitcountgridsingle/OFL.txt"
+  ],
+  [
+    "Bitcount Grid Single Ink",
+    "display",
+    [
+      [
+        "ofl/bitcountgridsingleink/BitcountGridSingleInk[CRSV,ELSH,ELXP,SZP1,SZP2,XPN1,XPN2,YPN1,YPN2,slnt,wght].ttf",
+        400,
+        false,
+        276416
+      ]
+    ],
+    "ofl/bitcountgridsingleink/OFL.txt"
+  ],
+  [
+    "Bitcount Ink",
+    "display",
+    [
+      [
+        "ofl/bitcountink/BitcountInk[CRSV,ELSH,ELXP,SZP1,SZP2,XPN1,XPN2,YPN1,YPN2,slnt,wght].ttf",
+        400,
+        false,
+        314728
+      ]
+    ],
+    "ofl/bitcountink/OFL.txt"
+  ],
+  [
+    "Bitcount Prop Double",
+    "display",
+    [
+      [
+        "ofl/bitcountpropdouble/BitcountPropDouble[CRSV,ELSH,ELXP,slnt,wght].ttf",
+        400,
+        false,
+        278660
+      ]
+    ],
+    "ofl/bitcountpropdouble/OFL.txt"
+  ],
+  [
+    "Bitcount Prop Double Ink",
+    "display",
+    [
+      [
+        "ofl/bitcountpropdoubleink/BitcountPropDoubleInk[CRSV,ELSH,ELXP,SZP1,SZP2,XPN1,XPN2,YPN1,YPN2,slnt,wght].ttf",
+        400,
+        false,
+        338644
+      ]
+    ],
+    "ofl/bitcountpropdoubleink/OFL.txt"
+  ],
+  [
+    "Bitcount Prop Single",
+    "display",
+    [
+      [
+        "ofl/bitcountpropsingle/BitcountPropSingle[CRSV,ELSH,ELXP,slnt,wght].ttf",
+        400,
+        false,
+        430508
+      ]
+    ],
+    "ofl/bitcountpropsingle/OFL.txt"
+  ],
+  [
+    "Bitcount Prop Single Ink",
+    "display",
+    [
+      [
+        "ofl/bitcountpropsingleink/BitcountPropSingleInk[CRSV,ELSH,ELXP,SZP1,SZP2,XPN1,XPN2,YPN1,YPN2,slnt,wght].ttf",
+        400,
+        false,
+        513192
+      ]
+    ],
+    "ofl/bitcountpropsingleink/OFL.txt"
+  ]
+]

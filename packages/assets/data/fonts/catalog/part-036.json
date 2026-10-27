@@ -1,0 +1,209 @@
+[
+  [
+    "Lexend Exa",
+    "sans",
+    [["ofl/lexendexa/LexendExa[wght].ttf", 400, false, 189908]],
+    "ofl/lexendexa/OFL.txt"
+  ],
+  [
+    "Lexend Giga",
+    "sans",
+    [["ofl/lexendgiga/LexendGiga[wght].ttf", 400, false, 192100]],
+    "ofl/lexendgiga/OFL.txt"
+  ],
+  [
+    "Lexend Mega",
+    "sans",
+    [["ofl/lexendmega/LexendMega[wght].ttf", 400, false, 192116]],
+    "ofl/lexendmega/OFL.txt"
+  ],
+  [
+    "Lexend Peta",
+    "sans",
+    [["ofl/lexendpeta/LexendPeta[wght].ttf", 400, false, 192228]],
+    "ofl/lexendpeta/OFL.txt"
+  ],
+  [
+    "Lexend Tera",
+    "sans",
+    [["ofl/lexendtera/LexendTera[wght].ttf", 400, false, 192544]],
+    "ofl/lexendtera/OFL.txt"
+  ],
+  [
+    "Lexend Zetta",
+    "sans",
+    [["ofl/lexendzetta/LexendZetta[wght].ttf", 400, false, 192720]],
+    "ofl/lexendzetta/OFL.txt"
+  ],
+  [
+    "Libertinus Keyboard",
+    "display",
+    [["ofl/libertinuskeyboard/LibertinusKeyboard-Regular.ttf", 400, false, 204456]],
+    "ofl/libertinuskeyboard/OFL.txt"
+  ],
+  [
+    "Libertinus Math",
+    "display",
+    [["ofl/libertinusmath/LibertinusMath-Regular.ttf", 400, false, 1259804]],
+    "ofl/libertinusmath/OFL.txt"
+  ],
+  [
+    "Libertinus Mono",
+    "mono",
+    [["ofl/libertinusmono/LibertinusMono-Regular.ttf", 400, false, 153480]],
+    "ofl/libertinusmono/OFL.txt"
+  ],
+  [
+    "Libertinus Sans",
+    "sans",
+    [
+      ["ofl/libertinussans/LibertinusSans-Bold.ttf", 700, false, 489576],
+      ["ofl/libertinussans/LibertinusSans-Italic.ttf", 400, true, 631960],
+      ["ofl/libertinussans/LibertinusSans-Regular.ttf", 400, false, 460756]
+    ],
+    "ofl/libertinussans/OFL.txt"
+  ],
+  [
+    "Libertinus Serif",
+    "serif",
+    [
+      ["ofl/libertinusserif/LibertinusSerif-Bold.ttf", 700, false, 510796],
+      ["ofl/libertinusserif/LibertinusSerif-BoldItalic.ttf", 700, true, 506340],
+      ["ofl/libertinusserif/LibertinusSerif-Italic.ttf", 400, true, 605956],
+      ["ofl/libertinusserif/LibertinusSerif-Regular.ttf", 400, false, 603444],
+      ["ofl/libertinusserif/LibertinusSerif-SemiBold.ttf", 600, false, 497840],
+      ["ofl/libertinusserif/LibertinusSerif-SemiBoldItalic.ttf", 600, true, 616600]
+    ],
+    "ofl/libertinusserif/OFL.txt"
+  ],
+  [
+    "Libertinus Serif Display",
+    "display",
+    [["ofl/libertinusserifdisplay/LibertinusSerifDisplay-Regular.ttf", 400, false, 733352]],
+    "ofl/libertinusserifdisplay/OFL.txt"
+  ],
+  [
+    "Libre Barcode 128",
+    "display",
+    [["ofl/librebarcode128/LibreBarcode128-Regular.ttf", 400, false, 22380]],
+    "ofl/librebarcode128/OFL.txt"
+  ],
+  [
+    "Libre Barcode 128 Text",
+    "display",
+    [["ofl/librebarcode128text/LibreBarcode128Text-Regular.ttf", 400, false, 48056]],
+    "ofl/librebarcode128text/OFL.txt"
+  ],
+  [
+    "Libre Barcode 39",
+    "display",
+    [["ofl/librebarcode39/LibreBarcode39-Regular.ttf", 400, false, 14800]],
+    "ofl/librebarcode39/OFL.txt"
+  ],
+  [
+    "Libre Barcode 39 Extended",
+    "display",
+    [["ofl/librebarcode39extended/LibreBarcode39Extended-Regular.ttf", 400, false, 17396]],
+    "ofl/librebarcode39extended/OFL.txt"
+  ],
+  [
+    "Libre Barcode 39 Extended Text",
+    "display",
+    [["ofl/librebarcode39extendedtext/LibreBarcode39ExtendedText-Regular.ttf", 400, false, 35280]],
+    "ofl/librebarcode39extendedtext/OFL.txt"
+  ],
+  [
+    "Libre Barcode 39 Text",
+    "display",
+    [["ofl/librebarcode39text/LibreBarcode39Text-Regular.ttf", 400, false, 22984]],
+    "ofl/librebarcode39text/OFL.txt"
+  ],
+  [
+    "Libre Barcode EAN13 Text",
+    "display",
+    [["ofl/librebarcodeean13text/LibreBarcodeEAN13Text-Regular.ttf", 400, false, 72692]],
+    "ofl/librebarcodeean13text/OFL.txt"
+  ],
+  [
+    "Libre Baskerville",
+    "serif",
+    [
+      ["ofl/librebaskerville/LibreBaskerville-Italic[wght].ttf", 400, true, 167456],
+      ["ofl/librebaskerville/LibreBaskerville[wght].ttf", 400, false, 171900]
+    ],
+    "ofl/librebaskerville/OFL.txt"
+  ],
+  [
+    "Libre Bodoni",
+    "serif",
+    [
+      ["ofl/librebodoni/LibreBodoni-Italic[wght].ttf", 400, true, 112608],
+      ["ofl/librebodoni/LibreBodoni[wght].ttf", 400, false, 112160]
+    ],
+    "ofl/librebodoni/OFL.txt"
+  ],
+  [
+    "Libre Caslon Condensed",
+    "serif",
+    [
+      ["ofl/librecasloncondensed/LibreCaslonCondensed-Italic[wght].ttf", 400, true, 214476],
+      ["ofl/librecasloncondensed/LibreCaslonCondensed[wght].ttf", 400, false, 169304]
+    ],
+    "ofl/librecasloncondensed/OFL.txt"
+  ],
+  [
+    "Libre Caslon Display",
+    "serif",
+    [["ofl/librecaslondisplay/LibreCaslonDisplay-Regular.ttf", 400, false, 101384]],
+    "ofl/librecaslondisplay/OFL.txt"
+  ],
+  [
+    "Libre Caslon Text",
+    "serif",
+    [
+      ["ofl/librecaslontext/LibreCaslonText-Italic[wght].ttf", 400, true, 176200],
+      ["ofl/librecaslontext/LibreCaslonText[wght].ttf", 400, false, 126876]
+    ],
+    "ofl/librecaslontext/OFL.txt"
+  ],
+  [
+    "Libre Franklin",
+    "sans",
+    [
+      ["ofl/librefranklin/LibreFranklin-Italic[wght].ttf", 400, true, 206092],
+      ["ofl/librefranklin/LibreFranklin[wght].ttf", 400, false, 187436]
+    ],
+    "ofl/librefranklin/OFL.txt"
+  ],
+  [
+    "Licorice",
+    "handwriting",
+    [["ofl/licorice/Licorice-Regular.ttf", 400, false, 154512]],
+    "ofl/licorice/OFL.txt"
+  ],
+  [
+    "Life Savers",
+    "display",
+    [
+      ["ofl/lifesavers/LifeSavers-Bold.ttf", 700, false, 222528],
+      ["ofl/lifesavers/LifeSavers-ExtraBold.ttf", 800, false, 228872],
+      ["ofl/lifesavers/LifeSavers-Regular.ttf", 400, false, 217792]
+    ],
+    "ofl/lifesavers/OFL.txt"
+  ],
+  [
+    "Lilex",
+    "mono",
+    [
+      ["ofl/lilex/Lilex-Italic[wght].ttf", 400, true, 246644],
+      ["ofl/lilex/Lilex[wght].ttf", 400, false, 229100]
+    ],
+    "ofl/lilex/OFL.txt"
+  ],
+  [
+    "Lilita One",
+    "display",
+    [["ofl/lilitaone/LilitaOne-Regular.ttf", 400, false, 28092]],
+    "ofl/lilitaone/OFL.txt"
+  ]
+]

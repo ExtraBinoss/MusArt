@@ -1,6 +1,18 @@
 import { vi } from "vitest";
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 
 export function installCanvasMock() {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (input: string) => {
+      const file = input.includes("hb.wasm")
+        ? resolve(process.cwd(), "node_modules/harfbuzzjs/hb.wasm")
+        : resolve(process.cwd(), "apps/web/public", input.replace(/^\//, ""));
+      const data = await readFile(file);
+      return new Response(new Uint8Array(data));
+    }),
+  );
   const context = {
     scale: vi.fn(),
     fillRect: vi.fn(),

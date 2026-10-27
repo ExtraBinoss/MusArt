@@ -1,0 +1,203 @@
+[
+  [
+    "Allerta Stencil",
+    "sans",
+    [["ofl/allertastencil/AllertaStencil-Regular.ttf", 400, false, 20260]],
+    "ofl/allertastencil/OFL.txt"
+  ],
+  [
+    "Allison",
+    "handwriting",
+    [["ofl/allison/Allison-Regular.ttf", 400, false, 143700]],
+    "ofl/allison/OFL.txt"
+  ],
+  [
+    "Allkin",
+    "display",
+    [["ofl/allkin/Allkin-Regular.ttf", 400, false, 64860]],
+    "ofl/allkin/OFL.txt"
+  ],
+  [
+    "Allura",
+    "handwriting",
+    [["ofl/allura/Allura-Regular.ttf", 400, false, 246632]],
+    "ofl/allura/OFL.txt"
+  ],
+  [
+    "Almarai",
+    "sans",
+    [
+      ["ofl/almarai/Almarai-Bold.ttf", 700, false, 156672],
+      ["ofl/almarai/Almarai-ExtraBold.ttf", 800, false, 168292],
+      ["ofl/almarai/Almarai-Light.ttf", 300, false, 149480],
+      ["ofl/almarai/Almarai-Regular.ttf", 400, false, 152824]
+    ],
+    "ofl/almarai/OFL.txt"
+  ],
+  [
+    "Almendra",
+    "serif",
+    [
+      ["ofl/almendra/Almendra-Bold.ttf", 700, false, 36624],
+      ["ofl/almendra/Almendra-BoldItalic.ttf", 700, true, 35380],
+      ["ofl/almendra/Almendra-Italic.ttf", 400, true, 35216],
+      ["ofl/almendra/Almendra-Regular.ttf", 400, false, 68684]
+    ],
+    "ofl/almendra/OFL.txt"
+  ],
+  [
+    "Almendra Display",
+    "display",
+    [["ofl/almendradisplay/AlmendraDisplay-Regular.ttf", 400, false, 39264]],
+    "ofl/almendradisplay/OFL.txt"
+  ],
+  [
+    "Almendra SC",
+    "serif",
+    [["ofl/almendrasc/AlmendraSC-Regular.ttf", 400, false, 35988]],
+    "ofl/almendrasc/OFL.txt"
+  ],
+  [
+    "Alumni Sans",
+    "sans",
+    [
+      ["ofl/alumnisans/AlumniSans-Italic[wght].ttf", 400, true, 140320],
+      ["ofl/alumnisans/AlumniSans[wght].ttf", 400, false, 135884]
+    ],
+    "ofl/alumnisans/OFL.txt"
+  ],
+  [
+    "Alumni Sans Collegiate One",
+    "sans",
+    [
+      ["ofl/alumnisanscollegiateone/AlumniSansCollegiateOne-Italic.ttf", 400, true, 173756],
+      ["ofl/alumnisanscollegiateone/AlumniSansCollegiateOne-Regular.ttf", 400, false, 163484]
+    ],
+    "ofl/alumnisanscollegiateone/OFL.txt"
+  ],
+  [
+    "Alumni Sans Inline One",
+    "display",
+    [
+      ["ofl/alumnisansinlineone/AlumniSansInlineOne-Italic.ttf", 400, true, 134596],
+      ["ofl/alumnisansinlineone/AlumniSansInlineOne-Regular.ttf", 400, false, 133088]
+    ],
+    "ofl/alumnisansinlineone/OFL.txt"
+  ],
+  [
+    "Alumni Sans Pinstripe",
+    "sans",
+    [
+      ["ofl/alumnisanspinstripe/AlumniSansPinstripe-Italic.ttf", 400, true, 110624],
+      ["ofl/alumnisanspinstripe/AlumniSansPinstripe-Regular.ttf", 400, false, 104716]
+    ],
+    "ofl/alumnisanspinstripe/OFL.txt"
+  ],
+  [
+    "Alumni Sans SC",
+    "sans",
+    [
+      ["ofl/alumnisanssc/AlumniSansSC-Italic[wght].ttf", 400, true, 130528],
+      ["ofl/alumnisanssc/AlumniSansSC[wght].ttf", 400, false, 125764]
+    ],
+    "ofl/alumnisanssc/OFL.txt"
+  ],
+  [
+    "Alyamama",
+    "serif",
+    [["ofl/alyamama/Alyamama[wght].ttf", 400, false, 220572]],
+    "ofl/alyamama/OFL.txt"
+  ],
+  [
+    "Amarante",
+    "display",
+    [["ofl/amarante/Amarante-Regular.ttf", 400, false, 148116]],
+    "ofl/amarante/OFL.txt"
+  ],
+  [
+    "Amaranth",
+    "sans",
+    [
+      ["ofl/amaranth/Amaranth-Bold.ttf", 700, false, 72844],
+      ["ofl/amaranth/Amaranth-BoldItalic.ttf", 700, true, 106708],
+      ["ofl/amaranth/Amaranth-Italic.ttf", 400, true, 96780],
+      ["ofl/amaranth/Amaranth-Regular.ttf", 400, false, 79036]
+    ],
+    "ofl/amaranth/OFL.txt"
+  ],
+  [
+    "Amarna",
+    "sans",
+    [
+      ["ofl/amarna/Amarna-Italic[wght].ttf", 400, true, 68372],
+      ["ofl/amarna/Amarna[wght].ttf", 400, false, 63768]
+    ],
+    "ofl/amarna/OFL.txt"
+  ],
+  [
+    "Amatic SC",
+    "handwriting",
+    [
+      ["ofl/amaticsc/AmaticSC-Bold.ttf", 700, false, 156180],
+      ["ofl/amaticsc/AmaticSC-Regular.ttf", 400, false, 151624]
+    ],
+    "ofl/amaticsc/OFL.txt"
+  ],
+  [
+    "Amethysta",
+    "serif",
+    [["ofl/amethysta/Amethysta-Regular.ttf", 400, false, 66348]],
+    "ofl/amethysta/OFL.txt"
+  ],
+  [
+    "Amiko",
+    "sans",
+    [
+      ["ofl/amiko/Amiko-Bold.ttf", 700, false, 196396],
+      ["ofl/amiko/Amiko-Regular.ttf", 400, false, 192880],
+      ["ofl/amiko/Amiko-SemiBold.ttf", 600, false, 194424]
+    ],
+    "ofl/amiko/OFL.txt"
+  ],
+  [
+    "Amiri",
+    "serif",
+    [
+      ["ofl/amiri/Amiri-Bold.ttf", 700, false, 413480],
+      ["ofl/amiri/Amiri-BoldItalic.ttf", 700, true, 409692],
+      ["ofl/amiri/Amiri-Italic.ttf", 400, true, 428532],
+      ["ofl/amiri/Amiri-Regular.ttf", 400, false, 431116]
+    ],
+    "ofl/amiri/OFL.txt"
+  ],
+  [
+    "Amiri Quran",
+    "serif",
+    [["ofl/amiriquran/AmiriQuran-Regular.ttf", 400, false, 136920]],
+    "ofl/amiriquran/OFL.txt"
+  ],
+  [
+    "Amita",
+    "handwriting",
+    [
+      ["ofl/amita/Amita-Bold.ttf", 700, false, 221116],
+      ["ofl/amita/Amita-Regular.ttf", 400, false, 215672]
+    ],
+    "ofl/amita/OFL.txt"
+  ],
+  [
+    "Anaheim",
+    "sans",
+    [["ofl/anaheim/Anaheim[wght].ttf", 400, false, 114604]],
+    "ofl/anaheim/OFL.txt"
+  ],
+  [
+    "Ancizar Sans",
+    "sans",
+    [
+      ["ofl/ancizarsans/AncizarSans-Italic[wght].ttf", 400, true, 178372],
+      ["ofl/ancizarsans/AncizarSans[wght].ttf", 400, false, 172192]
+    ],
+    "ofl/ancizarsans/OFL.txt"
+  ]
+]

@@ -1,0 +1,147 @@
+[
+  [
+    "Hi Melody",
+    "handwriting",
+    [["ofl/himelody/HiMelody-Regular.ttf", 400, false, 12623412]],
+    "ofl/himelody/OFL.txt"
+  ],
+  [
+    "Hibur Mono",
+    "mono",
+    [["ofl/hiburmono/HiburMono-Regular.ttf", 400, false, 210352]],
+    "ofl/hiburmono/OFL.txt"
+  ],
+  [
+    "Hina Mincho",
+    "serif",
+    [["ofl/hinamincho/HinaMincho-Regular.ttf", 400, false, 6451924]],
+    "ofl/hinamincho/OFL.txt"
+  ],
+  [
+    "Hind",
+    "sans",
+    [
+      ["ofl/hind/Hind-Bold.ttf", 700, false, 286604],
+      ["ofl/hind/Hind-Light.ttf", 300, false, 287484],
+      ["ofl/hind/Hind-Medium.ttf", 500, false, 277300],
+      ["ofl/hind/Hind-Regular.ttf", 400, false, 299532],
+      ["ofl/hind/Hind-SemiBold.ttf", 600, false, 281940]
+    ],
+    "ofl/hind/OFL.txt"
+  ],
+  [
+    "Hind Guntur",
+    "sans",
+    [
+      ["ofl/hindguntur/HindGuntur-Bold.ttf", 700, false, 340816],
+      ["ofl/hindguntur/HindGuntur-Light.ttf", 300, false, 307852],
+      ["ofl/hindguntur/HindGuntur-Medium.ttf", 500, false, 321408],
+      ["ofl/hindguntur/HindGuntur-Regular.ttf", 400, false, 322564],
+      ["ofl/hindguntur/HindGuntur-SemiBold.ttf", 600, false, 326228]
+    ],
+    "ofl/hindguntur/OFL.txt"
+  ],
+  [
+    "Hind Madurai",
+    "sans",
+    [
+      ["ofl/hindmadurai/HindMadurai-Bold.ttf", 700, false, 142576],
+      ["ofl/hindmadurai/HindMadurai-Light.ttf", 300, false, 127664],
+      ["ofl/hindmadurai/HindMadurai-Medium.ttf", 500, false, 137784],
+      ["ofl/hindmadurai/HindMadurai-Regular.ttf", 400, false, 136868],
+      ["ofl/hindmadurai/HindMadurai-SemiBold.ttf", 600, false, 139348]
+    ],
+    "ofl/hindmadurai/OFL.txt"
+  ],
+  [
+    "Hind Mysuru",
+    "sans",
+    [
+      ["ofl/hindmysuru/HindMysuru-Bold.ttf", 700, false, 129236],
+      ["ofl/hindmysuru/HindMysuru-Light.ttf", 300, false, 132420],
+      ["ofl/hindmysuru/HindMysuru-Medium.ttf", 500, false, 131056],
+      ["ofl/hindmysuru/HindMysuru-Regular.ttf", 400, false, 131428],
+      ["ofl/hindmysuru/HindMysuru-SemiBold.ttf", 600, false, 130424]
+    ],
+    "ofl/hindmysuru/OFL.txt"
+  ],
+  [
+    "Hind Siliguri",
+    "sans",
+    [
+      ["ofl/hindsiliguri/HindSiliguri-Bold.ttf", 700, false, 287660],
+      ["ofl/hindsiliguri/HindSiliguri-Light.ttf", 300, false, 259344],
+      ["ofl/hindsiliguri/HindSiliguri-Medium.ttf", 500, false, 266516],
+      ["ofl/hindsiliguri/HindSiliguri-Regular.ttf", 400, false, 250052],
+      ["ofl/hindsiliguri/HindSiliguri-SemiBold.ttf", 600, false, 272740]
+    ],
+    "ofl/hindsiliguri/OFL.txt"
+  ],
+  [
+    "Hind Vadodara",
+    "sans",
+    [
+      ["ofl/hindvadodara/HindVadodara-Bold.ttf", 700, false, 251948],
+      ["ofl/hindvadodara/HindVadodara-Light.ttf", 300, false, 236408],
+      ["ofl/hindvadodara/HindVadodara-Medium.ttf", 500, false, 241792],
+      ["ofl/hindvadodara/HindVadodara-Regular.ttf", 400, false, 243376],
+      ["ofl/hindvadodara/HindVadodara-SemiBold.ttf", 600, false, 252704]
+    ],
+    "ofl/hindvadodara/OFL.txt"
+  ],
+  [
+    "Holtwood One SC",
+    "serif",
+    [["ofl/holtwoodonesc/HoltwoodOneSC-Regular.ttf", 400, false, 58448]],
+    "ofl/holtwoodonesc/OFL.txt"
+  ],
+  [
+    "Homemade Apple",
+    "handwriting",
+    [["apache/homemadeapple/HomemadeApple-Regular.ttf", 400, false, 110004]],
+    "apache/homemadeapple/LICENSE.txt"
+  ],
+  [
+    "Homenaje",
+    "sans",
+    [["ofl/homenaje/Homenaje-Regular.ttf", 400, false, 36436]],
+    "ofl/homenaje/OFL.txt"
+  ],
+  ["Honk", "display", [["ofl/honk/Honk[MORF,SHLN].ttf", 400, false, 3820116]], "ofl/honk/OFL.txt"],
+  [
+    "Host Grotesk",
+    "sans",
+    [
+      ["ofl/hostgrotesk/HostGrotesk-Italic[wght].ttf", 400, true, 84264],
+      ["ofl/hostgrotesk/HostGrotesk[wght].ttf", 400, false, 81784]
+    ],
+    "ofl/hostgrotesk/OFL.txt"
+  ],
+  [
+    "Hubballi",
+    "sans",
+    [["ofl/hubballi/Hubballi-Regular.ttf", 400, false, 187464]],
+    "ofl/hubballi/OFL.txt"
+  ],
+  [
+    "Hubot Sans",
+    "sans",
+    [
+      ["ofl/hubotsans/HubotSans-Italic[wdth,wght].ttf", 400, true, 381520],
+      ["ofl/hubotsans/HubotSans[wdth,wght].ttf", 400, false, 369548]
+    ],
+    "ofl/hubotsans/OFL.txt"
+  ],
+  [
+    "Huninn",
+    "sans",
+    [["ofl/huninn/Huninn-Regular.ttf", 400, false, 4683972]],
+    "ofl/huninn/OFL.txt"
+  ],
+  [
+    "Hurricane",
+    "handwriting",
+    [["ofl/hurricane/Hurricane-Regular.ttf", 400, false, 377368]],
+    "ofl/hurricane/OFL.txt"
+  ]
+]

@@ -3,10 +3,10 @@ import { createEffect } from "@musart/core";
 import {
   Mesh,
   MeshBasicNodeMaterial,
+  PlaneGeometry,
+  TextureNode,
   RenderTarget,
   Texture,
-  TextureNode,
-  UniformNode,
   type Scene,
   type WebGPURenderer,
 } from "three/webgpu";
@@ -177,6 +177,66 @@ describe("shared-renderer GPU effect operator", () => {
     output.dispose();
     previous.dispose();
   });
+  it("keeps Gradient stages, original coverage backups and atlas inside a bounded shared GPU allocation", () => {
+    const f = setup(),
+      stages: { source: Texture; backdrop: Texture; target: Texture }[] = [];
+    f.backend.render.mockImplementation((scene: Scene) => {
+      const mesh = scene.children[0] as Mesh<PlaneGeometry, MeshBasicNodeMaterial>;
+      const passes = (
+        f.gpu as unknown as {
+          passes: Map<
+            string,
+            {
+              material: MeshBasicNodeMaterial;
+              source: TextureNode<"vec4">;
+              backdrop: TextureNode<"vec4">;
+            }
+          >;
+        }
+      ).passes;
+      const pass = [...passes.values()].find((entry) => entry.material === mesh.material)!;
+      const target = f.backend.setRenderTarget.mock.calls.at(-1)![0] as RenderTarget;
+      stages.push({
+        source: pass.source.value,
+        backdrop: pass.backdrop.value,
+        target: target.texture,
+      });
+      expect(pass.source.value).not.toBe(target.texture);
+      expect(pass.backdrop.value).not.toBe(target.texture);
+    });
+    const gradient = createEffect("gradient", { settings: { treatment: "glass" } }),
+      stack = [createEffect("brightness"), gradient];
+    expect(f.gpu.projectedBytes(8, 6, stack)).toBe(8 * 6 * 8);
+    f.gpu.apply(f.source, 8, 6, stack, f.output);
+    expect(stages).toHaveLength(5); // brightness + durable original copy + field/treatment/finish
+    expect(stages.at(-1)?.target).toBe(f.output.texture);
+    expect(stages.at(-1)?.backdrop).toBe(stages[1]?.target);
+    expect(f.gpu.stats()).toMatchObject({ targets: 2, bytes: 8 * 6 * 8, materials: 5 });
+    const ascii = { ...gradient, settings: { treatment: "ascii" as const } };
+    expect(f.gpu.projectedBytes(8, 6, [ascii])).toBe(8 * 6 * 8 + 16384);
+    f.gpu.apply(f.source, 8, 6, [ascii], f.output);
+    for (let i = 0; i < 50; i++)
+      f.gpu.apply(
+        f.source,
+        8,
+        6,
+        [
+          {
+            ...gradient,
+            time: i,
+            settings: { treatment: "glass", style: i % 2 ? "mesh" : "silk" },
+          },
+        ],
+        f.output,
+      );
+    expect(f.gpu.stats()).toMatchObject({ targets: 2, materials: 6, bytes: 8 * 6 * 8 + 16384 });
+    f.gpu.apply(f.source, 8, 6, [{ ...gradient, blendMode: "multiply" }], f.output);
+    f.gpu.apply(f.source, 8, 6, [{ ...gradient, blendMode: "screen", composite: "xor" }], f.output);
+    expect(f.gpu.stats().materials).toBe(7);
+    expect(f.backend.readRenderTargetPixelsAsync).not.toHaveBeenCalled();
+    f.dispose();
+    expect(f.gpu.stats()).toMatchObject({ targets: 0, materials: 0, bytes: 0 });
+  });
   it("rejects feedback loops, malformed dimensions, unsupported types and reuse after disposal", () => {
     const fixture = setup();
     const { gpu, source, output } = fixture;
@@ -218,13 +278,19 @@ describe("shared-renderer GPU effect operator", () => {
           throw new Error("Expected effect pass");
         materials.push(mesh.material);
         const values = new Set<number>();
-        mesh.material.fragmentNode!.traverse((node) => {
-          if (node instanceof TextureNode && node.uvNode)
-            node.uvNode.traverse((coordinate) => {
-              if (coordinate instanceof UniformNode && typeof coordinate.value === "number")
-                values.add(coordinate.value);
-            });
-        });
+        // Effect output is now a runtime compositing Fn. Inspect its stable controls,
+        // while browser decoded-pixel tests prove the generated WGSL/GLSL orientation.
+        const passes = (
+          gpu as unknown as {
+            passes: Map<
+              string,
+              { controls: { sourceFlipY: { value: number }; backdropFlipY: { value: number } } }
+            >;
+          }
+        ).passes;
+        const controls = passes.get("brightness")!.controls;
+        values.add(controls.sourceFlipY.value);
+        expect(controls.backdropFlipY.value).toBe(controls.sourceFlipY.value);
         expect(values.size).toBe(1);
         orientations.push([...values][0]!);
       });

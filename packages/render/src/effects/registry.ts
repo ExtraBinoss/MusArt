@@ -1,4 +1,4 @@
-import type { EffectType } from "@musart/core";
+import { resolveGradientSettings, type Effect, type EffectType } from "@musart/core";
 import { asciiNode } from "./ascii/node";
 import { blurNode } from "./blur/node";
 import { brightnessNode } from "./brightness/node";
@@ -22,28 +22,49 @@ import { grainNode } from "./grain/node";
 import { halftoneNode } from "./halftone/node";
 import { vignetteNode } from "./vignette/node";
 /** Renderer implementation registry. Metadata/defaults live in the pure core catalogue. */
-export const EFFECT_NODES: Readonly<Record<EffectType, EffectNodeBuilder>> = Object.freeze({
-  dither: ditherNode,
-  ascii: asciiNode,
-  brightness: brightnessNode,
-  contrast: contrastNode,
-  grayscale: grayscaleNode,
-  blur: blurNode,
-  exposure: exposureNode,
-  saturation: saturationNode,
-  hue: hueNode,
-  vibrance: vibranceNode,
-  temperature: temperatureNode,
-  tint: tintNode,
-  gamma: gammaNode,
-  invert: invertNode,
-  sepia: sepiaNode,
-  threshold: thresholdNode,
-  posterize: posterizeNode,
-  grain: grainNode,
-  halftone: halftoneNode,
-  vignette: vignetteNode,
-});
+export const EFFECT_NODES: Readonly<Record<Exclude<EffectType, "gradient">, EffectNodeBuilder>> =
+  Object.freeze({
+    dither: ditherNode,
+    ascii: asciiNode,
+    brightness: brightnessNode,
+    contrast: contrastNode,
+    grayscale: grayscaleNode,
+    blur: blurNode,
+    exposure: exposureNode,
+    saturation: saturationNode,
+    hue: hueNode,
+    vibrance: vibranceNode,
+    temperature: temperatureNode,
+    tint: tintNode,
+    gamma: gammaNode,
+    invert: invertNode,
+    sepia: sepiaNode,
+    threshold: thresholdNode,
+    posterize: posterizeNode,
+    grain: grainNode,
+    halftone: halftoneNode,
+    vignette: vignetteNode,
+  });
 
 /** Only pixel-sized motifs/radii scale with final export resolution. */
 export const PIXEL_SCALE_EFFECTS = new Set(["dither", "ascii", "blur", "grain", "halftone"]);
+
+/** Pixel motifs follow export/preview density while field coordinates remain resolution-independent. */
+export function scaleEffectPixels(effect: Effect, scale: number): Effect {
+  if (effect.type === "gradient") {
+    const settings = resolveGradientSettings(effect.settings);
+    return {
+      ...effect,
+      settings: {
+        ...settings,
+        size: settings.size * scale,
+        borderRadius: settings.borderRadius * scale,
+        grainScale: settings.grainScale * scale,
+      },
+    };
+  }
+  return {
+    ...effect,
+    scale: PIXEL_SCALE_EFFECTS.has(effect.type) ? effect.scale * scale : effect.scale,
+  };
+}

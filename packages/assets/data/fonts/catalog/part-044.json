@@ -1,0 +1,182 @@
+[
+  [
+    "Neuton",
+    "serif",
+    [
+      ["ofl/neuton/Neuton-Bold.ttf", 700, false, 60344],
+      ["ofl/neuton/Neuton-ExtraBold.ttf", 800, false, 61840],
+      ["ofl/neuton/Neuton-ExtraLight.ttf", 200, false, 53996],
+      ["ofl/neuton/Neuton-Italic.ttf", 400, true, 63292],
+      ["ofl/neuton/Neuton-Light.ttf", 300, false, 54056],
+      ["ofl/neuton/Neuton-Regular.ttf", 400, false, 64628]
+    ],
+    "ofl/neuton/OFL.txt"
+  ],
+  [
+    "New Amsterdam",
+    "sans",
+    [["ofl/newamsterdam/NewAmsterdam-Regular.ttf", 400, false, 74324]],
+    "ofl/newamsterdam/OFL.txt"
+  ],
+  [
+    "New Rocker",
+    "display",
+    [["ofl/newrocker/NewRocker-Regular.ttf", 400, false, 173224]],
+    "ofl/newrocker/OFL.txt"
+  ],
+  [
+    "New Tegomin",
+    "serif",
+    [["ofl/newtegomin/NewTegomin-Regular.ttf", 400, false, 7450688]],
+    "ofl/newtegomin/OFL.txt"
+  ],
+  [
+    "News Cycle",
+    "sans",
+    [
+      ["ofl/newscycle/NewsCycle-Bold.ttf", 700, false, 60516],
+      ["ofl/newscycle/NewsCycle-Regular.ttf", 400, false, 179600]
+    ],
+    "ofl/newscycle/OFL.txt"
+  ],
+  [
+    "Newsreader",
+    "serif",
+    [
+      ["ofl/newsreader/Newsreader-Italic[opsz,wght].ttf", 400, true, 495684],
+      ["ofl/newsreader/Newsreader[opsz,wght].ttf", 400, false, 451664]
+    ],
+    "ofl/newsreader/OFL.txt"
+  ],
+  [
+    "Niconne",
+    "handwriting",
+    [["ofl/niconne/Niconne-Regular.ttf", 400, false, 45616]],
+    "ofl/niconne/OFL.txt"
+  ],
+  [
+    "Niramit",
+    "sans",
+    [
+      ["ofl/niramit/Niramit-Bold.ttf", 700, false, 97840],
+      ["ofl/niramit/Niramit-BoldItalic.ttf", 700, true, 100432],
+      ["ofl/niramit/Niramit-ExtraLight.ttf", 200, false, 98108],
+      ["ofl/niramit/Niramit-ExtraLightItalic.ttf", 200, true, 101036],
+      ["ofl/niramit/Niramit-Italic.ttf", 400, true, 100484],
+      ["ofl/niramit/Niramit-Light.ttf", 300, false, 97952],
+      ["ofl/niramit/Niramit-LightItalic.ttf", 300, true, 100660],
+      ["ofl/niramit/Niramit-Medium.ttf", 500, false, 97764],
+      ["ofl/niramit/Niramit-MediumItalic.ttf", 500, true, 100296],
+      ["ofl/niramit/Niramit-Regular.ttf", 400, false, 97776],
+      ["ofl/niramit/Niramit-SemiBold.ttf", 600, false, 97720],
+      ["ofl/niramit/Niramit-SemiBoldItalic.ttf", 600, true, 100456]
+    ],
+    "ofl/niramit/OFL.txt"
+  ],
+  [
+    "Nixie One",
+    "display",
+    [["ofl/nixieone/NixieOne-Regular.ttf", 400, false, 52580]],
+    "ofl/nixieone/OFL.txt"
+  ],
+  [
+    "Nobile",
+    "sans",
+    [
+      ["ofl/nobile/Nobile-Bold.ttf", 700, false, 61460],
+      ["ofl/nobile/Nobile-BoldItalic.ttf", 700, true, 86044],
+      ["ofl/nobile/Nobile-Italic.ttf", 400, true, 91972],
+      ["ofl/nobile/Nobile-Medium.ttf", 500, false, 67796],
+      ["ofl/nobile/Nobile-MediumItalic.ttf", 500, true, 89840],
+      ["ofl/nobile/Nobile-Regular.ttf", 400, false, 65152]
+    ],
+    "ofl/nobile/OFL.txt"
+  ],
+  ["Nokora", "sans", [["ofl/nokora/Nokora[wght].ttf", 400, false, 65120]], "ofl/nokora/OFL.txt"],
+  [
+    "Norican",
+    "handwriting",
+    [["ofl/norican/Norican-Regular.ttf", 400, false, 83416]],
+    "ofl/norican/OFL.txt"
+  ],
+  [
+    "Nosifer",
+    "display",
+    [["ofl/nosifer/Nosifer-Regular.ttf", 400, false, 43272]],
+    "ofl/nosifer/OFL.txt"
+  ],
+  [
+    "Notable",
+    "sans",
+    [["ofl/notable/Notable-Regular.ttf", 400, false, 38216]],
+    "ofl/notable/OFL.txt"
+  ],
+  [
+    "Nothing You Could Do",
+    "handwriting",
+    [["ofl/nothingyoucoulddo/NothingYouCouldDo.ttf", 400, false, 34920]],
+    "ofl/nothingyoucoulddo/OFL.txt"
+  ],
+  [
+    "Noticia Text",
+    "serif",
+    [
+      ["ofl/noticiatext/NoticiaText-Bold.ttf", 700, false, 113244],
+      ["ofl/noticiatext/NoticiaText-BoldItalic.ttf", 700, true, 86044],
+      ["ofl/noticiatext/NoticiaText-Italic.ttf", 400, true, 87392],
+      ["ofl/noticiatext/NoticiaText-Regular.ttf", 400, false, 115288]
+    ],
+    "ofl/noticiatext/OFL.txt"
+  ],
+  [
+    "Noto Color Emoji",
+    "sans",
+    [["ofl/notocoloremoji/NotoColorEmoji-Regular.ttf", 400, false, 25332736]],
+    "ofl/notocoloremoji/OFL.txt"
+  ],
+  [
+    "Noto Emoji",
+    "sans",
+    [["ofl/notoemoji/NotoEmoji[wght].ttf", 400, false, 1982596]],
+    "ofl/notoemoji/OFL.txt"
+  ],
+  [
+    "Noto Kufi Arabic",
+    "sans",
+    [["ofl/notokufiarabic/NotoKufiArabic[wght].ttf", 400, false, 434204]],
+    "ofl/notokufiarabic/OFL.txt"
+  ],
+  [
+    "Noto Music",
+    "sans",
+    [["ofl/notomusic/NotoMusic-Regular.ttf", 400, false, 124336]],
+    "ofl/notomusic/OFL.txt"
+  ],
+  [
+    "Noto Naskh Arabic",
+    "serif",
+    [["ofl/notonaskharabic/NotoNaskhArabic[wght].ttf", 400, false, 307592]],
+    "ofl/notonaskharabic/OFL.txt"
+  ],
+  [
+    "Noto Nastaliq Urdu",
+    "serif",
+    [["ofl/notonastaliqurdu/NotoNastaliqUrdu[wght].ttf", 400, false, 690304]],
+    "ofl/notonastaliqurdu/OFL.txt"
+  ],
+  [
+    "Noto Rashi Hebrew",
+    "serif",
+    [["ofl/notorashihebrew/NotoRashiHebrew[wght].ttf", 400, false, 109056]],
+    "ofl/notorashihebrew/OFL.txt"
+  ],
+  [
+    "Noto Sans",
+    "sans",
+    [
+      ["ofl/notosans/NotoSans-Italic[wdth,wght].ttf", 400, true, 2322640],
+      ["ofl/notosans/NotoSans[wdth,wght].ttf", 400, false, 2049096]
+    ],
+    "ofl/notosans/OFL.txt"
+  ]
+]

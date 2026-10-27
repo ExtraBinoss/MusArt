@@ -1,0 +1,147 @@
+[
+  [
+    "Montserrat Alternates",
+    "sans",
+    [
+      ["ofl/montserratalternates/MontserratAlternates-Black.ttf", 900, false, 221652],
+      ["ofl/montserratalternates/MontserratAlternates-BlackItalic.ttf", 900, true, 224064],
+      ["ofl/montserratalternates/MontserratAlternates-Bold.ttf", 700, false, 214248],
+      ["ofl/montserratalternates/MontserratAlternates-BoldItalic.ttf", 700, true, 216520],
+      ["ofl/montserratalternates/MontserratAlternates-ExtraBold.ttf", 800, false, 214904],
+      ["ofl/montserratalternates/MontserratAlternates-ExtraBoldItalic.ttf", 800, true, 217160],
+      ["ofl/montserratalternates/MontserratAlternates-ExtraLight.ttf", 200, false, 212840],
+      ["ofl/montserratalternates/MontserratAlternates-ExtraLightItalic.ttf", 200, true, 214572],
+      ["ofl/montserratalternates/MontserratAlternates-Italic.ttf", 400, true, 215828],
+      ["ofl/montserratalternates/MontserratAlternates-Light.ttf", 300, false, 212192],
+      ["ofl/montserratalternates/MontserratAlternates-LightItalic.ttf", 300, true, 214004],
+      ["ofl/montserratalternates/MontserratAlternates-Medium.ttf", 500, false, 213000],
+      ["ofl/montserratalternates/MontserratAlternates-MediumItalic.ttf", 500, true, 214960],
+      ["ofl/montserratalternates/MontserratAlternates-Regular.ttf", 400, false, 215068],
+      ["ofl/montserratalternates/MontserratAlternates-SemiBold.ttf", 600, false, 213876],
+      ["ofl/montserratalternates/MontserratAlternates-SemiBoldItalic.ttf", 600, true, 216132],
+      ["ofl/montserratalternates/MontserratAlternates-Thin.ttf", 100, false, 212056],
+      ["ofl/montserratalternates/MontserratAlternates-ThinItalic.ttf", 100, true, 213840]
+    ],
+    "ofl/montserratalternates/OFL.txt"
+  ],
+  [
+    "Montserrat Underline",
+    "sans",
+    [
+      ["ofl/montserratunderline/MontserratUnderline-Italic[wght].ttf", 400, true, 798196],
+      ["ofl/montserratunderline/MontserratUnderline[wght].ttf", 400, false, 805200]
+    ],
+    "ofl/montserratunderline/OFL.txt"
+  ],
+  [
+    "Moo Lah Lah",
+    "display",
+    [["ofl/moolahlah/MooLahLah-Regular.ttf", 400, false, 316228]],
+    "ofl/moolahlah/OFL.txt"
+  ],
+  ["Mooli", "sans", [["ofl/mooli/Mooli-Regular.ttf", 400, false, 62600]], "ofl/mooli/OFL.txt"],
+  [
+    "Moon Dance",
+    "handwriting",
+    [["ofl/moondance/MoonDance-Regular.ttf", 400, false, 276360]],
+    "ofl/moondance/OFL.txt"
+  ],
+  ["Moul", "display", [["ofl/moul/Moul-Regular.ttf", 400, false, 166200]], "ofl/moul/OFL.txt"],
+  [
+    "Moulpali",
+    "sans",
+    [["ofl/moulpali/Moulpali-Regular.ttf", 400, false, 100364]],
+    "ofl/moulpali/OFL.txt"
+  ],
+  [
+    "Mountains of Christmas",
+    "display",
+    [
+      ["apache/mountainsofchristmas/MountainsofChristmas-Bold.ttf", 700, false, 123172],
+      ["apache/mountainsofchristmas/MountainsofChristmas-Regular.ttf", 400, false, 122376]
+    ],
+    "apache/mountainsofchristmas/LICENSE.txt"
+  ],
+  [
+    "Mouse Memoirs",
+    "sans",
+    [["ofl/mousememoirs/MouseMemoirs-Regular.ttf", 400, false, 55932]],
+    "ofl/mousememoirs/OFL.txt"
+  ],
+  [
+    "Mozilla Headline",
+    "sans",
+    [["ofl/mozillaheadline/MozillaHeadline[wdth,wght].ttf", 400, false, 160144]],
+    "ofl/mozillaheadline/OFL.txt"
+  ],
+  [
+    "Mozilla Text",
+    "sans",
+    [["ofl/mozillatext/MozillaText[wght].ttf", 400, false, 86268]],
+    "ofl/mozillatext/OFL.txt"
+  ],
+  [
+    "Mr Bedfort",
+    "handwriting",
+    [["ofl/mrbedfort/MrBedfort-Regular.ttf", 400, false, 37252]],
+    "ofl/mrbedfort/OFL.txt"
+  ],
+  [
+    "Mr Dafoe",
+    "handwriting",
+    [["ofl/mrdafoe/MrDafoe-Regular.ttf", 400, false, 47976]],
+    "ofl/mrdafoe/OFL.txt"
+  ],
+  [
+    "Mr De Haviland",
+    "handwriting",
+    [["ofl/mrdehaviland/MrDeHaviland-Regular.ttf", 400, false, 44672]],
+    "ofl/mrdehaviland/OFL.txt"
+  ],
+  [
+    "Mrs Saint Delafield",
+    "handwriting",
+    [["ofl/mrssaintdelafield/MrsSaintDelafield-Regular.ttf", 400, false, 49140]],
+    "ofl/mrssaintdelafield/OFL.txt"
+  ],
+  [
+    "Mrs Sheppards",
+    "handwriting",
+    [["ofl/mrssheppards/MrsSheppards-Regular.ttf", 400, false, 42384]],
+    "ofl/mrssheppards/OFL.txt"
+  ],
+  [
+    "Ms Madi",
+    "handwriting",
+    [["ofl/msmadi/MsMadi-Regular.ttf", 400, false, 144208]],
+    "ofl/msmadi/OFL.txt"
+  ],
+  [
+    "Mukta",
+    "sans",
+    [
+      ["ofl/mukta/Mukta-Bold.ttf", 700, false, 418416],
+      ["ofl/mukta/Mukta-ExtraBold.ttf", 800, false, 423168],
+      ["ofl/mukta/Mukta-ExtraLight.ttf", 200, false, 410644],
+      ["ofl/mukta/Mukta-Light.ttf", 300, false, 405188],
+      ["ofl/mukta/Mukta-Medium.ttf", 500, false, 419736],
+      ["ofl/mukta/Mukta-Regular.ttf", 400, false, 432248],
+      ["ofl/mukta/Mukta-SemiBold.ttf", 600, false, 411160]
+    ],
+    "ofl/mukta/OFL.txt"
+  ],
+  [
+    "Mukta Mahee",
+    "sans",
+    [
+      ["ofl/muktamahee/MuktaMahee-Bold.ttf", 700, false, 213932],
+      ["ofl/muktamahee/MuktaMahee-ExtraBold.ttf", 800, false, 212044],
+      ["ofl/muktamahee/MuktaMahee-ExtraLight.ttf", 200, false, 213732],
+      ["ofl/muktamahee/MuktaMahee-Light.ttf", 300, false, 209744],
+      ["ofl/muktamahee/MuktaMahee-Medium.ttf", 500, false, 209140],
+      ["ofl/muktamahee/MuktaMahee-Regular.ttf", 400, false, 211124],
+      ["ofl/muktamahee/MuktaMahee-SemiBold.ttf", 600, false, 210300]
+    ],
+    "ofl/muktamahee/OFL.txt"
+  ]
+]

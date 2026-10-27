@@ -1,0 +1,176 @@
+[
+  [
+    "Kaisei Tokumin",
+    "serif",
+    [
+      ["ofl/kaiseitokumin/KaiseiTokumin-Bold.ttf", 700, false, 4366200],
+      ["ofl/kaiseitokumin/KaiseiTokumin-ExtraBold.ttf", 800, false, 4564000],
+      ["ofl/kaiseitokumin/KaiseiTokumin-Medium.ttf", 500, false, 4367444],
+      ["ofl/kaiseitokumin/KaiseiTokumin-Regular.ttf", 400, false, 4581732]
+    ],
+    "ofl/kaiseitokumin/OFL.txt"
+  ],
+  [
+    "Kalam",
+    "handwriting",
+    [
+      ["ofl/kalam/Kalam-Bold.ttf", 700, false, 460896],
+      ["ofl/kalam/Kalam-Light.ttf", 300, false, 437512],
+      ["ofl/kalam/Kalam-Regular.ttf", 400, false, 427360]
+    ],
+    "ofl/kalam/OFL.txt"
+  ],
+  [
+    "Kalnia",
+    "serif",
+    [["ofl/kalnia/Kalnia[wdth,wght].ttf", 400, false, 116460]],
+    "ofl/kalnia/OFL.txt"
+  ],
+  [
+    "Kalnia Glaze",
+    "display",
+    [["ofl/kalniaglaze/KalniaGlaze[wdth,wght].ttf", 400, false, 392184]],
+    "ofl/kalniaglaze/OFL.txt"
+  ],
+  [
+    "Kameron",
+    "serif",
+    [["ofl/kameron/Kameron[wght].ttf", 400, false, 83064]],
+    "ofl/kameron/OFL.txt"
+  ],
+  [
+    "Kanchenjunga",
+    "sans",
+    [
+      ["ofl/kanchenjunga/Kanchenjunga-Bold.ttf", 700, false, 50992],
+      ["ofl/kanchenjunga/Kanchenjunga-Medium.ttf", 500, false, 51076],
+      ["ofl/kanchenjunga/Kanchenjunga-Regular.ttf", 400, false, 50976],
+      ["ofl/kanchenjunga/Kanchenjunga-SemiBold.ttf", 600, false, 51020]
+    ],
+    "ofl/kanchenjunga/OFL.txt"
+  ],
+  [
+    "Kanit",
+    "sans",
+    [
+      ["ofl/kanit/Kanit-Black.ttf", 900, false, 176856],
+      ["ofl/kanit/Kanit-BlackItalic.ttf", 900, true, 185464],
+      ["ofl/kanit/Kanit-Bold.ttf", 700, false, 176136],
+      ["ofl/kanit/Kanit-BoldItalic.ttf", 700, true, 183656],
+      ["ofl/kanit/Kanit-ExtraBold.ttf", 800, false, 177836],
+      ["ofl/kanit/Kanit-ExtraBoldItalic.ttf", 800, true, 188372],
+      ["ofl/kanit/Kanit-ExtraLight.ttf", 200, false, 164140],
+      ["ofl/kanit/Kanit-ExtraLightItalic.ttf", 200, true, 168260],
+      ["ofl/kanit/Kanit-Italic.ttf", 400, true, 175160],
+      ["ofl/kanit/Kanit-Light.ttf", 300, false, 171384],
+      ["ofl/kanit/Kanit-LightItalic.ttf", 300, true, 174936],
+      ["ofl/kanit/Kanit-Medium.ttf", 500, false, 174628],
+      ["ofl/kanit/Kanit-MediumItalic.ttf", 500, true, 175444],
+      ["ofl/kanit/Kanit-Regular.ttf", 400, false, 173148],
+      ["ofl/kanit/Kanit-SemiBold.ttf", 600, false, 174796],
+      ["ofl/kanit/Kanit-SemiBoldItalic.ttf", 600, true, 175508],
+      ["ofl/kanit/Kanit-Thin.ttf", 100, false, 160460],
+      ["ofl/kanit/Kanit-ThinItalic.ttf", 100, true, 165048]
+    ],
+    "ofl/kanit/OFL.txt"
+  ],
+  [
+    "Kantumruy Pro",
+    "sans",
+    [
+      ["ofl/kantumruypro/KantumruyPro-Italic[wght].ttf", 400, true, 219724],
+      ["ofl/kantumruypro/KantumruyPro[wght].ttf", 400, false, 200464]
+    ],
+    "ofl/kantumruypro/OFL.txt"
+  ],
+  [
+    "Kapakana",
+    "handwriting",
+    [["ofl/kapakana/Kapakana[wght].ttf", 400, false, 184420]],
+    "ofl/kapakana/OFL.txt"
+  ],
+  [
+    "Karantina",
+    "display",
+    [
+      ["ofl/karantina/Karantina-Bold.ttf", 700, false, 48868],
+      ["ofl/karantina/Karantina-Light.ttf", 300, false, 51640],
+      ["ofl/karantina/Karantina-Regular.ttf", 400, false, 51480]
+    ],
+    "ofl/karantina/OFL.txt"
+  ],
+  [
+    "Karla",
+    "sans",
+    [
+      ["ofl/karla/Karla-Italic[wght].ttf", 400, true, 96248],
+      ["ofl/karla/Karla[wght].ttf", 400, false, 94016]
+    ],
+    "ofl/karla/OFL.txt"
+  ],
+  [
+    "Karla Tamil Inclined",
+    "sans",
+    [
+      ["ofl/karlatamilinclined/KarlaTamilInclined-Bold.ttf", 700, false, 108804],
+      ["ofl/karlatamilinclined/KarlaTamilInclined-Regular.ttf", 400, false, 109700]
+    ],
+    "ofl/karlatamilinclined/OFL.txt"
+  ],
+  [
+    "Karla Tamil Upright",
+    "sans",
+    [
+      ["ofl/karlatamilupright/KarlaTamilUpright-Bold.ttf", 700, false, 143224],
+      ["ofl/karlatamilupright/KarlaTamilUpright-Regular.ttf", 400, false, 144440]
+    ],
+    "ofl/karlatamilupright/OFL.txt"
+  ],
+  [
+    "Karma",
+    "serif",
+    [
+      ["ofl/karma/Karma-Bold.ttf", 700, false, 346620],
+      ["ofl/karma/Karma-Light.ttf", 300, false, 315108],
+      ["ofl/karma/Karma-Medium.ttf", 500, false, 335956],
+      ["ofl/karma/Karma-Regular.ttf", 400, false, 339812],
+      ["ofl/karma/Karma-SemiBold.ttf", 600, false, 335912]
+    ],
+    "ofl/karma/OFL.txt"
+  ],
+  [
+    "Katibeh",
+    "display",
+    [["ofl/katibeh/Katibeh-Regular.ttf", 400, false, 189124]],
+    "ofl/katibeh/OFL.txt"
+  ],
+  [
+    "Kaushan Script",
+    "handwriting",
+    [["ofl/kaushanscript/KaushanScript-Regular.ttf", 400, false, 210672]],
+    "ofl/kaushanscript/OFL.txt"
+  ],
+  [
+    "Kavivanar",
+    "handwriting",
+    [["ofl/kavivanar/Kavivanar-Regular.ttf", 400, false, 66324]],
+    "ofl/kavivanar/OFL.txt"
+  ],
+  [
+    "Kavoon",
+    "display",
+    [["ofl/kavoon/Kavoon-Regular.ttf", 400, false, 71476]],
+    "ofl/kavoon/OFL.txt"
+  ],
+  [
+    "Kay Pho Du",
+    "serif",
+    [
+      ["ofl/kayphodu/KayPhoDu-Bold.ttf", 700, false, 43032],
+      ["ofl/kayphodu/KayPhoDu-Medium.ttf", 500, false, 43792],
+      ["ofl/kayphodu/KayPhoDu-Regular.ttf", 400, false, 43988],
+      ["ofl/kayphodu/KayPhoDu-SemiBold.ttf", 600, false, 43188]
+    ],
+    "ofl/kayphodu/OFL.txt"
+  ]
+]

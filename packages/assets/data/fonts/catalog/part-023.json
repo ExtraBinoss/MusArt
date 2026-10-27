@@ -1,0 +1,198 @@
+[
+  [
+    "Galindo",
+    "display",
+    [["ofl/galindo/Galindo-Regular.ttf", 400, false, 58104]],
+    "ofl/galindo/OFL.txt"
+  ],
+  [
+    "Gamja Flower",
+    "handwriting",
+    [["ofl/gamjaflower/GamjaFlower-Regular.ttf", 400, false, 12615444]],
+    "ofl/gamjaflower/OFL.txt"
+  ],
+  [
+    "Gantari",
+    "sans",
+    [
+      ["ofl/gantari/Gantari-Italic[wght].ttf", 400, true, 131240],
+      ["ofl/gantari/Gantari[wght].ttf", 400, false, 124976]
+    ],
+    "ofl/gantari/OFL.txt"
+  ],
+  [
+    "Gasoek One",
+    "sans",
+    [["ofl/gasoekone/GasoekOne-Regular.ttf", 400, false, 1061372]],
+    "ofl/gasoekone/OFL.txt"
+  ],
+  [
+    "Gayathri",
+    "sans",
+    [
+      ["ofl/gayathri/Gayathri-Bold.ttf", 700, false, 163828],
+      ["ofl/gayathri/Gayathri-Regular.ttf", 400, false, 162884],
+      ["ofl/gayathri/Gayathri-Thin.ttf", 100, false, 163828]
+    ],
+    "ofl/gayathri/OFL.txt"
+  ],
+  [
+    "Geist",
+    "sans",
+    [
+      ["ofl/geist/Geist-Italic[wght].ttf", 400, true, 174584],
+      ["ofl/geist/Geist[wght].ttf", 400, false, 169056]
+    ],
+    "ofl/geist/OFL.txt"
+  ],
+  [
+    "Geist Mono",
+    "mono",
+    [
+      ["ofl/geistmono/GeistMono-Italic[wght].ttf", 400, true, 182656],
+      ["ofl/geistmono/GeistMono[wght].ttf", 400, false, 171948]
+    ],
+    "ofl/geistmono/OFL.txt"
+  ],
+  [
+    "Geist Pixel",
+    "display",
+    [["ofl/geistpixel/GeistPixel[ELSH].ttf", 400, false, 3657104]],
+    "ofl/geistpixel/OFL.txt"
+  ],
+  [
+    "Gelasio",
+    "serif",
+    [
+      ["ofl/gelasio/Gelasio-Italic[wght].ttf", 400, true, 174212],
+      ["ofl/gelasio/Gelasio[wght].ttf", 400, false, 168556]
+    ],
+    "ofl/gelasio/OFL.txt"
+  ],
+  [
+    "Gemunu Libre",
+    "sans",
+    [["ofl/gemunulibre/GemunuLibre[wght].ttf", 400, false, 256512]],
+    "ofl/gemunulibre/OFL.txt"
+  ],
+  [
+    "Genos",
+    "sans",
+    [
+      ["ofl/genos/Genos-Italic[wght].ttf", 400, true, 144248],
+      ["ofl/genos/Genos[wght].ttf", 400, false, 135320]
+    ],
+    "ofl/genos/OFL.txt"
+  ],
+  [
+    "Gentium Book Plus",
+    "serif",
+    [
+      ["ofl/gentiumbookplus/GentiumBookPlus-Bold.ttf", 700, false, 834852],
+      ["ofl/gentiumbookplus/GentiumBookPlus-BoldItalic.ttf", 700, true, 891412],
+      ["ofl/gentiumbookplus/GentiumBookPlus-Italic.ttf", 400, true, 882904],
+      ["ofl/gentiumbookplus/GentiumBookPlus-Regular.ttf", 400, false, 818952]
+    ],
+    "ofl/gentiumbookplus/OFL.txt"
+  ],
+  [
+    "Gentium Plus",
+    "serif",
+    [
+      ["ofl/gentiumplus/GentiumPlus-Bold.ttf", 700, false, 824904],
+      ["ofl/gentiumplus/GentiumPlus-BoldItalic.ttf", 700, true, 890860],
+      ["ofl/gentiumplus/GentiumPlus-Italic.ttf", 400, true, 873104],
+      ["ofl/gentiumplus/GentiumPlus-Regular.ttf", 400, false, 822956]
+    ],
+    "ofl/gentiumplus/OFL.txt"
+  ],
+  [
+    "Geo",
+    "sans",
+    [
+      ["ofl/geo/Geo-Oblique.ttf", 400, true, 50036],
+      ["ofl/geo/Geo-Regular.ttf", 400, false, 38680]
+    ],
+    "ofl/geo/OFL.txt"
+  ],
+  [
+    "Geologica",
+    "sans",
+    [["ofl/geologica/Geologica[CRSV,SHRP,slnt,wght].ttf", 400, false, 348640]],
+    "ofl/geologica/OFL.txt"
+  ],
+  [
+    "Geom",
+    "sans",
+    [
+      ["ofl/geom/Geom-Italic[wght].ttf", 400, true, 108240],
+      ["ofl/geom/Geom[wght].ttf", 400, false, 105408]
+    ],
+    "ofl/geom/OFL.txt"
+  ],
+  [
+    "Geomini",
+    "sans",
+    [["ofl/geomini/Geomini[wght].ttf", 400, false, 180664]],
+    "ofl/geomini/OFL.txt"
+  ],
+  [
+    "Georama",
+    "sans",
+    [
+      ["ofl/georama/Georama-Italic[wdth,wght].ttf", 400, true, 456152],
+      ["ofl/georama/Georama[wdth,wght].ttf", 400, false, 443524]
+    ],
+    "ofl/georama/OFL.txt"
+  ],
+  [
+    "Geostar",
+    "display",
+    [["ofl/geostar/Geostar-Regular.ttf", 400, false, 41288]],
+    "ofl/geostar/OFL.txt"
+  ],
+  [
+    "Geostar Fill",
+    "display",
+    [["ofl/geostarfill/GeostarFill-Regular.ttf", 400, false, 38824]],
+    "ofl/geostarfill/OFL.txt"
+  ],
+  [
+    "Germania One",
+    "display",
+    [["ofl/germaniaone/GermaniaOne-Regular.ttf", 400, false, 33240]],
+    "ofl/germaniaone/OFL.txt"
+  ],
+  [
+    "Gideon Roman",
+    "display",
+    [["ofl/gideonroman/GideonRoman-Regular.ttf", 400, false, 109484]],
+    "ofl/gideonroman/OFL.txt"
+  ],
+  ["Gidole", "sans", [["ofl/gidole/Gidole-Regular.ttf", 400, false, 121620]], "ofl/gidole/OFL.txt"],
+  ["Gidugu", "sans", [["ofl/gidugu/Gidugu-Regular.ttf", 400, false, 460988]], "ofl/gidugu/OFL.txt"],
+  [
+    "Gilda Display",
+    "serif",
+    [["ofl/gildadisplay/GildaDisplay-Regular.ttf", 400, false, 68020]],
+    "ofl/gildadisplay/OFL.txt"
+  ],
+  [
+    "Girassol",
+    "display",
+    [["ofl/girassol/Girassol-Regular.ttf", 400, false, 37644]],
+    "ofl/girassol/OFL.txt"
+  ],
+  [
+    "Give You Glory",
+    "handwriting",
+    [["ofl/giveyouglory/GiveYouGlory.ttf", 400, false, 43012]],
+    "ofl/giveyouglory/OFL.txt"
+  ],
+  [
+    "Glass Antiqua",
+    "display",
+    [["ofl/glassantiqua/GlassAntiqua-Regular.ttf", 400, false, 63012]],
+    "ofl/glassantiqua/OFL.txt"
+  ]
+]

@@ -1,0 +1,205 @@
+[
+  [
+    "Mate",
+    "serif",
+    [
+      ["ofl/mate/Mate-Italic.ttf", 400, true, 63944],
+      ["ofl/mate/Mate-Regular.ttf", 400, false, 62816]
+    ],
+    "ofl/mate/OFL.txt"
+  ],
+  [
+    "Mate SC",
+    "serif",
+    [["ofl/matesc/MateSC-Regular.ttf", 400, false, 71092]],
+    "ofl/matesc/OFL.txt"
+  ],
+  [
+    "Matemasie",
+    "sans",
+    [["ofl/matemasie/Matemasie-Regular.ttf", 400, false, 143128]],
+    "ofl/matemasie/OFL.txt"
+  ],
+  [
+    "Maven Pro",
+    "sans",
+    [["ofl/mavenpro/MavenPro[wght].ttf", 400, false, 87944]],
+    "ofl/mavenpro/OFL.txt"
+  ],
+  [
+    "McLaren",
+    "display",
+    [["ofl/mclaren/McLaren-Regular.ttf", 400, false, 54504]],
+    "ofl/mclaren/OFL.txt"
+  ],
+  [
+    "Mea Culpa",
+    "handwriting",
+    [["ofl/meaculpa/MeaCulpa-Regular.ttf", 400, false, 162232]],
+    "ofl/meaculpa/OFL.txt"
+  ],
+  ["Meddon", "handwriting", [["ofl/meddon/Meddon.ttf", 400, false, 128264]], "ofl/meddon/OFL.txt"],
+  [
+    "MedievalSharp",
+    "display",
+    [["ofl/medievalsharp/MedievalSharp.ttf", 400, false, 148712]],
+    "ofl/medievalsharp/OFL.txt"
+  ],
+  [
+    "Medula One",
+    "display",
+    [["ofl/medulaone/MedulaOne-Regular.ttf", 400, false, 33684]],
+    "ofl/medulaone/OFL.txt"
+  ],
+  [
+    "Meera Inimai",
+    "sans",
+    [["ofl/meerainimai/MeeraInimai-Regular.ttf", 400, false, 72260]],
+    "ofl/meerainimai/OFL.txt"
+  ],
+  ["Megrim", "display", [["ofl/megrim/Megrim.ttf", 400, false, 57872]], "ofl/megrim/OFL.txt"],
+  [
+    "Meie Script",
+    "handwriting",
+    [["ofl/meiescript/MeieScript-Regular.ttf", 400, false, 128428]],
+    "ofl/meiescript/OFL.txt"
+  ],
+  [
+    "Menbere",
+    "sans",
+    [["ofl/menbere/Menbere[wght].ttf", 400, false, 2717324]],
+    "ofl/menbere/OFL.txt"
+  ],
+  [
+    "Meow Script",
+    "handwriting",
+    [["ofl/meowscript/MeowScript-Regular.ttf", 400, false, 601304]],
+    "ofl/meowscript/OFL.txt"
+  ],
+  [
+    "Merienda",
+    "handwriting",
+    [["ofl/merienda/Merienda[wght].ttf", 400, false, 226360]],
+    "ofl/merienda/OFL.txt"
+  ],
+  [
+    "Merriweather",
+    "serif",
+    [
+      ["ofl/merriweather/Merriweather-Italic[opsz,wdth,wght].ttf", 400, true, 4591168],
+      ["ofl/merriweather/Merriweather[opsz,wdth,wght].ttf", 400, false, 4628080]
+    ],
+    "ofl/merriweather/OFL.txt"
+  ],
+  [
+    "Merriweather Sans",
+    "sans",
+    [
+      ["ofl/merriweathersans/MerriweatherSans-Italic[wght].ttf", 400, true, 236768],
+      ["ofl/merriweathersans/MerriweatherSans[wght].ttf", 400, false, 266512]
+    ],
+    "ofl/merriweathersans/OFL.txt"
+  ],
+  ["Metal", "display", [["ofl/metal/Metal-Regular.ttf", 400, false, 142428]], "ofl/metal/OFL.txt"],
+  [
+    "Metal Mania",
+    "display",
+    [["ofl/metalmania/MetalMania-Regular.ttf", 400, false, 254568]],
+    "ofl/metalmania/OFL.txt"
+  ],
+  [
+    "Metamorphous",
+    "display",
+    [["ofl/metamorphous/Metamorphous-Regular.ttf", 400, false, 135740]],
+    "ofl/metamorphous/OFL.txt"
+  ],
+  [
+    "Metrophobic",
+    "sans",
+    [["ofl/metrophobic/Metrophobic-Regular.ttf", 400, false, 79772]],
+    "ofl/metrophobic/OFL.txt"
+  ],
+  [
+    "Michroma",
+    "sans",
+    [["ofl/michroma/Michroma-Regular.ttf", 400, false, 64344]],
+    "ofl/michroma/OFL.txt"
+  ],
+  [
+    "Micro 5",
+    "display",
+    [["ofl/micro5/Micro5-Regular.ttf", 400, false, 53936]],
+    "ofl/micro5/OFL.txt"
+  ],
+  [
+    "Micro 5 Charted",
+    "display",
+    [["ofl/micro5charted/Micro5Charted-Regular.ttf", 400, false, 356060]],
+    "ofl/micro5charted/OFL.txt"
+  ],
+  [
+    "Milonga",
+    "display",
+    [["ofl/milonga/Milonga-Regular.ttf", 400, false, 209948]],
+    "ofl/milonga/OFL.txt"
+  ],
+  [
+    "Miltonian",
+    "display",
+    [["ofl/miltonian/Miltonian-Regular.ttf", 400, false, 126804]],
+    "ofl/miltonian/OFL.txt"
+  ],
+  [
+    "Miltonian Tattoo",
+    "display",
+    [["ofl/miltoniantattoo/MiltonianTattoo-Regular.ttf", 400, false, 107880]],
+    "ofl/miltoniantattoo/OFL.txt"
+  ],
+  [
+    "Mina",
+    "sans",
+    [
+      ["ofl/mina/Mina-Bold.ttf", 700, false, 152604],
+      ["ofl/mina/Mina-Regular.ttf", 400, false, 151240]
+    ],
+    "ofl/mina/OFL.txt"
+  ],
+  [
+    "Mingzat",
+    "sans",
+    [["ofl/mingzat/Mingzat-Regular.ttf", 400, false, 159916]],
+    "ofl/mingzat/OFL.txt"
+  ],
+  [
+    "Miniver",
+    "display",
+    [["ofl/miniver/Miniver-Regular.ttf", 400, false, 45824]],
+    "ofl/miniver/OFL.txt"
+  ],
+  [
+    "Miranda Sans",
+    "sans",
+    [
+      ["ofl/mirandasans/MirandaSans-Italic[wght].ttf", 400, true, 82528],
+      ["ofl/mirandasans/MirandaSans[wght].ttf", 400, false, 79716]
+    ],
+    "ofl/mirandasans/OFL.txt"
+  ],
+  [
+    "Miriam Libre",
+    "sans",
+    [["ofl/miriamlibre/MiriamLibre[wght].ttf", 400, false, 124988]],
+    "ofl/miriamlibre/OFL.txt"
+  ],
+  [
+    "Mirza",
+    "serif",
+    [
+      ["ofl/mirza/Mirza-Bold.ttf", 700, false, 177052],
+      ["ofl/mirza/Mirza-Medium.ttf", 500, false, 177352],
+      ["ofl/mirza/Mirza-Regular.ttf", 400, false, 177820],
+      ["ofl/mirza/Mirza-SemiBold.ttf", 600, false, 177188]
+    ],
+    "ofl/mirza/OFL.txt"
+  ]
+]

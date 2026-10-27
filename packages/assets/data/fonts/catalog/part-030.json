@@ -1,0 +1,188 @@
+[
+  [
+    "Iosevka Charon Mono",
+    "mono",
+    [
+      ["ofl/iosevkacharonmono/IosevkaCharonMono-Bold.ttf", 700, false, 1455044],
+      ["ofl/iosevkacharonmono/IosevkaCharonMono-BoldItalic.ttf", 700, true, 1543920],
+      ["ofl/iosevkacharonmono/IosevkaCharonMono-Italic.ttf", 400, true, 1546536],
+      ["ofl/iosevkacharonmono/IosevkaCharonMono-Light.ttf", 300, false, 1464376],
+      ["ofl/iosevkacharonmono/IosevkaCharonMono-LightItalic.ttf", 300, true, 1549472],
+      ["ofl/iosevkacharonmono/IosevkaCharonMono-Medium.ttf", 500, false, 1457728],
+      ["ofl/iosevkacharonmono/IosevkaCharonMono-MediumItalic.ttf", 500, true, 1544544],
+      ["ofl/iosevkacharonmono/IosevkaCharonMono-Regular.ttf", 400, false, 1461020]
+    ],
+    "ofl/iosevkacharonmono/OFL.txt"
+  ],
+  [
+    "Irish Grover",
+    "display",
+    [["apache/irishgrover/IrishGrover-Regular.ttf", 400, false, 52648]],
+    "apache/irishgrover/LICENSE.txt"
+  ],
+  [
+    "Island Moments",
+    "handwriting",
+    [["ofl/islandmoments/IslandMoments-Regular.ttf", 400, false, 615340]],
+    "ofl/islandmoments/OFL.txt"
+  ],
+  [
+    "Isometra",
+    "serif",
+    [["ofl/isometra/Isometra-Regular.ttf", 400, false, 44520]],
+    "ofl/isometra/OFL.txt"
+  ],
+  [
+    "Istok Web",
+    "sans",
+    [
+      ["ofl/istokweb/IstokWeb-Bold.ttf", 700, false, 224440],
+      ["ofl/istokweb/IstokWeb-BoldItalic.ttf", 700, true, 218164],
+      ["ofl/istokweb/IstokWeb-Italic.ttf", 400, true, 218124],
+      ["ofl/istokweb/IstokWeb-Regular.ttf", 400, false, 315392]
+    ],
+    "ofl/istokweb/OFL.txt"
+  ],
+  [
+    "Italiana",
+    "sans",
+    [["ofl/italiana/Italiana-Regular.ttf", 400, false, 31828]],
+    "ofl/italiana/OFL.txt"
+  ],
+  [
+    "Italianno",
+    "handwriting",
+    [["ofl/italianno/Italianno-Regular.ttf", 400, false, 223708]],
+    "ofl/italianno/OFL.txt"
+  ],
+  ["Itim", "handwriting", [["ofl/itim/Itim-Regular.ttf", 400, false, 371384]], "ofl/itim/OFL.txt"],
+  [
+    "Jacquard 12",
+    "display",
+    [["ofl/jacquard12/Jacquard12-Regular.ttf", 400, false, 118448]],
+    "ofl/jacquard12/OFL.txt"
+  ],
+  [
+    "Jacquard 12 Charted",
+    "display",
+    [["ofl/jacquard12charted/Jacquard12Charted-Regular.ttf", 400, false, 592196]],
+    "ofl/jacquard12charted/OFL.txt"
+  ],
+  [
+    "Jacquard 24",
+    "display",
+    [["ofl/jacquard24/Jacquard24-Regular.ttf", 400, false, 313588]],
+    "ofl/jacquard24/OFL.txt"
+  ],
+  [
+    "Jacquard 24 Charted",
+    "display",
+    [["ofl/jacquard24charted/Jacquard24Charted-Regular.ttf", 400, false, 2280696]],
+    "ofl/jacquard24charted/OFL.txt"
+  ],
+  [
+    "Jacquarda Bastarda 9",
+    "display",
+    [["ofl/jacquardabastarda9/JacquardaBastarda9-Regular.ttf", 400, false, 100960]],
+    "ofl/jacquardabastarda9/OFL.txt"
+  ],
+  [
+    "Jacquarda Bastarda 9 Charted",
+    "display",
+    [["ofl/jacquardabastarda9charted/JacquardaBastarda9Charted-Regular.ttf", 400, false, 2238348]],
+    "ofl/jacquardabastarda9charted/OFL.txt"
+  ],
+  [
+    "Jacques Francois",
+    "serif",
+    [["ofl/jacquesfrancois/JacquesFrancois-Regular.ttf", 400, false, 60448]],
+    "ofl/jacquesfrancois/OFL.txt"
+  ],
+  [
+    "Jacques Francois Shadow",
+    "display",
+    [["ofl/jacquesfrancoisshadow/JacquesFrancoisShadow-Regular.ttf", 400, false, 82492]],
+    "ofl/jacquesfrancoisshadow/OFL.txt"
+  ],
+  ["Jaini", "display", [["ofl/jaini/Jaini-Regular.ttf", 400, false, 757280]], "ofl/jaini/OFL.txt"],
+  [
+    "Jaini Purva",
+    "display",
+    [["ofl/jainipurva/JainiPurva-Regular.ttf", 400, false, 762796]],
+    "ofl/jainipurva/OFL.txt"
+  ],
+  [
+    "Jaldi",
+    "sans",
+    [
+      ["ofl/jaldi/Jaldi-Bold.ttf", 700, false, 468300],
+      ["ofl/jaldi/Jaldi-Regular.ttf", 400, false, 460664]
+    ],
+    "ofl/jaldi/OFL.txt"
+  ],
+  ["Jaro", "sans", [["ofl/jaro/Jaro[opsz].ttf", 400, false, 145616]], "ofl/jaro/OFL.txt"],
+  [
+    "Jersey 10",
+    "display",
+    [["ofl/jersey10/Jersey10-Regular.ttf", 400, false, 77732]],
+    "ofl/jersey10/OFL.txt"
+  ],
+  [
+    "Jersey 10 Charted",
+    "display",
+    [["ofl/jersey10charted/Jersey10Charted-Regular.ttf", 400, false, 1237912]],
+    "ofl/jersey10charted/OFL.txt"
+  ],
+  [
+    "Jersey 15",
+    "display",
+    [["ofl/jersey15/Jersey15-Regular.ttf", 400, false, 104236]],
+    "ofl/jersey15/OFL.txt"
+  ],
+  [
+    "Jersey 15 Charted",
+    "display",
+    [["ofl/jersey15charted/Jersey15Charted-Regular.ttf", 400, false, 796296]],
+    "ofl/jersey15charted/OFL.txt"
+  ],
+  [
+    "Jersey 20",
+    "display",
+    [["ofl/jersey20/Jersey20-Regular.ttf", 400, false, 128576]],
+    "ofl/jersey20/OFL.txt"
+  ],
+  [
+    "Jersey 20 Charted",
+    "display",
+    [["ofl/jersey20charted/Jersey20Charted-Regular.ttf", 400, false, 1353084]],
+    "ofl/jersey20charted/OFL.txt"
+  ],
+  [
+    "Jersey 25",
+    "display",
+    [["ofl/jersey25/Jersey25-Regular.ttf", 400, false, 142372]],
+    "ofl/jersey25/OFL.txt"
+  ],
+  [
+    "Jersey 25 Charted",
+    "display",
+    [["ofl/jersey25charted/Jersey25Charted-Regular.ttf", 400, false, 1344004]],
+    "ofl/jersey25charted/OFL.txt"
+  ],
+  [
+    "JetBrains Mono",
+    "mono",
+    [
+      ["ofl/jetbrainsmono/JetBrainsMono-Italic[wght].ttf", 400, true, 191556],
+      ["ofl/jetbrainsmono/JetBrainsMono[wght].ttf", 400, false, 187208]
+    ],
+    "ofl/jetbrainsmono/OFL.txt"
+  ],
+  [
+    "Jim Nightshade",
+    "handwriting",
+    [["ofl/jimnightshade/JimNightshade-Regular.ttf", 400, false, 153680]],
+    "ofl/jimnightshade/OFL.txt"
+  ],
+  ["Joan", "serif", [["ofl/joan/Joan-Regular.ttf", 400, false, 393476]], "ofl/joan/OFL.txt"]
+]

@@ -1,4 +1,4 @@
-import type { Effect, EffectType } from "@musart/core";
+import { resolveGradientSettings, type Effect } from "@musart/core";
 import {
   Mesh,
   MeshBasicNodeMaterial,
@@ -15,14 +15,18 @@ import {
   type TextureNode,
   type WebGPURenderer,
 } from "three/webgpu";
-import { texture } from "three/tsl";
+import { texture, uv } from "three/tsl";
 import { createGlyphAtlas } from "./ascii/atlas";
+import { gradientStages, type EffectStage } from "./gradient/pipeline";
+import { compositeEffect } from "./shared/compositing/node";
+import { sampleEffect } from "./shared/context";
 import { EFFECT_NODES } from "./registry";
 import { createEffectUniforms, updateEffectUniforms, type EffectUniforms } from "./shared/uniforms";
 
 interface EffectPass {
   readonly material: MeshBasicNodeMaterial;
   readonly source: TextureNode<"vec4">;
+  readonly backdrop: TextureNode<"vec4">;
   readonly controls: EffectUniforms;
 }
 export interface GpuEffectStats {
@@ -39,10 +43,11 @@ export class GpuEffects {
   private readonly scene = new Scene();
   private readonly camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
   private readonly geometry = new PlaneGeometry(2, 2);
-  private readonly passes = new Map<EffectType, EffectPass>();
+  private readonly passes = new Map<string, EffectPass>();
   private mesh: Mesh<PlaneGeometry, MeshBasicNodeMaterial> | null = null;
   private atlas: CanvasTexture | null = null;
   private scratch: RenderTarget | null = null;
+  private backdrop: RenderTarget | null = null;
   private renderedPasses = 0;
   private disposed = false;
 
@@ -52,29 +57,88 @@ export class GpuEffects {
     this.atlas ??= createGlyphAtlas();
     return this.atlas;
   };
-  private getPass(effect: Effect, input: Texture, width: number, height: number): EffectPass {
-    let pass = this.passes.get(effect.type);
+  private getPass(
+    effect: Effect,
+    stage: EffectStage,
+    input: Texture,
+    original: Texture,
+    width: number,
+    height: number,
+  ): EffectPass {
+    const advanced =
+      stage.final &&
+      Boolean(effect.composite || (effect.blendMode && effect.blendMode !== "normal"));
+    const passKey = stage.key + (advanced ? ":composite" : "");
+    let pass = this.passes.get(passKey);
     if (!pass) {
-      if (!Object.hasOwn(EFFECT_NODES, effect.type))
-        throw new Error(`Effet GPU inconnu : ${effect.type}`);
-      const builder = EFFECT_NODES[effect.type];
-      const source = texture(input);
+      const source = texture(input),
+        backdrop = texture(original);
       const controls = createEffectUniforms(effect, width, height);
-      const node = builder({ source, controls, getGlyphAtlas: this.getGlyphAtlas });
+      const node = stage.builder({ source, backdrop, controls, getGlyphAtlas: this.getGlyphAtlas });
       const material = new MeshBasicNodeMaterial({
         depthTest: false,
         depthWrite: false,
         blending: NoBlending,
         toneMapped: false,
       });
-      material.fragmentNode = node;
-      pass = { material, source, controls };
-      this.passes.set(effect.type, pass);
+      material.fragmentNode = stage.final
+        ? compositeEffect(
+            sampleEffect(backdrop, { ...controls, sourceFlipY: controls.backdropFlipY }, uv()),
+            node,
+            controls,
+            advanced,
+          )
+        : node;
+      pass = { material, source, backdrop, controls };
+      this.passes.set(passKey, pass);
     }
     pass.source.value = input;
+    pass.backdrop.value = original;
     pass.controls.sourceFlipY.value = input.isRenderTargetTexture ? 1 : 0;
+    pass.controls.backdropFlipY.value = original.isRenderTargetTexture ? 1 : 0;
     updateEffectUniforms(pass.controls, effect, width, height);
+    if (stage.treatment) {
+      pass.controls.amount.value = 1;
+      pass.controls.scale.value = resolveGradientSettings(effect.settings).size;
+    }
     return pass;
+  }
+  private draw(pass: EffectPass, target: RenderTarget): void {
+    if (!this.mesh) {
+      this.mesh = new Mesh(this.geometry, pass.material);
+      this.scene.add(this.mesh);
+    } else this.mesh.material = pass.material;
+    this.renderer.setRenderTarget(target);
+    this.renderer.render(this.scene, this.camera);
+    this.renderedPasses++;
+  }
+  /** Allocation high-water mark remains accounted for until explicit disposal. */
+  projectedBytes(width: number, height: number, effects: readonly Effect[]): number {
+    const enabled = effects.filter((effect) => effect.enabled);
+    const stages = enabled.reduce(
+      (sum, effect) => sum + (effect.type === "gradient" ? gradientStages(effect).length : 1),
+      0,
+    );
+    const scratch =
+      stages > 1
+        ? width * height * 4
+        : this.scratch
+          ? this.scratch.width * this.scratch.height * 4
+          : 0;
+    const backdrop = enabled.some((effect, index) => effect.type === "gradient" && index > 0)
+      ? width * height * 4
+      : this.backdrop
+        ? this.backdrop.width * this.backdrop.height * 4
+        : 0;
+    const atlas =
+      this.atlas ||
+      enabled.some(
+        (effect) =>
+          effect.type === "ascii" ||
+          (effect.type === "gradient" &&
+            resolveGradientSettings(effect.settings).treatment === "ascii"),
+      );
+    return scratch + backdrop + (atlas ? 256 * 16 * 4 : 0);
   }
   private getScratch(width: number, height: number): RenderTarget {
     if (!this.scratch) {
@@ -110,22 +174,47 @@ export class GpuEffects {
     if (source === output.texture)
       throw new Error("La source et la cible GPU doivent être distinctes.");
     output.setSize(width, height);
-    const scratch = enabled.length > 1 ? this.getScratch(width, height) : null;
+    const blocks = enabled.map((effect) => {
+      if (effect.type === "gradient") return { effect, stages: gradientStages(effect) };
+      if (!Object.hasOwn(EFFECT_NODES, effect.type))
+        throw new Error(`Effet GPU inconnu : ${effect.type}`);
+      return {
+        effect,
+        stages: [
+          { key: effect.type, builder: EFFECT_NODES[effect.type], final: true },
+        ] as readonly EffectStage[],
+      };
+    });
+    const total = blocks.reduce((sum, block) => sum + block.stages.length, 0);
+    const scratch = total > 1 ? this.getScratch(width, height) : null;
     const previous = this.renderer.getRenderTarget();
-    let input = source;
+    let input = source,
+      index = 0;
     try {
-      for (const [index, effect] of enabled.entries()) {
-        const pass = this.getPass(effect, input, width, height);
-        if (!this.mesh) {
-          this.mesh = new Mesh(this.geometry, pass.material);
-          this.scene.add(this.mesh);
-        } else this.mesh.material = pass.material;
-        // Parity selects the first target so the last pass always lands in durable output.
-        const target = (enabled.length - index) % 2 === 1 ? output : scratch!;
-        this.renderer.setRenderTarget(target);
-        this.renderer.render(this.scene, this.camera);
-        this.renderedPasses++;
-        input = target.texture;
+      for (const block of blocks) {
+        let original = input;
+        if (block.effect.type === "gradient" && input !== source) {
+          this.backdrop ??= new RenderTarget(width, height, {
+            depthBuffer: false,
+            type: UnsignedByteType,
+            minFilter: NearestFilter,
+            magFilter: NearestFilter,
+          });
+          this.backdrop.texture.colorSpace = NoColorSpace;
+          this.backdrop.setSize(width, height);
+          const copy: EffectStage = {
+            key: "copy",
+            builder: ({ source, controls }) => sampleEffect(source, controls, uv()),
+            final: false,
+          };
+          this.draw(this.getPass(block.effect, copy, input, input, width, height), this.backdrop);
+          original = this.backdrop.texture;
+        }
+        for (const stage of block.stages) {
+          const target = (total - index++) % 2 === 1 ? output : scratch!;
+          this.draw(this.getPass(block.effect, stage, input, original, width, height), target);
+          input = target.texture;
+        }
       }
       return output.texture;
     } finally {
@@ -136,16 +225,19 @@ export class GpuEffects {
   stats(): GpuEffectStats {
     return {
       passes: this.renderedPasses,
-      targets: this.scratch ? 1 : 0,
+      targets: Number(Boolean(this.scratch)) + Number(Boolean(this.backdrop)),
       bytes:
         (this.scratch ? this.scratch.width * this.scratch.height * 4 : 0) +
-        (this.atlas ? 256 * 16 * 4 : 0),
+        (this.atlas ? 256 * 16 * 4 : 0) +
+        (this.backdrop ? this.backdrop.width * this.backdrop.height * 4 : 0),
       materials: this.passes.size,
     };
   }
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.backdrop?.dispose();
+    this.backdrop = null;
     this.scratch?.dispose();
     this.scratch = null;
     this.atlas?.dispose();

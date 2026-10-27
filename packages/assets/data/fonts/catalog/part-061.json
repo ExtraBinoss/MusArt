@@ -1,0 +1,219 @@
+[
+  [
+    "Roboto Mono",
+    "mono",
+    [
+      ["ofl/robotomono/RobotoMono-Italic[wght].ttf", 400, true, 196792],
+      ["ofl/robotomono/RobotoMono[wght].ttf", 400, false, 183700]
+    ],
+    "ofl/robotomono/OFL.txt"
+  ],
+  [
+    "Roboto Serif",
+    "serif",
+    [
+      ["ofl/robotoserif/RobotoSerif-Italic[GRAD,opsz,wdth,wght].ttf", 400, true, 4680368],
+      ["ofl/robotoserif/RobotoSerif[GRAD,opsz,wdth,wght].ttf", 400, false, 3944924]
+    ],
+    "ofl/robotoserif/OFL.txt"
+  ],
+  [
+    "Roboto Slab",
+    "serif",
+    [["apache/robotoslab/RobotoSlab[wght].ttf", 400, false, 251880]],
+    "apache/robotoslab/LICENSE.txt"
+  ],
+  [
+    "Rochester",
+    "handwriting",
+    [["apache/rochester/Rochester-Regular.ttf", 400, false, 37144]],
+    "apache/rochester/LICENSE.txt"
+  ],
+  [
+    "Rock 3D",
+    "display",
+    [["ofl/rock3d/Rock3D-Regular.ttf", 400, false, 444468]],
+    "ofl/rock3d/OFL.txt"
+  ],
+  [
+    "Rock Salt",
+    "handwriting",
+    [["apache/rocksalt/RockSalt-Regular.ttf", 400, false, 124372]],
+    "apache/rocksalt/LICENSE.txt"
+  ],
+  [
+    "RocknRoll One",
+    "sans",
+    [["ofl/rocknrollone/RocknRollOne-Regular.ttf", 400, false, 2682824]],
+    "ofl/rocknrollone/OFL.txt"
+  ],
+  [
+    "Rokkitt",
+    "serif",
+    [
+      ["ofl/rokkitt/Rokkitt-Italic[wght].ttf", 400, true, 135840],
+      ["ofl/rokkitt/Rokkitt[wght].ttf", 400, false, 133344]
+    ],
+    "ofl/rokkitt/OFL.txt"
+  ],
+  [
+    "Romanesco",
+    "handwriting",
+    [["ofl/romanesco/Romanesco-Regular.ttf", 400, false, 52528]],
+    "ofl/romanesco/OFL.txt"
+  ],
+  [
+    "Ropa Sans",
+    "sans",
+    [
+      ["ofl/ropasans/RopaSans-Italic.ttf", 400, true, 58640],
+      ["ofl/ropasans/RopaSans-Regular.ttf", 400, false, 57200]
+    ],
+    "ofl/ropasans/OFL.txt"
+  ],
+  [
+    "Rosario",
+    "sans",
+    [
+      ["ofl/rosario/Rosario-Italic[wght].ttf", 400, true, 149452],
+      ["ofl/rosario/Rosario[wght].ttf", 400, false, 150940]
+    ],
+    "ofl/rosario/OFL.txt"
+  ],
+  [
+    "Rosarivo",
+    "serif",
+    [
+      ["ofl/rosarivo/Rosarivo-Italic.ttf", 400, true, 39244],
+      ["ofl/rosarivo/Rosarivo-Regular.ttf", 400, false, 41344]
+    ],
+    "ofl/rosarivo/OFL.txt"
+  ],
+  [
+    "Rouge Script",
+    "handwriting",
+    [["ofl/rougescript/RougeScript-Regular.ttf", 400, false, 46752]],
+    "ofl/rougescript/OFL.txt"
+  ],
+  [
+    "Rowdies",
+    "display",
+    [
+      ["ofl/rowdies/Rowdies-Bold.ttf", 700, false, 76280],
+      ["ofl/rowdies/Rowdies-Light.ttf", 300, false, 76152],
+      ["ofl/rowdies/Rowdies-Regular.ttf", 400, false, 76352]
+    ],
+    "ofl/rowdies/OFL.txt"
+  ],
+  [
+    "Rozha One",
+    "serif",
+    [["ofl/rozhaone/RozhaOne-Regular.ttf", 400, false, 322828]],
+    "ofl/rozhaone/OFL.txt"
+  ],
+  [
+    "Rubik",
+    "sans",
+    [
+      ["ofl/rubik/Rubik-Italic[wght].ttf", 400, true, 354984],
+      ["ofl/rubik/Rubik[wght].ttf", 400, false, 359804]
+    ],
+    "ofl/rubik/OFL.txt"
+  ],
+  [
+    "Rubik 80s Fade",
+    "display",
+    [["ofl/rubik80sfade/Rubik80sFade-Regular.ttf", 400, false, 3448044]],
+    "ofl/rubik80sfade/OFL.txt"
+  ],
+  [
+    "Rubik Beastly",
+    "display",
+    [["ofl/rubikbeastly/RubikBeastly-Regular.ttf", 400, false, 512684]],
+    "ofl/rubikbeastly/OFL.txt"
+  ],
+  [
+    "Rubik Broken Fax",
+    "display",
+    [["ofl/rubikbrokenfax/RubikBrokenFax-Regular.ttf", 400, false, 495004]],
+    "ofl/rubikbrokenfax/OFL.txt"
+  ],
+  [
+    "Rubik Bubbles",
+    "display",
+    [["ofl/rubikbubbles/RubikBubbles-Regular.ttf", 400, false, 219564]],
+    "ofl/rubikbubbles/OFL.txt"
+  ],
+  [
+    "Rubik Burned",
+    "display",
+    [["ofl/rubikburned/RubikBurned-Regular.ttf", 400, false, 605348]],
+    "ofl/rubikburned/OFL.txt"
+  ],
+  [
+    "Rubik Dirt",
+    "display",
+    [["ofl/rubikdirt/RubikDirt-Regular.ttf", 400, false, 1492292]],
+    "ofl/rubikdirt/OFL.txt"
+  ],
+  [
+    "Rubik Distressed",
+    "display",
+    [["ofl/rubikdistressed/RubikDistressed-Regular.ttf", 400, false, 892544]],
+    "ofl/rubikdistressed/OFL.txt"
+  ],
+  [
+    "Rubik Doodle Shadow",
+    "display",
+    [["ofl/rubikdoodleshadow/RubikDoodleShadow-Regular.ttf", 400, false, 1361560]],
+    "ofl/rubikdoodleshadow/OFL.txt"
+  ],
+  [
+    "Rubik Doodle Triangles",
+    "display",
+    [["ofl/rubikdoodletriangles/RubikDoodleTriangles-Regular.ttf", 400, false, 1366376]],
+    "ofl/rubikdoodletriangles/OFL.txt"
+  ],
+  [
+    "Rubik Gemstones",
+    "display",
+    [["ofl/rubikgemstones/RubikGemstones-Regular.ttf", 400, false, 265004]],
+    "ofl/rubikgemstones/OFL.txt"
+  ],
+  [
+    "Rubik Glitch",
+    "display",
+    [["ofl/rubikglitch/RubikGlitch-Regular.ttf", 400, false, 407304]],
+    "ofl/rubikglitch/OFL.txt"
+  ],
+  [
+    "Rubik Glitch Pop",
+    "display",
+    [["ofl/rubikglitchpop/RubikGlitchPop-Regular.ttf", 400, false, 1976660]],
+    "ofl/rubikglitchpop/OFL.txt"
+  ],
+  [
+    "Rubik Iso",
+    "display",
+    [["ofl/rubikiso/RubikIso-Regular.ttf", 400, false, 132376]],
+    "ofl/rubikiso/OFL.txt"
+  ],
+  [
+    "Rubik Lines",
+    "display",
+    [["ofl/rubiklines/RubikLines-Regular.ttf", 400, false, 1295268]],
+    "ofl/rubiklines/OFL.txt"
+  ],
+  [
+    "Rubik Maps",
+    "display",
+    [["ofl/rubikmaps/RubikMaps-Regular.ttf", 400, false, 2264632]],
+    "ofl/rubikmaps/OFL.txt"
+  ],
+  [
+    "Rubik Marker Hatch",
+    "display",
+    [["ofl/rubikmarkerhatch/RubikMarkerHatch-Regular.ttf", 400, false, 363876]],
+    "ofl/rubikmarkerhatch/OFL.txt"
+  ]
+]

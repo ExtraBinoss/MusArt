@@ -1,0 +1,171 @@
+[
+  ["Cambo", "serif", [["ofl/cambo/Cambo-Regular.ttf", 400, false, 29104]], "ofl/cambo/OFL.txt"],
+  ["Candal", "sans", [["ofl/candal/Candal.ttf", 400, false, 32816]], "ofl/candal/OFL.txt"],
+  [
+    "Cantarell",
+    "sans",
+    [
+      ["ofl/cantarell/Cantarell-Bold.ttf", 700, false, 44936],
+      ["ofl/cantarell/Cantarell-BoldItalic.ttf", 700, true, 47848],
+      ["ofl/cantarell/Cantarell-Italic.ttf", 400, true, 45728],
+      ["ofl/cantarell/Cantarell-Regular.ttf", 400, false, 43156]
+    ],
+    "ofl/cantarell/OFL.txt"
+  ],
+  [
+    "Cantata One",
+    "serif",
+    [["ofl/cantataone/CantataOne-Regular.ttf", 400, false, 96828]],
+    "ofl/cantataone/OFL.txt"
+  ],
+  [
+    "Cantora One",
+    "sans",
+    [["ofl/cantoraone/CantoraOne-Regular.ttf", 400, false, 159328]],
+    "ofl/cantoraone/OFL.txt"
+  ],
+  [
+    "Caprasimo",
+    "display",
+    [["ofl/caprasimo/Caprasimo-Regular.ttf", 400, false, 41660]],
+    "ofl/caprasimo/OFL.txt"
+  ],
+  [
+    "Capriola",
+    "sans",
+    [["ofl/capriola/Capriola[wght].ttf", 400, false, 507360]],
+    "ofl/capriola/OFL.txt"
+  ],
+  [
+    "Caramel",
+    "handwriting",
+    [["ofl/caramel/Caramel-Regular.ttf", 400, false, 204044]],
+    "ofl/caramel/OFL.txt"
+  ],
+  [
+    "Carattere",
+    "handwriting",
+    [["ofl/carattere/Carattere-Regular.ttf", 400, false, 124884]],
+    "ofl/carattere/OFL.txt"
+  ],
+  [
+    "Cardo",
+    "serif",
+    [
+      ["ofl/cardo/Cardo-Bold.ttf", 700, false, 348320],
+      ["ofl/cardo/Cardo-Italic.ttf", 400, true, 262388],
+      ["ofl/cardo/Cardo-Regular.ttf", 400, false, 400468]
+    ],
+    "ofl/cardo/OFL.txt"
+  ],
+  [
+    "Carlito",
+    "sans",
+    [
+      ["ofl/carlito/Carlito-Bold.ttf", 700, false, 682468],
+      ["ofl/carlito/Carlito-BoldItalic.ttf", 700, true, 808508],
+      ["ofl/carlito/Carlito-Italic.ttf", 400, true, 615236],
+      ["ofl/carlito/Carlito-Regular.ttf", 400, false, 628032]
+    ],
+    "ofl/carlito/OFL.txt"
+  ],
+  ["Carme", "sans", [["ofl/carme/Carme-Regular.ttf", 400, false, 78028]], "ofl/carme/OFL.txt"],
+  [
+    "Carrois Gothic",
+    "sans",
+    [["ofl/carroisgothic/CarroisGothic-Regular.ttf", 400, false, 41724]],
+    "ofl/carroisgothic/OFL.txt"
+  ],
+  [
+    "Carrois Gothic SC",
+    "sans",
+    [["ofl/carroisgothicsc/CarroisGothicSC-Regular.ttf", 400, false, 40356]],
+    "ofl/carroisgothicsc/OFL.txt"
+  ],
+  [
+    "Carter One",
+    "display",
+    [["ofl/carterone/CarterOne.ttf", 400, false, 66532]],
+    "ofl/carterone/OFL.txt"
+  ],
+  [
+    "Cascadia Code",
+    "sans",
+    [
+      ["ofl/cascadiacode/CascadiaCode-Italic[wght].ttf", 400, true, 530444],
+      ["ofl/cascadiacode/CascadiaCode[wght].ttf", 400, false, 727940]
+    ],
+    "ofl/cascadiacode/OFL.txt"
+  ],
+  [
+    "Cascadia Mono",
+    "sans",
+    [
+      ["ofl/cascadiamono/CascadiaMono-Italic[wght].ttf", 400, true, 513984],
+      ["ofl/cascadiamono/CascadiaMono[wght].ttf", 400, false, 704344]
+    ],
+    "ofl/cascadiamono/OFL.txt"
+  ],
+  [
+    "Castoro",
+    "serif",
+    [
+      ["ofl/castoro/Castoro-Italic[wght].ttf", 400, true, 156660],
+      ["ofl/castoro/Castoro[wght].ttf", 400, false, 153492]
+    ],
+    "ofl/castoro/OFL.txt"
+  ],
+  [
+    "Castoro Titling",
+    "display",
+    [["ofl/castorotitling/CastoroTitling-Regular.ttf", 400, false, 56328]],
+    "ofl/castorotitling/OFL.txt"
+  ],
+  [
+    "Catamaran",
+    "sans",
+    [["ofl/catamaran/Catamaran[wght].ttf", 400, false, 184276]],
+    "ofl/catamaran/OFL.txt"
+  ],
+  [
+    "Caudex",
+    "serif",
+    [
+      ["ofl/caudex/Caudex-Bold.ttf", 700, false, 471708],
+      ["ofl/caudex/Caudex-BoldItalic.ttf", 700, true, 555156],
+      ["ofl/caudex/Caudex-Italic.ttf", 400, true, 559440],
+      ["ofl/caudex/Caudex-Regular.ttf", 400, false, 466324]
+    ],
+    "ofl/caudex/OFL.txt"
+  ],
+  [
+    "Cause",
+    "handwriting",
+    [["ofl/cause/Cause[wght].ttf", 400, false, 110700]],
+    "ofl/cause/OFL.txt"
+  ],
+  [
+    "Caveat",
+    "handwriting",
+    [["ofl/caveat/Caveat[wght].ttf", 400, false, 403648]],
+    "ofl/caveat/OFL.txt"
+  ],
+  [
+    "Caveat Brush",
+    "handwriting",
+    [["ofl/caveatbrush/CaveatBrush-Regular.ttf", 400, false, 295568]],
+    "ofl/caveatbrush/OFL.txt"
+  ],
+  [
+    "Cedarville Cursive",
+    "handwriting",
+    [["ofl/cedarvillecursive/Cedarville-Cursive.ttf", 400, false, 69436]],
+    "ofl/cedarvillecursive/OFL.txt"
+  ],
+  [
+    "Ceviche One",
+    "display",
+    [["ofl/cevicheone/CevicheOne-Regular.ttf", 400, false, 36940]],
+    "ofl/cevicheone/OFL.txt"
+  ]
+]

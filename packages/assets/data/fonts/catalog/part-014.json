@@ -1,0 +1,189 @@
+[
+  [
+    "Chocolate Classical Sans",
+    "sans",
+    [["ofl/chocolateclassicalsans/ChocolateClassicalSans-Regular.ttf", 400, false, 12183000]],
+    "ofl/chocolateclassicalsans/OFL.txt"
+  ],
+  [
+    "Chokokutai",
+    "display",
+    [["ofl/chokokutai/Chokokutai-Regular.ttf", 400, false, 165580]],
+    "ofl/chokokutai/OFL.txt"
+  ],
+  [
+    "Chonburi",
+    "display",
+    [["ofl/chonburi/Chonburi-Regular.ttf", 400, false, 170492]],
+    "ofl/chonburi/OFL.txt"
+  ],
+  ["Cinzel", "serif", [["ofl/cinzel/Cinzel[wght].ttf", 400, false, 125468]], "ofl/cinzel/OFL.txt"],
+  [
+    "Cinzel Decorative",
+    "display",
+    [
+      ["ofl/cinzeldecorative/CinzelDecorative-Black.ttf", 900, false, 62692],
+      ["ofl/cinzeldecorative/CinzelDecorative-Bold.ttf", 700, false, 62300],
+      ["ofl/cinzeldecorative/CinzelDecorative-Regular.ttf", 400, false, 60408]
+    ],
+    "ofl/cinzeldecorative/OFL.txt"
+  ],
+  [
+    "Clarity City",
+    "sans",
+    [
+      ["ofl/claritycity/ClarityCity-Italic[wght].ttf", 400, true, 60744],
+      ["ofl/claritycity/ClarityCity[wght].ttf", 400, false, 57756]
+    ],
+    "ofl/claritycity/OFL.txt"
+  ],
+  [
+    "Clicker Script",
+    "handwriting",
+    [["ofl/clickerscript/ClickerScript-Regular.ttf", 400, false, 64012]],
+    "ofl/clickerscript/OFL.txt"
+  ],
+  [
+    "Climate Crisis",
+    "display",
+    [["ofl/climatecrisis/ClimateCrisis[YEAR].ttf", 400, false, 3601356]],
+    "ofl/climatecrisis/OFL.txt"
+  ],
+  [
+    "Coda",
+    "display",
+    [
+      ["ofl/coda/Coda-ExtraBold.ttf", 800, false, 90516],
+      ["ofl/coda/Coda-Regular.ttf", 400, false, 87060]
+    ],
+    "ofl/coda/OFL.txt"
+  ],
+  [
+    "Codystar",
+    "display",
+    [
+      ["ofl/codystar/Codystar-Light.ttf", 300, false, 101536],
+      ["ofl/codystar/Codystar-Regular.ttf", 400, false, 106500]
+    ],
+    "ofl/codystar/OFL.txt"
+  ],
+  ["Coiny", "display", [["ofl/coiny/Coiny-Regular.ttf", 400, false, 156520]], "ofl/coiny/OFL.txt"],
+  ["Combo", "display", [["ofl/combo/Combo-Regular.ttf", 400, false, 132848]], "ofl/combo/OFL.txt"],
+  [
+    "Comfortaa",
+    "display",
+    [["ofl/comfortaa/Comfortaa[wght].ttf", 400, false, 201756]],
+    "ofl/comfortaa/OFL.txt"
+  ],
+  [
+    "Comforter",
+    "handwriting",
+    [["ofl/comforter/Comforter-Regular.ttf", 400, false, 279684]],
+    "ofl/comforter/OFL.txt"
+  ],
+  [
+    "Comforter Brush",
+    "handwriting",
+    [["ofl/comforterbrush/ComforterBrush-Regular.ttf", 400, false, 807248]],
+    "ofl/comforterbrush/OFL.txt"
+  ],
+  [
+    "Comic Neue",
+    "handwriting",
+    [
+      ["ofl/comicneue/ComicNeue-Bold.ttf", 700, false, 55716],
+      ["ofl/comicneue/ComicNeue-BoldItalic.ttf", 700, true, 55928],
+      ["ofl/comicneue/ComicNeue-Italic.ttf", 400, true, 54392],
+      ["ofl/comicneue/ComicNeue-Light.ttf", 300, false, 55816],
+      ["ofl/comicneue/ComicNeue-LightItalic.ttf", 300, true, 54120],
+      ["ofl/comicneue/ComicNeue-Regular.ttf", 400, false, 57248]
+    ],
+    "ofl/comicneue/OFL.txt"
+  ],
+  [
+    "Comic Relief",
+    "display",
+    [
+      ["ofl/comicrelief/ComicRelief-Bold.ttf", 700, false, 94684],
+      ["ofl/comicrelief/ComicRelief-Regular.ttf", 400, false, 80324]
+    ],
+    "ofl/comicrelief/OFL.txt"
+  ],
+  [
+    "Coming Soon",
+    "handwriting",
+    [["apache/comingsoon/ComingSoon-Regular.ttf", 400, false, 53256]],
+    "apache/comingsoon/LICENSE.txt"
+  ],
+  ["Comme", "sans", [["ofl/comme/Comme[wght].ttf", 400, false, 91652]], "ofl/comme/OFL.txt"],
+  [
+    "Commissioner",
+    "sans",
+    [["ofl/commissioner/Commissioner[FLAR,VOLM,slnt,wght].ttf", 400, false, 742232]],
+    "ofl/commissioner/OFL.txt"
+  ],
+  [
+    "Concert One",
+    "display",
+    [["ofl/concertone/ConcertOne-Regular.ttf", 400, false, 71028]],
+    "ofl/concertone/OFL.txt"
+  ],
+  [
+    "Condiment",
+    "handwriting",
+    [["ofl/condiment/Condiment-Regular.ttf", 400, false, 43392]],
+    "ofl/condiment/OFL.txt"
+  ],
+  [
+    "Content",
+    "display",
+    [
+      ["ofl/content/Content-Bold.ttf", 700, false, 306292],
+      ["ofl/content/Content-Regular.ttf", 400, false, 313092]
+    ],
+    "ofl/content/OFL.txt"
+  ],
+  [
+    "Contrail One",
+    "display",
+    [["ofl/contrailone/ContrailOne-Regular.ttf", 400, false, 31184]],
+    "ofl/contrailone/OFL.txt"
+  ],
+  [
+    "Convergence",
+    "sans",
+    [["ofl/convergence/Convergence-Regular.ttf", 400, false, 30220]],
+    "ofl/convergence/OFL.txt"
+  ],
+  [
+    "Cookie",
+    "handwriting",
+    [["ofl/cookie/Cookie-Regular.ttf", 400, false, 43800]],
+    "ofl/cookie/OFL.txt"
+  ],
+  ["Copse", "serif", [["ofl/copse/Copse-Regular.ttf", 400, false, 72252]], "ofl/copse/OFL.txt"],
+  [
+    "Coral Pixels",
+    "display",
+    [["ofl/coralpixels/CoralPixels-Regular.ttf", 400, false, 632232]],
+    "ofl/coralpixels/OFL.txt"
+  ],
+  [
+    "Corben",
+    "display",
+    [
+      ["ofl/corben/Corben-Bold.ttf", 700, false, 125892],
+      ["ofl/corben/Corben-Regular.ttf", 400, false, 35268]
+    ],
+    "ofl/corben/OFL.txt"
+  ],
+  [
+    "Corinthia",
+    "handwriting",
+    [
+      ["ofl/corinthia/Corinthia-Bold.ttf", 700, false, 215252],
+      ["ofl/corinthia/Corinthia-Regular.ttf", 400, false, 222456]
+    ],
+    "ofl/corinthia/OFL.txt"
+  ]
+]

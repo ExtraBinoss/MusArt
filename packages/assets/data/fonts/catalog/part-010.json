@@ -1,0 +1,202 @@
+[
+  [
+    "Bitcount Single",
+    "display",
+    [["ofl/bitcountsingle/BitcountSingle[CRSV,ELSH,ELXP,slnt,wght].ttf", 400, false, 353980]],
+    "ofl/bitcountsingle/OFL.txt"
+  ],
+  [
+    "Bitcount Single Ink",
+    "display",
+    [
+      [
+        "ofl/bitcountsingleink/BitcountSingleInk[CRSV,ELSH,ELXP,SZP1,SZP2,XPN1,XPN2,YPN1,YPN2,slnt,wght].ttf",
+        400,
+        false,
+        430912
+      ]
+    ],
+    "ofl/bitcountsingleink/OFL.txt"
+  ],
+  [
+    "Bitter",
+    "serif",
+    [
+      ["ofl/bitter/Bitter-Italic[wght].ttf", 400, true, 317652],
+      ["ofl/bitter/Bitter[wght].ttf", 400, false, 328636]
+    ],
+    "ofl/bitter/OFL.txt"
+  ],
+  [
+    "Black And White Picture",
+    "display",
+    [["ofl/blackandwhitepicture/BlackAndWhitePicture-Regular.ttf", 400, false, 9606352]],
+    "ofl/blackandwhitepicture/OFL.txt"
+  ],
+  [
+    "Black Han Sans",
+    "sans",
+    [["ofl/blackhansans/BlackHanSans-Regular.ttf", 400, false, 998424]],
+    "ofl/blackhansans/OFL.txt"
+  ],
+  [
+    "Black Ops One",
+    "display",
+    [["ofl/blackopsone/BlackOpsOne-Regular.ttf", 400, false, 166532]],
+    "ofl/blackopsone/OFL.txt"
+  ],
+  ["Blaka", "display", [["ofl/blaka/Blaka-Regular.ttf", 400, false, 58104]], "ofl/blaka/OFL.txt"],
+  [
+    "Blaka Hollow",
+    "display",
+    [["ofl/blakahollow/BlakaHollow-Regular.ttf", 400, false, 73852]],
+    "ofl/blakahollow/OFL.txt"
+  ],
+  [
+    "Blaka Ink",
+    "display",
+    [["ofl/blakaink/BlakaInk-Regular.ttf", 400, false, 391520]],
+    "ofl/blakaink/OFL.txt"
+  ],
+  [
+    "Blinker",
+    "sans",
+    [
+      ["ofl/blinker/Blinker-Black.ttf", 900, false, 80932],
+      ["ofl/blinker/Blinker-Bold.ttf", 700, false, 75824],
+      ["ofl/blinker/Blinker-ExtraBold.ttf", 800, false, 82624],
+      ["ofl/blinker/Blinker-ExtraLight.ttf", 200, false, 74664],
+      ["ofl/blinker/Blinker-Light.ttf", 300, false, 75880],
+      ["ofl/blinker/Blinker-Regular.ttf", 400, false, 74532],
+      ["ofl/blinker/Blinker-SemiBold.ttf", 600, false, 81676],
+      ["ofl/blinker/Blinker-Thin.ttf", 100, false, 73024]
+    ],
+    "ofl/blinker/OFL.txt"
+  ],
+  [
+    "Bodoni Moda",
+    "serif",
+    [
+      ["ofl/bodonimoda/BodoniModa-Italic[opsz,wght].ttf", 400, true, 176300],
+      ["ofl/bodonimoda/BodoniModa[opsz,wght].ttf", 400, false, 162104]
+    ],
+    "ofl/bodonimoda/OFL.txt"
+  ],
+  [
+    "Bodoni Moda SC",
+    "serif",
+    [
+      ["ofl/bodonimodasc/BodoniModaSC-Italic[opsz,wght].ttf", 400, true, 176300],
+      ["ofl/bodonimodasc/BodoniModaSC[opsz,wght].ttf", 400, false, 161760]
+    ],
+    "ofl/bodonimodasc/OFL.txt"
+  ],
+  ["Bokor", "display", [["ofl/bokor/Bokor-Regular.ttf", 400, false, 124128]], "ofl/bokor/OFL.txt"],
+  [
+    "Boldonse",
+    "display",
+    [["ofl/boldonse/Boldonse-Regular.ttf", 400, false, 78240]],
+    "ofl/boldonse/OFL.txt"
+  ],
+  [
+    "Bona Nova",
+    "serif",
+    [
+      ["ofl/bonanova/BonaNova-Bold.ttf", 700, false, 396420],
+      ["ofl/bonanova/BonaNova-Italic.ttf", 400, true, 429716],
+      ["ofl/bonanova/BonaNova-Regular.ttf", 400, false, 401524]
+    ],
+    "ofl/bonanova/OFL.txt"
+  ],
+  [
+    "Bona Nova SC",
+    "serif",
+    [
+      ["ofl/bonanovasc/BonaNovaSC-Bold.ttf", 700, false, 398060],
+      ["ofl/bonanovasc/BonaNovaSC-Italic.ttf", 400, true, 430568],
+      ["ofl/bonanovasc/BonaNovaSC-Regular.ttf", 400, false, 403312]
+    ],
+    "ofl/bonanovasc/OFL.txt"
+  ],
+  [
+    "Bonbon",
+    "handwriting",
+    [["ofl/bonbon/Bonbon-Regular.ttf", 400, false, 81772]],
+    "ofl/bonbon/OFL.txt"
+  ],
+  [
+    "Bonheur Royale",
+    "handwriting",
+    [["ofl/bonheurroyale/BonheurRoyale-Regular.ttf", 400, false, 133728]],
+    "ofl/bonheurroyale/OFL.txt"
+  ],
+  [
+    "Boogaloo",
+    "display",
+    [["ofl/boogaloo/Boogaloo-Regular.ttf", 400, false, 33960]],
+    "ofl/boogaloo/OFL.txt"
+  ],
+  [
+    "Borel",
+    "handwriting",
+    [["ofl/borel/Borel-Regular.ttf", 400, false, 227452]],
+    "ofl/borel/OFL.txt"
+  ],
+  [
+    "Bowlby One",
+    "display",
+    [["ofl/bowlbyone/BowlbyOne-Regular.ttf", 400, false, 59856]],
+    "ofl/bowlbyone/OFL.txt"
+  ],
+  [
+    "Bowlby One SC",
+    "display",
+    [["ofl/bowlbyonesc/BowlbyOneSC-Regular.ttf", 400, false, 55200]],
+    "ofl/bowlbyonesc/OFL.txt"
+  ],
+  [
+    "Bpmf Huninn",
+    "sans",
+    [["ofl/bpmfhuninn/BpmfHuninn-Regular.ttf", 400, false, 4809404]],
+    "ofl/bpmfhuninn/OFL.txt"
+  ],
+  [
+    "Bpmf Iansui",
+    "handwriting",
+    [["ofl/bpmfiansui/BpmfIansui-Regular.ttf", 400, false, 7698176]],
+    "ofl/bpmfiansui/OFL.txt"
+  ],
+  [
+    "Bpmf Zihi Kai Std",
+    "sans",
+    [["ofl/bpmfzihikaistd/BpmfZihiKaiStd-Regular.ttf", 400, false, 17497872]],
+    "ofl/bpmfzihikaistd/OFL.txt"
+  ],
+  [
+    "Braah One",
+    "sans",
+    [["ofl/braahone/BraahOne-Regular.ttf", 400, false, 124592]],
+    "ofl/braahone/OFL.txt"
+  ],
+  [
+    "Brawler",
+    "serif",
+    [
+      ["ofl/brawler/Brawler-Bold.ttf", 700, false, 48588],
+      ["ofl/brawler/Brawler-Regular.ttf", 400, false, 57852]
+    ],
+    "ofl/brawler/OFL.txt"
+  ],
+  [
+    "Bree Serif",
+    "serif",
+    [["ofl/breeserif/BreeSerif-Regular.ttf", 400, false, 46572]],
+    "ofl/breeserif/OFL.txt"
+  ],
+  [
+    "Bricolage Grotesque",
+    "sans",
+    [["ofl/bricolagegrotesque/BricolageGrotesque[opsz,wdth,wght].ttf", 400, false, 408496]],
+    "ofl/bricolagegrotesque/OFL.txt"
+  ]
+]

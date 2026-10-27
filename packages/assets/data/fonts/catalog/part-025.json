@@ -1,0 +1,187 @@
+[
+  [
+    "Grey Qo",
+    "handwriting",
+    [["ofl/greyqo/GreyQo-Regular.ttf", 400, false, 111544]],
+    "ofl/greyqo/OFL.txt"
+  ],
+  [
+    "Griffy",
+    "display",
+    [["ofl/griffy/Griffy-Regular.ttf", 400, false, 208776]],
+    "ofl/griffy/OFL.txt"
+  ],
+  ["Gruppo", "sans", [["ofl/gruppo/Gruppo-Regular.ttf", 400, false, 76204]], "ofl/gruppo/OFL.txt"],
+  [
+    "Gudea",
+    "sans",
+    [
+      ["ofl/gudea/Gudea-Bold.ttf", 700, false, 22560],
+      ["ofl/gudea/Gudea-Italic.ttf", 400, true, 27028],
+      ["ofl/gudea/Gudea-Regular.ttf", 400, false, 22932]
+    ],
+    "ofl/gudea/OFL.txt"
+  ],
+  ["Gugi", "display", [["ofl/gugi/Gugi-Regular.ttf", 400, false, 990856]], "ofl/gugi/OFL.txt"],
+  [
+    "Gulzar",
+    "serif",
+    [["ofl/gulzar/Gulzar-Regular.ttf", 400, false, 963496]],
+    "ofl/gulzar/OFL.txt"
+  ],
+  [
+    "Gupter",
+    "serif",
+    [
+      ["ofl/gupter/Gupter-Bold.ttf", 700, false, 53204],
+      ["ofl/gupter/Gupter-Medium.ttf", 500, false, 52112],
+      ["ofl/gupter/Gupter-Regular.ttf", 400, false, 52376]
+    ],
+    "ofl/gupter/OFL.txt"
+  ],
+  [
+    "Gurajada",
+    "sans",
+    [["ofl/gurajada/Gurajada-Regular.ttf", 400, false, 442756]],
+    "ofl/gurajada/OFL.txt"
+  ],
+  [
+    "Gveret Levin",
+    "handwriting",
+    [["ofl/gveretlevin/GveretLevin-Regular.ttf", 400, false, 59788]],
+    "ofl/gveretlevin/OFL.txt"
+  ],
+  [
+    "Gwendolyn",
+    "handwriting",
+    [
+      ["ofl/gwendolyn/Gwendolyn-Bold.ttf", 700, false, 167512],
+      ["ofl/gwendolyn/Gwendolyn-Regular.ttf", 400, false, 160464]
+    ],
+    "ofl/gwendolyn/OFL.txt"
+  ],
+  ["Habibi", "serif", [["ofl/habibi/Habibi-Regular.ttf", 400, false, 36260]], "ofl/habibi/OFL.txt"],
+  [
+    "Hachi Maru Pop",
+    "handwriting",
+    [["ofl/hachimarupop/HachiMaruPop-Regular.ttf", 400, false, 4385624]],
+    "ofl/hachimarupop/OFL.txt"
+  ],
+  [
+    "Hahmlet",
+    "serif",
+    [["ofl/hahmlet/Hahmlet[wght].ttf", 400, false, 3559144]],
+    "ofl/hahmlet/OFL.txt"
+  ],
+  [
+    "Halant",
+    "serif",
+    [
+      ["ofl/halant/Halant-Bold.ttf", 700, false, 306388],
+      ["ofl/halant/Halant-Light.ttf", 300, false, 334772],
+      ["ofl/halant/Halant-Medium.ttf", 500, false, 267908],
+      ["ofl/halant/Halant-Regular.ttf", 400, false, 289408],
+      ["ofl/halant/Halant-SemiBold.ttf", 600, false, 276284]
+    ],
+    "ofl/halant/OFL.txt"
+  ],
+  [
+    "Hammersmith One",
+    "sans",
+    [["ofl/hammersmithone/HammersmithOne-Regular.ttf", 400, false, 102884]],
+    "ofl/hammersmithone/OFL.txt"
+  ],
+  [
+    "Hanalei",
+    "display",
+    [["ofl/hanalei/Hanalei-Regular.ttf", 400, false, 184176]],
+    "ofl/hanalei/OFL.txt"
+  ],
+  [
+    "Hanalei Fill",
+    "display",
+    [["ofl/hanaleifill/HanaleiFill-Regular.ttf", 400, false, 92108]],
+    "ofl/hanaleifill/OFL.txt"
+  ],
+  [
+    "Handjet",
+    "display",
+    [["ofl/handjet/Handjet[ELGR,ELSH,wght].ttf", 400, false, 283912]],
+    "ofl/handjet/OFL.txt"
+  ],
+  [
+    "Handlee",
+    "handwriting",
+    [["ofl/handlee/Handlee-Regular.ttf", 400, false, 39132]],
+    "ofl/handlee/OFL.txt"
+  ],
+  [
+    "Hanken Grotesk",
+    "sans",
+    [
+      ["ofl/hankengrotesk/HankenGrotesk-Italic[wght].ttf", 400, true, 139388],
+      ["ofl/hankengrotesk/HankenGrotesk[wght].ttf", 400, false, 132892]
+    ],
+    "ofl/hankengrotesk/OFL.txt"
+  ],
+  [
+    "Hanuman",
+    "serif",
+    [["ofl/hanuman/Hanuman[wght].ttf", 400, false, 126392]],
+    "ofl/hanuman/OFL.txt"
+  ],
+  [
+    "Happy Monkey",
+    "display",
+    [["ofl/happymonkey/HappyMonkey-Regular.ttf", 400, false, 76344]],
+    "ofl/happymonkey/OFL.txt"
+  ],
+  [
+    "Harmattan",
+    "sans",
+    [
+      ["ofl/harmattan/Harmattan-Bold.ttf", 700, false, 559624],
+      ["ofl/harmattan/Harmattan-Medium.ttf", 500, false, 579456],
+      ["ofl/harmattan/Harmattan-Regular.ttf", 400, false, 573500],
+      ["ofl/harmattan/Harmattan-SemiBold.ttf", 600, false, 561880]
+    ],
+    "ofl/harmattan/OFL.txt"
+  ],
+  [
+    "Headland One",
+    "serif",
+    [["ofl/headlandone/HeadlandOne-Regular.ttf", 400, false, 149692]],
+    "ofl/headlandone/OFL.txt"
+  ],
+  [
+    "Hedvig Letters Sans",
+    "sans",
+    [["ofl/hedvigletterssans/HedvigLettersSans-Regular.ttf", 400, false, 80828]],
+    "ofl/hedvigletterssans/OFL.txt"
+  ],
+  [
+    "Hedvig Letters Serif",
+    "serif",
+    [["ofl/hedviglettersserif/HedvigLettersSerif[opsz].ttf", 400, false, 122240]],
+    "ofl/hedviglettersserif/OFL.txt"
+  ],
+  ["Heebo", "sans", [["ofl/heebo/Heebo[wght].ttf", 400, false, 122012]], "ofl/heebo/OFL.txt"],
+  [
+    "Henny Penny",
+    "display",
+    [["ofl/hennypenny/HennyPenny-Regular.ttf", 400, false, 92596]],
+    "ofl/hennypenny/OFL.txt"
+  ],
+  [
+    "Hepta Slab",
+    "serif",
+    [["ofl/heptaslab/HeptaSlab[wght].ttf", 400, false, 555236]],
+    "ofl/heptaslab/OFL.txt"
+  ],
+  [
+    "Herr Von Muellerhoff",
+    "handwriting",
+    [["ofl/herrvonmuellerhoff/HerrVonMuellerhoff-Regular.ttf", 400, false, 46624]],
+    "ofl/herrvonmuellerhoff/OFL.txt"
+  ]
+]

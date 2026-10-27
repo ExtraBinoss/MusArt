@@ -1,0 +1,180 @@
+[
+  [
+    "ABeeZee",
+    "sans",
+    [
+      ["ofl/abeezee/ABeeZee-Italic.ttf", 400, true, 47012],
+      ["ofl/abeezee/ABeeZee-Regular.ttf", 400, false, 46016]
+    ],
+    "ofl/abeezee/OFL.txt"
+  ],
+  [
+    "ADLaM Display",
+    "display",
+    [["ofl/adlamdisplay/ADLaMDisplay-Regular.ttf", 400, false, 97228]],
+    "ofl/adlamdisplay/OFL.txt"
+  ],
+  [
+    "AR One Sans",
+    "sans",
+    [["ofl/aronesans/AROneSans[ARRR,wght].ttf", 400, false, 187856]],
+    "ofl/aronesans/OFL.txt"
+  ],
+  ["Abel", "sans", [["ofl/abel/Abel-Regular.ttf", 400, false, 35220]], "ofl/abel/OFL.txt"],
+  [
+    "Abhaya Libre",
+    "serif",
+    [
+      ["ofl/abhayalibre/AbhayaLibre-Bold.ttf", 700, false, 527476],
+      ["ofl/abhayalibre/AbhayaLibre-ExtraBold.ttf", 800, false, 535456],
+      ["ofl/abhayalibre/AbhayaLibre-Medium.ttf", 500, false, 543924],
+      ["ofl/abhayalibre/AbhayaLibre-Regular.ttf", 400, false, 555376],
+      ["ofl/abhayalibre/AbhayaLibre-SemiBold.ttf", 600, false, 518716]
+    ],
+    "ofl/abhayalibre/OFL.txt"
+  ],
+  [
+    "Aboreto",
+    "display",
+    [["ofl/aboreto/Aboreto-Regular.ttf", 400, false, 48356]],
+    "ofl/aboreto/OFL.txt"
+  ],
+  [
+    "Abril Fatface",
+    "display",
+    [["ofl/abrilfatface/AbrilFatface-Regular.ttf", 400, false, 67364]],
+    "ofl/abrilfatface/OFL.txt"
+  ],
+  [
+    "Abyssinica SIL",
+    "serif",
+    [["ofl/abyssinicasil/AbyssinicaSIL-Regular.ttf", 400, false, 268264]],
+    "ofl/abyssinicasil/OFL.txt"
+  ],
+  [
+    "Aclonica",
+    "sans",
+    [["apache/aclonica/Aclonica-Regular.ttf", 400, false, 68732]],
+    "apache/aclonica/LICENSE.txt"
+  ],
+  ["Acme", "sans", [["ofl/acme/Acme-Regular.ttf", 400, false, 23292]], "ofl/acme/OFL.txt"],
+  ["Actor", "sans", [["ofl/actor/Actor-Regular.ttf", 400, false, 64944]], "ofl/actor/OFL.txt"],
+  [
+    "Adamina",
+    "serif",
+    [["ofl/adamina/Adamina-Regular.ttf", 400, false, 114460]],
+    "ofl/adamina/OFL.txt"
+  ],
+  [
+    "Advent Pro",
+    "sans",
+    [
+      ["ofl/adventpro/AdventPro-Italic[wdth,wght].ttf", 400, true, 261384],
+      ["ofl/adventpro/AdventPro[wdth,wght].ttf", 400, false, 248348]
+    ],
+    "ofl/adventpro/OFL.txt"
+  ],
+  [
+    "Afacad",
+    "sans",
+    [
+      ["ofl/afacad/Afacad-Italic[wght].ttf", 400, true, 121024],
+      ["ofl/afacad/Afacad[wght].ttf", 400, false, 117456]
+    ],
+    "ofl/afacad/OFL.txt"
+  ],
+  [
+    "Afacad Flux",
+    "sans",
+    [["ofl/afacadflux/AfacadFlux[slnt,wght].ttf", 400, false, 437512]],
+    "ofl/afacadflux/OFL.txt"
+  ],
+  [
+    "Agbalumo",
+    "display",
+    [["ofl/agbalumo/Agbalumo-Regular.ttf", 400, false, 1715888]],
+    "ofl/agbalumo/OFL.txt"
+  ],
+  [
+    "Agdasima",
+    "sans",
+    [
+      ["ofl/agdasima/Agdasima-Bold.ttf", 700, false, 23012],
+      ["ofl/agdasima/Agdasima-Regular.ttf", 400, false, 23152]
+    ],
+    "ofl/agdasima/OFL.txt"
+  ],
+  [
+    "Agu Display",
+    "display",
+    [["ofl/agudisplay/AguDisplay[MORF].ttf", 400, false, 779736]],
+    "ofl/agudisplay/OFL.txt"
+  ],
+  [
+    "Aguafina Script",
+    "handwriting",
+    [["ofl/aguafinascript/AguafinaScript-Regular.ttf", 400, false, 47252]],
+    "ofl/aguafinascript/OFL.txt"
+  ],
+  [
+    "Akatab",
+    "sans",
+    [
+      ["ofl/akatab/Akatab-Black.ttf", 900, false, 112912],
+      ["ofl/akatab/Akatab-Bold.ttf", 700, false, 111848],
+      ["ofl/akatab/Akatab-ExtraBold.ttf", 800, false, 112412],
+      ["ofl/akatab/Akatab-Medium.ttf", 500, false, 111400],
+      ["ofl/akatab/Akatab-Regular.ttf", 400, false, 110568],
+      ["ofl/akatab/Akatab-SemiBold.ttf", 600, false, 111972]
+    ],
+    "ofl/akatab/OFL.txt"
+  ],
+  [
+    "Akaya Kanadaka",
+    "display",
+    [["ofl/akayakanadaka/AkayaKanadaka-Regular.ttf", 400, false, 341876]],
+    "ofl/akayakanadaka/OFL.txt"
+  ],
+  [
+    "Akaya Telivigala",
+    "display",
+    [["ofl/akayatelivigala/AkayaTelivigala-Regular.ttf", 400, false, 561640]],
+    "ofl/akayatelivigala/OFL.txt"
+  ],
+  [
+    "Akronim",
+    "display",
+    [["ofl/akronim/Akronim-Regular.ttf", 400, false, 109592]],
+    "ofl/akronim/OFL.txt"
+  ],
+  [
+    "Akshar",
+    "sans",
+    [["ofl/akshar/Akshar[CTRS,wght].ttf", 400, false, 320136]],
+    "ofl/akshar/OFL.txt"
+  ],
+  ["Akt", "sans", [["ofl/akt/Akt[wght].ttf", 400, false, 353816]], "ofl/akt/OFL.txt"],
+  [
+    "Aladin",
+    "display",
+    [["ofl/aladin/Aladin-Regular.ttf", 400, false, 42180]],
+    "ofl/aladin/OFL.txt"
+  ],
+  [
+    "Alan Sans",
+    "sans",
+    [["ofl/alansans/AlanSans[wght].ttf", 400, false, 198132]],
+    "ofl/alansans/OFL.txt"
+  ],
+  ["Alata", "sans", [["ofl/alata/Alata-Regular.ttf", 400, false, 349132]], "ofl/alata/OFL.txt"],
+  ["Alatsi", "sans", [["ofl/alatsi/Alatsi-Regular.ttf", 400, false, 444204]], "ofl/alatsi/OFL.txt"],
+  [
+    "Albert Sans",
+    "sans",
+    [
+      ["ofl/albertsans/AlbertSans-Italic[wght].ttf", 400, true, 142156],
+      ["ofl/albertsans/AlbertSans[wght].ttf", 400, false, 129000]
+    ],
+    "ofl/albertsans/OFL.txt"
+  ]
+]

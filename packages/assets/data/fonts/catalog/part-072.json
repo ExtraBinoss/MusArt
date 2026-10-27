@@ -1,0 +1,184 @@
+[
+  [
+    "Turret Road",
+    "display",
+    [
+      ["ofl/turretroad/TurretRoad-Bold.ttf", 700, false, 51616],
+      ["ofl/turretroad/TurretRoad-ExtraBold.ttf", 800, false, 53088],
+      ["ofl/turretroad/TurretRoad-ExtraLight.ttf", 200, false, 51844],
+      ["ofl/turretroad/TurretRoad-Light.ttf", 300, false, 51484],
+      ["ofl/turretroad/TurretRoad-Medium.ttf", 500, false, 52124],
+      ["ofl/turretroad/TurretRoad-Regular.ttf", 400, false, 51680]
+    ],
+    "ofl/turretroad/OFL.txt"
+  ],
+  [
+    "Twinkle Star",
+    "handwriting",
+    [["ofl/twinklestar/TwinkleStar-Regular.ttf", 400, false, 310488]],
+    "ofl/twinklestar/OFL.txt"
+  ],
+  [
+    "Ubuntu",
+    "sans",
+    [
+      ["ufl/ubuntu/Ubuntu-Bold.ttf", 700, false, 331612],
+      ["ufl/ubuntu/Ubuntu-BoldItalic.ttf", 700, true, 354956],
+      ["ufl/ubuntu/Ubuntu-Italic.ttf", 400, true, 384408],
+      ["ufl/ubuntu/Ubuntu-Light.ttf", 300, false, 413600],
+      ["ufl/ubuntu/Ubuntu-LightItalic.ttf", 300, true, 407728],
+      ["ufl/ubuntu/Ubuntu-Medium.ttf", 500, false, 339360],
+      ["ufl/ubuntu/Ubuntu-MediumItalic.ttf", 500, true, 365080],
+      ["ufl/ubuntu/Ubuntu-Regular.ttf", 400, false, 351884]
+    ],
+    "ufl/ubuntu/LICENCE.txt"
+  ],
+  [
+    "Ubuntu Condensed",
+    "sans",
+    [["ufl/ubuntucondensed/UbuntuCondensed-Regular.ttf", 400, false, 350444]],
+    "ufl/ubuntucondensed/LICENCE.txt"
+  ],
+  [
+    "Ubuntu Mono",
+    "mono",
+    [
+      ["ufl/ubuntumono/UbuntuMono-Bold.ttf", 700, false, 191400],
+      ["ufl/ubuntumono/UbuntuMono-BoldItalic.ttf", 700, true, 216208],
+      ["ufl/ubuntumono/UbuntuMono-Italic.ttf", 400, true, 210216],
+      ["ufl/ubuntumono/UbuntuMono-Regular.ttf", 400, false, 205748]
+    ],
+    "ufl/ubuntumono/LICENCE.txt"
+  ],
+  [
+    "Ubuntu Sans",
+    "sans",
+    [
+      ["ufl/ubuntusans/UbuntuSans-Italic[wdth,wght].ttf", 400, true, 738444],
+      ["ufl/ubuntusans/UbuntuSans[wdth,wght].ttf", 400, false, 1080900]
+    ],
+    "ufl/ubuntusans/LICENCE.txt"
+  ],
+  [
+    "Ubuntu Sans Mono",
+    "mono",
+    [
+      ["ufl/ubuntusansmono/UbuntuSansMono-Italic[wght].ttf", 400, true, 186356],
+      ["ufl/ubuntusansmono/UbuntuSansMono[wght].ttf", 400, false, 178092]
+    ],
+    "ufl/ubuntusansmono/LICENCE.txt"
+  ],
+  ["Uchen", "serif", [["ofl/uchen/Uchen-Regular.ttf", 400, false, 859156]], "ofl/uchen/OFL.txt"],
+  [
+    "Ultra",
+    "serif",
+    [["apache/ultra/Ultra-Regular.ttf", 400, false, 52472]],
+    "apache/ultra/LICENSE.txt"
+  ],
+  [
+    "Unbounded",
+    "sans",
+    [["ofl/unbounded/Unbounded[wght].ttf", 400, false, 778272]],
+    "ofl/unbounded/OFL.txt"
+  ],
+  [
+    "Uncial Antiqua",
+    "display",
+    [["ofl/uncialantiqua/UncialAntiqua-Regular.ttf", 400, false, 63404]],
+    "ofl/uncialantiqua/OFL.txt"
+  ],
+  [
+    "Underdog",
+    "display",
+    [["ofl/underdog/Underdog-Regular.ttf", 400, false, 101480]],
+    "ofl/underdog/OFL.txt"
+  ],
+  [
+    "Unica One",
+    "display",
+    [["ofl/unicaone/UnicaOne-Regular.ttf", 400, false, 71872]],
+    "ofl/unicaone/OFL.txt"
+  ],
+  [
+    "UnifrakturCook",
+    "display",
+    [["ofl/unifrakturcook/UnifrakturCook-Bold.ttf", 700, false, 42688]],
+    "ofl/unifrakturcook/OFL.txt"
+  ],
+  [
+    "UnifrakturMaguntia",
+    "display",
+    [["ofl/unifrakturmaguntia/UnifrakturMaguntia-Book.ttf", 400, false, 88508]],
+    "ofl/unifrakturmaguntia/OFL.txt"
+  ],
+  [
+    "Unkempt",
+    "display",
+    [
+      ["apache/unkempt/Unkempt-Bold.ttf", 700, false, 191020],
+      ["apache/unkempt/Unkempt-Regular.ttf", 400, false, 192364]
+    ],
+    "apache/unkempt/LICENSE.txt"
+  ],
+  [
+    "Unlock",
+    "display",
+    [["ofl/unlock/Unlock-Regular.ttf", 400, false, 57640]],
+    "ofl/unlock/OFL.txt"
+  ],
+  [
+    "Unna",
+    "serif",
+    [
+      ["ofl/unna/Unna-Bold.ttf", 700, false, 79556],
+      ["ofl/unna/Unna-BoldItalic.ttf", 700, true, 84916],
+      ["ofl/unna/Unna-Italic.ttf", 400, true, 80320],
+      ["ofl/unna/Unna-Regular.ttf", 400, false, 71164]
+    ],
+    "ofl/unna/OFL.txt"
+  ],
+  [
+    "UoqMunThenKhung",
+    "serif",
+    [["ofl/uoqmunthenkhung/UoqMunThenKhung-Regular.ttf", 400, false, 4901688]],
+    "ofl/uoqmunthenkhung/OFL.txt"
+  ],
+  [
+    "Updock",
+    "handwriting",
+    [["ofl/updock/Updock-Regular.ttf", 400, false, 120868]],
+    "ofl/updock/OFL.txt"
+  ],
+  [
+    "Urbanist",
+    "sans",
+    [
+      ["ofl/urbanist/Urbanist-Italic[wght].ttf", 400, true, 87508],
+      ["ofl/urbanist/Urbanist[wght].ttf", 400, false, 84840]
+    ],
+    "ofl/urbanist/OFL.txt"
+  ],
+  ["VT323", "mono", [["ofl/vt323/VT323-Regular.ttf", 400, false, 153116]], "ofl/vt323/OFL.txt"],
+  [
+    "Valley Sans",
+    "sans",
+    [
+      ["ofl/valleysans/ValleySans-Italic[wght].ttf", 400, true, 149536],
+      ["ofl/valleysans/ValleySans[wght].ttf", 400, false, 148736]
+    ],
+    "ofl/valleysans/OFL.txt"
+  ],
+  [
+    "Vampiro One",
+    "display",
+    [["ofl/vampiroone/VampiroOne-Regular.ttf", 400, false, 27920]],
+    "ofl/vampiroone/OFL.txt"
+  ],
+  ["Varela", "sans", [["ofl/varela/Varela-Regular.ttf", 400, false, 188240]], "ofl/varela/OFL.txt"],
+  [
+    "Varela Round",
+    "sans",
+    [["ofl/varelaround/VarelaRound-Regular.ttf", 400, false, 132748]],
+    "ofl/varelaround/OFL.txt"
+  ]
+]

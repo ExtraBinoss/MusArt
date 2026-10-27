@@ -1,0 +1,232 @@
+[
+  [
+    "Noto Sans Glagolitic",
+    "sans",
+    [["ofl/notosansglagolitic/NotoSansGlagolitic-Regular.ttf", 400, false, 83444]],
+    "ofl/notosansglagolitic/OFL.txt"
+  ],
+  [
+    "Noto Sans Gothic",
+    "sans",
+    [["ofl/notosansgothic/NotoSansGothic-Regular.ttf", 400, false, 49956]],
+    "ofl/notosansgothic/OFL.txt"
+  ],
+  [
+    "Noto Sans Grantha",
+    "sans",
+    [["ofl/notosansgrantha/NotoSansGrantha-Regular.ttf", 400, false, 382732]],
+    "ofl/notosansgrantha/OFL.txt"
+  ],
+  [
+    "Noto Sans Gujarati",
+    "sans",
+    [["ofl/notosansgujarati/NotoSansGujarati[wdth,wght].ttf", 400, false, 672904]],
+    "ofl/notosansgujarati/OFL.txt"
+  ],
+  [
+    "Noto Sans Gunjala Gondi",
+    "sans",
+    [["ofl/notosansgunjalagondi/NotoSansGunjalaGondi[wght].ttf", 400, false, 172464]],
+    "ofl/notosansgunjalagondi/OFL.txt"
+  ],
+  [
+    "Noto Sans Gurmukhi",
+    "sans",
+    [["ofl/notosansgurmukhi/NotoSansGurmukhi[wdth,wght].ttf", 400, false, 268608]],
+    "ofl/notosansgurmukhi/OFL.txt"
+  ],
+  [
+    "Noto Sans HK",
+    "sans",
+    [["ofl/notosanshk/NotoSansHK[wght].ttf", 400, false, 11905808]],
+    "ofl/notosanshk/OFL.txt"
+  ],
+  [
+    "Noto Sans Hanifi Rohingya",
+    "sans",
+    [["ofl/notosanshanifirohingya/NotoSansHanifiRohingya[wght].ttf", 400, false, 109148]],
+    "ofl/notosanshanifirohingya/OFL.txt"
+  ],
+  [
+    "Noto Sans Hanunoo",
+    "sans",
+    [["ofl/notosanshanunoo/NotoSansHanunoo-Regular.ttf", 400, false, 53184]],
+    "ofl/notosanshanunoo/OFL.txt"
+  ],
+  [
+    "Noto Sans Hatran",
+    "sans",
+    [["ofl/notosanshatran/NotoSansHatran-Regular.ttf", 400, false, 50744]],
+    "ofl/notosanshatran/OFL.txt"
+  ],
+  [
+    "Noto Sans Hebrew",
+    "sans",
+    [["ofl/notosanshebrew/NotoSansHebrew[wdth,wght].ttf", 400, false, 112640]],
+    "ofl/notosanshebrew/OFL.txt"
+  ],
+  [
+    "Noto Sans Imperial Aramaic",
+    "sans",
+    [["ofl/notosansimperialaramaic/NotoSansImperialAramaic-Regular.ttf", 400, false, 52388]],
+    "ofl/notosansimperialaramaic/OFL.txt"
+  ],
+  [
+    "Noto Sans Indic Siyaq Numbers",
+    "sans",
+    [["ofl/notosansindicsiyaqnumbers/NotoSansIndicSiyaqNumbers-Regular.ttf", 400, false, 73460]],
+    "ofl/notosansindicsiyaqnumbers/OFL.txt"
+  ],
+  [
+    "Noto Sans Inscriptional Pahlavi",
+    "sans",
+    [
+      [
+        "ofl/notosansinscriptionalpahlavi/NotoSansInscriptionalPahlavi-Regular.ttf",
+        400,
+        false,
+        52148
+      ]
+    ],
+    "ofl/notosansinscriptionalpahlavi/OFL.txt"
+  ],
+  [
+    "Noto Sans Inscriptional Parthian",
+    "sans",
+    [
+      [
+        "ofl/notosansinscriptionalparthian/NotoSansInscriptionalParthian-Regular.ttf",
+        400,
+        false,
+        55164
+      ]
+    ],
+    "ofl/notosansinscriptionalparthian/OFL.txt"
+  ],
+  [
+    "Noto Sans JP",
+    "sans",
+    [["ofl/notosansjp/NotoSansJP[wght].ttf", 400, false, 9589900]],
+    "ofl/notosansjp/OFL.txt"
+  ],
+  [
+    "Noto Sans Javanese",
+    "sans",
+    [["ofl/notosansjavanese/NotoSansJavanese[wght].ttf", 400, false, 252904]],
+    "ofl/notosansjavanese/OFL.txt"
+  ],
+  [
+    "Noto Sans KR",
+    "sans",
+    [["ofl/notosanskr/NotoSansKR[wght].ttf", 400, false, 10414588]],
+    "ofl/notosanskr/OFL.txt"
+  ],
+  [
+    "Noto Sans Kaithi",
+    "sans",
+    [["ofl/notosanskaithi/NotoSansKaithi-Regular.ttf", 400, false, 138076]],
+    "ofl/notosanskaithi/OFL.txt"
+  ],
+  [
+    "Noto Sans Kannada",
+    "sans",
+    [["ofl/notosanskannada/NotoSansKannada[wdth,wght].ttf", 400, false, 641372]],
+    "ofl/notosanskannada/OFL.txt"
+  ],
+  [
+    "Noto Sans Kawi",
+    "sans",
+    [["ofl/notosanskawi/NotoSansKawi[wght].ttf", 400, false, 106668]],
+    "ofl/notosanskawi/OFL.txt"
+  ],
+  [
+    "Noto Sans Kayah Li",
+    "sans",
+    [["ofl/notosanskayahli/NotoSansKayahLi[wght].ttf", 400, false, 52440]],
+    "ofl/notosanskayahli/OFL.txt"
+  ],
+  [
+    "Noto Sans Kharoshthi",
+    "sans",
+    [["ofl/notosanskharoshthi/NotoSansKharoshthi-Regular.ttf", 400, false, 91472]],
+    "ofl/notosanskharoshthi/OFL.txt"
+  ],
+  [
+    "Noto Sans Khmer",
+    "sans",
+    [["ofl/notosanskhmer/NotoSansKhmer[wdth,wght].ttf", 400, false, 359788]],
+    "ofl/notosanskhmer/OFL.txt"
+  ],
+  [
+    "Noto Sans Khojki",
+    "sans",
+    [["ofl/notosanskhojki/NotoSansKhojki-Regular.ttf", 400, false, 107856]],
+    "ofl/notosanskhojki/OFL.txt"
+  ],
+  [
+    "Noto Sans Khudawadi",
+    "sans",
+    [["ofl/notosanskhudawadi/NotoSansKhudawadi-Regular.ttf", 400, false, 68840]],
+    "ofl/notosanskhudawadi/OFL.txt"
+  ],
+  [
+    "Noto Sans Lao",
+    "sans",
+    [["ofl/notosanslao/NotoSansLao[wdth,wght].ttf", 400, false, 176620]],
+    "ofl/notosanslao/OFL.txt"
+  ],
+  [
+    "Noto Sans Lao Looped",
+    "sans",
+    [["ofl/notosanslaolooped/NotoSansLaoLooped[wdth,wght].ttf", 400, false, 231556]],
+    "ofl/notosanslaolooped/OFL.txt"
+  ],
+  [
+    "Noto Sans Lepcha",
+    "sans",
+    [["ofl/notosanslepcha/NotoSansLepcha-Regular.ttf", 400, false, 76440]],
+    "ofl/notosanslepcha/OFL.txt"
+  ],
+  [
+    "Noto Sans Limbu",
+    "sans",
+    [["ofl/notosanslimbu/NotoSansLimbu-Regular.ttf", 400, false, 59192]],
+    "ofl/notosanslimbu/OFL.txt"
+  ],
+  [
+    "Noto Sans Linear A",
+    "sans",
+    [["ofl/notosanslineara/NotoSansLinearA-Regular.ttf", 400, false, 162012]],
+    "ofl/notosanslineara/OFL.txt"
+  ],
+  [
+    "Noto Sans Linear B",
+    "sans",
+    [["ofl/notosanslinearb/NotoSansLinearB-Regular.ttf", 400, false, 135716]],
+    "ofl/notosanslinearb/OFL.txt"
+  ],
+  [
+    "Noto Sans Lisu",
+    "sans",
+    [["ofl/notosanslisu/NotoSansLisu[wght].ttf", 400, false, 56240]],
+    "ofl/notosanslisu/OFL.txt"
+  ],
+  [
+    "Noto Sans Lycian",
+    "sans",
+    [["ofl/notosanslycian/NotoSansLycian-Regular.ttf", 400, false, 51820]],
+    "ofl/notosanslycian/OFL.txt"
+  ],
+  [
+    "Noto Sans Lydian",
+    "sans",
+    [["ofl/notosanslydian/NotoSansLydian-Regular.ttf", 400, false, 51676]],
+    "ofl/notosanslydian/OFL.txt"
+  ],
+  [
+    "Noto Sans Mahajani",
+    "sans",
+    [["ofl/notosansmahajani/NotoSansMahajani-Regular.ttf", 400, false, 63864]],
+    "ofl/notosansmahajani/OFL.txt"
+  ]
+]

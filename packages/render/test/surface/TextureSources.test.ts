@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createLayer, createPage, type Asset } from "@musart/core";
 import { TextureSources } from "../../src/surface/TextureSources";
 import { GpuResourceCache } from "../../src/cache/GpuResourceCache";
-import { LayerTargets } from "../../src/compositing/targets";
 import { clearSourceCache } from "../../src/surface/sources";
 import { installCanvasMock } from "../canvas-fixture";
 const asset: Asset = {
@@ -39,32 +38,13 @@ describe("GPU texture preparation", () => {
     expect(context.getImageData).not.toHaveBeenCalled();
     cache.clear();
   });
-  it("rasterizes only changed text paint and loads local fonts before measuring", async () => {
-    const previous = Object.getOwnPropertyDescriptor(document, "fonts");
-    const load = vi.fn().mockResolvedValue([]);
-    Object.defineProperty(document, "fonts", {
-      configurable: true,
-      value: { load, ready: Promise.resolve() },
-    });
-    try {
-      const sources = new TextureSources(new GpuResourceCache());
-      const layer = createLayer("text", {
-        fontFamily: "Space Grotesk",
-        fontSize: 32,
-        fontWeight: 600,
-      });
-      await sources.prepare(createPage({ layers: [layer] }), {});
-      expect(load).toHaveBeenCalledWith('600 32px "Space Grotesk"');
-      const entry = new LayerTargets();
-      const texture = sources.text(layer, 2, entry);
-      expect(sources.text({ ...layer, x: 100 }, 2, entry)).toBe(texture);
-      expect(sources.text({ ...layer, text: "new" }, 2, entry)).not.toBe(texture);
-      expect(sources.uploads).toBe(2);
-      entry.dispose();
-    } finally {
-      if (previous) Object.defineProperty(document, "fonts", previous);
-      else Reflect.deleteProperty(document, "fonts");
-    }
+  it("leaves text to the analytical GPU source without creating raster textures", async () => {
+    const sources = new TextureSources(new GpuResourceCache());
+    await sources.prepare(createPage({ layers: [createLayer("text")] }), {});
+    expect(sources.uploads).toBe(0);
+    expect(fetch).not.toHaveBeenCalled();
+    expect(context.fillText).not.toHaveBeenCalled();
+    expect(context.getImageData).not.toHaveBeenCalled();
   });
   it("prepares alpha masks and rejects missing assets rather than substituting empty pixels", async () => {
     const sources = new TextureSources(new GpuResourceCache());
@@ -82,4 +62,49 @@ describe("GPU texture preparation", () => {
       {},
     );
   });
+});
+it("prepares bounded native image bitmaps once for preview contexts and closes them with GPU cache eviction", async () => {
+  const cache = new GpuResourceCache(),
+    close = vi.fn(),
+    bitmap = { width: 640, height: 480, close };
+  vi.stubGlobal("createImageBitmap", vi.fn().mockResolvedValue(bitmap));
+  const sources = new TextureSources(cache, { maxEdge: 640 }),
+    layer = createLayer("image", { assetId: "image" }),
+    page = createPage({ layers: [layer] });
+  await sources.prepare(page, { image: asset });
+  expect(createImageBitmap).toHaveBeenCalledWith(expect.anything(), {
+    resizeWidth: 640,
+    resizeHeight: 480,
+    resizeQuality: "high",
+    premultiplyAlpha: "none",
+    colorSpaceConversion: "none",
+    imageOrientation: "none",
+  });
+  expect(cache.stats().cacheBytes).toBe(640 * 480 * 4);
+  await sources.prepare(page, { image: asset });
+  expect(createImageBitmap).toHaveBeenCalledOnce();
+  expect(context.drawImage).not.toHaveBeenCalled();
+  expect(context.getImageData).not.toHaveBeenCalled();
+  cache.clear();
+  expect(close).toHaveBeenCalledOnce();
+  expect(() => new TextureSources(cache, { maxEdge: 0 })).toThrow("texture limit");
+});
+it("uses unflipped resized bitmaps for WebGPU and rejects failed native preparation without CPU fallbacks", async () => {
+  vi.stubGlobal(
+    "createImageBitmap",
+    vi
+      .fn()
+      .mockRejectedValueOnce(new Error("decode"))
+      .mockResolvedValue({ width: 640, height: 480, close: vi.fn() }),
+  );
+  const cache = new GpuResourceCache(),
+    sources = new TextureSources(cache, { maxEdge: 640 }),
+    page = createPage({ layers: [createLayer("image", { assetId: "image" })] });
+  await expect(sources.prepare(page, { image: asset })).rejects.toThrow("decode");
+  await sources.prepare(page, { image: asset });
+  expect(createImageBitmap).toHaveBeenLastCalledWith(
+    expect.anything(),
+    expect.objectContaining({ imageOrientation: "none" }),
+  );
+  cache.clear();
 });

@@ -1,0 +1,188 @@
+[
+  ["Cutive", "serif", [["ofl/cutive/Cutive-Regular.ttf", 400, false, 74884]], "ofl/cutive/OFL.txt"],
+  [
+    "Cutive Mono",
+    "mono",
+    [["ofl/cutivemono/CutiveMono-Regular.ttf", 400, false, 80004]],
+    "ofl/cutivemono/OFL.txt"
+  ],
+  [
+    "DM Mono",
+    "mono",
+    [
+      ["ofl/dmmono/DMMono-Italic.ttf", 400, true, 51408],
+      ["ofl/dmmono/DMMono-Light.ttf", 300, false, 49752],
+      ["ofl/dmmono/DMMono-LightItalic.ttf", 300, true, 51744],
+      ["ofl/dmmono/DMMono-Medium.ttf", 500, false, 50360],
+      ["ofl/dmmono/DMMono-MediumItalic.ttf", 500, true, 52552],
+      ["ofl/dmmono/DMMono-Regular.ttf", 400, false, 49744]
+    ],
+    "ofl/dmmono/OFL.txt"
+  ],
+  [
+    "DM Sans",
+    "sans",
+    [
+      ["ofl/dmsans/DMSans-Italic[opsz,wght].ttf", 400, true, 285040],
+      ["ofl/dmsans/DMSans[opsz,wght].ttf", 400, false, 240164]
+    ],
+    "ofl/dmsans/OFL.txt"
+  ],
+  [
+    "DM Serif Display",
+    "serif",
+    [
+      ["ofl/dmserifdisplay/DMSerifDisplay-Italic.ttf", 400, true, 71208],
+      ["ofl/dmserifdisplay/DMSerifDisplay-Regular.ttf", 400, false, 76580]
+    ],
+    "ofl/dmserifdisplay/OFL.txt"
+  ],
+  [
+    "DM Serif Text",
+    "serif",
+    [
+      ["ofl/dmseriftext/DMSerifText-Italic.ttf", 400, true, 71156],
+      ["ofl/dmseriftext/DMSerifText-Regular.ttf", 400, false, 78376]
+    ],
+    "ofl/dmseriftext/OFL.txt"
+  ],
+  [
+    "Dai Banna SIL",
+    "serif",
+    [
+      ["ofl/daibannasil/DaiBannaSIL-Bold.ttf", 700, false, 69520],
+      ["ofl/daibannasil/DaiBannaSIL-BoldItalic.ttf", 700, true, 73260],
+      ["ofl/daibannasil/DaiBannaSIL-Italic.ttf", 400, true, 71768],
+      ["ofl/daibannasil/DaiBannaSIL-Light.ttf", 300, false, 68508],
+      ["ofl/daibannasil/DaiBannaSIL-LightItalic.ttf", 300, true, 71924],
+      ["ofl/daibannasil/DaiBannaSIL-Medium.ttf", 500, false, 68292],
+      ["ofl/daibannasil/DaiBannaSIL-MediumItalic.ttf", 500, true, 72108],
+      ["ofl/daibannasil/DaiBannaSIL-Regular.ttf", 400, false, 68172],
+      ["ofl/daibannasil/DaiBannaSIL-SemiBold.ttf", 600, false, 68692],
+      ["ofl/daibannasil/DaiBannaSIL-SemiBoldItalic.ttf", 600, true, 72528]
+    ],
+    "ofl/daibannasil/OFL.txt"
+  ],
+  [
+    "Damion",
+    "handwriting",
+    [["ofl/damion/Damion-Regular.ttf", 400, false, 75756]],
+    "ofl/damion/OFL.txt"
+  ],
+  [
+    "Dancing Script",
+    "handwriting",
+    [["ofl/dancingscript/DancingScript[wght].ttf", 400, false, 133636]],
+    "ofl/dancingscript/OFL.txt"
+  ],
+  ["Danfo", "serif", [["ofl/danfo/Danfo[ELSH].ttf", 400, false, 147264]], "ofl/danfo/OFL.txt"],
+  [
+    "Dangrek",
+    "display",
+    [["ofl/dangrek/Dangrek-Regular.ttf", 400, false, 62464]],
+    "ofl/dangrek/OFL.txt"
+  ],
+  [
+    "Darker Grotesque",
+    "sans",
+    [["ofl/darkergrotesque/DarkerGrotesque[wght].ttf", 400, false, 91516]],
+    "ofl/darkergrotesque/OFL.txt"
+  ],
+  [
+    "Darumadrop One",
+    "display",
+    [["ofl/darumadropone/DarumadropOne-Regular.ttf", 400, false, 359120]],
+    "ofl/darumadropone/OFL.txt"
+  ],
+  [
+    "Datatype",
+    "mono",
+    [["ofl/datatype/Datatype[wdth,wght].ttf", 400, false, 4201224]],
+    "ofl/datatype/OFL.txt"
+  ],
+  [
+    "David Libre",
+    "serif",
+    [
+      ["ofl/davidlibre/DavidLibre-Bold.ttf", 700, false, 132840],
+      ["ofl/davidlibre/DavidLibre-Medium.ttf", 500, false, 129040],
+      ["ofl/davidlibre/DavidLibre-Regular.ttf", 400, false, 127740]
+    ],
+    "ofl/davidlibre/OFL.txt"
+  ],
+  [
+    "Dawning of a New Day",
+    "handwriting",
+    [["ofl/dawningofanewday/DawningofaNewDay.ttf", 400, false, 65344]],
+    "ofl/dawningofanewday/OFL.txt"
+  ],
+  [
+    "Days One",
+    "sans",
+    [["ofl/daysone/DaysOne-Regular.ttf", 400, false, 65580]],
+    "ofl/daysone/OFL.txt"
+  ],
+  [
+    "Dekko",
+    "handwriting",
+    [["ofl/dekko/Dekko-Regular.ttf", 400, false, 271164]],
+    "ofl/dekko/OFL.txt"
+  ],
+  [
+    "Dela Gothic One",
+    "display",
+    [["ofl/delagothicone/DelaGothicOne-Regular.ttf", 400, false, 2508848]],
+    "ofl/delagothicone/OFL.txt"
+  ],
+  [
+    "Delicious Handrawn",
+    "handwriting",
+    [["ofl/delicioushandrawn/DeliciousHandrawn-Regular.ttf", 400, false, 74692]],
+    "ofl/delicioushandrawn/OFL.txt"
+  ],
+  [
+    "Delius",
+    "handwriting",
+    [["ofl/delius/Delius-Regular.ttf", 400, false, 77488]],
+    "ofl/delius/OFL.txt"
+  ],
+  [
+    "Delius Swash Caps",
+    "handwriting",
+    [["ofl/deliusswashcaps/DeliusSwashCaps-Regular.ttf", 400, false, 63052]],
+    "ofl/deliusswashcaps/OFL.txt"
+  ],
+  [
+    "Delius Unicase",
+    "handwriting",
+    [
+      ["ofl/deliusunicase/DeliusUnicase-Bold.ttf", 700, false, 36120],
+      ["ofl/deliusunicase/DeliusUnicase-Regular.ttf", 400, false, 32904]
+    ],
+    "ofl/deliusunicase/OFL.txt"
+  ],
+  [
+    "Della Respira",
+    "serif",
+    [["ofl/dellarespira/DellaRespira-Regular.ttf", 400, false, 51208]],
+    "ofl/dellarespira/OFL.txt"
+  ],
+  [
+    "Denk One",
+    "sans",
+    [["ofl/denkone/DenkOne-Regular.ttf", 400, false, 304360]],
+    "ofl/denkone/OFL.txt"
+  ],
+  [
+    "Devonshire",
+    "handwriting",
+    [["ofl/devonshire/Devonshire-Regular.ttf", 400, false, 67240]],
+    "ofl/devonshire/OFL.txt"
+  ],
+  [
+    "Dhurjati",
+    "sans",
+    [["ofl/dhurjati/Dhurjati-Regular.ttf", 400, false, 990048]],
+    "ofl/dhurjati/OFL.txt"
+  ]
+]

@@ -1,0 +1,216 @@
+[
+  [
+    "Playfair Display",
+    "serif",
+    [
+      ["ofl/playfairdisplay/PlayfairDisplay-Italic[wght].ttf", 400, true, 278688],
+      ["ofl/playfairdisplay/PlayfairDisplay[wght].ttf", 400, false, 300724]
+    ],
+    "ofl/playfairdisplay/OFL.txt"
+  ],
+  [
+    "Playfair Display SC",
+    "serif",
+    [
+      ["ofl/playfairdisplaysc/PlayfairDisplaySC-Black.ttf", 900, false, 202412],
+      ["ofl/playfairdisplaysc/PlayfairDisplaySC-BlackItalic.ttf", 900, true, 199512],
+      ["ofl/playfairdisplaysc/PlayfairDisplaySC-Bold.ttf", 700, false, 204568],
+      ["ofl/playfairdisplaysc/PlayfairDisplaySC-BoldItalic.ttf", 700, true, 206016],
+      ["ofl/playfairdisplaysc/PlayfairDisplaySC-Italic.ttf", 400, true, 202092],
+      ["ofl/playfairdisplaysc/PlayfairDisplaySC-Regular.ttf", 400, false, 201772]
+    ],
+    "ofl/playfairdisplaysc/OFL.txt"
+  ],
+  [
+    "Playpen Sans",
+    "handwriting",
+    [["ofl/playpensans/PlaypenSans[wght].ttf", 400, false, 1567080]],
+    "ofl/playpensans/OFL.txt"
+  ],
+  [
+    "Playpen Sans Arabic",
+    "handwriting",
+    [["ofl/playpensansarabic/PlaypenSansArabic[wght].ttf", 400, false, 758132]],
+    "ofl/playpensansarabic/OFL.txt"
+  ],
+  [
+    "Playpen Sans Deva",
+    "handwriting",
+    [["ofl/playpensansdeva/PlaypenSansDeva[wght].ttf", 400, false, 1567116]],
+    "ofl/playpensansdeva/OFL.txt"
+  ],
+  [
+    "Playpen Sans Hebrew",
+    "handwriting",
+    [["ofl/playpensanshebrew/PlaypenSansHebrew[wght].ttf", 400, false, 648604]],
+    "ofl/playpensanshebrew/OFL.txt"
+  ],
+  [
+    "Playpen Sans Thai",
+    "handwriting",
+    [["ofl/playpensansthai/PlaypenSansThai[wght].ttf", 400, false, 754920]],
+    "ofl/playpensansthai/OFL.txt"
+  ],
+  [
+    "Playwrite AR",
+    "handwriting",
+    [["ofl/playwritear/PlaywriteAR[wght].ttf", 400, false, 336092]],
+    "ofl/playwritear/OFL.txt"
+  ],
+  [
+    "Playwrite AR Guides",
+    "handwriting",
+    [["ofl/playwritearguides/PlaywriteARGuides-Regular.ttf", 400, false, 353356]],
+    "ofl/playwritearguides/OFL.txt"
+  ],
+  [
+    "Playwrite AT",
+    "handwriting",
+    [
+      ["ofl/playwriteat/PlaywriteAT-Italic[wght].ttf", 400, true, 367536],
+      ["ofl/playwriteat/PlaywriteAT[wght].ttf", 400, false, 360216]
+    ],
+    "ofl/playwriteat/OFL.txt"
+  ],
+  [
+    "Playwrite AT Guides",
+    "handwriting",
+    [
+      ["ofl/playwriteatguides/PlaywriteATGuides-Italic.ttf", 400, true, 378540],
+      ["ofl/playwriteatguides/PlaywriteATGuides-Regular.ttf", 400, false, 372876]
+    ],
+    "ofl/playwriteatguides/OFL.txt"
+  ],
+  [
+    "Playwrite AU NSW",
+    "handwriting",
+    [["ofl/playwriteaunsw/PlaywriteAUNSW[wght].ttf", 400, false, 346768]],
+    "ofl/playwriteaunsw/OFL.txt"
+  ],
+  [
+    "Playwrite AU NSW Guides",
+    "handwriting",
+    [["ofl/playwriteaunswguides/PlaywriteAUNSWGuides-Regular.ttf", 400, false, 366508]],
+    "ofl/playwriteaunswguides/OFL.txt"
+  ],
+  [
+    "Playwrite AU QLD",
+    "handwriting",
+    [["ofl/playwriteauqld/PlaywriteAUQLD[wght].ttf", 400, false, 350592]],
+    "ofl/playwriteauqld/OFL.txt"
+  ],
+  [
+    "Playwrite AU QLD Guides",
+    "handwriting",
+    [["ofl/playwriteauqldguides/PlaywriteAUQLDGuides-Regular.ttf", 400, false, 369696]],
+    "ofl/playwriteauqldguides/OFL.txt"
+  ],
+  [
+    "Playwrite AU SA",
+    "handwriting",
+    [["ofl/playwriteausa/PlaywriteAUSA[wght].ttf", 400, false, 348456]],
+    "ofl/playwriteausa/OFL.txt"
+  ],
+  [
+    "Playwrite AU SA Guides",
+    "handwriting",
+    [["ofl/playwriteausaguides/PlaywriteAUSAGuides-Regular.ttf", 400, false, 367892]],
+    "ofl/playwriteausaguides/OFL.txt"
+  ],
+  [
+    "Playwrite AU TAS",
+    "handwriting",
+    [["ofl/playwriteautas/PlaywriteAUTAS[wght].ttf", 400, false, 348212]],
+    "ofl/playwriteautas/OFL.txt"
+  ],
+  [
+    "Playwrite AU TAS Guides",
+    "handwriting",
+    [["ofl/playwriteautasguides/PlaywriteAUTASGuides-Regular.ttf", 400, false, 366692]],
+    "ofl/playwriteautasguides/OFL.txt"
+  ],
+  [
+    "Playwrite AU VIC",
+    "handwriting",
+    [["ofl/playwriteauvic/PlaywriteAUVIC[wght].ttf", 400, false, 351660]],
+    "ofl/playwriteauvic/OFL.txt"
+  ],
+  [
+    "Playwrite AU VIC Guides",
+    "handwriting",
+    [["ofl/playwriteauvicguides/PlaywriteAUVICGuides-Regular.ttf", 400, false, 369924]],
+    "ofl/playwriteauvicguides/OFL.txt"
+  ],
+  [
+    "Playwrite BE VLG",
+    "handwriting",
+    [["ofl/playwritebevlg/PlaywriteBEVLG[wght].ttf", 400, false, 352560]],
+    "ofl/playwritebevlg/OFL.txt"
+  ],
+  [
+    "Playwrite BE VLG Guides",
+    "handwriting",
+    [["ofl/playwritebevlgguides/PlaywriteBEVLGGuides-Regular.ttf", 400, false, 367016]],
+    "ofl/playwritebevlgguides/OFL.txt"
+  ],
+  [
+    "Playwrite BE WAL",
+    "handwriting",
+    [["ofl/playwritebewal/PlaywriteBEWAL[wght].ttf", 400, false, 346820]],
+    "ofl/playwritebewal/OFL.txt"
+  ],
+  [
+    "Playwrite BE WAL Guides",
+    "handwriting",
+    [["ofl/playwritebewalguides/PlaywriteBEWALGuides-Regular.ttf", 400, false, 360724]],
+    "ofl/playwritebewalguides/OFL.txt"
+  ],
+  [
+    "Playwrite BR",
+    "handwriting",
+    [["ofl/playwritebr/PlaywriteBR[wght].ttf", 400, false, 336196]],
+    "ofl/playwritebr/OFL.txt"
+  ],
+  [
+    "Playwrite BR Guides",
+    "handwriting",
+    [["ofl/playwritebrguides/PlaywriteBRGuides-Regular.ttf", 400, false, 353408]],
+    "ofl/playwritebrguides/OFL.txt"
+  ],
+  [
+    "Playwrite CA",
+    "handwriting",
+    [["ofl/playwriteca/PlaywriteCA[wght].ttf", 400, false, 343268]],
+    "ofl/playwriteca/OFL.txt"
+  ],
+  [
+    "Playwrite CA Guides",
+    "handwriting",
+    [["ofl/playwritecaguides/PlaywriteCAGuides-Regular.ttf", 400, false, 360320]],
+    "ofl/playwritecaguides/OFL.txt"
+  ],
+  [
+    "Playwrite CL",
+    "handwriting",
+    [["ofl/playwritecl/PlaywriteCL[wght].ttf", 400, false, 339504]],
+    "ofl/playwritecl/OFL.txt"
+  ],
+  [
+    "Playwrite CL Guides",
+    "handwriting",
+    [["ofl/playwriteclguides/PlaywriteCLGuides-Regular.ttf", 400, false, 355160]],
+    "ofl/playwriteclguides/OFL.txt"
+  ],
+  [
+    "Playwrite CO",
+    "handwriting",
+    [["ofl/playwriteco/PlaywriteCO[wght].ttf", 400, false, 339624]],
+    "ofl/playwriteco/OFL.txt"
+  ],
+  [
+    "Playwrite CO Guides",
+    "handwriting",
+    [["ofl/playwritecoguides/PlaywriteCOGuides-Regular.ttf", 400, false, 357512]],
+    "ofl/playwritecoguides/OFL.txt"
+  ]
+]

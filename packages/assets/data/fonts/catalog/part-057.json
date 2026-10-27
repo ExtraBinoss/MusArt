@@ -1,0 +1,189 @@
+[
+  [
+    "Playwrite US Modern",
+    "handwriting",
+    [["ofl/playwriteusmodern/PlaywriteUSModern[wght].ttf", 400, false, 340744]],
+    "ofl/playwriteusmodern/OFL.txt"
+  ],
+  [
+    "Playwrite US Modern Guides",
+    "handwriting",
+    [["ofl/playwriteusmodernguides/PlaywriteUSModernGuides-Regular.ttf", 400, false, 359924]],
+    "ofl/playwriteusmodernguides/OFL.txt"
+  ],
+  [
+    "Playwrite US Trad",
+    "handwriting",
+    [["ofl/playwriteustrad/PlaywriteUSTrad[wght].ttf", 400, false, 343296]],
+    "ofl/playwriteustrad/OFL.txt"
+  ],
+  [
+    "Playwrite US Trad Guides",
+    "handwriting",
+    [["ofl/playwriteustradguides/PlaywriteUSTradGuides-Regular.ttf", 400, false, 360376]],
+    "ofl/playwriteustradguides/OFL.txt"
+  ],
+  [
+    "Playwrite VN",
+    "handwriting",
+    [["ofl/playwritevn/PlaywriteVN[wght].ttf", 400, false, 340324]],
+    "ofl/playwritevn/OFL.txt"
+  ],
+  [
+    "Playwrite VN Guides",
+    "handwriting",
+    [["ofl/playwritevnguides/PlaywriteVNGuides-Regular.ttf", 400, false, 355568]],
+    "ofl/playwritevnguides/OFL.txt"
+  ],
+  [
+    "Playwrite ZA",
+    "handwriting",
+    [["ofl/playwriteza/PlaywriteZA[wght].ttf", 400, false, 343972]],
+    "ofl/playwriteza/OFL.txt"
+  ],
+  [
+    "Playwrite ZA Guides",
+    "handwriting",
+    [["ofl/playwritezaguides/PlaywriteZAGuides-Regular.ttf", 400, false, 360400]],
+    "ofl/playwritezaguides/OFL.txt"
+  ],
+  [
+    "Pliant",
+    "sans",
+    [
+      ["ofl/pliant/Pliant-Italic[wdth,wght].ttf", 400, true, 311288],
+      ["ofl/pliant/Pliant[wdth,wght].ttf", 400, false, 300140]
+    ],
+    "ofl/pliant/OFL.txt"
+  ],
+  [
+    "Plus Jakarta Sans",
+    "sans",
+    [
+      ["ofl/plusjakartasans/PlusJakartaSans-Italic[wght].ttf", 400, true, 183188],
+      ["ofl/plusjakartasans/PlusJakartaSans[wght].ttf", 400, false, 176288]
+    ],
+    "ofl/plusjakartasans/OFL.txt"
+  ],
+  [
+    "Pochaevsk",
+    "display",
+    [["ofl/pochaevsk/Pochaevsk-Regular.ttf", 400, false, 180120]],
+    "ofl/pochaevsk/OFL.txt"
+  ],
+  [
+    "Podkova",
+    "serif",
+    [["ofl/podkova/Podkova[wght].ttf", 400, false, 163368]],
+    "ofl/podkova/OFL.txt"
+  ],
+  [
+    "Poetsen One",
+    "display",
+    [["ofl/poetsenone/PoetsenOne-Regular.ttf", 400, false, 200920]],
+    "ofl/poetsenone/OFL.txt"
+  ],
+  [
+    "Poiret One",
+    "display",
+    [["ofl/poiretone/PoiretOne-Regular.ttf", 400, false, 130176]],
+    "ofl/poiretone/OFL.txt"
+  ],
+  [
+    "Poller One",
+    "display",
+    [["ofl/pollerone/PollerOne.ttf", 400, false, 31588]],
+    "ofl/pollerone/OFL.txt"
+  ],
+  [
+    "Poltawski Nowy",
+    "serif",
+    [
+      ["ofl/poltawskinowy/PoltawskiNowy-Italic[wght].ttf", 400, true, 385520],
+      ["ofl/poltawskinowy/PoltawskiNowy[wght].ttf", 400, false, 414696]
+    ],
+    "ofl/poltawskinowy/OFL.txt"
+  ],
+  [
+    "Poly",
+    "serif",
+    [
+      ["ofl/poly/Poly-Italic.ttf", 400, true, 74236],
+      ["ofl/poly/Poly-Regular.ttf", 400, false, 76800]
+    ],
+    "ofl/poly/OFL.txt"
+  ],
+  [
+    "Pompiere",
+    "display",
+    [["ofl/pompiere/Pompiere-Regular.ttf", 400, false, 36632]],
+    "ofl/pompiere/OFL.txt"
+  ],
+  [
+    "Ponnala",
+    "display",
+    [["ofl/ponnala/Ponnala-Regular.ttf", 400, false, 473792]],
+    "ofl/ponnala/OFL.txt"
+  ],
+  [
+    "Ponomar",
+    "display",
+    [["ofl/ponomar/Ponomar-Regular.ttf", 400, false, 337220]],
+    "ofl/ponomar/OFL.txt"
+  ],
+  [
+    "Pontano Sans",
+    "sans",
+    [["ofl/pontanosans/PontanoSans[wght].ttf", 400, false, 78532]],
+    "ofl/pontanosans/OFL.txt"
+  ],
+  [
+    "Poor Story",
+    "display",
+    [["ofl/poorstory/PoorStory-Regular.ttf", 400, false, 3966768]],
+    "ofl/poorstory/OFL.txt"
+  ],
+  [
+    "Poppins",
+    "sans",
+    [
+      ["ofl/poppins/Poppins-Black.ttf", 900, false, 153440],
+      ["ofl/poppins/Poppins-BlackItalic.ttf", 900, true, 174116],
+      ["ofl/poppins/Poppins-Bold.ttf", 700, false, 155996],
+      ["ofl/poppins/Poppins-BoldItalic.ttf", 700, true, 179108],
+      ["ofl/poppins/Poppins-ExtraBold.ttf", 800, false, 154836],
+      ["ofl/poppins/Poppins-ExtraBoldItalic.ttf", 800, true, 176468],
+      ["ofl/poppins/Poppins-ExtraLight.ttf", 200, false, 163568],
+      ["ofl/poppins/Poppins-ExtraLightItalic.ttf", 200, true, 188748],
+      ["ofl/poppins/Poppins-Italic.ttf", 400, true, 184544],
+      ["ofl/poppins/Poppins-Light.ttf", 300, false, 161936],
+      ["ofl/poppins/Poppins-LightItalic.ttf", 300, true, 186976],
+      ["ofl/poppins/Poppins-Medium.ttf", 500, false, 158576],
+      ["ofl/poppins/Poppins-MediumItalic.ttf", 500, true, 183012],
+      ["ofl/poppins/Poppins-Regular.ttf", 400, false, 160316],
+      ["ofl/poppins/Poppins-SemiBold.ttf", 600, false, 157312],
+      ["ofl/poppins/Poppins-SemiBoldItalic.ttf", 600, true, 181108],
+      ["ofl/poppins/Poppins-Thin.ttf", 100, false, 163672],
+      ["ofl/poppins/Poppins-ThinItalic.ttf", 100, true, 189552]
+    ],
+    "ofl/poppins/OFL.txt"
+  ],
+  [
+    "Port Lligat Sans",
+    "sans",
+    [["ofl/portlligatsans/PortLligatSans-Regular.ttf", 400, false, 34388]],
+    "ofl/portlligatsans/OFL.txt"
+  ],
+  [
+    "Port Lligat Slab",
+    "serif",
+    [["ofl/portlligatslab/PortLligatSlab-Regular.ttf", 400, false, 38160]],
+    "ofl/portlligatslab/OFL.txt"
+  ],
+  [
+    "Potta One",
+    "display",
+    [["ofl/pottaone/PottaOne-Regular.ttf", 400, false, 4918516]],
+    "ofl/pottaone/OFL.txt"
+  ]
+]

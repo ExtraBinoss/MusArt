@@ -1,0 +1,163 @@
+[
+  [
+    "LXGW WenKai TC",
+    "handwriting",
+    [
+      ["ofl/lxgwwenkaitc/LXGWWenKaiTC-Bold.ttf", 700, false, 12881104],
+      ["ofl/lxgwwenkaitc/LXGWWenKaiTC-Light.ttf", 300, false, 13771744],
+      ["ofl/lxgwwenkaitc/LXGWWenKaiTC-Regular.ttf", 400, false, 13110528]
+    ],
+    "ofl/lxgwwenkaitc/OFL.txt"
+  ],
+  [
+    "La Belle Aurore",
+    "handwriting",
+    [["ofl/labelleaurore/LaBelleAurore.ttf", 400, false, 59364]],
+    "ofl/labelleaurore/OFL.txt"
+  ],
+  [
+    "Labrada",
+    "serif",
+    [
+      ["ofl/labrada/Labrada-Italic[wght].ttf", 400, true, 168748],
+      ["ofl/labrada/Labrada[wght].ttf", 400, false, 172136]
+    ],
+    "ofl/labrada/OFL.txt"
+  ],
+  [
+    "Lacquer",
+    "display",
+    [["ofl/lacquer/Lacquer-Regular.ttf", 400, false, 294060]],
+    "ofl/lacquer/OFL.txt"
+  ],
+  [
+    "Laila",
+    "serif",
+    [
+      ["ofl/laila/Laila-Bold.ttf", 700, false, 369496],
+      ["ofl/laila/Laila-Light.ttf", 300, false, 337628],
+      ["ofl/laila/Laila-Medium.ttf", 500, false, 341440],
+      ["ofl/laila/Laila-Regular.ttf", 400, false, 348824],
+      ["ofl/laila/Laila-SemiBold.ttf", 600, false, 352360]
+    ],
+    "ofl/laila/OFL.txt"
+  ],
+  [
+    "Lakki Reddy",
+    "handwriting",
+    [["ofl/lakkireddy/LakkiReddy-Regular.ttf", 400, false, 583032]],
+    "ofl/lakkireddy/OFL.txt"
+  ],
+  [
+    "Lalezar",
+    "sans",
+    [["ofl/lalezar/Lalezar-Regular.ttf", 400, false, 290016]],
+    "ofl/lalezar/OFL.txt"
+  ],
+  [
+    "Lancelot",
+    "display",
+    [["ofl/lancelot/Lancelot-Regular.ttf", 400, false, 48940]],
+    "ofl/lancelot/OFL.txt"
+  ],
+  [
+    "Langar",
+    "display",
+    [["ofl/langar/Langar-Regular.ttf", 400, false, 192308]],
+    "ofl/langar/OFL.txt"
+  ],
+  [
+    "Lateef",
+    "serif",
+    [
+      ["ofl/lateef/Lateef-Bold.ttf", 700, false, 243260],
+      ["ofl/lateef/Lateef-ExtraBold.ttf", 800, false, 244116],
+      ["ofl/lateef/Lateef-ExtraLight.ttf", 200, false, 240832],
+      ["ofl/lateef/Lateef-Light.ttf", 300, false, 239892],
+      ["ofl/lateef/Lateef-Medium.ttf", 500, false, 242052],
+      ["ofl/lateef/Lateef-Regular.ttf", 400, false, 241092],
+      ["ofl/lateef/Lateef-SemiBold.ttf", 600, false, 242260]
+    ],
+    "ofl/lateef/OFL.txt"
+  ],
+  [
+    "Lato",
+    "sans",
+    [
+      ["ofl/lato/Lato-Black.ttf", 900, false, 664748],
+      ["ofl/lato/Lato-BlackItalic.ttf", 900, true, 698264],
+      ["ofl/lato/Lato-Bold.ttf", 700, false, 656544],
+      ["ofl/lato/Lato-BoldItalic.ttf", 700, true, 698364],
+      ["ofl/lato/Lato-ExtraBold.ttf", 800, false, 613920],
+      ["ofl/lato/Lato-ExtraBoldItalic.ttf", 800, true, 671876],
+      ["ofl/lato/Lato-ExtraLight.ttf", 200, false, 626624],
+      ["ofl/lato/Lato-ExtraLightItalic.ttf", 200, true, 653640],
+      ["ofl/lato/Lato-Italic.ttf", 400, true, 722900],
+      ["ofl/lato/Lato-Light.ttf", 300, false, 643884],
+      ["ofl/lato/Lato-LightItalic.ttf", 300, true, 657552],
+      ["ofl/lato/Lato-Medium.ttf", 500, false, 636396],
+      ["ofl/lato/Lato-MediumItalic.ttf", 500, true, 694924],
+      ["ofl/lato/Lato-Regular.ttf", 400, false, 656568],
+      ["ofl/lato/Lato-SemiBold.ttf", 600, false, 668548],
+      ["ofl/lato/Lato-SemiBoldItalic.ttf", 600, true, 697364],
+      ["ofl/lato/Lato-Thin.ttf", 100, false, 584056],
+      ["ofl/lato/Lato-ThinItalic.ttf", 100, true, 608716]
+    ],
+    "ofl/lato/OFL.txt"
+  ],
+  [
+    "Lavishly Yours",
+    "handwriting",
+    [["ofl/lavishlyyours/LavishlyYours-Regular.ttf", 400, false, 150132]],
+    "ofl/lavishlyyours/OFL.txt"
+  ],
+  [
+    "League Gothic",
+    "sans",
+    [["ofl/leaguegothic/LeagueGothic[wdth].ttf", 400, false, 65972]],
+    "ofl/leaguegothic/OFL.txt"
+  ],
+  [
+    "League Script",
+    "handwriting",
+    [["ofl/leaguescript/LeagueScript-Regular.ttf", 400, false, 69292]],
+    "ofl/leaguescript/OFL.txt"
+  ],
+  [
+    "League Spartan",
+    "sans",
+    [["ofl/leaguespartan/LeagueSpartan[wght].ttf", 400, false, 95116]],
+    "ofl/leaguespartan/OFL.txt"
+  ],
+  [
+    "Leckerli One",
+    "handwriting",
+    [["ofl/leckerlione/LeckerliOne-Regular.ttf", 400, false, 43212]],
+    "ofl/leckerlione/OFL.txt"
+  ],
+  ["Ledger", "serif", [["ofl/ledger/Ledger-Regular.ttf", 400, false, 62148]], "ofl/ledger/OFL.txt"],
+  [
+    "Lekton",
+    "mono",
+    [
+      ["ofl/lekton/Lekton-Bold.ttf", 700, false, 113684],
+      ["ofl/lekton/Lekton-Italic.ttf", 400, true, 34212],
+      ["ofl/lekton/Lekton-Regular.ttf", 400, false, 114320]
+    ],
+    "ofl/lekton/OFL.txt"
+  ],
+  ["Lemon", "display", [["ofl/lemon/Lemon-Regular.ttf", 400, false, 77180]], "ofl/lemon/OFL.txt"],
+  [
+    "Lemonada",
+    "display",
+    [["ofl/lemonada/Lemonada[wght].ttf", 400, false, 189204]],
+    "ofl/lemonada/OFL.txt"
+  ],
+  ["Lexend", "sans", [["ofl/lexend/Lexend[wght].ttf", 400, false, 175756]], "ofl/lexend/OFL.txt"],
+  [
+    "Lexend Deca",
+    "sans",
+    [["ofl/lexenddeca/LexendDeca[wght].ttf", 400, false, 175928]],
+    "ofl/lexenddeca/OFL.txt"
+  ]
+]

@@ -1,0 +1,125 @@
+[
+  [
+    "Baloo Tammudu 2",
+    "display",
+    [["ofl/balootammudu2/BalooTammudu2[wght].ttf", 400, false, 669816]],
+    "ofl/balootammudu2/OFL.txt"
+  ],
+  [
+    "Baloo Thambi 2",
+    "display",
+    [["ofl/baloothambi2/BalooThambi2[wght].ttf", 400, false, 307136]],
+    "ofl/baloothambi2/OFL.txt"
+  ],
+  [
+    "Balsamiq Sans",
+    "display",
+    [
+      ["ofl/balsamiqsans/BalsamiqSans-Bold.ttf", 700, false, 369860],
+      ["ofl/balsamiqsans/BalsamiqSans-BoldItalic.ttf", 700, true, 351304],
+      ["ofl/balsamiqsans/BalsamiqSans-Italic.ttf", 400, true, 379924],
+      ["ofl/balsamiqsans/BalsamiqSans-Regular.ttf", 400, false, 407528]
+    ],
+    "ofl/balsamiqsans/OFL.txt"
+  ],
+  [
+    "Balthazar",
+    "serif",
+    [["ofl/balthazar/Balthazar-Regular.ttf", 400, false, 28248]],
+    "ofl/balthazar/OFL.txt"
+  ],
+  [
+    "Bangers",
+    "display",
+    [["ofl/bangers/Bangers-Regular.ttf", 400, false, 93148]],
+    "ofl/bangers/OFL.txt"
+  ],
+  [
+    "Barlow",
+    "sans",
+    [
+      ["ofl/barlow/Barlow-Black.ttf", 900, false, 111116],
+      ["ofl/barlow/Barlow-BlackItalic.ttf", 900, true, 114596],
+      ["ofl/barlow/Barlow-Bold.ttf", 700, false, 108220],
+      ["ofl/barlow/Barlow-BoldItalic.ttf", 700, true, 111996],
+      ["ofl/barlow/Barlow-ExtraBold.ttf", 800, false, 110228],
+      ["ofl/barlow/Barlow-ExtraBoldItalic.ttf", 800, true, 113112],
+      ["ofl/barlow/Barlow-ExtraLight.ttf", 200, false, 102504],
+      ["ofl/barlow/Barlow-ExtraLightItalic.ttf", 200, true, 107988],
+      ["ofl/barlow/Barlow-Italic.ttf", 400, true, 109624],
+      ["ofl/barlow/Barlow-Light.ttf", 300, false, 103136],
+      ["ofl/barlow/Barlow-LightItalic.ttf", 300, true, 108924],
+      ["ofl/barlow/Barlow-Medium.ttf", 500, false, 103536],
+      ["ofl/barlow/Barlow-MediumItalic.ttf", 500, true, 109184],
+      ["ofl/barlow/Barlow-Regular.ttf", 400, false, 104068],
+      ["ofl/barlow/Barlow-SemiBold.ttf", 600, false, 108348],
+      ["ofl/barlow/Barlow-SemiBoldItalic.ttf", 600, true, 111820],
+      ["ofl/barlow/Barlow-Thin.ttf", 100, false, 101704],
+      ["ofl/barlow/Barlow-ThinItalic.ttf", 100, true, 107296]
+    ],
+    "ofl/barlow/OFL.txt"
+  ],
+  [
+    "Barlow Condensed",
+    "sans",
+    [
+      ["ofl/barlowcondensed/BarlowCondensed-Black.ttf", 900, false, 110828],
+      ["ofl/barlowcondensed/BarlowCondensed-BlackItalic.ttf", 900, true, 112592],
+      ["ofl/barlowcondensed/BarlowCondensed-Bold.ttf", 700, false, 109912],
+      ["ofl/barlowcondensed/BarlowCondensed-BoldItalic.ttf", 700, true, 112196],
+      ["ofl/barlowcondensed/BarlowCondensed-ExtraBold.ttf", 800, false, 110296],
+      ["ofl/barlowcondensed/BarlowCondensed-ExtraBoldItalic.ttf", 800, true, 113004],
+      ["ofl/barlowcondensed/BarlowCondensed-ExtraLight.ttf", 200, false, 101172],
+      ["ofl/barlowcondensed/BarlowCondensed-ExtraLightItalic.ttf", 200, true, 107832],
+      ["ofl/barlowcondensed/BarlowCondensed-Italic.ttf", 400, true, 109856],
+      ["ofl/barlowcondensed/BarlowCondensed-Light.ttf", 300, false, 101996],
+      ["ofl/barlowcondensed/BarlowCondensed-LightItalic.ttf", 300, true, 108540],
+      ["ofl/barlowcondensed/BarlowCondensed-Medium.ttf", 500, false, 103360],
+      ["ofl/barlowcondensed/BarlowCondensed-MediumItalic.ttf", 500, true, 110340],
+      ["ofl/barlowcondensed/BarlowCondensed-Regular.ttf", 400, false, 102480],
+      ["ofl/barlowcondensed/BarlowCondensed-SemiBold.ttf", 600, false, 109428],
+      ["ofl/barlowcondensed/BarlowCondensed-SemiBoldItalic.ttf", 600, true, 112272],
+      ["ofl/barlowcondensed/BarlowCondensed-Thin.ttf", 100, false, 100364],
+      ["ofl/barlowcondensed/BarlowCondensed-ThinItalic.ttf", 100, true, 107076]
+    ],
+    "ofl/barlowcondensed/OFL.txt"
+  ],
+  [
+    "Barlow Semi Condensed",
+    "sans",
+    [
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-Black.ttf", 900, false, 113212],
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-BlackItalic.ttf", 900, true, 115460],
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-Bold.ttf", 700, false, 111772],
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-BoldItalic.ttf", 700, true, 115020],
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-ExtraBold.ttf", 800, false, 112096],
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-ExtraBoldItalic.ttf", 800, true, 115372],
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-ExtraLight.ttf", 200, false, 103908],
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-ExtraLightItalic.ttf", 200, true, 109664],
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-Italic.ttf", 400, true, 111340],
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-Light.ttf", 300, false, 104704],
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-LightItalic.ttf", 300, true, 110304],
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-Medium.ttf", 500, false, 105560],
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-MediumItalic.ttf", 500, true, 111772],
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-Regular.ttf", 400, false, 105776],
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-SemiBold.ttf", 600, false, 109772],
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-SemiBoldItalic.ttf", 600, true, 114036],
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-Thin.ttf", 100, false, 103072],
+      ["ofl/barlowsemicondensed/BarlowSemiCondensed-ThinItalic.ttf", 100, true, 109068]
+    ],
+    "ofl/barlowsemicondensed/OFL.txt"
+  ],
+  [
+    "Barriecito",
+    "display",
+    [["ofl/barriecito/Barriecito-Regular.ttf", 400, false, 278448]],
+    "ofl/barriecito/OFL.txt"
+  ],
+  [
+    "Barrio",
+    "display",
+    [["ofl/barrio/Barrio-Regular.ttf", 400, false, 225524]],
+    "ofl/barrio/OFL.txt"
+  ],
+  ["Basic", "sans", [["ofl/basic/Basic-Regular.ttf", 400, false, 58520]], "ofl/basic/OFL.txt"]
+]

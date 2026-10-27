@@ -1,0 +1,195 @@
+[
+  [
+    "Fondamento",
+    "handwriting",
+    [
+      ["ofl/fondamento/Fondamento-Italic.ttf", 400, true, 78760],
+      ["ofl/fondamento/Fondamento-Regular.ttf", 400, false, 87160]
+    ],
+    "ofl/fondamento/OFL.txt"
+  ],
+  [
+    "Fontdiner Swanky",
+    "display",
+    [["apache/fontdinerswanky/FontdinerSwanky-Regular.ttf", 400, false, 45524]],
+    "apache/fontdinerswanky/LICENSE.txt"
+  ],
+  ["Forum", "display", [["ofl/forum/Forum-Regular.ttf", 400, false, 303316]], "ofl/forum/OFL.txt"],
+  [
+    "Fragment Mono",
+    "mono",
+    [
+      ["ofl/fragmentmono/FragmentMono-Italic.ttf", 400, true, 128052],
+      ["ofl/fragmentmono/FragmentMono-Regular.ttf", 400, false, 125368]
+    ],
+    "ofl/fragmentmono/OFL.txt"
+  ],
+  [
+    "Francois One",
+    "sans",
+    [["ofl/francoisone/FrancoisOne-Regular.ttf", 400, false, 79356]],
+    "ofl/francoisone/OFL.txt"
+  ],
+  [
+    "Frank Ruhl Libre",
+    "serif",
+    [["ofl/frankruhllibre/FrankRuhlLibre[wght].ttf", 400, false, 178468]],
+    "ofl/frankruhllibre/OFL.txt"
+  ],
+  [
+    "Fraunces",
+    "serif",
+    [
+      ["ofl/fraunces/Fraunces-Italic[SOFT,WONK,opsz,wght].ttf", 400, true, 414904],
+      ["ofl/fraunces/Fraunces[SOFT,WONK,opsz,wght].ttf", 400, false, 360440]
+    ],
+    "ofl/fraunces/OFL.txt"
+  ],
+  [
+    "Freckle Face",
+    "display",
+    [["ofl/freckleface/FreckleFace-Regular.ttf", 400, false, 121088]],
+    "ofl/freckleface/OFL.txt"
+  ],
+  [
+    "Fredericka the Great",
+    "display",
+    [["ofl/frederickathegreat/FrederickatheGreat-Regular.ttf", 400, false, 486016]],
+    "ofl/frederickathegreat/OFL.txt"
+  ],
+  [
+    "Fredoka",
+    "sans",
+    [["ofl/fredoka/Fredoka[wdth,wght].ttf", 400, false, 159184]],
+    "ofl/fredoka/OFL.txt"
+  ],
+  [
+    "Freehand",
+    "display",
+    [["ofl/freehand/Freehand-Regular.ttf", 400, false, 235540]],
+    "ofl/freehand/OFL.txt"
+  ],
+  [
+    "Freeman",
+    "display",
+    [["ofl/freeman/Freeman-Regular.ttf", 400, false, 241164]],
+    "ofl/freeman/OFL.txt"
+  ],
+  ["Fresca", "sans", [["ofl/fresca/Fresca-Regular.ttf", 400, false, 32644]], "ofl/fresca/OFL.txt"],
+  [
+    "Frijole",
+    "display",
+    [["ofl/frijole/Frijole-Regular.ttf", 400, false, 227860]],
+    "ofl/frijole/OFL.txt"
+  ],
+  [
+    "Fruktur",
+    "display",
+    [
+      ["ofl/fruktur/Fruktur-Italic.ttf", 400, true, 210784],
+      ["ofl/fruktur/Fruktur-Regular.ttf", 400, false, 211180]
+    ],
+    "ofl/fruktur/OFL.txt"
+  ],
+  [
+    "Fugaz One",
+    "display",
+    [["ofl/fugazone/FugazOne-Regular.ttf", 400, false, 27868]],
+    "ofl/fugazone/OFL.txt"
+  ],
+  [
+    "Fuggles",
+    "handwriting",
+    [["ofl/fuggles/Fuggles-Regular.ttf", 400, false, 734252]],
+    "ofl/fuggles/OFL.txt"
+  ],
+  [
+    "Funnel Display",
+    "display",
+    [["ofl/funneldisplay/FunnelDisplay[wght].ttf", 400, false, 53436]],
+    "ofl/funneldisplay/OFL.txt"
+  ],
+  [
+    "Funnel Sans",
+    "sans",
+    [
+      ["ofl/funnelsans/FunnelSans-Italic[wght].ttf", 400, true, 55044],
+      ["ofl/funnelsans/FunnelSans[wght].ttf", 400, false, 53268]
+    ],
+    "ofl/funnelsans/OFL.txt"
+  ],
+  ["Fustat", "sans", [["ofl/fustat/Fustat[wght].ttf", 400, false, 172620]], "ofl/fustat/OFL.txt"],
+  [
+    "Fuzzy Bubbles",
+    "handwriting",
+    [
+      ["ofl/fuzzybubbles/FuzzyBubbles-Bold.ttf", 700, false, 140308],
+      ["ofl/fuzzybubbles/FuzzyBubbles-Regular.ttf", 400, false, 148532]
+    ],
+    "ofl/fuzzybubbles/OFL.txt"
+  ],
+  [
+    "GFS Didot",
+    "serif",
+    [["ofl/gfsdidot/GFSDidot-Regular.ttf", 400, false, 191168]],
+    "ofl/gfsdidot/OFL.txt"
+  ],
+  [
+    "GFS Neohellenic",
+    "sans",
+    [
+      ["ofl/gfsneohellenic/GFSNeohellenic.ttf", 400, false, 460072],
+      ["ofl/gfsneohellenic/GFSNeohellenicBold.ttf", 400, false, 344708],
+      ["ofl/gfsneohellenic/GFSNeohellenicBoldItalic.ttf", 400, true, 362080],
+      ["ofl/gfsneohellenic/GFSNeohellenicItalic.ttf", 400, true, 369060]
+    ],
+    "ofl/gfsneohellenic/OFL.txt"
+  ],
+  [
+    "Ga Maamli",
+    "display",
+    [["ofl/gamaamli/GaMaamli-Regular.ttf", 400, false, 320256]],
+    "ofl/gamaamli/OFL.txt"
+  ],
+  [
+    "Gabarito",
+    "display",
+    [["ofl/gabarito/Gabarito[wght].ttf", 400, false, 158144]],
+    "ofl/gabarito/OFL.txt"
+  ],
+  [
+    "Gabriela",
+    "serif",
+    [["ofl/gabriela/Gabriela-Regular.ttf", 400, false, 70984]],
+    "ofl/gabriela/OFL.txt"
+  ],
+  [
+    "Gaegu",
+    "handwriting",
+    [
+      ["ofl/gaegu/Gaegu-Bold.ttf", 700, false, 2962664],
+      ["ofl/gaegu/Gaegu-Light.ttf", 300, false, 3213004],
+      ["ofl/gaegu/Gaegu-Regular.ttf", 400, false, 3165816]
+    ],
+    "ofl/gaegu/OFL.txt"
+  ],
+  ["Gafata", "sans", [["ofl/gafata/Gafata-Regular.ttf", 400, false, 51552]], "ofl/gafata/OFL.txt"],
+  [
+    "Gajraj One",
+    "display",
+    [["ofl/gajrajone/GajrajOne-Regular.ttf", 400, false, 149784]],
+    "ofl/gajrajone/OFL.txt"
+  ],
+  [
+    "Galada",
+    "display",
+    [["ofl/galada/Galada-Regular.ttf", 400, false, 187776]],
+    "ofl/galada/OFL.txt"
+  ],
+  [
+    "Galdeano",
+    "sans",
+    [["ofl/galdeano/Galdeano-Regular.ttf", 400, false, 24868]],
+    "ofl/galdeano/OFL.txt"
+  ]
+]

@@ -1,0 +1,188 @@
+[
+  [
+    "Shalimar",
+    "handwriting",
+    [["ofl/shalimar/Shalimar-Regular.ttf", 400, false, 220724]],
+    "ofl/shalimar/OFL.txt"
+  ],
+  [
+    "Shantell Sans",
+    "display",
+    [
+      ["ofl/shantellsans/ShantellSans-Italic[BNCE,INFM,SPAC,wght].ttf", 400, true, 1532432],
+      ["ofl/shantellsans/ShantellSans[BNCE,INFM,SPAC,wght].ttf", 400, false, 1284736]
+    ],
+    "ofl/shantellsans/OFL.txt"
+  ],
+  ["Shanti", "sans", [["ofl/shanti/Shanti-Regular.ttf", 400, false, 70112]], "ofl/shanti/OFL.txt"],
+  [
+    "Share",
+    "sans",
+    [
+      ["ofl/share/Share-Bold.ttf", 700, false, 91072],
+      ["ofl/share/Share-BoldItalic.ttf", 700, true, 75880],
+      ["ofl/share/Share-Italic.ttf", 400, true, 76636],
+      ["ofl/share/Share-Regular.ttf", 400, false, 92012]
+    ],
+    "ofl/share/OFL.txt"
+  ],
+  [
+    "Share Tech",
+    "sans",
+    [["ofl/sharetech/ShareTech-Regular.ttf", 400, false, 53096]],
+    "ofl/sharetech/OFL.txt"
+  ],
+  [
+    "Share Tech Mono",
+    "mono",
+    [["ofl/sharetechmono/ShareTechMono-Regular.ttf", 400, false, 43272]],
+    "ofl/sharetechmono/OFL.txt"
+  ],
+  [
+    "Shippori Antique",
+    "sans",
+    [["ofl/shipporiantique/ShipporiAntique-Regular.ttf", 400, false, 7404988]],
+    "ofl/shipporiantique/OFL.txt"
+  ],
+  [
+    "Shippori Antique B1",
+    "sans",
+    [["ofl/shipporiantiqueb1/ShipporiAntiqueB1-Regular.ttf", 400, false, 13095332]],
+    "ofl/shipporiantiqueb1/OFL.txt"
+  ],
+  [
+    "Shippori Mincho",
+    "serif",
+    [
+      ["ofl/shipporimincho/ShipporiMincho-Bold.ttf", 700, false, 8563788],
+      ["ofl/shipporimincho/ShipporiMincho-ExtraBold.ttf", 800, false, 8563208],
+      ["ofl/shipporimincho/ShipporiMincho-Medium.ttf", 500, false, 8678848],
+      ["ofl/shipporimincho/ShipporiMincho-Regular.ttf", 400, false, 8677284],
+      ["ofl/shipporimincho/ShipporiMincho-SemiBold.ttf", 600, false, 8650032]
+    ],
+    "ofl/shipporimincho/OFL.txt"
+  ],
+  [
+    "Shippori Mincho B1",
+    "serif",
+    [
+      ["ofl/shipporiminchob1/ShipporiMinchoB1-Bold.ttf", 700, false, 15088960],
+      ["ofl/shipporiminchob1/ShipporiMinchoB1-ExtraBold.ttf", 800, false, 15088060],
+      ["ofl/shipporiminchob1/ShipporiMinchoB1-Medium.ttf", 500, false, 15185140],
+      ["ofl/shipporiminchob1/ShipporiMinchoB1-Regular.ttf", 400, false, 15230032],
+      ["ofl/shipporiminchob1/ShipporiMinchoB1-SemiBold.ttf", 600, false, 15160536]
+    ],
+    "ofl/shipporiminchob1/OFL.txt"
+  ],
+  [
+    "Shizuru",
+    "display",
+    [["ofl/shizuru/Shizuru-Regular.ttf", 400, false, 251244]],
+    "ofl/shizuru/OFL.txt"
+  ],
+  [
+    "Shojumaru",
+    "display",
+    [["ofl/shojumaru/Shojumaru-Regular.ttf", 400, false, 71672]],
+    "ofl/shojumaru/OFL.txt"
+  ],
+  [
+    "Short Stack",
+    "handwriting",
+    [["ofl/shortstack/ShortStack-Regular.ttf", 400, false, 68152]],
+    "ofl/shortstack/OFL.txt"
+  ],
+  [
+    "Shrikhand",
+    "display",
+    [["ofl/shrikhand/Shrikhand-Regular.ttf", 400, false, 220804]],
+    "ofl/shrikhand/OFL.txt"
+  ],
+  ["Siemreap", "sans", [["ofl/siemreap/Siemreap.ttf", 400, false, 285320]], "ofl/siemreap/OFL.txt"],
+  [
+    "Sigmar",
+    "display",
+    [["ofl/sigmar/Sigmar-Regular.ttf", 400, false, 209084]],
+    "ofl/sigmar/OFL.txt"
+  ],
+  [
+    "Sigmar One",
+    "display",
+    [["ofl/sigmarone/SigmarOne-Regular.ttf", 400, false, 172512]],
+    "ofl/sigmarone/OFL.txt"
+  ],
+  [
+    "Signika",
+    "sans",
+    [["ofl/signika/Signika[GRAD,wght].ttf", 400, false, 637392]],
+    "ofl/signika/OFL.txt"
+  ],
+  [
+    "Signika Negative",
+    "sans",
+    [["ofl/signikanegative/SignikaNegative[wght].ttf", 400, false, 428416]],
+    "ofl/signikanegative/OFL.txt"
+  ],
+  [
+    "Silkscreen",
+    "display",
+    [
+      ["ofl/silkscreen/Silkscreen-Bold.ttf", 700, false, 30632],
+      ["ofl/silkscreen/Silkscreen-Regular.ttf", 400, false, 32220]
+    ],
+    "ofl/silkscreen/OFL.txt"
+  ],
+  [
+    "Simonetta",
+    "display",
+    [
+      ["ofl/simonetta/Simonetta-Black.ttf", 900, false, 111468],
+      ["ofl/simonetta/Simonetta-BlackItalic.ttf", 900, true, 107044],
+      ["ofl/simonetta/Simonetta-Italic.ttf", 400, true, 106264],
+      ["ofl/simonetta/Simonetta-Regular.ttf", 400, false, 115060]
+    ],
+    "ofl/simonetta/OFL.txt"
+  ],
+  [
+    "Single Day",
+    "display",
+    [["ofl/singleday/SingleDay-Regular.ttf", 400, false, 816524]],
+    "ofl/singleday/OFL.txt"
+  ],
+  [
+    "Sintony",
+    "sans",
+    [
+      ["ofl/sintony/Sintony-Bold.ttf", 700, false, 26016],
+      ["ofl/sintony/Sintony-Regular.ttf", 400, false, 25712]
+    ],
+    "ofl/sintony/OFL.txt"
+  ],
+  [
+    "Sirin Stencil",
+    "display",
+    [["ofl/sirinstencil/SirinStencil-Regular.ttf", 400, false, 69332]],
+    "ofl/sirinstencil/OFL.txt"
+  ],
+  [
+    "Sirivennela",
+    "sans",
+    [["ofl/sirivennela/Sirivennela-Regular.ttf", 400, false, 1555204]],
+    "ofl/sirivennela/OFL.txt"
+  ],
+  ["Six Caps", "sans", [["ofl/sixcaps/SixCaps.ttf", 400, false, 46388]], "ofl/sixcaps/OFL.txt"],
+  [
+    "Sixtyfour",
+    "mono",
+    [["ofl/sixtyfour/Sixtyfour[BLED,SCAN].ttf", 400, false, 71536]],
+    "ofl/sixtyfour/OFL.txt"
+  ],
+  [
+    "Sixtyfour Convergence",
+    "mono",
+    [
+      ["ofl/sixtyfourconvergence/SixtyfourConvergence[BLED,SCAN,XELA,YELA].ttf", 400, false, 122260]
+    ],
+    "ofl/sixtyfourconvergence/OFL.txt"
+  ]
+]

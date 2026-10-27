@@ -8,9 +8,11 @@ describe("dither node", () => {
     const graph = graphNodes(node);
     expectSourceAlpha(node, fixture.input);
     for (const control of Object.entries(fixture.controls)
-      .filter(([name]) => name !== "randomSeed")
+      .filter(([name]) =>
+        ["amount", "scale", "levels", "color", "sourceFlipY", "seed", "resolution"].includes(name),
+      )
       .map(([, node]) => node))
-      expect(graph.has(control)).toBe(true);
+      expect(graph.has(control as never)).toBe(true);
     expect(fixture.getGlyphAtlas).not.toHaveBeenCalled();
     fixture.dispose();
   });

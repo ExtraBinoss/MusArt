@@ -13,3 +13,7 @@ export function colorBurn(b: RGB, s: RGB) {
         .select(vec3(0), clamp(b.oneMinus().div(max(s, 0.000001)).oneMinus(), 0, 1)),
     );
 }
+
+/** Photoshop whole-color comparison uses the sum of channels; ties keep the backdrop. */
+export const darkerColor = (b: RGB, s: RGB) =>
+  s.r.add(s.g).add(s.b).lessThan(b.r.add(b.g).add(b.b)).select(s, b);

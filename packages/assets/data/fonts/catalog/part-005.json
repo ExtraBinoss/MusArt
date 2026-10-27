@@ -1,0 +1,181 @@
+[
+  [
+    "Asta Sans",
+    "sans",
+    [["ofl/astasans/AstaSans[wght].ttf", 400, false, 5771772]],
+    "ofl/astasans/OFL.txt"
+  ],
+  [
+    "Astloch",
+    "display",
+    [
+      ["ofl/astloch/Astloch-Bold.ttf", 700, false, 75732],
+      ["ofl/astloch/Astloch-Regular.ttf", 400, false, 51156]
+    ],
+    "ofl/astloch/OFL.txt"
+  ],
+  [
+    "Asul",
+    "serif",
+    [
+      ["ofl/asul/Asul-Bold.ttf", 700, false, 33424],
+      ["ofl/asul/Asul-Regular.ttf", 400, false, 33440]
+    ],
+    "ofl/asul/OFL.txt"
+  ],
+  [
+    "Athiti",
+    "sans",
+    [
+      ["ofl/athiti/Athiti-Bold.ttf", 700, false, 186308],
+      ["ofl/athiti/Athiti-ExtraLight.ttf", 200, false, 174592],
+      ["ofl/athiti/Athiti-Light.ttf", 300, false, 177692],
+      ["ofl/athiti/Athiti-Medium.ttf", 500, false, 182400],
+      ["ofl/athiti/Athiti-Regular.ttf", 400, false, 186712],
+      ["ofl/athiti/Athiti-SemiBold.ttf", 600, false, 185036]
+    ],
+    "ofl/athiti/OFL.txt"
+  ],
+  [
+    "Atkinson Hyperlegible",
+    "sans",
+    [
+      ["ofl/atkinsonhyperlegible/AtkinsonHyperlegible-Bold.ttf", 700, false, 55256],
+      ["ofl/atkinsonhyperlegible/AtkinsonHyperlegible-BoldItalic.ttf", 700, true, 55288],
+      ["ofl/atkinsonhyperlegible/AtkinsonHyperlegible-Italic.ttf", 400, true, 54892],
+      ["ofl/atkinsonhyperlegible/AtkinsonHyperlegible-Regular.ttf", 400, false, 54348]
+    ],
+    "ofl/atkinsonhyperlegible/OFL.txt"
+  ],
+  [
+    "Atkinson Hyperlegible Mono",
+    "sans",
+    [
+      ["ofl/atkinsonhyperlegiblemono/AtkinsonHyperlegibleMono-Italic[wght].ttf", 400, true, 56364],
+      ["ofl/atkinsonhyperlegiblemono/AtkinsonHyperlegibleMono[wght].ttf", 400, false, 53960]
+    ],
+    "ofl/atkinsonhyperlegiblemono/OFL.txt"
+  ],
+  [
+    "Atkinson Hyperlegible Next",
+    "sans",
+    [
+      ["ofl/atkinsonhyperlegiblenext/AtkinsonHyperlegibleNext-Italic[wght].ttf", 400, true, 123916],
+      ["ofl/atkinsonhyperlegiblenext/AtkinsonHyperlegibleNext[wght].ttf", 400, false, 114552]
+    ],
+    "ofl/atkinsonhyperlegiblenext/OFL.txt"
+  ],
+  [
+    "Atma",
+    "display",
+    [
+      ["ofl/atma/Atma-Bold.ttf", 700, false, 216512],
+      ["ofl/atma/Atma-Light.ttf", 300, false, 218972],
+      ["ofl/atma/Atma-Medium.ttf", 500, false, 220636],
+      ["ofl/atma/Atma-Regular.ttf", 400, false, 220344],
+      ["ofl/atma/Atma-SemiBold.ttf", 600, false, 219984]
+    ],
+    "ofl/atma/OFL.txt"
+  ],
+  [
+    "Atomic Age",
+    "display",
+    [["ofl/atomicage/AtomicAge-Regular.ttf", 400, false, 62592]],
+    "ofl/atomicage/OFL.txt"
+  ],
+  [
+    "Aubrey",
+    "display",
+    [["ofl/aubrey/Aubrey-Regular.ttf", 400, false, 45628]],
+    "ofl/aubrey/OFL.txt"
+  ],
+  [
+    "Audiowide",
+    "display",
+    [["ofl/audiowide/Audiowide-Regular.ttf", 400, false, 69916]],
+    "ofl/audiowide/OFL.txt"
+  ],
+  [
+    "Autour One",
+    "display",
+    [["ofl/autourone/AutourOne-Regular.ttf", 400, false, 87060]],
+    "ofl/autourone/OFL.txt"
+  ],
+  [
+    "Average",
+    "serif",
+    [["ofl/average/Average-Regular.ttf", 400, false, 73640]],
+    "ofl/average/OFL.txt"
+  ],
+  [
+    "Average Sans",
+    "sans",
+    [["ofl/averagesans/AverageSans-Regular.ttf", 400, false, 43824]],
+    "ofl/averagesans/OFL.txt"
+  ],
+  [
+    "Averia Gruesa Libre",
+    "display",
+    [["ofl/averiagruesalibre/AveriaGruesaLibre-Regular.ttf", 400, false, 111584]],
+    "ofl/averiagruesalibre/OFL.txt"
+  ],
+  [
+    "Averia Libre",
+    "display",
+    [
+      ["ofl/averialibre/AveriaLibre-Bold.ttf", 700, false, 112184],
+      ["ofl/averialibre/AveriaLibre-BoldItalic.ttf", 700, true, 135624],
+      ["ofl/averialibre/AveriaLibre-Italic.ttf", 400, true, 128804],
+      ["ofl/averialibre/AveriaLibre-Light.ttf", 300, false, 108188],
+      ["ofl/averialibre/AveriaLibre-LightItalic.ttf", 300, true, 133576],
+      ["ofl/averialibre/AveriaLibre-Regular.ttf", 400, false, 108424]
+    ],
+    "ofl/averialibre/OFL.txt"
+  ],
+  [
+    "Averia Sans Libre",
+    "display",
+    [
+      ["ofl/averiasanslibre/AveriaSansLibre-Bold.ttf", 700, false, 112976],
+      ["ofl/averiasanslibre/AveriaSansLibre-BoldItalic.ttf", 700, true, 135808],
+      ["ofl/averiasanslibre/AveriaSansLibre-Italic.ttf", 400, true, 128856],
+      ["ofl/averiasanslibre/AveriaSansLibre-Light.ttf", 300, false, 107748],
+      ["ofl/averiasanslibre/AveriaSansLibre-LightItalic.ttf", 300, true, 134240],
+      ["ofl/averiasanslibre/AveriaSansLibre-Regular.ttf", 400, false, 108320]
+    ],
+    "ofl/averiasanslibre/OFL.txt"
+  ],
+  [
+    "Averia Serif Libre",
+    "display",
+    [
+      ["ofl/averiaseriflibre/AveriaSerifLibre-Bold.ttf", 700, false, 113916],
+      ["ofl/averiaseriflibre/AveriaSerifLibre-BoldItalic.ttf", 700, true, 138164],
+      ["ofl/averiaseriflibre/AveriaSerifLibre-Italic.ttf", 400, true, 130916],
+      ["ofl/averiaseriflibre/AveriaSerifLibre-Light.ttf", 300, false, 109968],
+      ["ofl/averiaseriflibre/AveriaSerifLibre-LightItalic.ttf", 300, true, 136016],
+      ["ofl/averiaseriflibre/AveriaSerifLibre-Regular.ttf", 400, false, 109948]
+    ],
+    "ofl/averiaseriflibre/OFL.txt"
+  ],
+  [
+    "Azeret Mono",
+    "mono",
+    [
+      ["ofl/azeretmono/AzeretMono-Italic[wght].ttf", 400, true, 112284],
+      ["ofl/azeretmono/AzeretMono[wght].ttf", 400, false, 106092]
+    ],
+    "ofl/azeretmono/OFL.txt"
+  ],
+  [
+    "B612",
+    "sans",
+    [
+      ["ofl/b612/B612-Bold.ttf", 700, false, 100932],
+      ["ofl/b612/B612-BoldItalic.ttf", 700, true, 109172],
+      ["ofl/b612/B612-Italic.ttf", 400, true, 106128],
+      ["ofl/b612/B612-Regular.ttf", 400, false, 153192]
+    ],
+    "ofl/b612/OFL.txt"
+  ]
+]

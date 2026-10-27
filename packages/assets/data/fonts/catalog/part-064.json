@@ -1,0 +1,203 @@
+[
+  [
+    "Sarala",
+    "sans",
+    [
+      ["ofl/sarala/Sarala-Bold.ttf", 700, false, 239072],
+      ["ofl/sarala/Sarala-Regular.ttf", 400, false, 241592]
+    ],
+    "ofl/sarala/OFL.txt"
+  ],
+  [
+    "Sarina",
+    "display",
+    [["ofl/sarina/Sarina-Regular.ttf", 400, false, 96104]],
+    "ofl/sarina/OFL.txt"
+  ],
+  [
+    "Sarpanch",
+    "sans",
+    [
+      ["ofl/sarpanch/Sarpanch-Black.ttf", 900, false, 299512],
+      ["ofl/sarpanch/Sarpanch-Bold.ttf", 700, false, 291920],
+      ["ofl/sarpanch/Sarpanch-ExtraBold.ttf", 800, false, 299108],
+      ["ofl/sarpanch/Sarpanch-Medium.ttf", 500, false, 292468],
+      ["ofl/sarpanch/Sarpanch-Regular.ttf", 400, false, 290368],
+      ["ofl/sarpanch/Sarpanch-SemiBold.ttf", 600, false, 292920]
+    ],
+    "ofl/sarpanch/OFL.txt"
+  ],
+  [
+    "Sassy Frass",
+    "handwriting",
+    [["ofl/sassyfrass/SassyFrass-Regular.ttf", 400, false, 162820]],
+    "ofl/sassyfrass/OFL.txt"
+  ],
+  [
+    "Satisfy",
+    "handwriting",
+    [["apache/satisfy/Satisfy-Regular.ttf", 400, false, 47928]],
+    "apache/satisfy/LICENSE.txt"
+  ],
+  [
+    "Savate",
+    "sans",
+    [
+      ["ofl/savate/Savate-Italic[wght].ttf", 400, true, 280184],
+      ["ofl/savate/Savate[wght].ttf", 400, false, 274764]
+    ],
+    "ofl/savate/OFL.txt"
+  ],
+  [
+    "Sawarabi Gothic",
+    "sans",
+    [["ofl/sawarabigothic/SawarabiGothic-Regular.ttf", 400, false, 1902848]],
+    "ofl/sawarabigothic/OFL.txt"
+  ],
+  [
+    "Sawarabi Mincho",
+    "serif",
+    [["ofl/sawarabimincho/SawarabiMincho-Regular.ttf", 400, false, 3662996]],
+    "ofl/sawarabimincho/OFL.txt"
+  ],
+  [
+    "Scada",
+    "sans",
+    [
+      ["ofl/scada/Scada-Bold.ttf", 700, false, 91136],
+      ["ofl/scada/Scada-BoldItalic.ttf", 700, true, 95196],
+      ["ofl/scada/Scada-Italic.ttf", 400, true, 94644],
+      ["ofl/scada/Scada-Regular.ttf", 400, false, 91020]
+    ],
+    "ofl/scada/OFL.txt"
+  ],
+  [
+    "Scheherazade New",
+    "serif",
+    [
+      ["ofl/scheherazadenew/ScheherazadeNew-Bold.ttf", 700, false, 593472],
+      ["ofl/scheherazadenew/ScheherazadeNew-Medium.ttf", 500, false, 582492],
+      ["ofl/scheherazadenew/ScheherazadeNew-Regular.ttf", 400, false, 331504],
+      ["ofl/scheherazadenew/ScheherazadeNew-SemiBold.ttf", 600, false, 589896]
+    ],
+    "ofl/scheherazadenew/OFL.txt"
+  ],
+  [
+    "Schibsted Grotesk",
+    "sans",
+    [
+      ["ofl/schibstedgrotesk/SchibstedGrotesk-Italic[wght].ttf", 400, true, 181440],
+      ["ofl/schibstedgrotesk/SchibstedGrotesk[wght].ttf", 400, false, 176068]
+    ],
+    "ofl/schibstedgrotesk/OFL.txt"
+  ],
+  [
+    "Schoolbell",
+    "handwriting",
+    [["apache/schoolbell/Schoolbell-Regular.ttf", 400, false, 48904]],
+    "apache/schoolbell/LICENSE.txt"
+  ],
+  [
+    "Science Gothic",
+    "sans",
+    [["ofl/sciencegothic/ScienceGothic[CTRS,slnt,wdth,wght].ttf", 400, false, 2726388]],
+    "ofl/sciencegothic/OFL.txt"
+  ],
+  [
+    "Scope One",
+    "serif",
+    [["ofl/scopeone/ScopeOne-Regular.ttf", 400, false, 93036]],
+    "ofl/scopeone/OFL.txt"
+  ],
+  [
+    "Scoutie Sans",
+    "sans",
+    [
+      ["ofl/scoutiesans/ScoutieSans-Italic[wght].ttf", 400, true, 136480],
+      ["ofl/scoutiesans/ScoutieSans[wght].ttf", 400, false, 133928]
+    ],
+    "ofl/scoutiesans/OFL.txt"
+  ],
+  [
+    "Seaweed Script",
+    "display",
+    [["ofl/seaweedscript/SeaweedScript-Regular.ttf", 400, false, 117072]],
+    "ofl/seaweedscript/OFL.txt"
+  ],
+  [
+    "Secular One",
+    "sans",
+    [["ofl/secularone/SecularOne-Regular.ttf", 400, false, 83916]],
+    "ofl/secularone/OFL.txt"
+  ],
+  [
+    "Sedan",
+    "serif",
+    [
+      ["ofl/sedan/Sedan-Italic.ttf", 400, true, 88912],
+      ["ofl/sedan/Sedan-Regular.ttf", 400, false, 116096]
+    ],
+    "ofl/sedan/OFL.txt"
+  ],
+  [
+    "Sedan SC",
+    "serif",
+    [["ofl/sedansc/SedanSC-Regular.ttf", 400, false, 116128]],
+    "ofl/sedansc/OFL.txt"
+  ],
+  [
+    "Sedgwick Ave",
+    "handwriting",
+    [["ofl/sedgwickave/SedgwickAve-Regular.ttf", 400, false, 145332]],
+    "ofl/sedgwickave/OFL.txt"
+  ],
+  [
+    "Sedgwick Ave Display",
+    "handwriting",
+    [["ofl/sedgwickavedisplay/SedgwickAveDisplay-Regular.ttf", 400, false, 140148]],
+    "ofl/sedgwickavedisplay/OFL.txt"
+  ],
+  [
+    "Sekuya",
+    "display",
+    [["ofl/sekuya/Sekuya-Regular.ttf", 400, false, 300420]],
+    "ofl/sekuya/OFL.txt"
+  ],
+  ["Sen", "sans", [["ofl/sen/Sen[wght].ttf", 400, false, 50824]], "ofl/sen/OFL.txt"],
+  [
+    "Send Flowers",
+    "handwriting",
+    [["ofl/sendflowers/SendFlowers-Regular.ttf", 400, false, 127692]],
+    "ofl/sendflowers/OFL.txt"
+  ],
+  [
+    "Sevillana",
+    "display",
+    [["ofl/sevillana/Sevillana-Regular.ttf", 400, false, 162872]],
+    "ofl/sevillana/OFL.txt"
+  ],
+  [
+    "Seymour One",
+    "sans",
+    [["ofl/seymourone/SeymourOne-Regular.ttf", 400, false, 93576]],
+    "ofl/seymourone/OFL.txt"
+  ],
+  [
+    "Shadows Into Light",
+    "handwriting",
+    [["ofl/shadowsintolight/ShadowsIntoLight.ttf", 400, false, 54304]],
+    "ofl/shadowsintolight/OFL.txt"
+  ],
+  [
+    "Shadows Into Light Two",
+    "handwriting",
+    [["ofl/shadowsintolighttwo/ShadowsIntoLightTwo-Regular.ttf", 400, false, 39396]],
+    "ofl/shadowsintolighttwo/OFL.txt"
+  ],
+  [
+    "Shafarik",
+    "display",
+    [["ofl/shafarik/Shafarik-Regular.ttf", 400, false, 1061684]],
+    "ofl/shafarik/OFL.txt"
+  ]
+]

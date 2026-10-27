@@ -1,0 +1,164 @@
+[
+  [
+    "Nova Script",
+    "display",
+    [["ofl/novascript/NovaScript-Regular.ttf", 400, false, 117388]],
+    "ofl/novascript/OFL.txt"
+  ],
+  [
+    "Nova Slim",
+    "display",
+    [["ofl/novaslim/NovaSlim.ttf", 400, false, 93956]],
+    "ofl/novaslim/OFL.txt"
+  ],
+  [
+    "Nova Square",
+    "display",
+    [["ofl/novasquare/NovaSquare.ttf", 400, false, 87968]],
+    "ofl/novasquare/OFL.txt"
+  ],
+  ["Numans", "sans", [["ofl/numans/Numans-Regular.ttf", 400, false, 39368]], "ofl/numans/OFL.txt"],
+  [
+    "Nunito",
+    "sans",
+    [
+      ["ofl/nunito/Nunito-Italic[wght].ttf", 400, true, 281832],
+      ["ofl/nunito/Nunito[wght].ttf", 400, false, 276932]
+    ],
+    "ofl/nunito/OFL.txt"
+  ],
+  [
+    "Nunito Sans",
+    "sans",
+    [
+      ["ofl/nunitosans/NunitoSans-Italic[YTLC,opsz,wdth,wght].ttf", 400, true, 558412],
+      ["ofl/nunitosans/NunitoSans[YTLC,opsz,wdth,wght].ttf", 400, false, 571240]
+    ],
+    "ofl/nunitosans/OFL.txt"
+  ],
+  [
+    "Nuosu SIL",
+    "sans",
+    [["ofl/nuosusil/NuosuSIL-Regular.ttf", 400, false, 259188]],
+    "ofl/nuosusil/OFL.txt"
+  ],
+  [
+    "Odibee Sans",
+    "display",
+    [["ofl/odibeesans/OdibeeSans-Regular.ttf", 400, false, 46220]],
+    "ofl/odibeesans/OFL.txt"
+  ],
+  [
+    "Odor Mean Chey",
+    "serif",
+    [["ofl/odormeanchey/OdorMeanChey-Regular.ttf", 400, false, 103900]],
+    "ofl/odormeanchey/OFL.txt"
+  ],
+  [
+    "Offside",
+    "display",
+    [["ofl/offside/Offside-Regular.ttf", 400, false, 61824]],
+    "ofl/offside/OFL.txt"
+  ],
+  ["Oi", "display", [["ofl/oi/Oi-Regular.ttf", 400, false, 554780]], "ofl/oi/OFL.txt"],
+  ["Ojuju", "sans", [["ofl/ojuju/Ojuju[wght].ttf", 400, false, 221368]], "ofl/ojuju/OFL.txt"],
+  [
+    "Old Standard TT",
+    "serif",
+    [
+      ["ofl/oldstandardtt/OldStandard-Bold.ttf", 700, false, 267128],
+      ["ofl/oldstandardtt/OldStandard-Italic.ttf", 400, true, 272692],
+      ["ofl/oldstandardtt/OldStandard-Regular.ttf", 400, false, 249668]
+    ],
+    "ofl/oldstandardtt/OFL.txt"
+  ],
+  [
+    "Oldenburg",
+    "display",
+    [["ofl/oldenburg/Oldenburg-Regular.ttf", 400, false, 46248]],
+    "ofl/oldenburg/OFL.txt"
+  ],
+  ["Ole", "handwriting", [["ofl/ole/Ole-Regular.ttf", 400, false, 194772]], "ofl/ole/OFL.txt"],
+  [
+    "Oleo Script",
+    "display",
+    [
+      ["ofl/oleoscript/OleoScript-Bold.ttf", 700, false, 34628],
+      ["ofl/oleoscript/OleoScript-Regular.ttf", 400, false, 34980]
+    ],
+    "ofl/oleoscript/OFL.txt"
+  ],
+  [
+    "Oleo Script Swash Caps",
+    "display",
+    [
+      ["ofl/oleoscriptswashcaps/OleoScriptSwashCaps-Bold.ttf", 700, false, 39784],
+      ["ofl/oleoscriptswashcaps/OleoScriptSwashCaps-Regular.ttf", 400, false, 40088]
+    ],
+    "ofl/oleoscriptswashcaps/OFL.txt"
+  ],
+  ["Onest", "sans", [["ofl/onest/Onest[wght].ttf", 400, false, 193056]], "ofl/onest/OFL.txt"],
+  [
+    "Oooh Baby",
+    "handwriting",
+    [["ofl/ooohbaby/OoohBaby-Regular.ttf", 400, false, 135104]],
+    "ofl/ooohbaby/OFL.txt"
+  ],
+  [
+    "Open Sans",
+    "sans",
+    [
+      ["ofl/opensans/OpenSans-Italic[wdth,wght].ttf", 400, true, 583992],
+      ["ofl/opensans/OpenSans[wdth,wght].ttf", 400, false, 532636]
+    ],
+    "ofl/opensans/OFL.txt"
+  ],
+  [
+    "Oranienbaum",
+    "serif",
+    [["ofl/oranienbaum/Oranienbaum-Regular.ttf", 400, false, 141220]],
+    "ofl/oranienbaum/OFL.txt"
+  ],
+  ["Orbit", "sans", [["ofl/orbit/Orbit-Regular.ttf", 400, false, 784480]], "ofl/orbit/OFL.txt"],
+  [
+    "Orbitron",
+    "sans",
+    [["ofl/orbitron/Orbitron[wght].ttf", 400, false, 38576]],
+    "ofl/orbitron/OFL.txt"
+  ],
+  [
+    "Oregano",
+    "display",
+    [
+      ["ofl/oregano/Oregano-Italic.ttf", 400, true, 87000],
+      ["ofl/oregano/Oregano-Regular.ttf", 400, false, 80320]
+    ],
+    "ofl/oregano/OFL.txt"
+  ],
+  [
+    "Orelega One",
+    "display",
+    [["ofl/orelegaone/OrelegaOne-Regular.ttf", 400, false, 133732]],
+    "ofl/orelegaone/OFL.txt"
+  ],
+  [
+    "Orienta",
+    "sans",
+    [["ofl/orienta/Orienta-Regular.ttf", 400, false, 55176]],
+    "ofl/orienta/OFL.txt"
+  ],
+  [
+    "Original Surfer",
+    "display",
+    [["ofl/originalsurfer/OriginalSurfer-Regular.ttf", 400, false, 57792]],
+    "ofl/originalsurfer/OFL.txt"
+  ],
+  ["Oswald", "sans", [["ofl/oswald/Oswald[wght].ttf", 400, false, 172088]], "ofl/oswald/OFL.txt"],
+  ["Outfit", "sans", [["ofl/outfit/Outfit[wght].ttf", 400, false, 110884]], "ofl/outfit/OFL.txt"],
+  [
+    "Over the Rainbow",
+    "handwriting",
+    [["ofl/overtherainbow/OvertheRainbow.ttf", 400, false, 47508]],
+    "ofl/overtherainbow/OFL.txt"
+  ]
+]

@@ -1,0 +1,170 @@
+[
+  [
+    "Archivo",
+    "sans",
+    [
+      ["ofl/archivo/Archivo-Italic[wdth,wght].ttf", 400, true, 741368],
+      ["ofl/archivo/Archivo[wdth,wght].ttf", 400, false, 658596]
+    ],
+    "ofl/archivo/OFL.txt"
+  ],
+  [
+    "Archivo Black",
+    "sans",
+    [["ofl/archivoblack/ArchivoBlack-Regular.ttf", 400, false, 90988]],
+    "ofl/archivoblack/OFL.txt"
+  ],
+  [
+    "Archivo Narrow",
+    "sans",
+    [
+      ["ofl/archivonarrow/ArchivoNarrow-Italic[wght].ttf", 400, true, 98456],
+      ["ofl/archivonarrow/ArchivoNarrow[wght].ttf", 400, false, 93304]
+    ],
+    "ofl/archivonarrow/OFL.txt"
+  ],
+  [
+    "Are You Serious",
+    "handwriting",
+    [["ofl/areyouserious/AreYouSerious-Regular.ttf", 400, false, 150788]],
+    "ofl/areyouserious/OFL.txt"
+  ],
+  [
+    "Aref Ruqaa",
+    "serif",
+    [
+      ["ofl/arefruqaa/ArefRuqaa-Bold.ttf", 700, false, 123852],
+      ["ofl/arefruqaa/ArefRuqaa-Regular.ttf", 400, false, 110696]
+    ],
+    "ofl/arefruqaa/OFL.txt"
+  ],
+  [
+    "Aref Ruqaa Ink",
+    "serif",
+    [
+      ["ofl/arefruqaaink/ArefRuqaaInk-Bold.ttf", 700, false, 631016],
+      ["ofl/arefruqaaink/ArefRuqaaInk-Regular.ttf", 400, false, 568056]
+    ],
+    "ofl/arefruqaaink/OFL.txt"
+  ],
+  ["Arima", "display", [["ofl/arima/Arima[wght].ttf", 400, false, 348480]], "ofl/arima/OFL.txt"],
+  [
+    "Arimo",
+    "sans",
+    [
+      ["ofl/arimo/Arimo-Italic[wght].ttf", 400, true, 543196],
+      ["ofl/arimo/Arimo[wght].ttf", 400, false, 496268]
+    ],
+    "ofl/arimo/OFL.txt"
+  ],
+  [
+    "Arizonia",
+    "handwriting",
+    [["ofl/arizonia/Arizonia-Regular.ttf", 400, false, 126276]],
+    "ofl/arizonia/OFL.txt"
+  ],
+  ["Armata", "sans", [["ofl/armata/Armata-Regular.ttf", 400, false, 89724]], "ofl/armata/OFL.txt"],
+  [
+    "Arsenal",
+    "sans",
+    [
+      ["ofl/arsenal/Arsenal-Bold.ttf", 700, false, 200088],
+      ["ofl/arsenal/Arsenal-BoldItalic.ttf", 700, true, 196428],
+      ["ofl/arsenal/Arsenal-Italic.ttf", 400, true, 190480],
+      ["ofl/arsenal/Arsenal-Regular.ttf", 400, false, 194396]
+    ],
+    "ofl/arsenal/OFL.txt"
+  ],
+  [
+    "Arsenal SC",
+    "sans",
+    [
+      ["ofl/arsenalsc/ArsenalSC-Bold.ttf", 700, false, 189768],
+      ["ofl/arsenalsc/ArsenalSC-BoldItalic.ttf", 700, true, 186624],
+      ["ofl/arsenalsc/ArsenalSC-Italic.ttf", 400, true, 181848],
+      ["ofl/arsenalsc/ArsenalSC-Regular.ttf", 400, false, 184020]
+    ],
+    "ofl/arsenalsc/OFL.txt"
+  ],
+  [
+    "Artifika",
+    "serif",
+    [["ofl/artifika/Artifika-Regular.ttf", 400, false, 54136]],
+    "ofl/artifika/OFL.txt"
+  ],
+  [
+    "Arvo",
+    "serif",
+    [
+      ["ofl/arvo/Arvo-Bold.ttf", 700, false, 37652],
+      ["ofl/arvo/Arvo-BoldItalic.ttf", 700, true, 36872],
+      ["ofl/arvo/Arvo-Italic.ttf", 400, true, 35156],
+      ["ofl/arvo/Arvo-Regular.ttf", 400, false, 38780]
+    ],
+    "ofl/arvo/OFL.txt"
+  ],
+  [
+    "Arya",
+    "sans",
+    [
+      ["ofl/arya/Arya-Bold.ttf", 700, false, 186404],
+      ["ofl/arya/Arya-Regular.ttf", 400, false, 182132]
+    ],
+    "ofl/arya/OFL.txt"
+  ],
+  [
+    "Asap",
+    "sans",
+    [
+      ["ofl/asap/Asap-Italic[wdth,wght].ttf", 400, true, 426484],
+      ["ofl/asap/Asap[wdth,wght].ttf", 400, false, 376764]
+    ],
+    "ofl/asap/OFL.txt"
+  ],
+  [
+    "Asap Condensed",
+    "sans",
+    [
+      ["ofl/asapcondensed/AsapCondensed-Black.ttf", 900, false, 113996],
+      ["ofl/asapcondensed/AsapCondensed-BlackItalic.ttf", 900, true, 118772],
+      ["ofl/asapcondensed/AsapCondensed-Bold.ttf", 700, false, 111544],
+      ["ofl/asapcondensed/AsapCondensed-BoldItalic.ttf", 700, true, 119980],
+      ["ofl/asapcondensed/AsapCondensed-ExtraBold.ttf", 800, false, 113560],
+      ["ofl/asapcondensed/AsapCondensed-ExtraBoldItalic.ttf", 800, true, 120208],
+      ["ofl/asapcondensed/AsapCondensed-ExtraLight.ttf", 200, false, 106820],
+      ["ofl/asapcondensed/AsapCondensed-ExtraLightItalic.ttf", 200, true, 113888],
+      ["ofl/asapcondensed/AsapCondensed-Italic.ttf", 400, true, 116644],
+      ["ofl/asapcondensed/AsapCondensed-Light.ttf", 300, false, 108020],
+      ["ofl/asapcondensed/AsapCondensed-LightItalic.ttf", 300, true, 115208],
+      ["ofl/asapcondensed/AsapCondensed-Medium.ttf", 500, false, 111476],
+      ["ofl/asapcondensed/AsapCondensed-MediumItalic.ttf", 500, true, 118620],
+      ["ofl/asapcondensed/AsapCondensed-Regular.ttf", 400, false, 110332],
+      ["ofl/asapcondensed/AsapCondensed-SemiBold.ttf", 600, false, 111244],
+      ["ofl/asapcondensed/AsapCondensed-SemiBoldItalic.ttf", 600, true, 119280]
+    ],
+    "ofl/asapcondensed/OFL.txt"
+  ],
+  [
+    "Asap Sharp",
+    "sans",
+    [
+      ["ofl/asapsharp/AsapSharp-Italic[wdth,wght].ttf", 400, true, 243024],
+      ["ofl/asapsharp/AsapSharp[wdth,wght].ttf", 400, false, 221096]
+    ],
+    "ofl/asapsharp/OFL.txt"
+  ],
+  ["Asar", "serif", [["ofl/asar/Asar-Regular.ttf", 400, false, 669032]], "ofl/asar/OFL.txt"],
+  [
+    "Asimovian",
+    "sans",
+    [["ofl/asimovian/Asimovian-Regular.ttf", 400, false, 66136]],
+    "ofl/asimovian/OFL.txt"
+  ],
+  ["Asset", "display", [["ofl/asset/Asset-Regular.ttf", 400, false, 186716]], "ofl/asset/OFL.txt"],
+  [
+    "Assistant",
+    "sans",
+    [["ofl/assistant/Assistant[wght].ttf", 400, false, 99496]],
+    "ofl/assistant/OFL.txt"
+  ]
+]

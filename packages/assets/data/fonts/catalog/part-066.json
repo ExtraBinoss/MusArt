@@ -1,0 +1,200 @@
+[
+  [
+    "Skranji",
+    "display",
+    [
+      ["ofl/skranji/Skranji-Bold.ttf", 700, false, 207292],
+      ["ofl/skranji/Skranji-Regular.ttf", 400, false, 207924]
+    ],
+    "ofl/skranji/OFL.txt"
+  ],
+  [
+    "Slabo 13px",
+    "serif",
+    [["ofl/slabo13px/Slabo13px-Regular.ttf", 400, false, 55796]],
+    "ofl/slabo13px/OFL.txt"
+  ],
+  [
+    "Slabo 27px",
+    "serif",
+    [["ofl/slabo27px/Slabo27px-Regular.ttf", 400, false, 56088]],
+    "ofl/slabo27px/OFL.txt"
+  ],
+  [
+    "Slackey",
+    "display",
+    [["apache/slackey/Slackey-Regular.ttf", 400, false, 37896]],
+    "apache/slackey/LICENSE.txt"
+  ],
+  [
+    "Slackside One",
+    "handwriting",
+    [["ofl/slacksideone/SlacksideOne-Regular.ttf", 400, false, 171736]],
+    "ofl/slacksideone/OFL.txt"
+  ],
+  [
+    "Smokum",
+    "display",
+    [["apache/smokum/Smokum-Regular.ttf", 400, false, 63080]],
+    "apache/smokum/LICENSE.txt"
+  ],
+  [
+    "Smooch",
+    "handwriting",
+    [["ofl/smooch/Smooch-Regular.ttf", 400, false, 364436]],
+    "ofl/smooch/OFL.txt"
+  ],
+  [
+    "Smooch Sans",
+    "sans",
+    [["ofl/smoochsans/SmoochSans[wght].ttf", 400, false, 92880]],
+    "ofl/smoochsans/OFL.txt"
+  ],
+  [
+    "Smythe",
+    "display",
+    [["ofl/smythe/Smythe-Regular.ttf", 400, false, 90652]],
+    "ofl/smythe/OFL.txt"
+  ],
+  [
+    "Sniglet",
+    "display",
+    [
+      ["ofl/sniglet/Sniglet-ExtraBold.ttf", 800, false, 74228],
+      ["ofl/sniglet/Sniglet-Regular.ttf", 400, false, 75212]
+    ],
+    "ofl/sniglet/OFL.txt"
+  ],
+  ["Snippet", "sans", [["ofl/snippet/Snippet.ttf", 400, false, 39284]], "ofl/snippet/OFL.txt"],
+  [
+    "Snowburst One",
+    "display",
+    [["ofl/snowburstone/SnowburstOne-Regular.ttf", 400, false, 68360]],
+    "ofl/snowburstone/OFL.txt"
+  ],
+  [
+    "Sofadi One",
+    "display",
+    [["ofl/sofadione/SofadiOne-Regular.ttf", 400, false, 52712]],
+    "ofl/sofadione/OFL.txt"
+  ],
+  [
+    "Sofia",
+    "handwriting",
+    [["ofl/sofia/Sofia-Regular.ttf", 400, false, 29796]],
+    "ofl/sofia/OFL.txt"
+  ],
+  [
+    "Sofia Sans",
+    "sans",
+    [
+      ["ofl/sofiasans/SofiaSans-Italic[wght].ttf", 400, true, 311316],
+      ["ofl/sofiasans/SofiaSans[wght].ttf", 400, false, 345684]
+    ],
+    "ofl/sofiasans/OFL.txt"
+  ],
+  [
+    "Sofia Sans Condensed",
+    "sans",
+    [
+      ["ofl/sofiasanscondensed/SofiaSansCondensed-Italic[wght].ttf", 400, true, 312088],
+      ["ofl/sofiasanscondensed/SofiaSansCondensed[wght].ttf", 400, false, 346828]
+    ],
+    "ofl/sofiasanscondensed/OFL.txt"
+  ],
+  [
+    "Sofia Sans Extra Condensed",
+    "sans",
+    [
+      ["ofl/sofiasansextracondensed/SofiaSansExtraCondensed-Italic[wght].ttf", 400, true, 309184],
+      ["ofl/sofiasansextracondensed/SofiaSansExtraCondensed[wght].ttf", 400, false, 345304]
+    ],
+    "ofl/sofiasansextracondensed/OFL.txt"
+  ],
+  [
+    "Sofia Sans Semi Condensed",
+    "sans",
+    [
+      ["ofl/sofiasanssemicondensed/SofiaSansSemiCondensed-Italic[wght].ttf", 400, true, 315012],
+      ["ofl/sofiasanssemicondensed/SofiaSansSemiCondensed[wght].ttf", 400, false, 348708]
+    ],
+    "ofl/sofiasanssemicondensed/OFL.txt"
+  ],
+  [
+    "Solitreo",
+    "handwriting",
+    [["ofl/solitreo/Solitreo-Regular.ttf", 400, false, 96968]],
+    "ofl/solitreo/OFL.txt"
+  ],
+  [
+    "Solway",
+    "serif",
+    [
+      ["ofl/solway/Solway-Bold.ttf", 700, false, 57776],
+      ["ofl/solway/Solway-ExtraBold.ttf", 800, false, 58164],
+      ["ofl/solway/Solway-Light.ttf", 300, false, 53176],
+      ["ofl/solway/Solway-Medium.ttf", 500, false, 57448],
+      ["ofl/solway/Solway-Regular.ttf", 400, false, 56376]
+    ],
+    "ofl/solway/OFL.txt"
+  ],
+  [
+    "Sometype Mono",
+    "mono",
+    [
+      ["ofl/sometypemono/SometypeMono-Italic[wght].ttf", 400, true, 65968],
+      ["ofl/sometypemono/SometypeMono[wght].ttf", 400, false, 64308]
+    ],
+    "ofl/sometypemono/OFL.txt"
+  ],
+  [
+    "Song Myung",
+    "serif",
+    [["ofl/songmyung/SongMyung-Regular.ttf", 400, false, 2035300]],
+    "ofl/songmyung/OFL.txt"
+  ],
+  ["Sono", "sans", [["ofl/sono/Sono[MONO,wght].ttf", 400, false, 154620]], "ofl/sono/OFL.txt"],
+  [
+    "Sonsie One",
+    "display",
+    [["ofl/sonsieone/SonsieOne-Regular.ttf", 400, false, 75992]],
+    "ofl/sonsieone/OFL.txt"
+  ],
+  ["Sora", "sans", [["ofl/sora/Sora[wght].ttf", 400, false, 111400]], "ofl/sora/OFL.txt"],
+  [
+    "Sorts Mill Goudy",
+    "serif",
+    [
+      ["ofl/sortsmillgoudy/SortsMillGoudy-Italic.ttf", 400, true, 105684],
+      ["ofl/sortsmillgoudy/SortsMillGoudy-Regular.ttf", 400, false, 121372]
+    ],
+    "ofl/sortsmillgoudy/OFL.txt"
+  ],
+  [
+    "Sour Gummy",
+    "sans",
+    [
+      ["ofl/sourgummy/SourGummy-Italic[wdth,wght].ttf", 400, true, 140216],
+      ["ofl/sourgummy/SourGummy[wdth,wght].ttf", 400, false, 131024]
+    ],
+    "ofl/sourgummy/OFL.txt"
+  ],
+  [
+    "Source Code Pro",
+    "mono",
+    [
+      ["ofl/sourcecodepro/SourceCodePro-Italic[wght].ttf", 400, true, 174852],
+      ["ofl/sourcecodepro/SourceCodePro[wght].ttf", 400, false, 212340]
+    ],
+    "ofl/sourcecodepro/OFL.txt"
+  ],
+  [
+    "Source Sans 3",
+    "sans",
+    [
+      ["ofl/sourcesans3/SourceSans3-Italic[wght].ttf", 400, true, 395372],
+      ["ofl/sourcesans3/SourceSans3[wght].ttf", 400, false, 646340]
+    ],
+    "ofl/sourcesans3/OFL.txt"
+  ]
+]

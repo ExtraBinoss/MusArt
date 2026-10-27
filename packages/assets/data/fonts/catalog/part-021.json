@@ -1,0 +1,129 @@
+[
+  [
+    "Fira Sans",
+    "sans",
+    [
+      ["ofl/firasans/FiraSans-Black.ttf", 900, false, 507204],
+      ["ofl/firasans/FiraSans-BlackItalic.ttf", 900, true, 527560],
+      ["ofl/firasans/FiraSans-Bold.ttf", 700, false, 489720],
+      ["ofl/firasans/FiraSans-BoldItalic.ttf", 700, true, 506864],
+      ["ofl/firasans/FiraSans-ExtraBold.ttf", 800, false, 497028],
+      ["ofl/firasans/FiraSans-ExtraBoldItalic.ttf", 800, true, 536744],
+      ["ofl/firasans/FiraSans-ExtraLight.ttf", 200, false, 447324],
+      ["ofl/firasans/FiraSans-ExtraLightItalic.ttf", 200, true, 463000],
+      ["ofl/firasans/FiraSans-Italic.ttf", 400, true, 472396],
+      ["ofl/firasans/FiraSans-Light.ttf", 300, false, 449660],
+      ["ofl/firasans/FiraSans-LightItalic.ttf", 300, true, 463212],
+      ["ofl/firasans/FiraSans-Medium.ttf", 500, false, 457248],
+      ["ofl/firasans/FiraSans-MediumItalic.ttf", 500, true, 472624],
+      ["ofl/firasans/FiraSans-Regular.ttf", 400, false, 456996],
+      ["ofl/firasans/FiraSans-SemiBold.ttf", 600, false, 489028],
+      ["ofl/firasans/FiraSans-SemiBoldItalic.ttf", 600, true, 506544],
+      ["ofl/firasans/FiraSans-Thin.ttf", 100, false, 442852],
+      ["ofl/firasans/FiraSans-ThinItalic.ttf", 100, true, 457188]
+    ],
+    "ofl/firasans/OFL.txt"
+  ],
+  [
+    "Fira Sans Condensed",
+    "sans",
+    [
+      ["ofl/firasanscondensed/FiraSansCondensed-Black.ttf", 900, false, 516292],
+      ["ofl/firasanscondensed/FiraSansCondensed-BlackItalic.ttf", 900, true, 540484],
+      ["ofl/firasanscondensed/FiraSansCondensed-Bold.ttf", 700, false, 489176],
+      ["ofl/firasanscondensed/FiraSansCondensed-BoldItalic.ttf", 700, true, 514400],
+      ["ofl/firasanscondensed/FiraSansCondensed-ExtraBold.ttf", 800, false, 498104],
+      ["ofl/firasanscondensed/FiraSansCondensed-ExtraBoldItalic.ttf", 800, true, 536372],
+      ["ofl/firasanscondensed/FiraSansCondensed-ExtraLight.ttf", 200, false, 445948],
+      ["ofl/firasanscondensed/FiraSansCondensed-ExtraLightItalic.ttf", 200, true, 461372],
+      ["ofl/firasanscondensed/FiraSansCondensed-Italic.ttf", 400, true, 471720],
+      ["ofl/firasanscondensed/FiraSansCondensed-Light.ttf", 300, false, 450556],
+      ["ofl/firasanscondensed/FiraSansCondensed-LightItalic.ttf", 300, true, 463292],
+      ["ofl/firasanscondensed/FiraSansCondensed-Medium.ttf", 500, false, 456428],
+      ["ofl/firasanscondensed/FiraSansCondensed-MediumItalic.ttf", 500, true, 471860],
+      ["ofl/firasanscondensed/FiraSansCondensed-Regular.ttf", 400, false, 459804],
+      ["ofl/firasanscondensed/FiraSansCondensed-SemiBold.ttf", 600, false, 488728],
+      ["ofl/firasanscondensed/FiraSansCondensed-SemiBoldItalic.ttf", 600, true, 488688],
+      ["ofl/firasanscondensed/FiraSansCondensed-Thin.ttf", 100, false, 441652],
+      ["ofl/firasanscondensed/FiraSansCondensed-ThinItalic.ttf", 100, true, 457016]
+    ],
+    "ofl/firasanscondensed/OFL.txt"
+  ],
+  [
+    "Fira Sans Extra Condensed",
+    "sans",
+    [
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-Black.ttf", 900, false, 516808],
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-BlackItalic.ttf", 900, true, 539564],
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-Bold.ttf", 700, false, 496872],
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-BoldItalic.ttf", 700, true, 514672],
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-ExtraBold.ttf", 800, false, 498256],
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-ExtraBoldItalic.ttf", 800, true, 516096],
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-ExtraLight.ttf", 200, false, 444636],
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-ExtraLightItalic.ttf", 200, true, 460712],
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-Italic.ttf", 400, true, 471784],
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-Light.ttf", 300, false, 448908],
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-LightItalic.ttf", 300, true, 461620],
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-Medium.ttf", 500, false, 456568],
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-MediumItalic.ttf", 500, true, 471216],
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-Regular.ttf", 400, false, 455820],
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-SemiBold.ttf", 600, false, 484956],
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-SemiBoldItalic.ttf", 600, true, 501956],
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-Thin.ttf", 100, false, 440976],
+      ["ofl/firasansextracondensed/FiraSansExtraCondensed-ThinItalic.ttf", 100, true, 456444]
+    ],
+    "ofl/firasansextracondensed/OFL.txt"
+  ],
+  [
+    "Fjalla One",
+    "sans",
+    [["ofl/fjallaone/FjallaOne-Regular.ttf", 400, false, 209052]],
+    "ofl/fjallaone/OFL.txt"
+  ],
+  [
+    "Fjord One",
+    "serif",
+    [["ofl/fjordone/FjordOne-Regular.ttf", 400, false, 54156]],
+    "ofl/fjordone/OFL.txt"
+  ],
+  [
+    "Flamenco",
+    "display",
+    [
+      ["ofl/flamenco/Flamenco-Light.ttf", 300, false, 34600],
+      ["ofl/flamenco/Flamenco-Regular.ttf", 400, false, 36576]
+    ],
+    "ofl/flamenco/OFL.txt"
+  ],
+  [
+    "Flavors",
+    "display",
+    [["ofl/flavors/Flavors-Regular.ttf", 400, false, 184784]],
+    "ofl/flavors/OFL.txt"
+  ],
+  [
+    "Fleur De Leah",
+    "handwriting",
+    [["ofl/fleurdeleah/FleurDeLeah-Regular.ttf", 400, false, 231608]],
+    "ofl/fleurdeleah/OFL.txt"
+  ],
+  [
+    "Flow Block",
+    "display",
+    [["ofl/flowblock/FlowBlock-Regular.ttf", 400, false, 38928]],
+    "ofl/flowblock/OFL.txt"
+  ],
+  [
+    "Flow Circular",
+    "display",
+    [["ofl/flowcircular/FlowCircular-Regular.ttf", 400, false, 45788]],
+    "ofl/flowcircular/OFL.txt"
+  ],
+  [
+    "Flow Rounded",
+    "display",
+    [["ofl/flowrounded/FlowRounded-Regular.ttf", 400, false, 43800]],
+    "ofl/flowrounded/OFL.txt"
+  ],
+  ["Foldit", "display", [["ofl/foldit/Foldit[wght].ttf", 400, false, 520484]], "ofl/foldit/OFL.txt"]
+]

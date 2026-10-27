@@ -1,0 +1,169 @@
+[
+  [
+    "Mukta Malar",
+    "sans",
+    [
+      ["ofl/muktamalar/MuktaMalar-Bold.ttf", 700, false, 253112],
+      ["ofl/muktamalar/MuktaMalar-ExtraBold.ttf", 800, false, 261092],
+      ["ofl/muktamalar/MuktaMalar-ExtraLight.ttf", 200, false, 245020],
+      ["ofl/muktamalar/MuktaMalar-Light.ttf", 300, false, 239168],
+      ["ofl/muktamalar/MuktaMalar-Medium.ttf", 500, false, 241356],
+      ["ofl/muktamalar/MuktaMalar-Regular.ttf", 400, false, 243008],
+      ["ofl/muktamalar/MuktaMalar-SemiBold.ttf", 600, false, 241480]
+    ],
+    "ofl/muktamalar/OFL.txt"
+  ],
+  [
+    "Mukta Vaani",
+    "sans",
+    [
+      ["ofl/muktavaani/MuktaVaani-Bold.ttf", 700, false, 484412],
+      ["ofl/muktavaani/MuktaVaani-ExtraBold.ttf", 800, false, 474540],
+      ["ofl/muktavaani/MuktaVaani-ExtraLight.ttf", 200, false, 455888],
+      ["ofl/muktavaani/MuktaVaani-Light.ttf", 300, false, 463076],
+      ["ofl/muktavaani/MuktaVaani-Medium.ttf", 500, false, 475004],
+      ["ofl/muktavaani/MuktaVaani-Regular.ttf", 400, false, 459720],
+      ["ofl/muktavaani/MuktaVaani-SemiBold.ttf", 600, false, 476440]
+    ],
+    "ofl/muktavaani/OFL.txt"
+  ],
+  [
+    "Mulish",
+    "sans",
+    [
+      ["ofl/mulish/Mulish-Italic[wght].ttf", 400, true, 219548],
+      ["ofl/mulish/Mulish[wght].ttf", 400, false, 211988]
+    ],
+    "ofl/mulish/OFL.txt"
+  ],
+  [
+    "Murecho",
+    "sans",
+    [["ofl/murecho/Murecho[wght].ttf", 400, false, 1430664]],
+    "ofl/murecho/OFL.txt"
+  ],
+  [
+    "MuseoModerno",
+    "display",
+    [
+      ["ofl/museomoderno/MuseoModerno-Italic[wght].ttf", 400, true, 218276],
+      ["ofl/museomoderno/MuseoModerno[wght].ttf", 400, false, 188724]
+    ],
+    "ofl/museomoderno/OFL.txt"
+  ],
+  [
+    "My Soul",
+    "handwriting",
+    [["ofl/mysoul/MySoul-Regular.ttf", 400, false, 145468]],
+    "ofl/mysoul/OFL.txt"
+  ],
+  [
+    "Mynerve",
+    "handwriting",
+    [["ofl/mynerve/Mynerve-Regular.ttf", 400, false, 279224]],
+    "ofl/mynerve/OFL.txt"
+  ],
+  [
+    "Mystery Quest",
+    "display",
+    [["ofl/mysteryquest/MysteryQuest-Regular.ttf", 400, false, 42124]],
+    "ofl/mysteryquest/OFL.txt"
+  ],
+  ["NTR", "sans", [["ofl/ntr/NTR-Regular.ttf", 400, false, 374932]], "ofl/ntr/OFL.txt"],
+  [
+    "Nabla",
+    "display",
+    [["ofl/nabla/Nabla[EDPT,EHLT].ttf", 400, false, 1643616]],
+    "ofl/nabla/OFL.txt"
+  ],
+  [
+    "Namdhinggo",
+    "serif",
+    [
+      ["ofl/namdhinggo/Namdhinggo-Bold.ttf", 700, false, 86956],
+      ["ofl/namdhinggo/Namdhinggo-ExtraBold.ttf", 800, false, 87240],
+      ["ofl/namdhinggo/Namdhinggo-Medium.ttf", 500, false, 86204],
+      ["ofl/namdhinggo/Namdhinggo-Regular.ttf", 400, false, 85768],
+      ["ofl/namdhinggo/Namdhinggo-SemiBold.ttf", 600, false, 86244]
+    ],
+    "ofl/namdhinggo/OFL.txt"
+  ],
+  [
+    "Nanum Brush Script",
+    "handwriting",
+    [["ofl/nanumbrushscript/NanumBrushScript-Regular.ttf", 400, false, 3564804]],
+    "ofl/nanumbrushscript/OFL.txt"
+  ],
+  [
+    "Nanum Gothic",
+    "sans",
+    [
+      ["ofl/nanumgothic/NanumGothic-Bold.ttf", 700, false, 2073868],
+      ["ofl/nanumgothic/NanumGothic-ExtraBold.ttf", 800, false, 2112720],
+      ["ofl/nanumgothic/NanumGothic-Regular.ttf", 400, false, 2054744]
+    ],
+    "ofl/nanumgothic/OFL.txt"
+  ],
+  [
+    "Nanum Gothic Coding",
+    "handwriting",
+    [
+      ["ofl/nanumgothiccoding/NanumGothicCoding-Bold.ttf", 700, false, 2246240],
+      ["ofl/nanumgothiccoding/NanumGothicCoding-Regular.ttf", 400, false, 2315924]
+    ],
+    "ofl/nanumgothiccoding/OFL.txt"
+  ],
+  [
+    "Nanum Myeongjo",
+    "serif",
+    [
+      ["ofl/nanummyeongjo/NanumMyeongjo-Bold.ttf", 700, false, 3074720],
+      ["ofl/nanummyeongjo/NanumMyeongjo-ExtraBold.ttf", 800, false, 3180888],
+      ["ofl/nanummyeongjo/NanumMyeongjo-Regular.ttf", 400, false, 3058408]
+    ],
+    "ofl/nanummyeongjo/OFL.txt"
+  ],
+  [
+    "Nanum Pen Script",
+    "handwriting",
+    [["ofl/nanumpenscript/NanumPenScript-Regular.ttf", 400, false, 3201664]],
+    "ofl/nanumpenscript/OFL.txt"
+  ],
+  [
+    "Narnoor",
+    "sans",
+    [
+      ["ofl/narnoor/Narnoor-Bold.ttf", 700, false, 79864],
+      ["ofl/narnoor/Narnoor-ExtraBold.ttf", 800, false, 80484],
+      ["ofl/narnoor/Narnoor-Medium.ttf", 500, false, 79720],
+      ["ofl/narnoor/Narnoor-Regular.ttf", 400, false, 79876],
+      ["ofl/narnoor/Narnoor-SemiBold.ttf", 600, false, 79700]
+    ],
+    "ofl/narnoor/OFL.txt"
+  ],
+  [
+    "Nata Sans",
+    "sans",
+    [["ofl/natasans/NataSans[wght].ttf", 400, false, 434804]],
+    "ofl/natasans/OFL.txt"
+  ],
+  [
+    "National Park",
+    "sans",
+    [["ofl/nationalpark/NationalPark[wght].ttf", 400, false, 159332]],
+    "ofl/nationalpark/OFL.txt"
+  ],
+  [
+    "Neonderthaw",
+    "handwriting",
+    [["ofl/neonderthaw/Neonderthaw-Regular.ttf", 400, false, 276228]],
+    "ofl/neonderthaw/OFL.txt"
+  ],
+  [
+    "Nerko One",
+    "handwriting",
+    [["ofl/nerkoone/NerkoOne-Regular.ttf", 400, false, 102416]],
+    "ofl/nerkoone/OFL.txt"
+  ],
+  ["Neucha", "handwriting", [["ofl/neucha/Neucha.ttf", 400, false, 141432]], "ofl/neucha/OFL.txt"]
+]

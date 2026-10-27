@@ -1,0 +1,173 @@
+{
+  "sourceRevision": "ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b",
+  "fonts": [
+    {
+      "family": "Inter",
+      "file": "inter/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/inter/Inter[opsz,wght].ttf",
+      "bytes": 876576,
+      "sha256": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
+      "license": "inter/OFL.txt"
+    },
+    {
+      "family": "Space Grotesk",
+      "file": "space-grotesk/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/spacegrotesk/SpaceGrotesk[wght].ttf",
+      "bytes": 136676,
+      "sha256": "acad6de1fc93436f5c0f1f4137751ef04f1aea3063e7036535970ffcfbd79f72",
+      "license": "space-grotesk/OFL.txt"
+    },
+    {
+      "family": "Arimo",
+      "file": "arimo/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/arimo/Arimo[wght].ttf",
+      "bytes": 496268,
+      "sha256": "e43898b143ec826ac8cb4034816458a7047fbe0836558de2a1f8c6223ae3e0ca",
+      "license": "arimo/OFL.txt"
+    },
+    {
+      "family": "Tinos",
+      "file": "tinos/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/tinos/Tinos-Regular.ttf",
+      "bytes": 521588,
+      "sha256": "60a0e8ef0c04dd5dd69ffe91025fa2ae5836cbd35600a82ba031977557e2cb61",
+      "license": "tinos/OFL.txt"
+    },
+    {
+      "family": "Tinos Bold",
+      "file": "tinos/bold.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/tinos/Tinos-Bold.ttf",
+      "bytes": 597880,
+      "sha256": "393269dbab8899f938db19783eca5eac92eb431f7ae0ab45b8349ca895f1a06b",
+      "license": "tinos/OFL.txt"
+    },
+    {
+      "family": "Roboto Mono",
+      "file": "roboto-mono/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/robotomono/RobotoMono[wght].ttf",
+      "bytes": 183700,
+      "sha256": "66a80e79d17e4c7cabd162e2916578a4cc08fd19eef6e2a643305eae9c567b2b",
+      "license": "roboto-mono/OFL.txt"
+    },
+    {
+      "family": "Manrope",
+      "file": "manrope/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/manrope/Manrope[wght].ttf",
+      "bytes": 164700,
+      "sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6",
+      "license": "manrope/OFL.txt"
+    },
+    {
+      "family": "DM Sans",
+      "file": "dm-sans/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/dmsans/DMSans[opsz,wght].ttf",
+      "bytes": 240164,
+      "sha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d",
+      "license": "dm-sans/OFL.txt"
+    },
+    {
+      "family": "Montserrat",
+      "file": "montserrat/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/montserrat/Montserrat[wght].ttf",
+      "bytes": 744936,
+      "sha256": "0f7b311b2f3279e4eef9b2f968bcdbab6e28f4daeb1f049f4f278a902bcd82f7",
+      "license": "montserrat/OFL.txt"
+    },
+    {
+      "family": "Outfit",
+      "file": "outfit/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/outfit/Outfit[wght].ttf",
+      "bytes": 110884,
+      "sha256": "fc7287273e66929776e2ba54f144fe699080bec29f61bf649d70d871468aeade",
+      "license": "outfit/OFL.txt"
+    },
+    {
+      "family": "Sora",
+      "file": "sora/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/sora/Sora[wght].ttf",
+      "bytes": 111400,
+      "sha256": "84ff7096ae3ec6c8be47d906d1a0ba4de7f2ce78c615275c77301964a316e16c",
+      "license": "sora/OFL.txt"
+    },
+    {
+      "family": "Lora",
+      "file": "lora/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/lora/Lora[wght].ttf",
+      "bytes": 212196,
+      "sha256": "822a6621ccbe8d97d20ac88c1c41f5615c9c2c202eaa75f272cd452aac6475a7",
+      "license": "lora/OFL.txt"
+    },
+    {
+      "family": "Merriweather",
+      "file": "merriweather/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/merriweather/Merriweather[opsz,wdth,wght].ttf",
+      "bytes": 4628080,
+      "sha256": "d0ed0e359e396af7ad05e73dffd11a3a4c326ea0d0283c56bd9361cb2cc86a96",
+      "license": "merriweather/OFL.txt"
+    },
+    {
+      "family": "Playfair Display",
+      "file": "playfair-display/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/playfairdisplay/PlayfairDisplay[wght].ttf",
+      "bytes": 300724,
+      "sha256": "c40f2293766a503bc70cce9e512ef844a4ccb7cbcde792fe2ea31d191917d8d6",
+      "license": "playfair-display/OFL.txt"
+    },
+    {
+      "family": "Caveat",
+      "file": "caveat/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/caveat/Caveat[wght].ttf",
+      "bytes": 403648,
+      "sha256": "0bdb6b660482d31531b3945849fba5916b3ef8695da7024a9e6b9ee3c4157988",
+      "license": "caveat/OFL.txt"
+    },
+    {
+      "family": "Bebas Neue",
+      "file": "bebas-neue/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/bebasneue/BebasNeue-Regular.ttf",
+      "bytes": 61400,
+      "sha256": "08e4623805102d819f58601e46e345648846075e363b2ceb23313c2d1c83ec73",
+      "license": "bebas-neue/OFL.txt"
+    },
+    {
+      "family": "Oswald",
+      "file": "oswald/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/oswald/Oswald[wght].ttf",
+      "bytes": 172088,
+      "sha256": "5b38c246e255a12f5712d640d56bcced0472466fc68983d2d0410ec0457c2817",
+      "license": "oswald/OFL.txt"
+    },
+    {
+      "family": "Archivo",
+      "file": "archivo/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/archivo/Archivo[wdth,wght].ttf",
+      "bytes": 658596,
+      "sha256": "0e094a7d3c7c4c25cf1310c4b30014f1dae9332220b1c2c88f4fa996f0b05053",
+      "license": "archivo/OFL.txt"
+    },
+    {
+      "family": "Source Sans 3",
+      "file": "source-sans-3/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/sourcesans3/SourceSans3[wght].ttf",
+      "bytes": 646340,
+      "sha256": "042fe2cc0b933e328410d7acbd0aa6a1873dca5aef81875f4bc214b08825c7b9",
+      "license": "source-sans-3/OFL.txt"
+    },
+    {
+      "family": "Pacifico",
+      "file": "pacifico/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/pacifico/Pacifico-Regular.ttf",
+      "bytes": 329380,
+      "sha256": "5b6c0d5334a7bf77dea52b975c5a0c408878c0f7115ed5b6fb151f634b7bf701",
+      "license": "pacifico/OFL.txt"
+    },
+    {
+      "family": "Raleway",
+      "file": "raleway/font.ttf",
+      "source": "https://github.com/google/fonts/blob/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b/ofl/raleway/Raleway[wght].ttf",
+      "bytes": 312352,
+      "sha256": "8bbcc3eb8275c388f4bcd998832f8a4b943eadbaf6a595205312774b5951aefb",
+      "license": "raleway/OFL.txt"
+    }
+  ]
+}

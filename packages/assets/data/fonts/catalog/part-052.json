@@ -1,0 +1,185 @@
+[
+  [
+    "Overlock",
+    "display",
+    [
+      ["ofl/overlock/Overlock-Black.ttf", 900, false, 43128],
+      ["ofl/overlock/Overlock-BlackItalic.ttf", 900, true, 44020],
+      ["ofl/overlock/Overlock-Bold.ttf", 700, false, 42232],
+      ["ofl/overlock/Overlock-BoldItalic.ttf", 700, true, 45704],
+      ["ofl/overlock/Overlock-Italic.ttf", 400, true, 44024],
+      ["ofl/overlock/Overlock-Regular.ttf", 400, false, 49468]
+    ],
+    "ofl/overlock/OFL.txt"
+  ],
+  [
+    "Overlock SC",
+    "display",
+    [["ofl/overlocksc/OverlockSC-Regular.ttf", 400, false, 36640]],
+    "ofl/overlocksc/OFL.txt"
+  ],
+  [
+    "Overpass",
+    "sans",
+    [
+      ["ofl/overpass/Overpass-Italic[wght].ttf", 400, true, 289328],
+      ["ofl/overpass/Overpass[wght].ttf", 400, false, 318700]
+    ],
+    "ofl/overpass/OFL.txt"
+  ],
+  [
+    "Overpass Mono",
+    "mono",
+    [["ofl/overpassmono/OverpassMono[wght].ttf", 400, false, 258800]],
+    "ofl/overpassmono/OFL.txt"
+  ],
+  ["Ovo", "serif", [["ofl/ovo/Ovo-Regular.ttf", 400, false, 50864]], "ofl/ovo/OFL.txt"],
+  [
+    "Oxanium",
+    "display",
+    [["ofl/oxanium/Oxanium[wght].ttf", 400, false, 43536]],
+    "ofl/oxanium/OFL.txt"
+  ],
+  [
+    "Oxygen",
+    "sans",
+    [
+      ["ofl/oxygen/Oxygen-Bold.ttf", 700, false, 48708],
+      ["ofl/oxygen/Oxygen-Light.ttf", 300, false, 43788],
+      ["ofl/oxygen/Oxygen-Regular.ttf", 400, false, 47988]
+    ],
+    "ofl/oxygen/OFL.txt"
+  ],
+  [
+    "Oxygen Mono",
+    "mono",
+    [["ofl/oxygenmono/OxygenMono-Regular.ttf", 400, false, 68940]],
+    "ofl/oxygenmono/OFL.txt"
+  ],
+  ["PT Mono", "mono", [["ofl/ptmono/PTM55FT.ttf", 400, false, 185912]], "ofl/ptmono/OFL.txt"],
+  [
+    "PT Sans",
+    "sans",
+    [
+      ["ofl/ptsans/PT_Sans-Web-Bold.ttf", 700, false, 470240],
+      ["ofl/ptsans/PT_Sans-Web-BoldItalic.ttf", 700, true, 375204],
+      ["ofl/ptsans/PT_Sans-Web-Italic.ttf", 400, true, 436452],
+      ["ofl/ptsans/PT_Sans-Web-Regular.ttf", 400, false, 442960]
+    ],
+    "ofl/ptsans/OFL.txt"
+  ],
+  [
+    "PT Sans Caption",
+    "sans",
+    [
+      ["ofl/ptsanscaption/PT_Sans-Caption-Web-Bold.ttf", 700, false, 398780],
+      ["ofl/ptsanscaption/PT_Sans-Caption-Web-Regular.ttf", 400, false, 387192]
+    ],
+    "ofl/ptsanscaption/OFL.txt"
+  ],
+  [
+    "PT Sans Narrow",
+    "sans",
+    [
+      ["ofl/ptsansnarrow/PT_Sans-Narrow-Web-Bold.ttf", 700, false, 487720],
+      ["ofl/ptsansnarrow/PT_Sans-Narrow-Web-Regular.ttf", 400, false, 396212]
+    ],
+    "ofl/ptsansnarrow/OFL.txt"
+  ],
+  [
+    "PT Serif",
+    "serif",
+    [
+      ["ofl/ptserif/PT_Serif-Web-Bold.ttf", 700, false, 339996],
+      ["ofl/ptserif/PT_Serif-Web-BoldItalic.ttf", 700, true, 337580],
+      ["ofl/ptserif/PT_Serif-Web-Italic.ttf", 400, true, 375356],
+      ["ofl/ptserif/PT_Serif-Web-Regular.ttf", 400, false, 359048]
+    ],
+    "ofl/ptserif/OFL.txt"
+  ],
+  [
+    "PT Serif Caption",
+    "serif",
+    [
+      ["ofl/ptserifcaption/PT_Serif-Caption-Web-Italic.ttf", 400, true, 406612],
+      ["ofl/ptserifcaption/PT_Serif-Caption-Web-Regular.ttf", 400, false, 399840]
+    ],
+    "ofl/ptserifcaption/OFL.txt"
+  ],
+  [
+    "Pacifico",
+    "handwriting",
+    [["ofl/pacifico/Pacifico-Regular.ttf", 400, false, 329380]],
+    "ofl/pacifico/OFL.txt"
+  ],
+  [
+    "Padauk",
+    "sans",
+    [
+      ["ofl/padauk/Padauk-Bold.ttf", 700, false, 499304],
+      ["ofl/padauk/Padauk-Regular.ttf", 400, false, 498860]
+    ],
+    "ofl/padauk/OFL.txt"
+  ],
+  [
+    "Padyakke Expanded One",
+    "serif",
+    [["ofl/padyakkeexpandedone/PadyakkeExpandedOne-Regular.ttf", 400, false, 390600]],
+    "ofl/padyakkeexpandedone/OFL.txt"
+  ],
+  [
+    "Palanquin",
+    "sans",
+    [
+      ["ofl/palanquin/Palanquin-Bold.ttf", 700, false, 508152],
+      ["ofl/palanquin/Palanquin-ExtraLight.ttf", 200, false, 440576],
+      ["ofl/palanquin/Palanquin-Light.ttf", 300, false, 443316],
+      ["ofl/palanquin/Palanquin-Medium.ttf", 500, false, 525336],
+      ["ofl/palanquin/Palanquin-Regular.ttf", 400, false, 478368],
+      ["ofl/palanquin/Palanquin-SemiBold.ttf", 600, false, 521420],
+      ["ofl/palanquin/Palanquin-Thin.ttf", 100, false, 429632]
+    ],
+    "ofl/palanquin/OFL.txt"
+  ],
+  [
+    "Palanquin Dark",
+    "sans",
+    [
+      ["ofl/palanquindark/PalanquinDark-Bold.ttf", 700, false, 511480],
+      ["ofl/palanquindark/PalanquinDark-Medium.ttf", 500, false, 513060],
+      ["ofl/palanquindark/PalanquinDark-Regular.ttf", 400, false, 500136],
+      ["ofl/palanquindark/PalanquinDark-SemiBold.ttf", 600, false, 522336]
+    ],
+    "ofl/palanquindark/OFL.txt"
+  ],
+  [
+    "Palette Mosaic",
+    "display",
+    [["ofl/palettemosaic/PaletteMosaic-Regular.ttf", 400, false, 142520]],
+    "ofl/palettemosaic/OFL.txt"
+  ],
+  [
+    "Pangolin",
+    "handwriting",
+    [["ofl/pangolin/Pangolin-Regular.ttf", 400, false, 593408]],
+    "ofl/pangolin/OFL.txt"
+  ],
+  [
+    "Paprika",
+    "display",
+    [["ofl/paprika/Paprika-Regular.ttf", 400, false, 90580]],
+    "ofl/paprika/OFL.txt"
+  ],
+  [
+    "Parastoo",
+    "serif",
+    [["ofl/parastoo/Parastoo[wght].ttf", 400, false, 170292]],
+    "ofl/parastoo/OFL.txt"
+  ],
+  [
+    "Parisienne",
+    "handwriting",
+    [["ofl/parisienne/Parisienne-Regular.ttf", 400, false, 61248]],
+    "ofl/parisienne/OFL.txt"
+  ]
+]

@@ -1,0 +1,218 @@
+[
+  [
+    "Noto Sans Takri",
+    "sans",
+    [["ofl/notosanstakri/NotoSansTakri-Regular.ttf", 400, false, 71068]],
+    "ofl/notosanstakri/OFL.txt"
+  ],
+  [
+    "Noto Sans Tamil",
+    "sans",
+    [["ofl/notosanstamil/NotoSansTamil[wdth,wght].ttf", 400, false, 340668]],
+    "ofl/notosanstamil/OFL.txt"
+  ],
+  [
+    "Noto Sans Tamil Supplement",
+    "sans",
+    [["ofl/notosanstamilsupplement/NotoSansTamilSupplement-Regular.ttf", 400, false, 67716]],
+    "ofl/notosanstamilsupplement/OFL.txt"
+  ],
+  [
+    "Noto Sans Tangsa",
+    "sans",
+    [["ofl/notosanstangsa/NotoSansTangsa[wght].ttf", 400, false, 87584]],
+    "ofl/notosanstangsa/OFL.txt"
+  ],
+  [
+    "Noto Sans Telugu",
+    "sans",
+    [["ofl/notosanstelugu/NotoSansTelugu[wdth,wght].ttf", 400, false, 888808]],
+    "ofl/notosanstelugu/OFL.txt"
+  ],
+  [
+    "Noto Sans Thaana",
+    "sans",
+    [["ofl/notosansthaana/NotoSansThaana[wght].ttf", 400, false, 114724]],
+    "ofl/notosansthaana/OFL.txt"
+  ],
+  [
+    "Noto Sans Thai",
+    "sans",
+    [["ofl/notosansthai/NotoSansThai[wdth,wght].ttf", 400, false, 218652]],
+    "ofl/notosansthai/OFL.txt"
+  ],
+  [
+    "Noto Sans Thai Looped",
+    "sans",
+    [["ofl/notosansthailooped/NotoSansThaiLooped[wdth,wght].ttf", 400, false, 218660]],
+    "ofl/notosansthailooped/OFL.txt"
+  ],
+  [
+    "Noto Sans Tifinagh",
+    "sans",
+    [["ofl/notosanstifinagh/NotoSansTifinagh-Regular.ttf", 400, false, 117568]],
+    "ofl/notosanstifinagh/OFL.txt"
+  ],
+  [
+    "Noto Sans Tirhuta",
+    "sans",
+    [["ofl/notosanstirhuta/NotoSansTirhuta-Regular.ttf", 400, false, 137848]],
+    "ofl/notosanstirhuta/OFL.txt"
+  ],
+  [
+    "Noto Sans Ugaritic",
+    "sans",
+    [["ofl/notosansugaritic/NotoSansUgaritic-Regular.ttf", 400, false, 53244]],
+    "ofl/notosansugaritic/OFL.txt"
+  ],
+  [
+    "Noto Sans Vai",
+    "sans",
+    [["ofl/notosansvai/NotoSansVai-Regular.ttf", 400, false, 128852]],
+    "ofl/notosansvai/OFL.txt"
+  ],
+  [
+    "Noto Sans Vithkuqi",
+    "sans",
+    [["ofl/notosansvithkuqi/NotoSansVithkuqi[wght].ttf", 400, false, 121084]],
+    "ofl/notosansvithkuqi/OFL.txt"
+  ],
+  [
+    "Noto Sans Wancho",
+    "sans",
+    [["ofl/notosanswancho/NotoSansWancho-Regular.ttf", 400, false, 64880]],
+    "ofl/notosanswancho/OFL.txt"
+  ],
+  [
+    "Noto Sans Warang Citi",
+    "sans",
+    [["ofl/notosanswarangciti/NotoSansWarangCiti-Regular.ttf", 400, false, 86880]],
+    "ofl/notosanswarangciti/OFL.txt"
+  ],
+  [
+    "Noto Sans Yi",
+    "sans",
+    [["ofl/notosansyi/NotoSansYi-Regular.ttf", 400, false, 331328]],
+    "ofl/notosansyi/OFL.txt"
+  ],
+  [
+    "Noto Sans Zanabazar Square",
+    "sans",
+    [["ofl/notosanszanabazarsquare/NotoSansZanabazarSquare-Regular.ttf", 400, false, 71400]],
+    "ofl/notosanszanabazarsquare/OFL.txt"
+  ],
+  [
+    "Noto Serif",
+    "serif",
+    [
+      ["ofl/notoserif/NotoSerif-Italic[wdth,wght].ttf", 400, true, 2448496],
+      ["ofl/notoserif/NotoSerif[wdth,wght].ttf", 400, false, 1887192]
+    ],
+    "ofl/notoserif/OFL.txt"
+  ],
+  [
+    "Noto Serif Ahom",
+    "serif",
+    [["ofl/notoserifahom/NotoSerifAhom-Regular.ttf", 400, false, 86092]],
+    "ofl/notoserifahom/OFL.txt"
+  ],
+  [
+    "Noto Serif Armenian",
+    "serif",
+    [["ofl/notoserifarmenian/NotoSerifArmenian[wdth,wght].ttf", 400, false, 292528]],
+    "ofl/notoserifarmenian/OFL.txt"
+  ],
+  [
+    "Noto Serif Balinese",
+    "serif",
+    [["ofl/notoserifbalinese/NotoSerifBalinese-Regular.ttf", 400, false, 123500]],
+    "ofl/notoserifbalinese/OFL.txt"
+  ],
+  [
+    "Noto Serif Bengali",
+    "serif",
+    [["ofl/notoserifbengali/NotoSerifBengali[wdth,wght].ttf", 400, false, 981812]],
+    "ofl/notoserifbengali/OFL.txt"
+  ],
+  [
+    "Noto Serif Devanagari",
+    "serif",
+    [["ofl/notoserifdevanagari/NotoSerifDevanagari[wdth,wght].ttf", 400, false, 757692]],
+    "ofl/notoserifdevanagari/OFL.txt"
+  ],
+  [
+    "Noto Serif Display",
+    "serif",
+    [
+      ["ofl/notoserifdisplay/NotoSerifDisplay-Italic[wdth,wght].ttf", 400, true, 2000744],
+      ["ofl/notoserifdisplay/NotoSerifDisplay[wdth,wght].ttf", 400, false, 1835176]
+    ],
+    "ofl/notoserifdisplay/OFL.txt"
+  ],
+  [
+    "Noto Serif Dives Akuru",
+    "serif",
+    [["ofl/notoserifdivesakuru/NotoSerifDivesAkuru-Regular.ttf", 400, false, 405912]],
+    "ofl/notoserifdivesakuru/OFL.txt"
+  ],
+  [
+    "Noto Serif Dogra",
+    "serif",
+    [["ofl/notoserifdogra/NotoSerifDogra-Regular.ttf", 400, false, 94812]],
+    "ofl/notoserifdogra/OFL.txt"
+  ],
+  [
+    "Noto Serif Ethiopic",
+    "serif",
+    [["ofl/notoserifethiopic/NotoSerifEthiopic[wdth,wght].ttf", 400, false, 1057996]],
+    "ofl/notoserifethiopic/OFL.txt"
+  ],
+  [
+    "Noto Serif Georgian",
+    "serif",
+    [["ofl/notoserifgeorgian/NotoSerifGeorgian[wdth,wght].ttf", 400, false, 381592]],
+    "ofl/notoserifgeorgian/OFL.txt"
+  ],
+  [
+    "Noto Serif Grantha",
+    "serif",
+    [["ofl/notoserifgrantha/NotoSerifGrantha-Regular.ttf", 400, false, 416716]],
+    "ofl/notoserifgrantha/OFL.txt"
+  ],
+  [
+    "Noto Serif Gujarati",
+    "serif",
+    [["ofl/notoserifgujarati/NotoSerifGujarati[wght].ttf", 400, false, 378356]],
+    "ofl/notoserifgujarati/OFL.txt"
+  ],
+  [
+    "Noto Serif Gurmukhi",
+    "serif",
+    [["ofl/notoserifgurmukhi/NotoSerifGurmukhi[wght].ttf", 400, false, 144664]],
+    "ofl/notoserifgurmukhi/OFL.txt"
+  ],
+  [
+    "Noto Serif HK",
+    "serif",
+    [["ofl/notoserifhk/NotoSerifHK[wght].ttf", 400, false, 16828640]],
+    "ofl/notoserifhk/OFL.txt"
+  ],
+  [
+    "Noto Serif Hebrew",
+    "serif",
+    [["ofl/notoserifhebrew/NotoSerifHebrew[wdth,wght].ttf", 400, false, 183600]],
+    "ofl/notoserifhebrew/OFL.txt"
+  ],
+  [
+    "Noto Serif Hentaigana",
+    "serif",
+    [["ofl/notoserifhentaigana/NotoSerifHentaigana[wght].ttf", 400, false, 454624]],
+    "ofl/notoserifhentaigana/OFL.txt"
+  ],
+  [
+    "Noto Serif JP",
+    "serif",
+    [["ofl/notoserifjp/NotoSerifJP[wght].ttf", 400, false, 13574352]],
+    "ofl/notoserifjp/OFL.txt"
+  ]
+]

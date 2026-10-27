@@ -1,5 +1,5 @@
 import type { Layer } from "@musart/core";
-import { Vector2, Vector4 } from "three/webgpu";
+import { Vector2, Vector4, type Node } from "three/webgpu";
 import { abs, length, max, min, mix, smoothstep, uniform, uv, vec4 } from "three/tsl";
 import { parseColor } from "../compositing/nodes/color";
 export function shapeControls() {
@@ -24,7 +24,15 @@ export function updateShape(
   controls.fill.value.copy(parseColor(layer.fill));
   controls.stroke.value.copy(parseColor(layer.stroke));
 }
-export function shapeNode(controls: ReturnType<typeof shapeControls>) {
+export interface ShapeInputs {
+  size: Node<"vec2">;
+  radius: Node<"float">;
+  strokeWidth: Node<"float">;
+  ellipse: Node<"float">;
+  fill: Node<"vec4">;
+  stroke: Node<"vec4">;
+}
+export function shapeNode(controls: ShapeInputs) {
   const half = controls.size.mul(0.5);
   const p = abs(uv().sub(0.5).mul(controls.size));
   const q = p.sub(half).add(controls.radius);

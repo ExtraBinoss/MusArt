@@ -1,0 +1,196 @@
+[
+  [
+    "Didact Gothic",
+    "sans",
+    [["ofl/didactgothic/DidactGothic-Regular.ttf", 400, false, 194200]],
+    "ofl/didactgothic/OFL.txt"
+  ],
+  [
+    "Diphylleia",
+    "serif",
+    [["ofl/diphylleia/Diphylleia-Regular.ttf", 400, false, 1947768]],
+    "ofl/diphylleia/OFL.txt"
+  ],
+  [
+    "Diplomata",
+    "display",
+    [["ofl/diplomata/Diplomata-Regular.ttf", 400, false, 89556]],
+    "ofl/diplomata/OFL.txt"
+  ],
+  [
+    "Diplomata SC",
+    "display",
+    [["ofl/diplomatasc/DiplomataSC-Regular.ttf", 400, false, 87544]],
+    "ofl/diplomatasc/OFL.txt"
+  ],
+  [
+    "Do Hyeon",
+    "sans",
+    [["ofl/dohyeon/DoHyeon-Regular.ttf", 400, false, 879764]],
+    "ofl/dohyeon/OFL.txt"
+  ],
+  ["Dokdo", "display", [["ofl/dokdo/Dokdo-Regular.ttf", 400, false, 2150860]], "ofl/dokdo/OFL.txt"],
+  ["Domine", "serif", [["ofl/domine/Domine[wght].ttf", 400, false, 101904]], "ofl/domine/OFL.txt"],
+  [
+    "Donegal One",
+    "serif",
+    [["ofl/donegalone/DonegalOne-Regular.ttf", 400, false, 56944]],
+    "ofl/donegalone/OFL.txt"
+  ],
+  [
+    "Dongle",
+    "sans",
+    [
+      ["ofl/dongle/Dongle-Bold.ttf", 700, false, 4476536],
+      ["ofl/dongle/Dongle-Light.ttf", 300, false, 4389060],
+      ["ofl/dongle/Dongle-Regular.ttf", 400, false, 4458600]
+    ],
+    "ofl/dongle/OFL.txt"
+  ],
+  [
+    "Doppio One",
+    "sans",
+    [["ofl/doppioone/DoppioOne-Regular.ttf", 400, false, 55704]],
+    "ofl/doppioone/OFL.txt"
+  ],
+  ["Dorsa", "sans", [["ofl/dorsa/Dorsa-Regular.ttf", 400, false, 20844]], "ofl/dorsa/OFL.txt"],
+  ["Dosis", "sans", [["ofl/dosis/Dosis[wght].ttf", 400, false, 117280]], "ofl/dosis/OFL.txt"],
+  [
+    "DotGothic16",
+    "sans",
+    [["ofl/dotgothic16/DotGothic16-Regular.ttf", 400, false, 2069236]],
+    "ofl/dotgothic16/OFL.txt"
+  ],
+  ["Doto", "sans", [["ofl/doto/Doto[ROND,wght].ttf", 400, false, 456924]], "ofl/doto/OFL.txt"],
+  [
+    "Dr Sugiyama",
+    "handwriting",
+    [["ofl/drsugiyama/DrSugiyama-Regular.ttf", 400, false, 39928]],
+    "ofl/drsugiyama/OFL.txt"
+  ],
+  [
+    "Duru Sans",
+    "sans",
+    [["ofl/durusans/DuruSans-Regular.ttf", 400, false, 88088]],
+    "ofl/durusans/OFL.txt"
+  ],
+  [
+    "DynaPuff",
+    "display",
+    [["ofl/dynapuff/DynaPuff[wdth,wght].ttf", 400, false, 212600]],
+    "ofl/dynapuff/OFL.txt"
+  ],
+  [
+    "Dynalight",
+    "display",
+    [["ofl/dynalight/Dynalight-Regular.ttf", 400, false, 53148]],
+    "ofl/dynalight/OFL.txt"
+  ],
+  [
+    "EB Garamond",
+    "serif",
+    [
+      ["ofl/ebgaramond/EBGaramond-Italic[wght].ttf", 400, true, 754468],
+      ["ofl/ebgaramond/EBGaramond[wght].ttf", 400, false, 851176]
+    ],
+    "ofl/ebgaramond/OFL.txt"
+  ],
+  [
+    "Eagle Lake",
+    "handwriting",
+    [["ofl/eaglelake/EagleLake-Regular.ttf", 400, false, 78000]],
+    "ofl/eaglelake/OFL.txt"
+  ],
+  [
+    "East Sea Dokdo",
+    "handwriting",
+    [["ofl/eastseadokdo/EastSeaDokdo-Regular.ttf", 400, false, 3178684]],
+    "ofl/eastseadokdo/OFL.txt"
+  ],
+  ["Eater", "display", [["ofl/eater/Eater-Regular.ttf", 400, false, 83928]], "ofl/eater/OFL.txt"],
+  [
+    "Economica",
+    "sans",
+    [
+      ["ofl/economica/Economica-Bold.ttf", 700, false, 27196],
+      ["ofl/economica/Economica-BoldItalic.ttf", 700, true, 27024],
+      ["ofl/economica/Economica-Italic.ttf", 400, true, 27692],
+      ["ofl/economica/Economica-Regular.ttf", 400, false, 26756]
+    ],
+    "ofl/economica/OFL.txt"
+  ],
+  ["Eczar", "serif", [["ofl/eczar/Eczar[wght].ttf", 400, false, 407304]], "ofl/eczar/OFL.txt"],
+  [
+    "Edu AU VIC WA NT Arrows",
+    "handwriting",
+    [["ofl/eduauvicwantarrows/EduAUVICWANTArrows[wght].ttf", 400, false, 65152]],
+    "ofl/eduauvicwantarrows/OFL.txt"
+  ],
+  [
+    "Edu AU VIC WA NT Dots",
+    "handwriting",
+    [["ofl/eduauvicwantdots/EduAUVICWANTDots[wght].ttf", 400, false, 137528]],
+    "ofl/eduauvicwantdots/OFL.txt"
+  ],
+  [
+    "Edu AU VIC WA NT Guides",
+    "handwriting",
+    [["ofl/eduauvicwantguides/EduAUVICWANTGuides[wght].ttf", 400, false, 1578084]],
+    "ofl/eduauvicwantguides/OFL.txt"
+  ],
+  [
+    "Edu AU VIC WA NT Hand",
+    "handwriting",
+    [["ofl/eduauvicwanthand/EduAUVICWANTHand[wght].ttf", 400, false, 1286308]],
+    "ofl/eduauvicwanthand/OFL.txt"
+  ],
+  [
+    "Edu AU VIC WA NT Pre",
+    "handwriting",
+    [["ofl/eduauvicwantpre/EduAUVICWANTPre[wght].ttf", 400, false, 1298364]],
+    "ofl/eduauvicwantpre/OFL.txt"
+  ],
+  [
+    "Edu NSW ACT Cursive",
+    "handwriting",
+    [
+      [
+        "https://fonts.gstatic.com/s/edunswactcursive/v3/xn7LYGUw02PnIPEjskHSG_2fCaz9DzhQbcTNLWxkwsHVCrd5giiVjXBs6BMb.ttf",
+        400,
+        false,
+        0
+      ],
+      [
+        "https://fonts.gstatic.com/s/edunswactcursive/v3/xn7LYGUw02PnIPEjskHSG_2fCaz9DzhQbcTNLWxkwsHVCrdLgiiVjXBs6BMb.ttf",
+        500,
+        false,
+        0
+      ],
+      [
+        "https://fonts.gstatic.com/s/edunswactcursive/v3/xn7LYGUw02PnIPEjskHSG_2fCaz9DzhQbcTNLWxkwsHVCrenhSiVjXBs6BMb.ttf",
+        600,
+        false,
+        0
+      ],
+      [
+        "https://fonts.gstatic.com/s/edunswactcursive/v3/xn7LYGUw02PnIPEjskHSG_2fCaz9DzhQbcTNLWxkwsHVCreehSiVjXBs6BMb.ttf",
+        700,
+        false,
+        0
+      ],
+      [
+        "https://fonts.gstatic.com/s/edunswactcursive/v3/xn78YGUw02PnIPEjskHSG_2fCaz9DzhQd8_v3bT4Ycc.ttf",
+        400,
+        false,
+        0
+      ]
+    ],
+    "https://fonts.google.com/specimen/Edu%20NSW%20ACT%20Cursive#license"
+  ],
+  [
+    "Edu NSW ACT Foundation",
+    "handwriting",
+    [["ofl/edunswactfoundation/EduNSWACTFoundation[wght].ttf", 400, false, 55116]],
+    "ofl/edunswactfoundation/OFL.txt"
+  ]
+]

@@ -4,6 +4,7 @@ import type { EffectUniforms } from "./uniforms";
 /** GPU-only inputs. Source pixels and intermediate results never cross this boundary. */
 export interface EffectNodeContext {
   readonly source: TextureNode<"vec4">;
+  readonly backdrop?: TextureNode<"vec4">;
   readonly controls: EffectUniforms;
   readonly getGlyphAtlas: () => Texture;
 }

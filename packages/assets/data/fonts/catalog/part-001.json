@@ -1,0 +1,153 @@
+[
+  [
+    "Aldrich",
+    "sans",
+    [["ofl/aldrich/Aldrich-Regular.ttf", 400, false, 56548]],
+    "ofl/aldrich/OFL.txt"
+  ],
+  [
+    "Alef",
+    "sans",
+    [
+      ["ofl/alef/Alef-Bold.ttf", 700, false, 92312],
+      ["ofl/alef/Alef-Regular.ttf", 400, false, 90996]
+    ],
+    "ofl/alef/OFL.txt"
+  ],
+  [
+    "Alegreya",
+    "serif",
+    [
+      ["ofl/alegreya/Alegreya-Italic[wght].ttf", 400, true, 425852],
+      ["ofl/alegreya/Alegreya[wght].ttf", 400, false, 425288]
+    ],
+    "ofl/alegreya/OFL.txt"
+  ],
+  [
+    "Alegreya SC",
+    "serif",
+    [
+      ["ofl/alegreyasc/AlegreyaSC-Black.ttf", 900, false, 400252],
+      ["ofl/alegreyasc/AlegreyaSC-BlackItalic.ttf", 900, true, 382008],
+      ["ofl/alegreyasc/AlegreyaSC-Bold.ttf", 700, false, 378796],
+      ["ofl/alegreyasc/AlegreyaSC-BoldItalic.ttf", 700, true, 398592],
+      ["ofl/alegreyasc/AlegreyaSC-ExtraBold.ttf", 800, false, 376680],
+      ["ofl/alegreyasc/AlegreyaSC-ExtraBoldItalic.ttf", 800, true, 376724],
+      ["ofl/alegreyasc/AlegreyaSC-Italic.ttf", 400, true, 368248],
+      ["ofl/alegreyasc/AlegreyaSC-Medium.ttf", 500, false, 382820],
+      ["ofl/alegreyasc/AlegreyaSC-MediumItalic.ttf", 500, true, 381204],
+      ["ofl/alegreyasc/AlegreyaSC-Regular.ttf", 400, false, 367628]
+    ],
+    "ofl/alegreyasc/OFL.txt"
+  ],
+  [
+    "Alegreya Sans",
+    "sans",
+    [
+      ["ofl/alegreyasans/AlegreyaSans-Black.ttf", 900, false, 267756],
+      ["ofl/alegreyasans/AlegreyaSans-BlackItalic.ttf", 900, true, 275540],
+      ["ofl/alegreyasans/AlegreyaSans-Bold.ttf", 700, false, 266856],
+      ["ofl/alegreyasans/AlegreyaSans-BoldItalic.ttf", 700, true, 274552],
+      ["ofl/alegreyasans/AlegreyaSans-ExtraBold.ttf", 800, false, 267996],
+      ["ofl/alegreyasans/AlegreyaSans-ExtraBoldItalic.ttf", 800, true, 276772],
+      ["ofl/alegreyasans/AlegreyaSans-Italic.ttf", 400, true, 271096],
+      ["ofl/alegreyasans/AlegreyaSans-Light.ttf", 300, false, 261552],
+      ["ofl/alegreyasans/AlegreyaSans-LightItalic.ttf", 300, true, 266452],
+      ["ofl/alegreyasans/AlegreyaSans-Medium.ttf", 500, false, 264612],
+      ["ofl/alegreyasans/AlegreyaSans-MediumItalic.ttf", 500, true, 272856],
+      ["ofl/alegreyasans/AlegreyaSans-Regular.ttf", 400, false, 263804],
+      ["ofl/alegreyasans/AlegreyaSans-Thin.ttf", 100, false, 254864],
+      ["ofl/alegreyasans/AlegreyaSans-ThinItalic.ttf", 100, true, 264544]
+    ],
+    "ofl/alegreyasans/OFL.txt"
+  ],
+  [
+    "Alegreya Sans SC",
+    "sans",
+    [
+      ["ofl/alegreyasanssc/AlegreyaSansSC-Black.ttf", 900, false, 270436],
+      ["ofl/alegreyasanssc/AlegreyaSansSC-BlackItalic.ttf", 900, true, 277236],
+      ["ofl/alegreyasanssc/AlegreyaSansSC-Bold.ttf", 700, false, 275612],
+      ["ofl/alegreyasanssc/AlegreyaSansSC-BoldItalic.ttf", 700, true, 274568],
+      ["ofl/alegreyasanssc/AlegreyaSansSC-ExtraBold.ttf", 800, false, 281408],
+      ["ofl/alegreyasanssc/AlegreyaSansSC-ExtraBoldItalic.ttf", 800, true, 280488],
+      ["ofl/alegreyasanssc/AlegreyaSansSC-Italic.ttf", 400, true, 271508],
+      ["ofl/alegreyasanssc/AlegreyaSansSC-Light.ttf", 300, false, 261328],
+      ["ofl/alegreyasanssc/AlegreyaSansSC-LightItalic.ttf", 300, true, 264392],
+      ["ofl/alegreyasanssc/AlegreyaSansSC-Medium.ttf", 500, false, 266120],
+      ["ofl/alegreyasanssc/AlegreyaSansSC-MediumItalic.ttf", 500, true, 273588],
+      ["ofl/alegreyasanssc/AlegreyaSansSC-Regular.ttf", 400, false, 267620],
+      ["ofl/alegreyasanssc/AlegreyaSansSC-Thin.ttf", 100, false, 256020],
+      ["ofl/alegreyasanssc/AlegreyaSansSC-ThinItalic.ttf", 100, true, 266676]
+    ],
+    "ofl/alegreyasanssc/OFL.txt"
+  ],
+  [
+    "Aleo",
+    "serif",
+    [
+      ["ofl/aleo/Aleo-Italic[wght].ttf", 400, true, 154500],
+      ["ofl/aleo/Aleo[wght].ttf", 400, false, 149360]
+    ],
+    "ofl/aleo/OFL.txt"
+  ],
+  [
+    "Alex Brush",
+    "handwriting",
+    [["ofl/alexbrush/AlexBrush-Regular.ttf", 400, false, 116244]],
+    "ofl/alexbrush/OFL.txt"
+  ],
+  [
+    "Alexandria",
+    "sans",
+    [["ofl/alexandria/Alexandria[wght].ttf", 400, false, 332488]],
+    "ofl/alexandria/OFL.txt"
+  ],
+  [
+    "Alfa Slab One",
+    "display",
+    [["ofl/alfaslabone/AlfaSlabOne-Regular.ttf", 400, false, 97376]],
+    "ofl/alfaslabone/OFL.txt"
+  ],
+  ["Alice", "serif", [["ofl/alice/Alice-Regular.ttf", 400, false, 129200]], "ofl/alice/OFL.txt"],
+  [
+    "Alien Block",
+    "display",
+    [["ofl/alienblock/AlienBlock-Regular.ttf", 400, false, 35344]],
+    "ofl/alienblock/OFL.txt"
+  ],
+  ["Alike", "serif", [["ofl/alike/Alike-Regular.ttf", 400, false, 69348]], "ofl/alike/OFL.txt"],
+  [
+    "Alike Angular",
+    "serif",
+    [["ofl/alikeangular/AlikeAngular-Regular.ttf", 400, false, 62184]],
+    "ofl/alikeangular/OFL.txt"
+  ],
+  [
+    "Alkalami",
+    "serif",
+    [["ofl/alkalami/Alkalami-Regular.ttf", 400, false, 145540]],
+    "ofl/alkalami/OFL.txt"
+  ],
+  [
+    "Alkatra",
+    "display",
+    [["ofl/alkatra/Alkatra[wght].ttf", 400, false, 949464]],
+    "ofl/alkatra/OFL.txt"
+  ],
+  [
+    "Allan",
+    "display",
+    [
+      ["ofl/allan/Allan-Bold.ttf", 700, false, 115300],
+      ["ofl/allan/Allan-Regular.ttf", 400, false, 56524]
+    ],
+    "ofl/allan/OFL.txt"
+  ],
+  [
+    "Allerta",
+    "sans",
+    [["ofl/allerta/Allerta-Regular.ttf", 400, false, 19596]],
+    "ofl/allerta/OFL.txt"
+  ]
+]

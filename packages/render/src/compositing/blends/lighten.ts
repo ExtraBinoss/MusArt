@@ -11,3 +11,7 @@ export function colorDodge(b: RGB, s: RGB) {
       s.greaterThanEqual(vec3(1)).select(vec3(1), min(b.div(max(s.oneMinus(), 0.000001)), 1)),
     );
 }
+
+/** Whole-color selection preserves one complete RGB triplet. */
+export const lighterColor = (b: RGB, s: RGB) =>
+  s.r.add(s.g).add(s.b).greaterThan(b.r.add(b.g).add(b.b)).select(s, b);

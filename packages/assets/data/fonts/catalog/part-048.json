@@ -1,0 +1,218 @@
+[
+  [
+    "Noto Sans Oriya",
+    "sans",
+    [["ofl/notosansoriya/NotoSansOriya[wdth,wght].ttf", 400, false, 613116]],
+    "ofl/notosansoriya/OFL.txt"
+  ],
+  [
+    "Noto Sans Osage",
+    "sans",
+    [["ofl/notosansosage/NotoSansOsage-Regular.ttf", 400, false, 60076]],
+    "ofl/notosansosage/OFL.txt"
+  ],
+  [
+    "Noto Sans Osmanya",
+    "sans",
+    [["ofl/notosansosmanya/NotoSansOsmanya-Regular.ttf", 400, false, 57652]],
+    "ofl/notosansosmanya/OFL.txt"
+  ],
+  [
+    "Noto Sans Pahawh Hmong",
+    "sans",
+    [["ofl/notosanspahawhhmong/NotoSansPahawhHmong-Regular.ttf", 400, false, 73820]],
+    "ofl/notosanspahawhhmong/OFL.txt"
+  ],
+  [
+    "Noto Sans Palmyrene",
+    "sans",
+    [["ofl/notosanspalmyrene/NotoSansPalmyrene-Regular.ttf", 400, false, 64084]],
+    "ofl/notosanspalmyrene/OFL.txt"
+  ],
+  [
+    "Noto Sans Pau Cin Hau",
+    "sans",
+    [["ofl/notosanspaucinhau/NotoSansPauCinHau-Regular.ttf", 400, false, 56924]],
+    "ofl/notosanspaucinhau/OFL.txt"
+  ],
+  [
+    "Noto Sans PhagsPa",
+    "sans",
+    [["ofl/notosansphagspa/NotoSansPhagsPa-Regular.ttf", 400, false, 97536]],
+    "ofl/notosansphagspa/OFL.txt"
+  ],
+  [
+    "Noto Sans Phoenician",
+    "sans",
+    [["ofl/notosansphoenician/NotoSansPhoenician-Regular.ttf", 400, false, 52012]],
+    "ofl/notosansphoenician/OFL.txt"
+  ],
+  [
+    "Noto Sans Psalter Pahlavi",
+    "sans",
+    [["ofl/notosanspsalterpahlavi/NotoSansPsalterPahlavi-Regular.ttf", 400, false, 76400]],
+    "ofl/notosanspsalterpahlavi/OFL.txt"
+  ],
+  [
+    "Noto Sans Rejang",
+    "sans",
+    [["ofl/notosansrejang/NotoSansRejang-Regular.ttf", 400, false, 51048]],
+    "ofl/notosansrejang/OFL.txt"
+  ],
+  [
+    "Noto Sans Runic",
+    "sans",
+    [["ofl/notosansrunic/NotoSansRunic-Regular.ttf", 400, false, 55800]],
+    "ofl/notosansrunic/OFL.txt"
+  ],
+  [
+    "Noto Sans SC",
+    "sans",
+    [["ofl/notosanssc/NotoSansSC[wght].ttf", 400, false, 17772300]],
+    "ofl/notosanssc/OFL.txt"
+  ],
+  [
+    "Noto Sans Samaritan",
+    "sans",
+    [["ofl/notosanssamaritan/NotoSansSamaritan-Regular.ttf", 400, false, 51740]],
+    "ofl/notosanssamaritan/OFL.txt"
+  ],
+  [
+    "Noto Sans Saurashtra",
+    "sans",
+    [["ofl/notosanssaurashtra/NotoSansSaurashtra-Regular.ttf", 400, false, 74668]],
+    "ofl/notosanssaurashtra/OFL.txt"
+  ],
+  [
+    "Noto Sans Sharada",
+    "sans",
+    [["ofl/notosanssharada/NotoSansSharada-Regular.ttf", 400, false, 122368]],
+    "ofl/notosanssharada/OFL.txt"
+  ],
+  [
+    "Noto Sans Shavian",
+    "sans",
+    [["ofl/notosansshavian/NotoSansShavian-Regular.ttf", 400, false, 54064]],
+    "ofl/notosansshavian/OFL.txt"
+  ],
+  [
+    "Noto Sans Siddham",
+    "sans",
+    [["ofl/notosanssiddham/NotoSansSiddham-Regular.ttf", 400, false, 231580]],
+    "ofl/notosanssiddham/OFL.txt"
+  ],
+  [
+    "Noto Sans SignWriting",
+    "sans",
+    [["ofl/notosanssignwriting/NotoSansSignWriting-Regular.ttf", 400, false, 7881488]],
+    "ofl/notosanssignwriting/OFL.txt"
+  ],
+  [
+    "Noto Sans Sinhala",
+    "sans",
+    [["ofl/notosanssinhala/NotoSansSinhala[wdth,wght].ttf", 400, false, 1181956]],
+    "ofl/notosanssinhala/OFL.txt"
+  ],
+  [
+    "Noto Sans Sogdian",
+    "sans",
+    [["ofl/notosanssogdian/NotoSansSogdian-Regular.ttf", 400, false, 141656]],
+    "ofl/notosanssogdian/OFL.txt"
+  ],
+  [
+    "Noto Sans Sora Sompeng",
+    "sans",
+    [["ofl/notosanssorasompeng/NotoSansSoraSompeng[wght].ttf", 400, false, 60240]],
+    "ofl/notosanssorasompeng/OFL.txt"
+  ],
+  [
+    "Noto Sans Soyombo",
+    "sans",
+    [["ofl/notosanssoyombo/NotoSansSoyombo-Regular.ttf", 400, false, 132532]],
+    "ofl/notosanssoyombo/OFL.txt"
+  ],
+  [
+    "Noto Sans Sundanese",
+    "sans",
+    [["ofl/notosanssundanese/NotoSansSundanese[wght].ttf", 400, false, 61796]],
+    "ofl/notosanssundanese/OFL.txt"
+  ],
+  [
+    "Noto Sans Sunuwar",
+    "sans",
+    [["ofl/notosanssunuwar/NotoSansSunuwar-Regular.ttf", 400, false, 59068]],
+    "ofl/notosanssunuwar/OFL.txt"
+  ],
+  [
+    "Noto Sans Syloti Nagri",
+    "sans",
+    [["ofl/notosanssylotinagri/NotoSansSylotiNagri-Regular.ttf", 400, false, 67252]],
+    "ofl/notosanssylotinagri/OFL.txt"
+  ],
+  [
+    "Noto Sans Symbols",
+    "sans",
+    [["ofl/notosanssymbols/NotoSansSymbols[wght].ttf", 400, false, 372684]],
+    "ofl/notosanssymbols/OFL.txt"
+  ],
+  [
+    "Noto Sans Symbols 2",
+    "sans",
+    [["ofl/notosanssymbols2/NotoSansSymbols2-Regular.ttf", 400, false, 1233128]],
+    "ofl/notosanssymbols2/OFL.txt"
+  ],
+  [
+    "Noto Sans Syriac",
+    "sans",
+    [["ofl/notosanssyriac/NotoSansSyriac[wght].ttf", 400, false, 171996]],
+    "ofl/notosanssyriac/OFL.txt"
+  ],
+  [
+    "Noto Sans Syriac Eastern",
+    "sans",
+    [["ofl/notosanssyriaceastern/NotoSansSyriacEastern[wght].ttf", 400, false, 146308]],
+    "ofl/notosanssyriaceastern/OFL.txt"
+  ],
+  [
+    "Noto Sans Syriac Western",
+    "sans",
+    [["ofl/notosanssyriacwestern/NotoSansSyriacWestern[wght].ttf", 400, false, 180868]],
+    "ofl/notosanssyriacwestern/OFL.txt"
+  ],
+  [
+    "Noto Sans TC",
+    "sans",
+    [["ofl/notosanstc/NotoSansTC[wght].ttf", 400, false, 11941968]],
+    "ofl/notosanstc/OFL.txt"
+  ],
+  [
+    "Noto Sans Tagalog",
+    "sans",
+    [["ofl/notosanstagalog/NotoSansTagalog-Regular.ttf", 400, false, 53012]],
+    "ofl/notosanstagalog/OFL.txt"
+  ],
+  [
+    "Noto Sans Tagbanwa",
+    "sans",
+    [["ofl/notosanstagbanwa/NotoSansTagbanwa-Regular.ttf", 400, false, 46212]],
+    "ofl/notosanstagbanwa/OFL.txt"
+  ],
+  [
+    "Noto Sans Tai Le",
+    "sans",
+    [["ofl/notosanstaile/NotoSansTaiLe-Regular.ttf", 400, false, 57620]],
+    "ofl/notosanstaile/OFL.txt"
+  ],
+  [
+    "Noto Sans Tai Tham",
+    "sans",
+    [["ofl/notosanstaitham/NotoSansTaiTham[wght].ttf", 400, false, 172864]],
+    "ofl/notosanstaitham/OFL.txt"
+  ],
+  [
+    "Noto Sans Tai Viet",
+    "sans",
+    [["ofl/notosanstaiviet/NotoSansTaiViet-Regular.ttf", 400, false, 70236]],
+    "ofl/notosanstaiviet/OFL.txt"
+  ]
+]

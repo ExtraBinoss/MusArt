@@ -1,10 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createLayer, type Asset } from "@musart/core";
+import { type Asset } from "@musart/core";
 import {
   clearSourceCache,
   context2d,
   createSurface,
-  drawText,
   loadAsset,
   sourcePixels,
 } from "../../src/surface/sources";
@@ -64,25 +63,4 @@ describe("portable raster sources", () => {
     for (let i = 0; i < 65; i++) await loadAsset({ ...asset, id: String(i), dataUrl: `data:${i}` });
     expect(loadAsset(asset)).not.toBe(first);
   });
-  it.each(["left", "center", "right"] as const)(
-    "lays out %s text with wrapping and newlines",
-    async (textAlign) => {
-      const layer = createLayer("text", {
-        width: 84,
-        text: "one two three\nnext",
-        fontSize: 20,
-        fontFamily: 'Inter"',
-        textAlign,
-        lineHeight: 1.5,
-        letterSpacing: 2,
-      });
-      drawText(context as unknown as CanvasRenderingContext2D, layer);
-      const x = textAlign === "left" ? 0 : textAlign === "center" ? 42 : 84;
-      expect(context.fillText).toHaveBeenCalledWith("one two", x, 0);
-      expect(context.fillText).toHaveBeenCalledWith("three", x, 30);
-      expect(context.fillText).toHaveBeenCalledWith("next", x, 60);
-      expect(context.font).toContain('"Inter"');
-      expect(context.letterSpacing).toBe("2px");
-    },
-  );
 });

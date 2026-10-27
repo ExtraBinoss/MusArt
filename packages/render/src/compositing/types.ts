@@ -1,8 +1,11 @@
 import type { Texture } from "three/webgpu";
 import type { Composition } from "@musart/core";
+import type { FontResolver } from "../surface/text/fonts";
 export interface RenderOptions {
   scale?: number;
   forceWebGL?: boolean;
+  canRender?: () => boolean;
+  fontResolver?: FontResolver;
 }
 export interface FrameTexture {
   texture: Texture;
@@ -20,6 +23,9 @@ export interface GpuStats {
   cacheHits: number;
   vectorParses: number;
   maxBytes: number;
+  primitiveDraws?: number;
+  primitiveInstances?: number;
+  primitiveBytes?: number;
 }
 export function assertRenderSize(page: Composition, scale: number): void {
   if (!Number.isFinite(scale) || scale <= 0 || scale > 8)

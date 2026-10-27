@@ -1,0 +1,171 @@
+[
+  [
+    "Miss Fajardose",
+    "handwriting",
+    [["ofl/missfajardose/MissFajardose-Regular.ttf", 400, false, 58872]],
+    "ofl/missfajardose/OFL.txt"
+  ],
+  [
+    "Mitr",
+    "sans",
+    [
+      ["ofl/mitr/Mitr-Bold.ttf", 700, false, 224432],
+      ["ofl/mitr/Mitr-ExtraLight.ttf", 200, false, 200760],
+      ["ofl/mitr/Mitr-Light.ttf", 300, false, 211080],
+      ["ofl/mitr/Mitr-Medium.ttf", 500, false, 222116],
+      ["ofl/mitr/Mitr-Regular.ttf", 400, false, 222416],
+      ["ofl/mitr/Mitr-SemiBold.ttf", 600, false, 225796]
+    ],
+    "ofl/mitr/OFL.txt"
+  ],
+  [
+    "Mochiy Pop One",
+    "sans",
+    [["ofl/mochiypopone/MochiyPopOne-Regular.ttf", 400, false, 5163948]],
+    "ofl/mochiypopone/OFL.txt"
+  ],
+  [
+    "Mochiy Pop P One",
+    "sans",
+    [["ofl/mochiypoppone/MochiyPopPOne-Regular.ttf", 400, false, 5164140]],
+    "ofl/mochiypoppone/OFL.txt"
+  ],
+  ["Modak", "display", [["ofl/modak/Modak-Regular.ttf", 400, false, 650188]], "ofl/modak/OFL.txt"],
+  [
+    "Modern Antiqua",
+    "display",
+    [["ofl/modernantiqua/ModernAntiqua-Regular.ttf", 400, false, 70108]],
+    "ofl/modernantiqua/OFL.txt"
+  ],
+  [
+    "Moderustic",
+    "sans",
+    [["ofl/moderustic/Moderustic[wght].ttf", 400, false, 267392]],
+    "ofl/moderustic/OFL.txt"
+  ],
+  ["Mogra", "display", [["ofl/mogra/Mogra-Regular.ttf", 400, false, 323028]], "ofl/mogra/OFL.txt"],
+  [
+    "Mohave",
+    "sans",
+    [
+      ["ofl/mohave/Mohave-Italic[wght].ttf", 400, true, 68436],
+      ["ofl/mohave/Mohave[wght].ttf", 400, false, 65176]
+    ],
+    "ofl/mohave/OFL.txt"
+  ],
+  [
+    "Moirai One",
+    "display",
+    [["ofl/moiraione/MoiraiOne-Regular.ttf", 400, false, 2102128]],
+    "ofl/moiraione/OFL.txt"
+  ],
+  [
+    "Molengo",
+    "sans",
+    [["ofl/molengo/Molengo-Regular.ttf", 400, false, 65464]],
+    "ofl/molengo/OFL.txt"
+  ],
+  [
+    "Molle",
+    "handwriting",
+    [["ofl/molle/Molle-Regular.ttf", 400, false, 50964]],
+    "ofl/molle/OFL.txt"
+  ],
+  [
+    "Momo Signature",
+    "sans",
+    [["ofl/momosignature/MomoSignature-Regular.ttf", 400, false, 414732]],
+    "ofl/momosignature/OFL.txt"
+  ],
+  [
+    "Momo Trust Display",
+    "sans",
+    [["ofl/momotrustdisplay/MomoTrustDisplay-Regular.ttf", 400, false, 93640]],
+    "ofl/momotrustdisplay/OFL.txt"
+  ],
+  [
+    "Momo Trust Sans",
+    "sans",
+    [["ofl/momotrustsans/MomoTrustSans[wght].ttf", 400, false, 162712]],
+    "ofl/momotrustsans/OFL.txt"
+  ],
+  [
+    "Mona Sans",
+    "sans",
+    [
+      ["ofl/monasans/MonaSans-Italic[wdth,wght].ttf", 400, true, 360440],
+      ["ofl/monasans/MonaSans[wdth,wght].ttf", 400, false, 349140]
+    ],
+    "ofl/monasans/OFL.txt"
+  ],
+  ["Monda", "sans", [["ofl/monda/Monda[wght].ttf", 400, false, 167284]], "ofl/monda/OFL.txt"],
+  [
+    "Monofett",
+    "mono",
+    [["ofl/monofett/Monofett-Regular.ttf", 400, false, 72328]],
+    "ofl/monofett/OFL.txt"
+  ],
+  [
+    "Monomakh",
+    "display",
+    [["ofl/monomakh/Monomakh-Regular.ttf", 400, false, 230236]],
+    "ofl/monomakh/OFL.txt"
+  ],
+  [
+    "Monomaniac One",
+    "sans",
+    [["ofl/monomaniacone/MonomaniacOne-Regular.ttf", 400, false, 122056]],
+    "ofl/monomaniacone/OFL.txt"
+  ],
+  [
+    "Monoton",
+    "display",
+    [["ofl/monoton/Monoton-Regular.ttf", 400, false, 51604]],
+    "ofl/monoton/OFL.txt"
+  ],
+  [
+    "Monsieur La Doulaise",
+    "handwriting",
+    [["ofl/monsieurladoulaise/MonsieurLaDoulaise-Regular.ttf", 400, false, 54288]],
+    "ofl/monsieurladoulaise/OFL.txt"
+  ],
+  [
+    "Montaga",
+    "serif",
+    [["ofl/montaga/Montaga-Regular.ttf", 400, false, 33956]],
+    "ofl/montaga/OFL.txt"
+  ],
+  [
+    "Montagu Slab",
+    "serif",
+    [["ofl/montaguslab/MontaguSlab[opsz,wght].ttf", 400, false, 529316]],
+    "ofl/montaguslab/OFL.txt"
+  ],
+  [
+    "MonteCarlo",
+    "handwriting",
+    [["ofl/montecarlo/MonteCarlo-Regular.ttf", 400, false, 393456]],
+    "ofl/montecarlo/OFL.txt"
+  ],
+  [
+    "Montenegrin Gothic One",
+    "serif",
+    [["ofl/montenegringothicone/MontenegrinGothicOne-Regular.ttf", 400, false, 140876]],
+    "ofl/montenegringothicone/OFL.txt"
+  ],
+  [
+    "Montez",
+    "handwriting",
+    [["apache/montez/Montez-Regular.ttf", 400, false, 77132]],
+    "apache/montez/LICENSE.txt"
+  ],
+  [
+    "Montserrat",
+    "sans",
+    [
+      ["ofl/montserrat/Montserrat-Italic[wght].ttf", 400, true, 762376],
+      ["ofl/montserrat/Montserrat[wght].ttf", 400, false, 744936]
+    ],
+    "ofl/montserrat/OFL.txt"
+  ]
+]

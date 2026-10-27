@@ -1,0 +1,10 @@
+{
+  "revision": "ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b",
+  "families": 1950,
+  "metadataSource": "https://fonts.google.com/metadata/fonts",
+  "metadataSHA256": "0066ad0c78ca17ec7ec589c4f21425e3459ccbb8cbc3d08fab48f92af502329a",
+  "treeSource": "https://api.github.com/repos/google/fonts/git/trees/ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b?recursive=1",
+  "treeSHA256": "d178d0739e9216da7067c35f6600fbe840a36034bb2351a666a745b8f6d0388d",
+  "supplementalSource": "https://fonts.google.com/download/list?family=...",
+  "chunks": 77
+}

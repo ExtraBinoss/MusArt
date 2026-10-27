@@ -1,10 +1,13 @@
 // Adapted from ResumI (MIT); artwork notices are preserved in data/ and docs/legal/.
 import type { AssetKind, CatalogAsset } from "./types";
 import { SHAPE_CATALOG } from "./catalogs/core-shapes";
-import social from "../data/brands/social.json";
-import linkedIn from "../data/brands/linkedin.json";
+import social from "../data/brands/social.json" with { type: "json" };
+import linkedIn from "../data/brands/linkedin.json" with { type: "json" };
 
 export type { AssetKind, CatalogAsset, VectorArtwork, VectorPart } from "./types";
+export { FONT_CATALOG, MAX_FONT_FILE_BYTES } from "./fonts/catalog";
+export { loadFontCatalog } from "./fonts/google-catalog";
+export type { FontDefinition, FontVariant } from "./fonts/catalog";
 export { createSearchIndex, normalizeSearch } from "./search";
 export { SHAPE_CATALOG } from "./catalogs/core-shapes";
 export const SOCIAL_BRANDS: readonly CatalogAsset[] = [...social, linkedIn];

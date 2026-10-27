@@ -1,0 +1,192 @@
+[
+  [
+    "The Nautigal",
+    "handwriting",
+    [
+      ["ofl/thenautigal/TheNautigal-Bold.ttf", 700, false, 154128],
+      ["ofl/thenautigal/TheNautigal-Regular.ttf", 400, false, 162468]
+    ],
+    "ofl/thenautigal/OFL.txt"
+  ],
+  [
+    "Tienne",
+    "serif",
+    [
+      ["ofl/tienne/Tienne-Black.ttf", 900, false, 76300],
+      ["ofl/tienne/Tienne-Bold.ttf", 700, false, 69024],
+      ["ofl/tienne/Tienne-Regular.ttf", 400, false, 73628]
+    ],
+    "ofl/tienne/OFL.txt"
+  ],
+  [
+    "TikTok Sans",
+    "sans",
+    [["ofl/tiktoksans/TikTokSans[opsz,slnt,wdth,wght].ttf", 400, false, 761964]],
+    "ofl/tiktoksans/OFL.txt"
+  ],
+  [
+    "Tillana",
+    "display",
+    [
+      ["ofl/tillana/Tillana-Bold.ttf", 700, false, 306716],
+      ["ofl/tillana/Tillana-ExtraBold.ttf", 800, false, 304268],
+      ["ofl/tillana/Tillana-Medium.ttf", 500, false, 328012],
+      ["ofl/tillana/Tillana-Regular.ttf", 400, false, 329148],
+      ["ofl/tillana/Tillana-SemiBold.ttf", 600, false, 299792]
+    ],
+    "ofl/tillana/OFL.txt"
+  ],
+  [
+    "Tilt Neon",
+    "display",
+    [["ofl/tiltneon/TiltNeon[XROT,YROT].ttf", 400, false, 583288]],
+    "ofl/tiltneon/OFL.txt"
+  ],
+  [
+    "Tilt Prism",
+    "display",
+    [["ofl/tiltprism/TiltPrism[XROT,YROT].ttf", 400, false, 1049672]],
+    "ofl/tiltprism/OFL.txt"
+  ],
+  [
+    "Tilt Warp",
+    "display",
+    [["ofl/tiltwarp/TiltWarp[XROT,YROT].ttf", 400, false, 256812]],
+    "ofl/tiltwarp/OFL.txt"
+  ],
+  [
+    "Timmana",
+    "sans",
+    [["ofl/timmana/Timmana-Regular.ttf", 400, false, 760696]],
+    "ofl/timmana/OFL.txt"
+  ],
+  [
+    "Tinos",
+    "serif",
+    [
+      ["ofl/tinos/Tinos-Bold.ttf", 700, false, 597880],
+      ["ofl/tinos/Tinos-BoldItalic.ttf", 700, true, 578976],
+      ["ofl/tinos/Tinos-Italic.ttf", 400, true, 565016],
+      ["ofl/tinos/Tinos-Regular.ttf", 400, false, 521588]
+    ],
+    "https://fonts.google.com/specimen/Tinos#license"
+  ],
+  [
+    "Tiny5",
+    "sans",
+    [
+      ["ofl/tiny5/Tiny5-Italic[BLED,JITT,ROND,wdth,wght].ttf", 400, true, 433828],
+      ["ofl/tiny5/Tiny5[BLED,JITT,ROND,wdth,wght].ttf", 400, false, 433432]
+    ],
+    "ofl/tiny5/OFL.txt"
+  ],
+  [
+    "Tiro Bangla",
+    "serif",
+    [
+      ["ofl/tirobangla/TiroBangla-Italic.ttf", 400, true, 329576],
+      ["ofl/tirobangla/TiroBangla-Regular.ttf", 400, false, 323776]
+    ],
+    "ofl/tirobangla/OFL.txt"
+  ],
+  [
+    "Tiro Devanagari Hindi",
+    "serif",
+    [
+      ["ofl/tirodevanagarihindi/TiroDevanagariHindi-Italic.ttf", 400, true, 425636],
+      ["ofl/tirodevanagarihindi/TiroDevanagariHindi-Regular.ttf", 400, false, 423224]
+    ],
+    "ofl/tirodevanagarihindi/OFL.txt"
+  ],
+  [
+    "Tiro Devanagari Marathi",
+    "serif",
+    [
+      ["ofl/tirodevanagarimarathi/TiroDevanagariMarathi-Italic.ttf", 400, true, 441728],
+      ["ofl/tirodevanagarimarathi/TiroDevanagariMarathi-Regular.ttf", 400, false, 439712]
+    ],
+    "ofl/tirodevanagarimarathi/OFL.txt"
+  ],
+  [
+    "Tiro Devanagari Sanskrit",
+    "serif",
+    [
+      ["ofl/tirodevanagarisanskrit/TiroDevanagariSanskrit-Italic.ttf", 400, true, 765048],
+      ["ofl/tirodevanagarisanskrit/TiroDevanagariSanskrit-Regular.ttf", 400, false, 761856]
+    ],
+    "ofl/tirodevanagarisanskrit/OFL.txt"
+  ],
+  [
+    "Tiro Gurmukhi",
+    "serif",
+    [
+      ["ofl/tirogurmukhi/TiroGurmukhi-Italic.ttf", 400, true, 153924],
+      ["ofl/tirogurmukhi/TiroGurmukhi-Regular.ttf", 400, false, 150708]
+    ],
+    "ofl/tirogurmukhi/OFL.txt"
+  ],
+  [
+    "Tiro Kannada",
+    "serif",
+    [
+      ["ofl/tirokannada/TiroKannada-Italic.ttf", 400, true, 483080],
+      ["ofl/tirokannada/TiroKannada-Regular.ttf", 400, false, 482772]
+    ],
+    "ofl/tirokannada/OFL.txt"
+  ],
+  [
+    "Tiro Tamil",
+    "serif",
+    [
+      ["ofl/tirotamil/TiroTamil-Italic.ttf", 400, true, 198584],
+      ["ofl/tirotamil/TiroTamil-Regular.ttf", 400, false, 197432]
+    ],
+    "ofl/tirotamil/OFL.txt"
+  ],
+  [
+    "Tiro Telugu",
+    "serif",
+    [
+      ["ofl/tirotelugu/TiroTelugu-Italic.ttf", 400, true, 634840],
+      ["ofl/tirotelugu/TiroTelugu-Regular.ttf", 400, false, 635592]
+    ],
+    "ofl/tirotelugu/OFL.txt"
+  ],
+  [
+    "Tirra",
+    "sans",
+    [
+      ["ofl/tirra/Tirra-Black.ttf", 900, false, 49580],
+      ["ofl/tirra/Tirra-Bold.ttf", 700, false, 49192],
+      ["ofl/tirra/Tirra-ExtraBold.ttf", 800, false, 49456],
+      ["ofl/tirra/Tirra-Medium.ttf", 500, false, 49328],
+      ["ofl/tirra/Tirra-Regular.ttf", 400, false, 49376],
+      ["ofl/tirra/Tirra-SemiBold.ttf", 600, false, 49352]
+    ],
+    "ofl/tirra/OFL.txt"
+  ],
+  [
+    "Titan One",
+    "display",
+    [["ofl/titanone/TitanOne-Regular.ttf", 400, false, 55712]],
+    "ofl/titanone/OFL.txt"
+  ],
+  [
+    "Titillium Web",
+    "sans",
+    [
+      ["ofl/titilliumweb/TitilliumWeb-Black.ttf", 900, false, 49328],
+      ["ofl/titilliumweb/TitilliumWeb-Bold.ttf", 700, false, 59884],
+      ["ofl/titilliumweb/TitilliumWeb-BoldItalic.ttf", 700, true, 69772],
+      ["ofl/titilliumweb/TitilliumWeb-ExtraLight.ttf", 200, false, 63172],
+      ["ofl/titilliumweb/TitilliumWeb-ExtraLightItalic.ttf", 200, true, 67860],
+      ["ofl/titilliumweb/TitilliumWeb-Italic.ttf", 400, true, 72392],
+      ["ofl/titilliumweb/TitilliumWeb-Light.ttf", 300, false, 64004],
+      ["ofl/titilliumweb/TitilliumWeb-LightItalic.ttf", 300, true, 71708],
+      ["ofl/titilliumweb/TitilliumWeb-Regular.ttf", 400, false, 63660],
+      ["ofl/titilliumweb/TitilliumWeb-SemiBold.ttf", 600, false, 63008],
+      ["ofl/titilliumweb/TitilliumWeb-SemiBoldItalic.ttf", 600, true, 71796]
+    ],
+    "ofl/titilliumweb/OFL.txt"
+  ]
+]

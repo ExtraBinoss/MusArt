@@ -1,0 +1,193 @@
+[
+  [
+    "WindSong",
+    "handwriting",
+    [
+      ["ofl/windsong/WindSong-Medium.ttf", 500, false, 276656],
+      ["ofl/windsong/WindSong-Regular.ttf", 400, false, 267192]
+    ],
+    "ofl/windsong/OFL.txt"
+  ],
+  [
+    "Winky Rough",
+    "sans",
+    [
+      ["ofl/winkyrough/WinkyRough-Italic[wght].ttf", 400, true, 351840],
+      ["ofl/winkyrough/WinkyRough[wght].ttf", 400, false, 346020]
+    ],
+    "ofl/winkyrough/OFL.txt"
+  ],
+  [
+    "Winky Sans",
+    "sans",
+    [
+      ["ofl/winkysans/WinkySans-Italic[wght].ttf", 400, true, 108840],
+      ["ofl/winkysans/WinkySans[wght].ttf", 400, false, 105280]
+    ],
+    "ofl/winkysans/OFL.txt"
+  ],
+  [
+    "Wire One",
+    "sans",
+    [["ofl/wireone/WireOne-Regular.ttf", 400, false, 48420]],
+    "ofl/wireone/OFL.txt"
+  ],
+  [
+    "Wittgenstein",
+    "serif",
+    [
+      ["ofl/wittgenstein/Wittgenstein-Italic[wght].ttf", 400, true, 97640],
+      ["ofl/wittgenstein/Wittgenstein[wght].ttf", 400, false, 105844]
+    ],
+    "ofl/wittgenstein/OFL.txt"
+  ],
+  [
+    "Wix Madefor Display",
+    "sans",
+    [["ofl/wixmadefordisplay/WixMadeforDisplay[wght].ttf", 400, false, 159752]],
+    "ofl/wixmadefordisplay/OFL.txt"
+  ],
+  [
+    "Wix Madefor Text",
+    "sans",
+    [
+      ["ofl/wixmadefortext/WixMadeforText-Bold.ttf", 700, false, 108636],
+      ["ofl/wixmadefortext/WixMadeforText-BoldItalic.ttf", 700, true, 66208],
+      ["ofl/wixmadefortext/WixMadeforText-ExtraBold.ttf", 800, false, 109084],
+      ["ofl/wixmadefortext/WixMadeforText-ExtraBoldItalic.ttf", 800, true, 66912],
+      ["ofl/wixmadefortext/WixMadeforText-Italic.ttf", 400, true, 64936],
+      ["ofl/wixmadefortext/WixMadeforText-Italic[wght].ttf", 400, true, 86256],
+      ["ofl/wixmadefortext/WixMadeforText-Medium.ttf", 500, false, 109048],
+      ["ofl/wixmadefortext/WixMadeforText-MediumItalic.ttf", 500, true, 68044],
+      ["ofl/wixmadefortext/WixMadeforText-Regular.ttf", 400, false, 107700],
+      ["ofl/wixmadefortext/WixMadeforText-SemiBold.ttf", 600, false, 88108],
+      ["ofl/wixmadefortext/WixMadeforText-SemiBoldItalic.ttf", 600, true, 51964],
+      ["ofl/wixmadefortext/WixMadeforText[wght].ttf", 400, false, 158708]
+    ],
+    "ofl/wixmadefortext/OFL.txt"
+  ],
+  [
+    "Work Sans",
+    "sans",
+    [
+      ["ofl/worksans/WorkSans-Italic[wght].ttf", 400, true, 336756],
+      ["ofl/worksans/WorkSans[wght].ttf", 400, false, 361072]
+    ],
+    "ofl/worksans/OFL.txt"
+  ],
+  [
+    "Workbench",
+    "mono",
+    [["ofl/workbench/Workbench[BLED,SCAN].ttf", 400, false, 32472]],
+    "ofl/workbench/OFL.txt"
+  ],
+  [
+    "Xanh Mono",
+    "mono",
+    [
+      ["ofl/xanhmono/XanhMono-Italic.ttf", 400, true, 63836],
+      ["ofl/xanhmono/XanhMono-Regular.ttf", 400, false, 59924]
+    ],
+    "ofl/xanhmono/OFL.txt"
+  ],
+  [
+    "Yaldevi",
+    "sans",
+    [["ofl/yaldevi/Yaldevi[wght].ttf", 400, false, 469216]],
+    "ofl/yaldevi/OFL.txt"
+  ],
+  [
+    "Yanone Kaffeesatz",
+    "sans",
+    [["ofl/yanonekaffeesatz/YanoneKaffeesatz[wght].ttf", 400, false, 129312]],
+    "ofl/yanonekaffeesatz/OFL.txt"
+  ],
+  [
+    "Yantramanav",
+    "sans",
+    [
+      ["ofl/yantramanav/Yantramanav-Black.ttf", 900, false, 159196],
+      ["ofl/yantramanav/Yantramanav-Bold.ttf", 700, false, 158048],
+      ["ofl/yantramanav/Yantramanav-Light.ttf", 300, false, 160820],
+      ["ofl/yantramanav/Yantramanav-Medium.ttf", 500, false, 154352],
+      ["ofl/yantramanav/Yantramanav-Regular.ttf", 400, false, 153872],
+      ["ofl/yantramanav/Yantramanav-Thin.ttf", 100, false, 160744]
+    ],
+    "ofl/yantramanav/OFL.txt"
+  ],
+  [
+    "Yarndings 12",
+    "display",
+    [["ofl/yarndings12/Yarndings12-Regular.ttf", 400, false, 32756]],
+    "ofl/yarndings12/OFL.txt"
+  ],
+  [
+    "Yarndings 12 Charted",
+    "display",
+    [["ofl/yarndings12charted/Yarndings12Charted-Regular.ttf", 400, false, 147756]],
+    "ofl/yarndings12charted/OFL.txt"
+  ],
+  [
+    "Yarndings 20",
+    "display",
+    [["ofl/yarndings20/Yarndings20-Regular.ttf", 400, false, 52236]],
+    "ofl/yarndings20/OFL.txt"
+  ],
+  [
+    "Yarndings 20 Charted",
+    "display",
+    [["ofl/yarndings20charted/Yarndings20Charted-Regular.ttf", 400, false, 304008]],
+    "ofl/yarndings20charted/OFL.txt"
+  ],
+  [
+    "Yatra One",
+    "display",
+    [["ofl/yatraone/YatraOne-Regular.ttf", 400, false, 276324]],
+    "ofl/yatraone/OFL.txt"
+  ],
+  [
+    "Yellowtail",
+    "handwriting",
+    [["apache/yellowtail/Yellowtail-Regular.ttf", 400, false, 62216]],
+    "apache/yellowtail/LICENSE.txt"
+  ],
+  [
+    "Yeon Sung",
+    "display",
+    [["ofl/yeonsung/YeonSung-Regular.ttf", 400, false, 2511004]],
+    "ofl/yeonsung/OFL.txt"
+  ],
+  [
+    "Yeseva One",
+    "display",
+    [["ofl/yesevaone/YesevaOne-Regular.ttf", 400, false, 108016]],
+    "ofl/yesevaone/OFL.txt"
+  ],
+  [
+    "Yesteryear",
+    "handwriting",
+    [["ofl/yesteryear/Yesteryear-Regular.ttf", 400, false, 64856]],
+    "ofl/yesteryear/OFL.txt"
+  ],
+  [
+    "Yomogi",
+    "handwriting",
+    [["ofl/yomogi/Yomogi-Regular.ttf", 400, false, 4045904]],
+    "ofl/yomogi/OFL.txt"
+  ],
+  [
+    "Young Serif",
+    "serif",
+    [["ofl/youngserif/YoungSerif-Regular.ttf", 400, false, 106608]],
+    "ofl/youngserif/OFL.txt"
+  ],
+  [
+    "Yrsa",
+    "serif",
+    [
+      ["ofl/yrsa/Yrsa-Italic[wght].ttf", 400, true, 286060],
+      ["ofl/yrsa/Yrsa[wght].ttf", 400, false, 225532]
+    ],
+    "ofl/yrsa/OFL.txt"
+  ]
+]

@@ -1,0 +1,138 @@
+[
+  [
+    "Saira Condensed",
+    "sans",
+    [
+      ["ofl/sairacondensed/SairaCondensed-Black.ttf", 900, false, 96880],
+      ["ofl/sairacondensed/SairaCondensed-Bold.ttf", 700, false, 96428],
+      ["ofl/sairacondensed/SairaCondensed-ExtraBold.ttf", 800, false, 96580],
+      ["ofl/sairacondensed/SairaCondensed-ExtraLight.ttf", 200, false, 92824],
+      ["ofl/sairacondensed/SairaCondensed-Light.ttf", 300, false, 95044],
+      ["ofl/sairacondensed/SairaCondensed-Medium.ttf", 500, false, 96240],
+      ["ofl/sairacondensed/SairaCondensed-Regular.ttf", 400, false, 95068],
+      ["ofl/sairacondensed/SairaCondensed-SemiBold.ttf", 600, false, 96028],
+      ["ofl/sairacondensed/SairaCondensed-Thin.ttf", 100, false, 92424]
+    ],
+    "ofl/sairacondensed/OFL.txt"
+  ],
+  [
+    "Saira Extra Condensed",
+    "sans",
+    [
+      ["ofl/sairaextracondensed/SairaExtraCondensed-Black.ttf", 900, false, 96448],
+      ["ofl/sairaextracondensed/SairaExtraCondensed-Bold.ttf", 700, false, 96064],
+      ["ofl/sairaextracondensed/SairaExtraCondensed-ExtraBold.ttf", 800, false, 96816],
+      ["ofl/sairaextracondensed/SairaExtraCondensed-ExtraLight.ttf", 200, false, 92816],
+      ["ofl/sairaextracondensed/SairaExtraCondensed-Light.ttf", 300, false, 95116],
+      ["ofl/sairaextracondensed/SairaExtraCondensed-Medium.ttf", 500, false, 95804],
+      ["ofl/sairaextracondensed/SairaExtraCondensed-Regular.ttf", 400, false, 95428],
+      ["ofl/sairaextracondensed/SairaExtraCondensed-SemiBold.ttf", 600, false, 96072],
+      ["ofl/sairaextracondensed/SairaExtraCondensed-Thin.ttf", 100, false, 92040]
+    ],
+    "ofl/sairaextracondensed/OFL.txt"
+  ],
+  [
+    "Saira Semi Condensed",
+    "sans",
+    [
+      ["ofl/sairasemicondensed/SairaSemiCondensed-Black.ttf", 900, false, 97020],
+      ["ofl/sairasemicondensed/SairaSemiCondensed-Bold.ttf", 700, false, 96500],
+      ["ofl/sairasemicondensed/SairaSemiCondensed-ExtraBold.ttf", 800, false, 97340],
+      ["ofl/sairasemicondensed/SairaSemiCondensed-ExtraLight.ttf", 200, false, 93336],
+      ["ofl/sairasemicondensed/SairaSemiCondensed-Light.ttf", 300, false, 95612],
+      ["ofl/sairasemicondensed/SairaSemiCondensed-Medium.ttf", 500, false, 95548],
+      ["ofl/sairasemicondensed/SairaSemiCondensed-Regular.ttf", 400, false, 95184],
+      ["ofl/sairasemicondensed/SairaSemiCondensed-SemiBold.ttf", 600, false, 96160],
+      ["ofl/sairasemicondensed/SairaSemiCondensed-Thin.ttf", 100, false, 92828]
+    ],
+    "ofl/sairasemicondensed/OFL.txt"
+  ],
+  [
+    "Saira Stencil",
+    "display",
+    [
+      ["ofl/sairastencil/SairaStencil-Italic[wdth,wght].ttf", 400, true, 402964],
+      ["ofl/sairastencil/SairaStencil[wdth,wght].ttf", 400, false, 491312]
+    ],
+    "ofl/sairastencil/OFL.txt"
+  ],
+  ["Salsa", "display", [["ofl/salsa/Salsa-Regular.ttf", 400, false, 56680]], "ofl/salsa/OFL.txt"],
+  [
+    "Sanchez",
+    "serif",
+    [
+      ["ofl/sanchez/Sanchez-Italic.ttf", 400, true, 75212],
+      ["ofl/sanchez/Sanchez-Regular.ttf", 400, false, 72552]
+    ],
+    "ofl/sanchez/OFL.txt"
+  ],
+  [
+    "Sancreek",
+    "display",
+    [["ofl/sancreek/Sancreek-Regular.ttf", 400, false, 93252]],
+    "ofl/sancreek/OFL.txt"
+  ],
+  [
+    "Sankofa Display",
+    "sans",
+    [["ofl/sankofadisplay/SankofaDisplay-Regular.ttf", 400, false, 301656]],
+    "ofl/sankofadisplay/OFL.txt"
+  ],
+  [
+    "Sansation",
+    "sans",
+    [
+      ["ofl/sansation/Sansation-Bold.ttf", 700, false, 44804],
+      ["ofl/sansation/Sansation-BoldItalic.ttf", 700, true, 46496],
+      ["ofl/sansation/Sansation-Italic.ttf", 400, true, 46380],
+      ["ofl/sansation/Sansation-Light.ttf", 300, false, 44804],
+      ["ofl/sansation/Sansation-LightItalic.ttf", 300, true, 46820],
+      ["ofl/sansation/Sansation-Regular.ttf", 400, false, 44548]
+    ],
+    "ofl/sansation/OFL.txt"
+  ],
+  [
+    "Sansita",
+    "sans",
+    [
+      ["ofl/sansita/Sansita-Black.ttf", 900, false, 122904],
+      ["ofl/sansita/Sansita-BlackItalic.ttf", 900, true, 111576],
+      ["ofl/sansita/Sansita-Bold.ttf", 700, false, 117456],
+      ["ofl/sansita/Sansita-BoldItalic.ttf", 700, true, 109484],
+      ["ofl/sansita/Sansita-ExtraBold.ttf", 800, false, 119988],
+      ["ofl/sansita/Sansita-ExtraBoldItalic.ttf", 800, true, 107376],
+      ["ofl/sansita/Sansita-Italic.ttf", 400, true, 108372],
+      ["ofl/sansita/Sansita-Regular.ttf", 400, false, 116092]
+    ],
+    "ofl/sansita/OFL.txt"
+  ],
+  [
+    "Sansita Swashed",
+    "display",
+    [["ofl/sansitaswashed/SansitaSwashed[wght].ttf", 400, false, 234096]],
+    "ofl/sansitaswashed/OFL.txt"
+  ],
+  [
+    "Sarabun",
+    "sans",
+    [
+      ["ofl/sarabun/Sarabun-Bold.ttf", 700, false, 89804],
+      ["ofl/sarabun/Sarabun-BoldItalic.ttf", 700, true, 92948],
+      ["ofl/sarabun/Sarabun-ExtraBold.ttf", 800, false, 89884],
+      ["ofl/sarabun/Sarabun-ExtraBoldItalic.ttf", 800, true, 92820],
+      ["ofl/sarabun/Sarabun-ExtraLight.ttf", 200, false, 90484],
+      ["ofl/sarabun/Sarabun-ExtraLightItalic.ttf", 200, true, 93612],
+      ["ofl/sarabun/Sarabun-Italic.ttf", 400, true, 93248],
+      ["ofl/sarabun/Sarabun-Light.ttf", 300, false, 90440],
+      ["ofl/sarabun/Sarabun-LightItalic.ttf", 300, true, 93296],
+      ["ofl/sarabun/Sarabun-Medium.ttf", 500, false, 90292],
+      ["ofl/sarabun/Sarabun-MediumItalic.ttf", 500, true, 93428],
+      ["ofl/sarabun/Sarabun-Regular.ttf", 400, false, 90220],
+      ["ofl/sarabun/Sarabun-SemiBold.ttf", 600, false, 90200],
+      ["ofl/sarabun/Sarabun-SemiBoldItalic.ttf", 600, true, 93352],
+      ["ofl/sarabun/Sarabun-Thin.ttf", 100, false, 90588],
+      ["ofl/sarabun/Sarabun-ThinItalic.ttf", 100, true, 93616]
+    ],
+    "ofl/sarabun/OFL.txt"
+  ]
+]

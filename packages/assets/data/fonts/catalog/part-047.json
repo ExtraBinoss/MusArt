@@ -1,0 +1,218 @@
+[
+  [
+    "Noto Sans Malayalam",
+    "sans",
+    [["ofl/notosansmalayalam/NotoSansMalayalam[wdth,wght].ttf", 400, false, 504204]],
+    "ofl/notosansmalayalam/OFL.txt"
+  ],
+  [
+    "Noto Sans Mandaic",
+    "sans",
+    [["ofl/notosansmandaic/NotoSansMandaic-Regular.ttf", 400, false, 66976]],
+    "ofl/notosansmandaic/OFL.txt"
+  ],
+  [
+    "Noto Sans Manichaean",
+    "sans",
+    [["ofl/notosansmanichaean/NotoSansManichaean-Regular.ttf", 400, false, 95008]],
+    "ofl/notosansmanichaean/OFL.txt"
+  ],
+  [
+    "Noto Sans Marchen",
+    "sans",
+    [["ofl/notosansmarchen/NotoSansMarchen-Regular.ttf", 400, false, 286768]],
+    "ofl/notosansmarchen/OFL.txt"
+  ],
+  [
+    "Noto Sans Masaram Gondi",
+    "sans",
+    [["ofl/notosansmasaramgondi/NotoSansMasaramGondi-Regular.ttf", 400, false, 81772]],
+    "ofl/notosansmasaramgondi/OFL.txt"
+  ],
+  [
+    "Noto Sans Math",
+    "sans",
+    [["ofl/notosansmath/NotoSansMath-Regular.ttf", 400, false, 1015396]],
+    "ofl/notosansmath/OFL.txt"
+  ],
+  [
+    "Noto Sans Mayan Numerals",
+    "sans",
+    [["ofl/notosansmayannumerals/NotoSansMayanNumerals-Regular.ttf", 400, false, 50672]],
+    "ofl/notosansmayannumerals/OFL.txt"
+  ],
+  [
+    "Noto Sans Medefaidrin",
+    "sans",
+    [["ofl/notosansmedefaidrin/NotoSansMedefaidrin[wght].ttf", 400, false, 112788]],
+    "ofl/notosansmedefaidrin/OFL.txt"
+  ],
+  [
+    "Noto Sans Meetei Mayek",
+    "sans",
+    [["ofl/notosansmeeteimayek/NotoSansMeeteiMayek[wght].ttf", 400, false, 95616]],
+    "ofl/notosansmeeteimayek/OFL.txt"
+  ],
+  [
+    "Noto Sans Mende Kikakui",
+    "sans",
+    [["ofl/notosansmendekikakui/NotoSansMendeKikakui-Regular.ttf", 400, false, 94212]],
+    "ofl/notosansmendekikakui/OFL.txt"
+  ],
+  [
+    "Noto Sans Meroitic",
+    "sans",
+    [["ofl/notosansmeroitic/NotoSansMeroitic-Regular.ttf", 400, false, 88336]],
+    "ofl/notosansmeroitic/OFL.txt"
+  ],
+  [
+    "Noto Sans Miao",
+    "sans",
+    [["ofl/notosansmiao/NotoSansMiao-Regular.ttf", 400, false, 97716]],
+    "ofl/notosansmiao/OFL.txt"
+  ],
+  [
+    "Noto Sans Modi",
+    "sans",
+    [["ofl/notosansmodi/NotoSansModi-Regular.ttf", 400, false, 108332]],
+    "ofl/notosansmodi/OFL.txt"
+  ],
+  [
+    "Noto Sans Mongolian",
+    "sans",
+    [["ofl/notosansmongolian/NotoSansMongolian-Regular.ttf", 400, false, 388172]],
+    "ofl/notosansmongolian/OFL.txt"
+  ],
+  [
+    "Noto Sans Mono",
+    "sans",
+    [["ofl/notosansmono/NotoSansMono[wdth,wght].ttf", 400, false, 1708408]],
+    "ofl/notosansmono/OFL.txt"
+  ],
+  [
+    "Noto Sans Mro",
+    "sans",
+    [["ofl/notosansmro/NotoSansMro-Regular.ttf", 400, false, 54272]],
+    "ofl/notosansmro/OFL.txt"
+  ],
+  [
+    "Noto Sans Multani",
+    "sans",
+    [["ofl/notosansmultani/NotoSansMultani-Regular.ttf", 400, false, 57728]],
+    "ofl/notosansmultani/OFL.txt"
+  ],
+  [
+    "Noto Sans Myanmar",
+    "sans",
+    [["ofl/notosansmyanmar/NotoSansMyanmar[wdth,wght].ttf", 400, false, 784832]],
+    "ofl/notosansmyanmar/OFL.txt"
+  ],
+  [
+    "Noto Sans NKo",
+    "sans",
+    [["ofl/notosansnko/NotoSansNKo-Regular.ttf", 400, false, 79696]],
+    "ofl/notosansnko/OFL.txt"
+  ],
+  [
+    "Noto Sans NKo Unjoined",
+    "sans",
+    [["ofl/notosansnkounjoined/NotoSansNKoUnjoined[wght].ttf", 400, false, 63800]],
+    "ofl/notosansnkounjoined/OFL.txt"
+  ],
+  [
+    "Noto Sans Nabataean",
+    "sans",
+    [["ofl/notosansnabataean/NotoSansNabataean-Regular.ttf", 400, false, 55600]],
+    "ofl/notosansnabataean/OFL.txt"
+  ],
+  [
+    "Noto Sans Nag Mundari",
+    "sans",
+    [["ofl/notosansnagmundari/NotoSansNagMundari[wght].ttf", 400, false, 59720]],
+    "ofl/notosansnagmundari/OFL.txt"
+  ],
+  [
+    "Noto Sans Nandinagari",
+    "sans",
+    [["ofl/notosansnandinagari/NotoSansNandinagari-Regular.ttf", 400, false, 252968]],
+    "ofl/notosansnandinagari/OFL.txt"
+  ],
+  [
+    "Noto Sans New Tai Lue",
+    "sans",
+    [["ofl/notosansnewtailue/NotoSansNewTaiLue[wght].ttf", 400, false, 78872]],
+    "ofl/notosansnewtailue/OFL.txt"
+  ],
+  [
+    "Noto Sans Newa",
+    "sans",
+    [["ofl/notosansnewa/NotoSansNewa-Regular.ttf", 400, false, 259668]],
+    "ofl/notosansnewa/OFL.txt"
+  ],
+  [
+    "Noto Sans Nushu",
+    "sans",
+    [["ofl/notosansnushu/NotoSansNushu-Regular.ttf", 400, false, 187204]],
+    "ofl/notosansnushu/OFL.txt"
+  ],
+  [
+    "Noto Sans Ogham",
+    "sans",
+    [["ofl/notosansogham/NotoSansOgham-Regular.ttf", 400, false, 47540]],
+    "ofl/notosansogham/OFL.txt"
+  ],
+  [
+    "Noto Sans Ol Chiki",
+    "sans",
+    [["ofl/notosansolchiki/NotoSansOlChiki[wght].ttf", 400, false, 91152]],
+    "ofl/notosansolchiki/OFL.txt"
+  ],
+  [
+    "Noto Sans Old Hungarian",
+    "sans",
+    [["ofl/notosansoldhungarian/NotoSansOldHungarian-Regular.ttf", 400, false, 113692]],
+    "ofl/notosansoldhungarian/OFL.txt"
+  ],
+  [
+    "Noto Sans Old Italic",
+    "sans",
+    [["ofl/notosansolditalic/NotoSansOldItalic-Regular.ttf", 400, true, 50960]],
+    "ofl/notosansolditalic/OFL.txt"
+  ],
+  [
+    "Noto Sans Old North Arabian",
+    "sans",
+    [["ofl/notosansoldnortharabian/NotoSansOldNorthArabian-Regular.ttf", 400, false, 53664]],
+    "ofl/notosansoldnortharabian/OFL.txt"
+  ],
+  [
+    "Noto Sans Old Permic",
+    "sans",
+    [["ofl/notosansoldpermic/NotoSansOldPermic-Regular.ttf", 400, false, 52264]],
+    "ofl/notosansoldpermic/OFL.txt"
+  ],
+  [
+    "Noto Sans Old Persian",
+    "sans",
+    [["ofl/notosansoldpersian/NotoSansOldPersian-Regular.ttf", 400, false, 59860]],
+    "ofl/notosansoldpersian/OFL.txt"
+  ],
+  [
+    "Noto Sans Old Sogdian",
+    "sans",
+    [["ofl/notosansoldsogdian/NotoSansOldSogdian-Regular.ttf", 400, false, 66124]],
+    "ofl/notosansoldsogdian/OFL.txt"
+  ],
+  [
+    "Noto Sans Old South Arabian",
+    "sans",
+    [["ofl/notosansoldsoutharabian/NotoSansOldSouthArabian-Regular.ttf", 400, false, 51336]],
+    "ofl/notosansoldsoutharabian/OFL.txt"
+  ],
+  [
+    "Noto Sans Old Turkic",
+    "sans",
+    [["ofl/notosansoldturkic/NotoSansOldTurkic-Regular.ttf", 400, false, 56284]],
+    "ofl/notosansoldturkic/OFL.txt"
+  ]
+]

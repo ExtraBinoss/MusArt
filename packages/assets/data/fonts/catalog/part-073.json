@@ -1,0 +1,192 @@
+[
+  ["Varta", "sans", [["ofl/varta/Varta[wght].ttf", 400, false, 112072]], "ofl/varta/OFL.txt"],
+  [
+    "Vast Shadow",
+    "serif",
+    [["ofl/vastshadow/VastShadow-Regular.ttf", 400, false, 62364]],
+    "ofl/vastshadow/OFL.txt"
+  ],
+  [
+    "Vazirmatn",
+    "sans",
+    [["ofl/vazirmatn/Vazirmatn[wght].ttf", 400, false, 241328]],
+    "ofl/vazirmatn/OFL.txt"
+  ],
+  [
+    "Vend Sans",
+    "sans",
+    [
+      ["ofl/vendsans/VendSans-Italic[wght].ttf", 400, true, 120880],
+      ["ofl/vendsans/VendSans[wght].ttf", 400, false, 119600]
+    ],
+    "ofl/vendsans/OFL.txt"
+  ],
+  [
+    "Vesper Libre",
+    "serif",
+    [
+      ["ofl/vesperlibre/VesperLibre-Bold.ttf", 700, false, 168172],
+      ["ofl/vesperlibre/VesperLibre-Heavy.ttf", 900, false, 165724],
+      ["ofl/vesperlibre/VesperLibre-Medium.ttf", 500, false, 168368],
+      ["ofl/vesperlibre/VesperLibre-Regular.ttf", 400, false, 166124]
+    ],
+    "ofl/vesperlibre/OFL.txt"
+  ],
+  [
+    "Viaoda Libre",
+    "display",
+    [["ofl/viaodalibre/ViaodaLibre-Regular.ttf", 400, false, 196944]],
+    "ofl/viaodalibre/OFL.txt"
+  ],
+  ["Vibes", "display", [["ofl/vibes/Vibes-Regular.ttf", 400, false, 78412]], "ofl/vibes/OFL.txt"],
+  [
+    "Vibur",
+    "handwriting",
+    [["ofl/vibur/Vibur-Regular.ttf", 400, false, 173604]],
+    "ofl/vibur/OFL.txt"
+  ],
+  [
+    "Victor Mono",
+    "mono",
+    [
+      ["ofl/victormono/VictorMono-Italic[wght].ttf", 400, true, 242872],
+      ["ofl/victormono/VictorMono[wght].ttf", 400, false, 194312]
+    ],
+    "ofl/victormono/OFL.txt"
+  ],
+  [
+    "Vidaloka",
+    "serif",
+    [["ofl/vidaloka/Vidaloka-Regular.ttf", 400, false, 135540]],
+    "ofl/vidaloka/OFL.txt"
+  ],
+  ["Viga", "sans", [["ofl/viga/Viga-Regular.ttf", 400, false, 28436]], "ofl/viga/OFL.txt"],
+  [
+    "Vina Sans",
+    "display",
+    [["ofl/vinasans/VinaSans-Regular.ttf", 400, false, 93328]],
+    "ofl/vinasans/OFL.txt"
+  ],
+  ["Voces", "sans", [["ofl/voces/Voces-Regular.ttf", 400, false, 123756]], "ofl/voces/OFL.txt"],
+  [
+    "Volkhov",
+    "serif",
+    [
+      ["ofl/volkhov/Volkhov-Bold.ttf", 700, false, 112220],
+      ["ofl/volkhov/Volkhov-BoldItalic.ttf", 700, true, 102728],
+      ["ofl/volkhov/Volkhov-Italic.ttf", 400, true, 102360],
+      ["ofl/volkhov/Volkhov-Regular.ttf", 400, false, 112276]
+    ],
+    "ofl/volkhov/OFL.txt"
+  ],
+  [
+    "Vollkorn",
+    "serif",
+    [
+      ["ofl/vollkorn/Vollkorn-Italic[wght].ttf", 400, true, 441264],
+      ["ofl/vollkorn/Vollkorn[wght].ttf", 400, false, 577864]
+    ],
+    "ofl/vollkorn/OFL.txt"
+  ],
+  [
+    "Vollkorn SC",
+    "serif",
+    [
+      ["ofl/vollkornsc/VollkornSC-Black.ttf", 900, false, 204480],
+      ["ofl/vollkornsc/VollkornSC-Bold.ttf", 700, false, 200976],
+      ["ofl/vollkornsc/VollkornSC-Regular.ttf", 400, false, 202164],
+      ["ofl/vollkornsc/VollkornSC-SemiBold.ttf", 600, false, 204612]
+    ],
+    "ofl/vollkornsc/OFL.txt"
+  ],
+  [
+    "Voltaire",
+    "sans",
+    [["ofl/voltaire/Voltaire-Regular.ttf", 400, false, 291496]],
+    "ofl/voltaire/OFL.txt"
+  ],
+  [
+    "Vujahday Script",
+    "handwriting",
+    [["ofl/vujahdayscript/VujahdayScript-Regular.ttf", 400, false, 333472]],
+    "ofl/vujahdayscript/OFL.txt"
+  ],
+  [
+    "WDXL Lubrifont JP N",
+    "sans",
+    [["ofl/wdxllubrifontjpn/WDXLLubrifontJPN-Regular.ttf", 400, false, 10344400]],
+    "ofl/wdxllubrifontjpn/OFL.txt"
+  ],
+  [
+    "WDXL Lubrifont SC",
+    "sans",
+    [["ofl/wdxllubrifontsc/WDXLLubrifontSC-Regular.ttf", 400, false, 10344488]],
+    "ofl/wdxllubrifontsc/OFL.txt"
+  ],
+  [
+    "WDXL Lubrifont TC",
+    "sans",
+    [["ofl/wdxllubrifonttc/WDXLLubrifontTC-Regular.ttf", 400, false, 10345168]],
+    "ofl/wdxllubrifonttc/OFL.txt"
+  ],
+  [
+    "Waiting for the Sunrise",
+    "handwriting",
+    [["ofl/waitingforthesunrise/WaitingfortheSunrise.ttf", 400, false, 59240]],
+    "ofl/waitingforthesunrise/OFL.txt"
+  ],
+  [
+    "Wallpoet",
+    "display",
+    [["ofl/wallpoet/Wallpoet-Regular.ttf", 400, false, 39904]],
+    "ofl/wallpoet/OFL.txt"
+  ],
+  [
+    "Walter Turncoat",
+    "handwriting",
+    [["apache/walterturncoat/WalterTurncoat-Regular.ttf", 400, false, 153836]],
+    "apache/walterturncoat/LICENSE.txt"
+  ],
+  [
+    "Warnes",
+    "display",
+    [["ofl/warnes/Warnes-Regular.ttf", 400, false, 70272]],
+    "ofl/warnes/OFL.txt"
+  ],
+  [
+    "Water Brush",
+    "handwriting",
+    [["ofl/waterbrush/WaterBrush-Regular.ttf", 400, false, 332028]],
+    "ofl/waterbrush/OFL.txt"
+  ],
+  [
+    "Waterfall",
+    "handwriting",
+    [["ofl/waterfall/Waterfall-Regular.ttf", 400, false, 521348]],
+    "ofl/waterfall/OFL.txt"
+  ],
+  [
+    "Wavefont",
+    "display",
+    [["ofl/wavefont/Wavefont[ROND,YELA,wght].ttf", 400, false, 94352]],
+    "ofl/wavefont/OFL.txt"
+  ],
+  [
+    "Wellfleet",
+    "serif",
+    [["ofl/wellfleet/Wellfleet-Regular.ttf", 400, false, 82016]],
+    "ofl/wellfleet/OFL.txt"
+  ],
+  [
+    "Wendy One",
+    "sans",
+    [["ofl/wendyone/WendyOne-Regular.ttf", 400, false, 22772]],
+    "ofl/wendyone/OFL.txt"
+  ],
+  [
+    "Whisper",
+    "handwriting",
+    [["ofl/whisper/Whisper-Regular.ttf", 400, false, 134852]],
+    "ofl/whisper/OFL.txt"
+  ]
+]

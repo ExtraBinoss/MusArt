@@ -1,0 +1,65 @@
+[
+  [
+    "Zen Maru Gothic",
+    "sans",
+    [
+      ["ofl/zenmarugothic/ZenMaruGothic-Black.ttf", 900, false, 3710324],
+      ["ofl/zenmarugothic/ZenMaruGothic-Bold.ttf", 700, false, 3779008],
+      ["ofl/zenmarugothic/ZenMaruGothic-Light.ttf", 300, false, 3723392],
+      ["ofl/zenmarugothic/ZenMaruGothic-Medium.ttf", 500, false, 3810988],
+      ["ofl/zenmarugothic/ZenMaruGothic-Regular.ttf", 400, false, 3832756]
+    ],
+    "ofl/zenmarugothic/OFL.txt"
+  ],
+  [
+    "Zen Old Mincho",
+    "serif",
+    [
+      ["ofl/zenoldmincho/ZenOldMincho-Black.ttf", 900, false, 5416348],
+      ["ofl/zenoldmincho/ZenOldMincho-Bold.ttf", 700, false, 5436460],
+      ["ofl/zenoldmincho/ZenOldMincho-Medium.ttf", 500, false, 5502836],
+      ["ofl/zenoldmincho/ZenOldMincho-Regular.ttf", 400, false, 5442512],
+      ["ofl/zenoldmincho/ZenOldMincho-SemiBold.ttf", 600, false, 5521388]
+    ],
+    "ofl/zenoldmincho/OFL.txt"
+  ],
+  [
+    "Zen Tokyo Zoo",
+    "display",
+    [["ofl/zentokyozoo/ZenTokyoZoo-Regular.ttf", 400, false, 92176]],
+    "ofl/zentokyozoo/OFL.txt"
+  ],
+  ["Zeyada", "handwriting", [["ofl/zeyada/Zeyada.ttf", 400, false, 63064]], "ofl/zeyada/OFL.txt"],
+  [
+    "Zhi Mang Xing",
+    "handwriting",
+    [["ofl/zhimangxing/ZhiMangXing-Regular.ttf", 400, false, 4063532]],
+    "ofl/zhimangxing/OFL.txt"
+  ],
+  [
+    "Zilla Slab",
+    "serif",
+    [
+      ["ofl/zillaslab/ZillaSlab-Bold.ttf", 700, false, 273044],
+      ["ofl/zillaslab/ZillaSlab-BoldItalic.ttf", 700, true, 280236],
+      ["ofl/zillaslab/ZillaSlab-Italic.ttf", 400, true, 277732],
+      ["ofl/zillaslab/ZillaSlab-Light.ttf", 300, false, 265056],
+      ["ofl/zillaslab/ZillaSlab-LightItalic.ttf", 300, true, 270260],
+      ["ofl/zillaslab/ZillaSlab-Medium.ttf", 500, false, 268184],
+      ["ofl/zillaslab/ZillaSlab-MediumItalic.ttf", 500, true, 276812],
+      ["ofl/zillaslab/ZillaSlab-Regular.ttf", 400, false, 270104],
+      ["ofl/zillaslab/ZillaSlab-SemiBold.ttf", 600, false, 270088],
+      ["ofl/zillaslab/ZillaSlab-SemiBoldItalic.ttf", 600, true, 277604]
+    ],
+    "ofl/zillaslab/OFL.txt"
+  ],
+  [
+    "Zilla Slab Highlight",
+    "serif",
+    [
+      ["ofl/zillaslabhighlight/ZillaSlabHighlight-Bold.ttf", 700, false, 271656],
+      ["ofl/zillaslabhighlight/ZillaSlabHighlight-Regular.ttf", 400, false, 275532]
+    ],
+    "ofl/zillaslabhighlight/OFL.txt"
+  ]
+]

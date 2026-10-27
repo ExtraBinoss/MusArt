@@ -1,0 +1,142 @@
+[
+  [
+    "Tomorrow",
+    "sans",
+    [
+      ["ofl/tomorrow/Tomorrow-Black.ttf", 900, false, 55016],
+      ["ofl/tomorrow/Tomorrow-BlackItalic.ttf", 900, true, 58620],
+      ["ofl/tomorrow/Tomorrow-Bold.ttf", 700, false, 58772],
+      ["ofl/tomorrow/Tomorrow-BoldItalic.ttf", 700, true, 62280],
+      ["ofl/tomorrow/Tomorrow-ExtraBold.ttf", 800, false, 61952],
+      ["ofl/tomorrow/Tomorrow-ExtraBoldItalic.ttf", 800, true, 65032],
+      ["ofl/tomorrow/Tomorrow-ExtraLight.ttf", 200, false, 59752],
+      ["ofl/tomorrow/Tomorrow-ExtraLightItalic.ttf", 200, true, 61912],
+      ["ofl/tomorrow/Tomorrow-Italic.ttf", 400, true, 61492],
+      ["ofl/tomorrow/Tomorrow-Light.ttf", 300, false, 59772],
+      ["ofl/tomorrow/Tomorrow-LightItalic.ttf", 300, true, 61928],
+      ["ofl/tomorrow/Tomorrow-Medium.ttf", 500, false, 59020],
+      ["ofl/tomorrow/Tomorrow-MediumItalic.ttf", 500, true, 61092],
+      ["ofl/tomorrow/Tomorrow-Regular.ttf", 400, false, 59520],
+      ["ofl/tomorrow/Tomorrow-SemiBold.ttf", 600, false, 59628],
+      ["ofl/tomorrow/Tomorrow-SemiBoldItalic.ttf", 600, true, 62248],
+      ["ofl/tomorrow/Tomorrow-Thin.ttf", 100, false, 57748],
+      ["ofl/tomorrow/Tomorrow-ThinItalic.ttf", 100, true, 61016]
+    ],
+    "ofl/tomorrow/OFL.txt"
+  ],
+  [
+    "Tourney",
+    "display",
+    [
+      ["ofl/tourney/Tourney-Italic[wdth,wght].ttf", 400, true, 170280],
+      ["ofl/tourney/Tourney[wdth,wght].ttf", 400, false, 163380]
+    ],
+    "ofl/tourney/OFL.txt"
+  ],
+  [
+    "Trade Winds",
+    "display",
+    [["ofl/tradewinds/TradeWinds-Regular.ttf", 400, false, 85380]],
+    "ofl/tradewinds/OFL.txt"
+  ],
+  [
+    "Train One",
+    "display",
+    [["ofl/trainone/TrainOne-Regular.ttf", 400, false, 2152516]],
+    "ofl/trainone/OFL.txt"
+  ],
+  [
+    "Triodion",
+    "display",
+    [["ofl/triodion/Triodion-Regular.ttf", 400, false, 173068]],
+    "ofl/triodion/OFL.txt"
+  ],
+  [
+    "Trirong",
+    "serif",
+    [
+      ["ofl/trirong/Trirong-Black.ttf", 900, false, 204788],
+      ["ofl/trirong/Trirong-BlackItalic.ttf", 900, true, 232164],
+      ["ofl/trirong/Trirong-Bold.ttf", 700, false, 201896],
+      ["ofl/trirong/Trirong-BoldItalic.ttf", 700, true, 226188],
+      ["ofl/trirong/Trirong-ExtraBold.ttf", 800, false, 205724],
+      ["ofl/trirong/Trirong-ExtraBoldItalic.ttf", 800, true, 231236],
+      ["ofl/trirong/Trirong-ExtraLight.ttf", 200, false, 194128],
+      ["ofl/trirong/Trirong-ExtraLightItalic.ttf", 200, true, 214568],
+      ["ofl/trirong/Trirong-Italic.ttf", 400, true, 204696],
+      ["ofl/trirong/Trirong-Light.ttf", 300, false, 202376],
+      ["ofl/trirong/Trirong-LightItalic.ttf", 300, true, 225544],
+      ["ofl/trirong/Trirong-Medium.ttf", 500, false, 196460],
+      ["ofl/trirong/Trirong-MediumItalic.ttf", 500, true, 212388],
+      ["ofl/trirong/Trirong-Regular.ttf", 400, false, 197960],
+      ["ofl/trirong/Trirong-SemiBold.ttf", 600, false, 184500],
+      ["ofl/trirong/Trirong-SemiBoldItalic.ttf", 600, true, 201824],
+      ["ofl/trirong/Trirong-Thin.ttf", 100, false, 193856],
+      ["ofl/trirong/Trirong-ThinItalic.ttf", 100, true, 215896]
+    ],
+    "ofl/trirong/OFL.txt"
+  ],
+  [
+    "Trispace",
+    "sans",
+    [["ofl/trispace/Trispace[wdth,wght].ttf", 400, false, 303532]],
+    "ofl/trispace/OFL.txt"
+  ],
+  [
+    "Trocchi",
+    "serif",
+    [["ofl/trocchi/Trocchi-Regular.ttf", 400, false, 68840]],
+    "ofl/trocchi/OFL.txt"
+  ],
+  [
+    "Trochut",
+    "display",
+    [
+      ["ofl/trochut/Trochut-Bold.ttf", 700, false, 25412],
+      ["ofl/trochut/Trochut-Italic.ttf", 400, true, 27908],
+      ["ofl/trochut/Trochut-Regular.ttf", 400, false, 25300]
+    ],
+    "ofl/trochut/OFL.txt"
+  ],
+  [
+    "Truculenta",
+    "sans",
+    [["ofl/truculenta/Truculenta[opsz,wdth,wght].ttf", 400, false, 1052128]],
+    "ofl/truculenta/OFL.txt"
+  ],
+  [
+    "Trykker",
+    "serif",
+    [["ofl/trykker/Trykker-Regular.ttf", 400, false, 38140]],
+    "ofl/trykker/OFL.txt"
+  ],
+  [
+    "Tsukimi Rounded",
+    "sans",
+    [
+      ["ofl/tsukimirounded/TsukimiRounded-Bold.ttf", 700, false, 109580],
+      ["ofl/tsukimirounded/TsukimiRounded-Light.ttf", 300, false, 106680],
+      ["ofl/tsukimirounded/TsukimiRounded-Medium.ttf", 500, false, 109284],
+      ["ofl/tsukimirounded/TsukimiRounded-Regular.ttf", 400, false, 109492],
+      ["ofl/tsukimirounded/TsukimiRounded-SemiBold.ttf", 600, false, 110948]
+    ],
+    "ofl/tsukimirounded/OFL.txt"
+  ],
+  [
+    "Tuffy",
+    "sans",
+    [
+      ["ofl/tuffy/Tuffy-Bold.ttf", 700, false, 93532],
+      ["ofl/tuffy/Tuffy-BoldItalic.ttf", 700, true, 111540],
+      ["ofl/tuffy/Tuffy-Italic.ttf", 400, true, 363848],
+      ["ofl/tuffy/Tuffy-Regular.ttf", 400, false, 218708]
+    ],
+    "ofl/tuffy/OFL.txt"
+  ],
+  [
+    "Tulpen One",
+    "display",
+    [["ofl/tulpenone/TulpenOne-Regular.ttf", 400, false, 35244]],
+    "ofl/tulpenone/OFL.txt"
+  ]
+]

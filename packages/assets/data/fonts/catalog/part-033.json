@@ -1,0 +1,146 @@
+[
+  [
+    "Kdam Thmor Pro",
+    "sans",
+    [["ofl/kdamthmorpro/KdamThmorPro-Regular.ttf", 400, false, 85760]],
+    "ofl/kdamthmorpro/OFL.txt"
+  ],
+  [
+    "Keania One",
+    "display",
+    [["ofl/keaniaone/KeaniaOne-Regular.ttf", 400, false, 38812]],
+    "ofl/keaniaone/OFL.txt"
+  ],
+  [
+    "Kedebideri",
+    "sans",
+    [
+      ["ofl/kedebideri/Kedebideri-Black.ttf", 900, false, 52304],
+      ["ofl/kedebideri/Kedebideri-Bold.ttf", 700, false, 52280],
+      ["ofl/kedebideri/Kedebideri-ExtraBold.ttf", 800, false, 52328],
+      ["ofl/kedebideri/Kedebideri-Medium.ttf", 500, false, 52476],
+      ["ofl/kedebideri/Kedebideri-Regular.ttf", 400, false, 52524],
+      ["ofl/kedebideri/Kedebideri-SemiBold.ttf", 600, false, 52392]
+    ],
+    "ofl/kedebideri/OFL.txt"
+  ],
+  [
+    "Kelly Slab",
+    "display",
+    [["ofl/kellyslab/KellySlab-Regular.ttf", 400, false, 77816]],
+    "ofl/kellyslab/OFL.txt"
+  ],
+  ["Kenia", "display", [["ofl/kenia/Kenia-Regular.ttf", 400, false, 65156]], "ofl/kenia/OFL.txt"],
+  [
+    "Khand",
+    "sans",
+    [
+      ["ofl/khand/Khand-Bold.ttf", 700, false, 358664],
+      ["ofl/khand/Khand-Light.ttf", 300, false, 306384],
+      ["ofl/khand/Khand-Medium.ttf", 500, false, 329932],
+      ["ofl/khand/Khand-Regular.ttf", 400, false, 316808],
+      ["ofl/khand/Khand-SemiBold.ttf", 600, false, 348692]
+    ],
+    "ofl/khand/OFL.txt"
+  ],
+  ["Khmer", "sans", [["ofl/khmer/Khmer.ttf", 400, false, 77684]], "ofl/khmer/OFL.txt"],
+  [
+    "Khula",
+    "sans",
+    [
+      ["ofl/khula/Khula-Bold.ttf", 700, false, 155640],
+      ["ofl/khula/Khula-ExtraBold.ttf", 800, false, 159768],
+      ["ofl/khula/Khula-Light.ttf", 300, false, 165864],
+      ["ofl/khula/Khula-Regular.ttf", 400, false, 158356],
+      ["ofl/khula/Khula-SemiBold.ttf", 600, false, 154444]
+    ],
+    "ofl/khula/OFL.txt"
+  ],
+  [
+    "Kings",
+    "handwriting",
+    [["ofl/kings/Kings-Regular.ttf", 400, false, 270704]],
+    "ofl/kings/OFL.txt"
+  ],
+  [
+    "Kirang Haerang",
+    "display",
+    [["ofl/kiranghaerang/KirangHaerang-Regular.ttf", 400, false, 5995608]],
+    "ofl/kiranghaerang/OFL.txt"
+  ],
+  [
+    "Kite One",
+    "sans",
+    [["ofl/kiteone/KiteOne-Regular.ttf", 400, false, 67692]],
+    "ofl/kiteone/OFL.txt"
+  ],
+  [
+    "Kiwi Maru",
+    "serif",
+    [
+      ["ofl/kiwimaru/KiwiMaru-Light.ttf", 300, false, 4982684],
+      ["ofl/kiwimaru/KiwiMaru-Medium.ttf", 500, false, 5123612],
+      ["ofl/kiwimaru/KiwiMaru-Regular.ttf", 400, false, 5065572]
+    ],
+    "ofl/kiwimaru/OFL.txt"
+  ],
+  [
+    "Klee One",
+    "handwriting",
+    [
+      ["ofl/kleeone/KleeOne-Regular.ttf", 400, false, 8724204],
+      ["ofl/kleeone/KleeOne-SemiBold.ttf", 600, false, 8905128]
+    ],
+    "ofl/kleeone/OFL.txt"
+  ],
+  [
+    "Knewave",
+    "display",
+    [["ofl/knewave/Knewave-Regular.ttf", 400, false, 32460]],
+    "ofl/knewave/OFL.txt"
+  ],
+  [
+    "KoHo",
+    "sans",
+    [
+      ["ofl/koho/KoHo-Bold.ttf", 700, false, 94068],
+      ["ofl/koho/KoHo-BoldItalic.ttf", 700, true, 97836],
+      ["ofl/koho/KoHo-ExtraLight.ttf", 200, false, 96748],
+      ["ofl/koho/KoHo-ExtraLightItalic.ttf", 200, true, 101040],
+      ["ofl/koho/KoHo-Italic.ttf", 400, true, 100580],
+      ["ofl/koho/KoHo-Light.ttf", 300, false, 96412],
+      ["ofl/koho/KoHo-LightItalic.ttf", 300, true, 100764],
+      ["ofl/koho/KoHo-Medium.ttf", 500, false, 95900],
+      ["ofl/koho/KoHo-MediumItalic.ttf", 500, true, 100336],
+      ["ofl/koho/KoHo-Regular.ttf", 400, false, 96176],
+      ["ofl/koho/KoHo-SemiBold.ttf", 600, false, 95704],
+      ["ofl/koho/KoHo-SemiBoldItalic.ttf", 600, true, 99944]
+    ],
+    "ofl/koho/OFL.txt"
+  ],
+  [
+    "Kodchasan",
+    "sans",
+    [
+      ["ofl/kodchasan/Kodchasan-Bold.ttf", 700, false, 100948],
+      ["ofl/kodchasan/Kodchasan-BoldItalic.ttf", 700, true, 106492],
+      ["ofl/kodchasan/Kodchasan-ExtraLight.ttf", 200, false, 99412],
+      ["ofl/kodchasan/Kodchasan-ExtraLightItalic.ttf", 200, true, 103828],
+      ["ofl/kodchasan/Kodchasan-Italic.ttf", 400, true, 105636],
+      ["ofl/kodchasan/Kodchasan-Light.ttf", 300, false, 100596],
+      ["ofl/kodchasan/Kodchasan-LightItalic.ttf", 300, true, 104880],
+      ["ofl/kodchasan/Kodchasan-Medium.ttf", 500, false, 101212],
+      ["ofl/kodchasan/Kodchasan-MediumItalic.ttf", 500, true, 106076],
+      ["ofl/kodchasan/Kodchasan-Regular.ttf", 400, false, 100832],
+      ["ofl/kodchasan/Kodchasan-SemiBold.ttf", 600, false, 101252],
+      ["ofl/kodchasan/Kodchasan-SemiBoldItalic.ttf", 600, true, 106500]
+    ],
+    "ofl/kodchasan/OFL.txt"
+  ],
+  [
+    "Kode Mono",
+    "mono",
+    [["ofl/kodemono/KodeMono[ROND,wdth,wght].ttf", 400, false, 260444]],
+    "ofl/kodemono/OFL.txt"
+  ]
+]

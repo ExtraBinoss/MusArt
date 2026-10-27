@@ -1,0 +1,158 @@
+[
+  [
+    "Lily Script One",
+    "display",
+    [["ofl/lilyscriptone/LilyScriptOne-Regular.ttf", 400, false, 37572]],
+    "ofl/lilyscriptone/OFL.txt"
+  ],
+  [
+    "Limelight",
+    "display",
+    [["ofl/limelight/Limelight-Regular.ttf", 400, false, 132292]],
+    "ofl/limelight/OFL.txt"
+  ],
+  [
+    "Linden Hill",
+    "serif",
+    [
+      ["ofl/lindenhill/LindenHill-Italic.ttf", 400, true, 94540],
+      ["ofl/lindenhill/LindenHill-Regular.ttf", 400, false, 124844]
+    ],
+    "ofl/lindenhill/OFL.txt"
+  ],
+  [
+    "Linefont",
+    "display",
+    [["ofl/linefont/Linefont[wdth,wght].ttf", 400, false, 123148]],
+    "ofl/linefont/OFL.txt"
+  ],
+  [
+    "Lisu Bosa",
+    "serif",
+    [
+      ["ofl/lisubosa/LisuBosa-Black.ttf", 900, false, 49492],
+      ["ofl/lisubosa/LisuBosa-BlackItalic.ttf", 900, true, 60016],
+      ["ofl/lisubosa/LisuBosa-Bold.ttf", 700, false, 49252],
+      ["ofl/lisubosa/LisuBosa-BoldItalic.ttf", 700, true, 59604],
+      ["ofl/lisubosa/LisuBosa-ExtraBold.ttf", 800, false, 49480],
+      ["ofl/lisubosa/LisuBosa-ExtraBoldItalic.ttf", 800, true, 59920],
+      ["ofl/lisubosa/LisuBosa-ExtraLight.ttf", 200, false, 49628],
+      ["ofl/lisubosa/LisuBosa-ExtraLightItalic.ttf", 200, true, 59496],
+      ["ofl/lisubosa/LisuBosa-Italic.ttf", 400, true, 59432],
+      ["ofl/lisubosa/LisuBosa-Light.ttf", 300, false, 49496],
+      ["ofl/lisubosa/LisuBosa-LightItalic.ttf", 300, true, 59288],
+      ["ofl/lisubosa/LisuBosa-Medium.ttf", 500, false, 49364],
+      ["ofl/lisubosa/LisuBosa-MediumItalic.ttf", 500, true, 59428],
+      ["ofl/lisubosa/LisuBosa-Regular.ttf", 400, false, 49372],
+      ["ofl/lisubosa/LisuBosa-SemiBold.ttf", 600, false, 49408],
+      ["ofl/lisubosa/LisuBosa-SemiBoldItalic.ttf", 600, true, 59492]
+    ],
+    "ofl/lisubosa/OFL.txt"
+  ],
+  ["Liter", "sans", [["ofl/liter/Liter-Regular.ttf", 400, false, 77008]], "ofl/liter/OFL.txt"],
+  [
+    "Literata",
+    "serif",
+    [
+      ["ofl/literata/Literata-Italic[opsz,wght].ttf", 400, true, 902728],
+      ["ofl/literata/Literata[opsz,wght].ttf", 400, false, 955132]
+    ],
+    "ofl/literata/OFL.txt"
+  ],
+  [
+    "Liu Jian Mao Cao",
+    "handwriting",
+    [["ofl/liujianmaocao/LiuJianMaoCao-Regular.ttf", 400, false, 4951804]],
+    "ofl/liujianmaocao/OFL.txt"
+  ],
+  [
+    "Livvic",
+    "sans",
+    [
+      ["ofl/livvic/Livvic-Black.ttf", 900, false, 106204],
+      ["ofl/livvic/Livvic-BlackItalic.ttf", 900, true, 109932],
+      ["ofl/livvic/Livvic-Bold.ttf", 700, false, 104788],
+      ["ofl/livvic/Livvic-BoldItalic.ttf", 700, true, 106312],
+      ["ofl/livvic/Livvic-ExtraLight.ttf", 200, false, 104564],
+      ["ofl/livvic/Livvic-ExtraLightItalic.ttf", 200, true, 105836],
+      ["ofl/livvic/Livvic-Italic.ttf", 400, true, 106132],
+      ["ofl/livvic/Livvic-Light.ttf", 300, false, 105164],
+      ["ofl/livvic/Livvic-LightItalic.ttf", 300, true, 106624],
+      ["ofl/livvic/Livvic-Medium.ttf", 500, false, 104384],
+      ["ofl/livvic/Livvic-MediumItalic.ttf", 500, true, 105952],
+      ["ofl/livvic/Livvic-Regular.ttf", 400, false, 104416],
+      ["ofl/livvic/Livvic-SemiBold.ttf", 600, false, 104560],
+      ["ofl/livvic/Livvic-SemiBoldItalic.ttf", 600, true, 106080],
+      ["ofl/livvic/Livvic-Thin.ttf", 100, false, 103740],
+      ["ofl/livvic/Livvic-ThinItalic.ttf", 100, true, 104732]
+    ],
+    "ofl/livvic/OFL.txt"
+  ],
+  [
+    "Lobster",
+    "display",
+    [["ofl/lobster/Lobster-Regular.ttf", 400, false, 406076]],
+    "ofl/lobster/OFL.txt"
+  ],
+  [
+    "Lobster Two",
+    "display",
+    [
+      ["ofl/lobstertwo/LobsterTwo-Bold.ttf", 700, false, 241104],
+      ["ofl/lobstertwo/LobsterTwo-BoldItalic.ttf", 700, true, 235632],
+      ["ofl/lobstertwo/LobsterTwo-Italic.ttf", 400, true, 249896],
+      ["ofl/lobstertwo/LobsterTwo-Regular.ttf", 400, false, 254332]
+    ],
+    "ofl/lobstertwo/OFL.txt"
+  ],
+  [
+    "Londrina Outline",
+    "display",
+    [["ofl/londrinaoutline/LondrinaOutline-Regular.ttf", 400, false, 167112]],
+    "ofl/londrinaoutline/OFL.txt"
+  ],
+  [
+    "Londrina Shadow",
+    "display",
+    [["ofl/londrinashadow/LondrinaShadow-Regular.ttf", 400, false, 179844]],
+    "ofl/londrinashadow/OFL.txt"
+  ],
+  [
+    "Londrina Sketch",
+    "display",
+    [["ofl/londrinasketch/LondrinaSketch-Regular.ttf", 400, false, 332856]],
+    "ofl/londrinasketch/OFL.txt"
+  ],
+  [
+    "Londrina Solid",
+    "display",
+    [
+      ["ofl/londrinasolid/LondrinaSolid-Black.ttf", 900, false, 93408],
+      ["ofl/londrinasolid/LondrinaSolid-Light.ttf", 300, false, 85988],
+      ["ofl/londrinasolid/LondrinaSolid-Regular.ttf", 400, false, 92132],
+      ["ofl/londrinasolid/LondrinaSolid-Thin.ttf", 100, false, 80672]
+    ],
+    "ofl/londrinasolid/OFL.txt"
+  ],
+  [
+    "Long Cang",
+    "handwriting",
+    [["ofl/longcang/LongCang-Regular.ttf", 400, false, 5162508]],
+    "ofl/longcang/OFL.txt"
+  ],
+  [
+    "Lora",
+    "serif",
+    [
+      ["ofl/lora/Lora-Italic[wght].ttf", 400, true, 221232],
+      ["ofl/lora/Lora[wght].ttf", 400, false, 212196]
+    ],
+    "ofl/lora/OFL.txt"
+  ],
+  [
+    "Love Light",
+    "handwriting",
+    [["ofl/lovelight/LoveLight-Regular.ttf", 400, false, 168004]],
+    "ofl/lovelight/OFL.txt"
+  ]
+]

@@ -1,0 +1,164 @@
+[
+  [
+    "Jockey One",
+    "sans",
+    [["ofl/jockeyone/JockeyOne-Regular.ttf", 400, false, 48608]],
+    "ofl/jockeyone/OFL.txt"
+  ],
+  [
+    "Jolly Lodger",
+    "display",
+    [["ofl/jollylodger/JollyLodger-Regular.ttf", 400, false, 39800]],
+    "ofl/jollylodger/OFL.txt"
+  ],
+  [
+    "Jomhuria",
+    "display",
+    [["ofl/jomhuria/Jomhuria-Regular.ttf", 400, false, 172276]],
+    "ofl/jomhuria/OFL.txt"
+  ],
+  [
+    "Jomolhari",
+    "serif",
+    [["ofl/jomolhari/Jomolhari-Regular.ttf", 400, false, 2260860]],
+    "ofl/jomolhari/OFL.txt"
+  ],
+  [
+    "Josefin Sans",
+    "sans",
+    [
+      ["ofl/josefinsans/JosefinSans-Italic[wght].ttf", 400, true, 130984],
+      ["ofl/josefinsans/JosefinSans[wght].ttf", 400, false, 118588]
+    ],
+    "ofl/josefinsans/OFL.txt"
+  ],
+  [
+    "Josefin Slab",
+    "serif",
+    [
+      ["ofl/josefinslab/JosefinSlab-Italic[wght].ttf", 400, true, 51020],
+      ["ofl/josefinslab/JosefinSlab[wght].ttf", 400, false, 48792]
+    ],
+    "ofl/josefinslab/OFL.txt"
+  ],
+  [
+    "Jost",
+    "sans",
+    [
+      ["ofl/jost/Jost-Italic[wght].ttf", 400, true, 144388],
+      ["ofl/jost/Jost[wght].ttf", 400, false, 134996]
+    ],
+    "ofl/jost/OFL.txt"
+  ],
+  [
+    "Joti One",
+    "display",
+    [["ofl/jotione/JotiOne-Regular.ttf", 400, false, 58384]],
+    "ofl/jotione/OFL.txt"
+  ],
+  ["Jua", "sans", [["ofl/jua/Jua-Regular.ttf", 400, false, 2119352]], "ofl/jua/OFL.txt"],
+  [
+    "Judson",
+    "serif",
+    [
+      ["ofl/judson/Judson-Bold.ttf", 700, false, 195504],
+      ["ofl/judson/Judson-Italic.ttf", 400, true, 212008],
+      ["ofl/judson/Judson-Regular.ttf", 400, false, 220844]
+    ],
+    "ofl/judson/OFL.txt"
+  ],
+  [
+    "Julee",
+    "handwriting",
+    [["ofl/julee/Julee-Regular.ttf", 400, false, 66776]],
+    "ofl/julee/OFL.txt"
+  ],
+  [
+    "Julius Sans One",
+    "sans",
+    [["ofl/juliussansone/JuliusSansOne-Regular.ttf", 400, false, 42288]],
+    "ofl/juliussansone/OFL.txt"
+  ],
+  ["Junge", "serif", [["ofl/junge/Junge-Regular.ttf", 400, false, 71400]], "ofl/junge/OFL.txt"],
+  ["Jura", "sans", [["ofl/jura/Jura[wght].ttf", 400, false, 258404]], "ofl/jura/OFL.txt"],
+  [
+    "Just Another Hand",
+    "handwriting",
+    [["apache/justanotherhand/JustAnotherHand-Regular.ttf", 400, false, 191076]],
+    "apache/justanotherhand/LICENSE.txt"
+  ],
+  [
+    "Just Me Again Down Here",
+    "handwriting",
+    [["ofl/justmeagaindownhere/JustMeAgainDownHere.ttf", 400, false, 72060]],
+    "ofl/justmeagaindownhere/OFL.txt"
+  ],
+  [
+    "K2D",
+    "sans",
+    [
+      ["ofl/k2d/K2D-Bold.ttf", 700, false, 96692],
+      ["ofl/k2d/K2D-BoldItalic.ttf", 700, true, 100996],
+      ["ofl/k2d/K2D-ExtraBold.ttf", 800, false, 96764],
+      ["ofl/k2d/K2D-ExtraBoldItalic.ttf", 800, true, 101196],
+      ["ofl/k2d/K2D-ExtraLight.ttf", 200, false, 96008],
+      ["ofl/k2d/K2D-ExtraLightItalic.ttf", 200, true, 100272],
+      ["ofl/k2d/K2D-Italic.ttf", 400, true, 100376],
+      ["ofl/k2d/K2D-Light.ttf", 300, false, 96000],
+      ["ofl/k2d/K2D-LightItalic.ttf", 300, true, 100260],
+      ["ofl/k2d/K2D-Medium.ttf", 500, false, 96608],
+      ["ofl/k2d/K2D-MediumItalic.ttf", 500, true, 100792],
+      ["ofl/k2d/K2D-Regular.ttf", 400, false, 96144],
+      ["ofl/k2d/K2D-SemiBold.ttf", 600, false, 96720],
+      ["ofl/k2d/K2D-SemiBoldItalic.ttf", 600, true, 100948],
+      ["ofl/k2d/K2D-Thin.ttf", 100, false, 96196],
+      ["ofl/k2d/K2D-ThinItalic.ttf", 100, true, 100236]
+    ],
+    "ofl/k2d/OFL.txt"
+  ],
+  [
+    "Kablammo",
+    "display",
+    [["ofl/kablammo/Kablammo[MORF].ttf", 400, false, 2209224]],
+    "ofl/kablammo/OFL.txt"
+  ],
+  [
+    "Kadwa",
+    "serif",
+    [
+      ["ofl/kadwa/Kadwa-Bold.ttf", 700, false, 239892],
+      ["ofl/kadwa/Kadwa-Regular.ttf", 400, false, 251420]
+    ],
+    "ofl/kadwa/OFL.txt"
+  ],
+  [
+    "Kaisei Decol",
+    "serif",
+    [
+      ["ofl/kaiseidecol/KaiseiDecol-Bold.ttf", 700, false, 4286896],
+      ["ofl/kaiseidecol/KaiseiDecol-Medium.ttf", 500, false, 4297772],
+      ["ofl/kaiseidecol/KaiseiDecol-Regular.ttf", 400, false, 4503152]
+    ],
+    "ofl/kaiseidecol/OFL.txt"
+  ],
+  [
+    "Kaisei HarunoUmi",
+    "serif",
+    [
+      ["ofl/kaiseiharunoumi/KaiseiHarunoUmi-Bold.ttf", 700, false, 4353936],
+      ["ofl/kaiseiharunoumi/KaiseiHarunoUmi-Medium.ttf", 500, false, 4364768],
+      ["ofl/kaiseiharunoumi/KaiseiHarunoUmi-Regular.ttf", 400, false, 4571780]
+    ],
+    "ofl/kaiseiharunoumi/OFL.txt"
+  ],
+  [
+    "Kaisei Opti",
+    "serif",
+    [
+      ["ofl/kaiseiopti/KaiseiOpti-Bold.ttf", 700, false, 4287516],
+      ["ofl/kaiseiopti/KaiseiOpti-Medium.ttf", 500, false, 4297952],
+      ["ofl/kaiseiopti/KaiseiOpti-Regular.ttf", 400, false, 4503024]
+    ],
+    "ofl/kaiseiopti/OFL.txt"
+  ]
+]

@@ -1,0 +1,232 @@
+[
+  [
+    "Noto Sans Adlam",
+    "sans",
+    [["ofl/notosansadlam/NotoSansAdlam[wght].ttf", 400, false, 136472]],
+    "ofl/notosansadlam/OFL.txt"
+  ],
+  [
+    "Noto Sans Adlam Unjoined",
+    "sans",
+    [["ofl/notosansadlamunjoined/NotoSansAdlamUnjoined[wght].ttf", 400, false, 73680]],
+    "ofl/notosansadlamunjoined/OFL.txt"
+  ],
+  [
+    "Noto Sans Anatolian Hieroglyphs",
+    "sans",
+    [
+      [
+        "ofl/notosansanatolianhieroglyphs/NotoSansAnatolianHieroglyphs-Regular.ttf",
+        400,
+        false,
+        375344
+      ]
+    ],
+    "ofl/notosansanatolianhieroglyphs/OFL.txt"
+  ],
+  [
+    "Noto Sans Arabic",
+    "sans",
+    [["ofl/notosansarabic/NotoSansArabic[wdth,wght].ttf", 400, false, 844676]],
+    "ofl/notosansarabic/OFL.txt"
+  ],
+  [
+    "Noto Sans Armenian",
+    "sans",
+    [["ofl/notosansarmenian/NotoSansArmenian[wdth,wght].ttf", 400, false, 221936]],
+    "ofl/notosansarmenian/OFL.txt"
+  ],
+  [
+    "Noto Sans Avestan",
+    "sans",
+    [["ofl/notosansavestan/NotoSansAvestan-Regular.ttf", 400, false, 60532]],
+    "ofl/notosansavestan/OFL.txt"
+  ],
+  [
+    "Noto Sans Balinese",
+    "sans",
+    [["ofl/notosansbalinese/NotoSansBalinese[wght].ttf", 400, false, 193412]],
+    "ofl/notosansbalinese/OFL.txt"
+  ],
+  [
+    "Noto Sans Bamum",
+    "sans",
+    [["ofl/notosansbamum/NotoSansBamum[wght].ttf", 400, false, 204724]],
+    "ofl/notosansbamum/OFL.txt"
+  ],
+  [
+    "Noto Sans Bassa Vah",
+    "sans",
+    [["ofl/notosansbassavah/NotoSansBassaVah[wght].ttf", 400, false, 61308]],
+    "ofl/notosansbassavah/OFL.txt"
+  ],
+  [
+    "Noto Sans Batak",
+    "sans",
+    [["ofl/notosansbatak/NotoSansBatak-Regular.ttf", 400, false, 70136]],
+    "ofl/notosansbatak/OFL.txt"
+  ],
+  [
+    "Noto Sans Bengali",
+    "sans",
+    [["ofl/notosansbengali/NotoSansBengali[wdth,wght].ttf", 400, false, 463668]],
+    "ofl/notosansbengali/OFL.txt"
+  ],
+  [
+    "Noto Sans Bhaiksuki",
+    "sans",
+    [["ofl/notosansbhaiksuki/NotoSansBhaiksuki-Regular.ttf", 400, false, 370124]],
+    "ofl/notosansbhaiksuki/OFL.txt"
+  ],
+  [
+    "Noto Sans Brahmi",
+    "sans",
+    [["ofl/notosansbrahmi/NotoSansBrahmi-Regular.ttf", 400, false, 115452]],
+    "ofl/notosansbrahmi/OFL.txt"
+  ],
+  [
+    "Noto Sans Buginese",
+    "sans",
+    [["ofl/notosansbuginese/NotoSansBuginese-Regular.ttf", 400, false, 51976]],
+    "ofl/notosansbuginese/OFL.txt"
+  ],
+  [
+    "Noto Sans Buhid",
+    "sans",
+    [["ofl/notosansbuhid/NotoSansBuhid-Regular.ttf", 400, false, 30844]],
+    "ofl/notosansbuhid/OFL.txt"
+  ],
+  [
+    "Noto Sans Canadian Aboriginal",
+    "sans",
+    [["ofl/notosanscanadianaboriginal/NotoSansCanadianAboriginal[wght].ttf", 400, false, 292524]],
+    "ofl/notosanscanadianaboriginal/OFL.txt"
+  ],
+  [
+    "Noto Sans Carian",
+    "sans",
+    [["ofl/notosanscarian/NotoSansCarian-Regular.ttf", 400, false, 53300]],
+    "ofl/notosanscarian/OFL.txt"
+  ],
+  [
+    "Noto Sans Caucasian Albanian",
+    "sans",
+    [["ofl/notosanscaucasianalbanian/NotoSansCaucasianAlbanian-Regular.ttf", 400, false, 85120]],
+    "ofl/notosanscaucasianalbanian/OFL.txt"
+  ],
+  [
+    "Noto Sans Chakma",
+    "sans",
+    [["ofl/notosanschakma/NotoSansChakma-Regular.ttf", 400, false, 126960]],
+    "ofl/notosanschakma/OFL.txt"
+  ],
+  [
+    "Noto Sans Cham",
+    "sans",
+    [["ofl/notosanscham/NotoSansCham[wght].ttf", 400, false, 126600]],
+    "ofl/notosanscham/OFL.txt"
+  ],
+  [
+    "Noto Sans Cherokee",
+    "sans",
+    [["ofl/notosanscherokee/NotoSansCherokee[wght].ttf", 400, false, 224360]],
+    "ofl/notosanscherokee/OFL.txt"
+  ],
+  [
+    "Noto Sans Chorasmian",
+    "sans",
+    [["ofl/notosanschorasmian/NotoSansChorasmian-Regular.ttf", 400, false, 68212]],
+    "ofl/notosanschorasmian/OFL.txt"
+  ],
+  [
+    "Noto Sans Coptic",
+    "sans",
+    [["ofl/notosanscoptic/NotoSansCoptic-Regular.ttf", 400, false, 92512]],
+    "ofl/notosanscoptic/OFL.txt"
+  ],
+  [
+    "Noto Sans Cuneiform",
+    "sans",
+    [["ofl/notosanscuneiform/NotoSansCuneiform-Regular.ttf", 400, false, 1425840]],
+    "ofl/notosanscuneiform/OFL.txt"
+  ],
+  [
+    "Noto Sans Cypriot",
+    "sans",
+    [["ofl/notosanscypriot/NotoSansCypriot-Regular.ttf", 400, false, 77756]],
+    "ofl/notosanscypriot/OFL.txt"
+  ],
+  [
+    "Noto Sans Cypro Minoan",
+    "sans",
+    [["ofl/notosanscyprominoan/NotoSansCyproMinoan-Regular.ttf", 400, false, 63164]],
+    "ofl/notosanscyprominoan/OFL.txt"
+  ],
+  [
+    "Noto Sans Deseret",
+    "sans",
+    [["ofl/notosansdeseret/NotoSansDeseret-Regular.ttf", 400, false, 60572]],
+    "ofl/notosansdeseret/OFL.txt"
+  ],
+  [
+    "Noto Sans Devanagari",
+    "sans",
+    [["ofl/notosansdevanagari/NotoSansDevanagari[wdth,wght].ttf", 400, false, 641944]],
+    "ofl/notosansdevanagari/OFL.txt"
+  ],
+  [
+    "Noto Sans Display",
+    "sans",
+    [
+      ["ofl/notosansdisplay/NotoSansDisplay-Italic[wdth,wght].ttf", 400, true, 1699368],
+      ["ofl/notosansdisplay/NotoSansDisplay[wdth,wght].ttf", 400, false, 1544512]
+    ],
+    "ofl/notosansdisplay/OFL.txt"
+  ],
+  [
+    "Noto Sans Duployan",
+    "sans",
+    [
+      ["ofl/notosansduployan/NotoSansDuployan-Bold.ttf", 700, false, 1765340],
+      ["ofl/notosansduployan/NotoSansDuployan-Regular.ttf", 400, false, 1775008]
+    ],
+    "ofl/notosansduployan/OFL.txt"
+  ],
+  [
+    "Noto Sans Egyptian Hieroglyphs",
+    "sans",
+    [
+      [
+        "ofl/notosansegyptianhieroglyphs/NotoSansEgyptianHieroglyphs-Regular.ttf",
+        400,
+        false,
+        1004836
+      ]
+    ],
+    "ofl/notosansegyptianhieroglyphs/OFL.txt"
+  ],
+  [
+    "Noto Sans Elbasan",
+    "sans",
+    [["ofl/notosanselbasan/NotoSansElbasan-Regular.ttf", 400, false, 60084]],
+    "ofl/notosanselbasan/OFL.txt"
+  ],
+  [
+    "Noto Sans Elymaic",
+    "sans",
+    [["ofl/notosanselymaic/NotoSansElymaic-Regular.ttf", 400, false, 57408]],
+    "ofl/notosanselymaic/OFL.txt"
+  ],
+  [
+    "Noto Sans Ethiopic",
+    "sans",
+    [["ofl/notosansethiopic/NotoSansEthiopic[wdth,wght].ttf", 400, false, 1143168]],
+    "ofl/notosansethiopic/OFL.txt"
+  ],
+  [
+    "Noto Sans Georgian",
+    "sans",
+    [["ofl/notosansgeorgian/NotoSansGeorgian[wdth,wght].ttf", 400, false, 231988]],
+    "ofl/notosansgeorgian/OFL.txt"
+  ]
+]

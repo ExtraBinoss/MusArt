@@ -1,9 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createEffect, createLayer, createPage, type Asset } from "@musart/core";
+import { InstancedMesh, Mesh, RenderTarget, type Scene } from "three/webgpu";
 import { GpuCompositor } from "../../src/compositing/GpuCompositor";
 import { clearSourceCache } from "../../src/surface/sources";
 import { installCanvasMock } from "../canvas-fixture";
 import { makeGpuRenderer } from "../gpu-fixture";
+import { outlineFont } from "../text-fixture";
 const asset: Asset = {
   id: "image",
   name: "photo",
@@ -228,4 +230,132 @@ it("renders retained vector geometry, transformed referenced masks and truthful 
     ),
   ).rejects.toThrow("absente");
   await graph.dispose();
+});
+it("defers background GPU submission when user input becomes active during async source preparation", async () => {
+  const { renderer, fake } = makeGpuRenderer(),
+    graph = new GpuCompositor(renderer);
+  await expect(graph.render(createPage(), {}, { canRender: () => false })).rejects.toMatchObject({
+    name: "AbortError",
+  });
+  let checks = 0;
+  await expect(
+    graph.render(createPage(), {}, { canRender: () => ++checks < 2 }),
+  ).rejects.toMatchObject({ name: "AbortError" });
+  expect(fake.render).not.toHaveBeenCalled();
+  await graph.dispose();
+});
+it("prepares custom font bytes through the injected resolver and retains their GPU outlines", async () => {
+  const bytes = outlineFont().toArrayBuffer(),
+    fontResolver = vi.fn(async () => bytes.slice(0));
+  const { renderer, fake } = makeGpuRenderer(),
+    graph = new GpuCompositor(renderer, { fontResolver });
+  const layer = createLayer("text", {
+      text: "A",
+      fontFamily: "custom:face-sha",
+      width: 100,
+      height: 100,
+    }),
+    page = createPage({ width: 100, height: 100, layers: [layer] });
+  await graph.render(page, {});
+  await graph.render({ ...page, layers: [{ ...layer, fill: "#ff0000" }] }, {});
+  expect(fontResolver).toHaveBeenCalledOnce();
+  expect(fontResolver).toHaveBeenCalledWith(
+    layer.fontFamily,
+    layer.fontWeight,
+    expect.any(AbortSignal),
+  );
+  expect(fake.readRenderTargetPixelsAsync).not.toHaveBeenCalled();
+  expect(context.getImageData).not.toHaveBeenCalled();
+  await graph.dispose();
+});
+
+it("composes ten thousand plain primitives with two document targets and one bounded instanced draw", async () => {
+  const { renderer, fake } = makeGpuRenderer(),
+    graph = new GpuCompositor(renderer);
+  const layers = Array.from({ length: 10_000 }, (_, index) =>
+    createLayer(index % 2 ? "ellipse" : "rectangle", {
+      id: `primitive-${index}`,
+      x: index % 100,
+      y: Math.floor(index / 100),
+      width: 4,
+      height: 4,
+    }),
+  );
+  const page = createPage({ width: 128, height: 128, layers });
+  const output = await graph.render(page, {}),
+    cold = graph.stats();
+  expect(cold).toMatchObject({
+    passes: 3,
+    targets: 2,
+    uploads: 0,
+    primitiveDraws: 1,
+    primitiveInstances: 10_000,
+  });
+  expect(cold.cacheBytes).toBeLessThan(3_000_000);
+  expect(cold.primitiveBytes).toBeGreaterThan(1_000_000);
+  expect(await graph.render(page, {})).toBe(output);
+  expect(graph.stats().passes).toBe(cold.passes);
+  await graph.render(
+    {
+      ...page,
+      layers: layers.map((layer, index) => (index === 0 ? { ...layer, fill: "#ff0000" } : layer)),
+    },
+    {},
+  );
+  expect(graph.stats().passes - cold.passes).toBe(3);
+  expect(graph.stats().targets).toBe(2);
+  expect(graph.stats().primitiveBytes).toBe(cold.primitiveBytes);
+  expect(fake.readRenderTargetPixelsAsync).not.toHaveBeenCalled();
+  await graph.dispose();
+  expect(graph.stats()).toMatchObject({ targets: 0, primitiveBytes: 0, cacheBytes: 0 });
+});
+it("preserves contiguous source-over order around exact effect surfaces and reuses the same instanced mesh", async () => {
+  const { renderer, fake } = makeGpuRenderer(),
+    graph = new GpuCompositor(renderer),
+    submissions: string[] = [],
+    meshes = new Set<InstancedMesh>();
+  fake.render.mockImplementation((scene: Scene) => {
+    const mesh = scene.children[0];
+    if (mesh instanceof InstancedMesh) {
+      submissions.push(`primitive:${mesh.count}`);
+      meshes.add(mesh);
+    } else if (mesh instanceof Mesh && mesh.material.transparent)
+      submissions.push(`texture:${scene.children.length}`);
+  });
+  const layers = [
+    createLayer("rectangle"),
+    createLayer("ellipse"),
+    createLayer("rectangle", { effects: [createEffect("brightness", { amount: 0.5 })] }),
+    createLayer("ellipse"),
+  ];
+  await graph.render(createPage({ width: 32, height: 32, layers }), {});
+  expect(submissions).toEqual(["primitive:2", "texture:1", "primitive:1"]);
+  expect(meshes.size).toBe(1);
+  expect(graph.stats()).toMatchObject({ primitiveDraws: 2, primitiveInstances: 3 });
+  await graph.dispose();
+});
+it("checks shared instance allocations against the hard GPU budget before replacing the last presentation", async () => {
+  const { renderer, fake } = makeGpuRenderer(),
+    graph = new GpuCompositor(renderer, { maxBytes: 2048 });
+  const layer = createLayer("rectangle", { width: 4, height: 4 }),
+    page = createPage({ width: 8, height: 8, layers: [layer] });
+  const frame = await graph.render(page, {}),
+    ownedTarget = fake.setRenderTarget.mock.calls
+      .map(([target]) => target)
+      .find((target): target is RenderTarget => target?.texture === frame.texture)!,
+    dispose = vi.spyOn(ownedTarget, "dispose"),
+    bytes = graph.stats().primitiveBytes;
+  await expect(
+    graph.render(
+      {
+        ...page,
+        layers: Array.from({ length: 1000 }, (_, index) => ({ ...layer, id: `growth-${index}` })),
+      },
+      {},
+    ),
+  ).rejects.toThrow("Budget");
+  expect(graph.stats().primitiveBytes).toBe(bytes);
+  expect(dispose).not.toHaveBeenCalled();
+  await graph.dispose();
+  expect(dispose).toHaveBeenCalledOnce();
 });

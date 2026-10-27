@@ -1,0 +1,197 @@
+[
+  [
+    "Glegoo",
+    "serif",
+    [
+      ["ofl/glegoo/Glegoo-Bold.ttf", 700, false, 271068],
+      ["ofl/glegoo/Glegoo-Regular.ttf", 400, false, 271368]
+    ],
+    "ofl/glegoo/OFL.txt"
+  ],
+  ["Gloock", "serif", [["ofl/gloock/Gloock-Regular.ttf", 400, false, 98096]], "ofl/gloock/OFL.txt"],
+  [
+    "Gloria Hallelujah",
+    "handwriting",
+    [["ofl/gloriahallelujah/GloriaHallelujah.ttf", 400, false, 59812]],
+    "ofl/gloriahallelujah/OFL.txt"
+  ],
+  [
+    "Glory",
+    "sans",
+    [
+      ["ofl/glory/Glory-Italic[wght].ttf", 400, true, 89460],
+      ["ofl/glory/Glory[wght].ttf", 400, false, 87024]
+    ],
+    "ofl/glory/OFL.txt"
+  ],
+  [
+    "Gluten",
+    "display",
+    [["ofl/gluten/Gluten[slnt,wght].ttf", 400, false, 349672]],
+    "ofl/gluten/OFL.txt"
+  ],
+  [
+    "Goblin One",
+    "display",
+    [["ofl/goblinone/GoblinOne.ttf", 400, false, 36736]],
+    "ofl/goblinone/OFL.txt"
+  ],
+  [
+    "Gochi Hand",
+    "handwriting",
+    [["ofl/gochihand/GochiHand-Regular.ttf", 400, false, 37352]],
+    "ofl/gochihand/OFL.txt"
+  ],
+  [
+    "Goldman",
+    "display",
+    [
+      ["ofl/goldman/Goldman-Bold.ttf", 700, false, 77980],
+      ["ofl/goldman/Goldman-Regular.ttf", 400, false, 77956]
+    ],
+    "ofl/goldman/OFL.txt"
+  ],
+  [
+    "Golos Text",
+    "sans",
+    [["ofl/golostext/GolosText[wght].ttf", 400, false, 184292]],
+    "ofl/golostext/OFL.txt"
+  ],
+  [
+    "Google Sans",
+    "sans",
+    [
+      ["ofl/googlesans/GoogleSans-Italic[GRAD,opsz,wght].ttf", 400, true, 5079424],
+      ["ofl/googlesans/GoogleSans[GRAD,opsz,wght].ttf", 400, false, 4974940]
+    ],
+    "ofl/googlesans/OFL.txt"
+  ],
+  [
+    "Google Sans Code",
+    "mono",
+    [
+      ["ofl/googlesanscode/GoogleSansCode-Italic[wght].ttf", 400, true, 132968],
+      ["ofl/googlesanscode/GoogleSansCode[wght].ttf", 400, false, 126224]
+    ],
+    "ofl/googlesanscode/OFL.txt"
+  ],
+  [
+    "Google Sans Flex",
+    "sans",
+    [["ofl/googlesansflex/GoogleSansFlex[ROND,opsz,slnt,wdth,wght].ttf", 400, false, 3910784]],
+    "ofl/googlesansflex/OFL.txt"
+  ],
+  [
+    "Gorditas",
+    "display",
+    [
+      ["ofl/gorditas/Gorditas-Bold.ttf", 700, false, 109800],
+      ["ofl/gorditas/Gorditas-Regular.ttf", 400, false, 110336]
+    ],
+    "ofl/gorditas/OFL.txt"
+  ],
+  [
+    "Gothic A1",
+    "sans",
+    [
+      ["ofl/gothica1/GothicA1-Black.ttf", 900, false, 2260752],
+      ["ofl/gothica1/GothicA1-Bold.ttf", 700, false, 2287068],
+      ["ofl/gothica1/GothicA1-ExtraBold.ttf", 800, false, 2281144],
+      ["ofl/gothica1/GothicA1-ExtraLight.ttf", 200, false, 2298392],
+      ["ofl/gothica1/GothicA1-Light.ttf", 300, false, 2298100],
+      ["ofl/gothica1/GothicA1-Medium.ttf", 500, false, 2288824],
+      ["ofl/gothica1/GothicA1-Regular.ttf", 400, false, 2295400],
+      ["ofl/gothica1/GothicA1-SemiBold.ttf", 600, false, 2288560],
+      ["ofl/gothica1/GothicA1-Thin.ttf", 100, false, 2308312]
+    ],
+    "ofl/gothica1/OFL.txt"
+  ],
+  ["Gotu", "sans", [["ofl/gotu/Gotu-Regular.ttf", 400, false, 697792]], "ofl/gotu/OFL.txt"],
+  [
+    "Goudy Bookletter 1911",
+    "serif",
+    [["ofl/goudybookletter1911/GoudyBookletter1911.ttf", 400, false, 73496]],
+    "ofl/goudybookletter1911/OFL.txt"
+  ],
+  [
+    "Gowun Batang",
+    "serif",
+    [
+      ["ofl/gowunbatang/GowunBatang-Bold.ttf", 700, false, 8178712],
+      ["ofl/gowunbatang/GowunBatang-Regular.ttf", 400, false, 8433296]
+    ],
+    "ofl/gowunbatang/OFL.txt"
+  ],
+  [
+    "Gowun Dodum",
+    "sans",
+    [["ofl/gowundodum/GowunDodum-Regular.ttf", 400, false, 7229088]],
+    "ofl/gowundodum/OFL.txt"
+  ],
+  [
+    "Graduate",
+    "serif",
+    [["ofl/graduate/Graduate-Regular.ttf", 400, false, 59296]],
+    "ofl/graduate/OFL.txt"
+  ],
+  [
+    "Grand Hotel",
+    "handwriting",
+    [["ofl/grandhotel/GrandHotel-Regular.ttf", 400, false, 65012]],
+    "ofl/grandhotel/OFL.txt"
+  ],
+  [
+    "Grandiflora One",
+    "serif",
+    [["ofl/grandifloraone/GrandifloraOne-Regular.ttf", 400, false, 2342680]],
+    "ofl/grandifloraone/OFL.txt"
+  ],
+  [
+    "Grandstander",
+    "display",
+    [
+      ["ofl/grandstander/Grandstander-Italic[wght].ttf", 400, true, 185092],
+      ["ofl/grandstander/Grandstander[wght].ttf", 400, false, 183056]
+    ],
+    "ofl/grandstander/OFL.txt"
+  ],
+  [
+    "Grape Nuts",
+    "handwriting",
+    [["ofl/grapenuts/GrapeNuts-Regular.ttf", 400, false, 122812]],
+    "ofl/grapenuts/OFL.txt"
+  ],
+  [
+    "Gravitas One",
+    "display",
+    [["ofl/gravitasone/GravitasOne.ttf", 400, false, 41448]],
+    "ofl/gravitasone/OFL.txt"
+  ],
+  [
+    "Great Vibes",
+    "handwriting",
+    [["ofl/greatvibes/GreatVibes-Regular.ttf", 400, false, 457588]],
+    "ofl/greatvibes/OFL.txt"
+  ],
+  [
+    "Grechen Fuemen",
+    "handwriting",
+    [["ofl/grechenfuemen/GrechenFuemen-Regular.ttf", 400, false, 136992]],
+    "ofl/grechenfuemen/OFL.txt"
+  ],
+  [
+    "Grenze",
+    "serif",
+    [
+      ["ofl/grenze/Grenze-Italic[wght].ttf", 400, true, 148448],
+      ["ofl/grenze/Grenze[wght].ttf", 400, false, 139860]
+    ],
+    "ofl/grenze/OFL.txt"
+  ],
+  [
+    "Grenze Gotisch",
+    "display",
+    [["ofl/grenzegotisch/GrenzeGotisch[wght].ttf", 400, false, 193492]],
+    "ofl/grenzegotisch/OFL.txt"
+  ]
+]

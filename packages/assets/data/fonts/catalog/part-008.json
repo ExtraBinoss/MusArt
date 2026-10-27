@@ -1,0 +1,156 @@
+[
+  [
+    "Baskervville",
+    "serif",
+    [
+      ["ofl/baskervville/Baskervville-Italic[wght].ttf", 400, true, 114676],
+      ["ofl/baskervville/Baskervville[wght].ttf", 400, false, 140076]
+    ],
+    "ofl/baskervville/OFL.txt"
+  ],
+  [
+    "Baskervville SC",
+    "serif",
+    [["ofl/baskervvillesc/BaskervvilleSC[wght].ttf", 400, false, 140120]],
+    "ofl/baskervvillesc/OFL.txt"
+  ],
+  [
+    "Battambang",
+    "display",
+    [
+      ["ofl/battambang/Battambang-Black.ttf", 900, false, 104172],
+      ["ofl/battambang/Battambang-Bold.ttf", 700, false, 111988],
+      ["ofl/battambang/Battambang-Light.ttf", 300, false, 100592],
+      ["ofl/battambang/Battambang-Regular.ttf", 400, false, 116040],
+      ["ofl/battambang/Battambang-Thin.ttf", 100, false, 98740]
+    ],
+    "ofl/battambang/OFL.txt"
+  ],
+  [
+    "Baumans",
+    "display",
+    [["ofl/baumans/Baumans-Regular.ttf", 400, false, 52076]],
+    "ofl/baumans/OFL.txt"
+  ],
+  ["Bayon", "sans", [["ofl/bayon/Bayon-Regular.ttf", 400, false, 55132]], "ofl/bayon/OFL.txt"],
+  [
+    "Be Vietnam Pro",
+    "sans",
+    [
+      ["ofl/bevietnampro/BeVietnamPro-Black.ttf", 900, false, 142612],
+      ["ofl/bevietnampro/BeVietnamPro-BlackItalic.ttf", 900, true, 140468],
+      ["ofl/bevietnampro/BeVietnamPro-Bold.ttf", 700, false, 140300],
+      ["ofl/bevietnampro/BeVietnamPro-BoldItalic.ttf", 700, true, 137748],
+      ["ofl/bevietnampro/BeVietnamPro-ExtraBold.ttf", 800, false, 139680],
+      ["ofl/bevietnampro/BeVietnamPro-ExtraBoldItalic.ttf", 800, true, 138076],
+      ["ofl/bevietnampro/BeVietnamPro-ExtraLight.ttf", 200, false, 134464],
+      ["ofl/bevietnampro/BeVietnamPro-ExtraLightItalic.ttf", 200, true, 131492],
+      ["ofl/bevietnampro/BeVietnamPro-Italic.ttf", 400, true, 137244],
+      ["ofl/bevietnampro/BeVietnamPro-Light.ttf", 300, false, 136772],
+      ["ofl/bevietnampro/BeVietnamPro-LightItalic.ttf", 300, true, 136084],
+      ["ofl/bevietnampro/BeVietnamPro-Medium.ttf", 500, false, 135980],
+      ["ofl/bevietnampro/BeVietnamPro-MediumItalic.ttf", 500, true, 138280],
+      ["ofl/bevietnampro/BeVietnamPro-Regular.ttf", 400, false, 132948],
+      ["ofl/bevietnampro/BeVietnamPro-SemiBold.ttf", 600, false, 136736],
+      ["ofl/bevietnampro/BeVietnamPro-SemiBoldItalic.ttf", 600, true, 134740],
+      ["ofl/bevietnampro/BeVietnamPro-Thin.ttf", 100, false, 127040],
+      ["ofl/bevietnampro/BeVietnamPro-ThinItalic.ttf", 100, true, 129556]
+    ],
+    "ofl/bevietnampro/OFL.txt"
+  ],
+  [
+    "Beau Rivage",
+    "handwriting",
+    [["ofl/beaurivage/BeauRivage-Regular.ttf", 400, false, 238824]],
+    "ofl/beaurivage/OFL.txt"
+  ],
+  [
+    "Bebas Neue",
+    "sans",
+    [["ofl/bebasneue/BebasNeue-Regular.ttf", 400, false, 61400]],
+    "ofl/bebasneue/OFL.txt"
+  ],
+  [
+    "Beiruti",
+    "sans",
+    [["ofl/beiruti/Beiruti[wght].ttf", 400, false, 678740]],
+    "ofl/beiruti/OFL.txt"
+  ],
+  [
+    "Belanosima",
+    "sans",
+    [
+      ["ofl/belanosima/Belanosima-Bold.ttf", 700, false, 39888],
+      ["ofl/belanosima/Belanosima-Regular.ttf", 400, false, 37968],
+      ["ofl/belanosima/Belanosima-SemiBold.ttf", 600, false, 38476]
+    ],
+    "ofl/belanosima/OFL.txt"
+  ],
+  [
+    "Belgrano",
+    "serif",
+    [["ofl/belgrano/Belgrano-Regular.ttf", 400, false, 29048]],
+    "ofl/belgrano/OFL.txt"
+  ],
+  [
+    "Bellefair",
+    "serif",
+    [["ofl/bellefair/Bellefair-Regular.ttf", 400, false, 65432]],
+    "ofl/bellefair/OFL.txt"
+  ],
+  [
+    "Belleza",
+    "sans",
+    [["ofl/belleza/Belleza-Regular.ttf", 400, false, 55696]],
+    "ofl/belleza/OFL.txt"
+  ],
+  [
+    "Bellota",
+    "display",
+    [
+      ["ofl/bellota/Bellota-Bold.ttf", 700, false, 201076],
+      ["ofl/bellota/Bellota-BoldItalic.ttf", 700, true, 204668],
+      ["ofl/bellota/Bellota-Italic.ttf", 400, true, 198660],
+      ["ofl/bellota/Bellota-Light.ttf", 300, false, 191872],
+      ["ofl/bellota/Bellota-LightItalic.ttf", 300, true, 197412],
+      ["ofl/bellota/Bellota-Regular.ttf", 400, false, 194464]
+    ],
+    "ofl/bellota/OFL.txt"
+  ],
+  [
+    "Bellota Text",
+    "display",
+    [
+      ["ofl/bellotatext/BellotaText-Bold.ttf", 700, false, 200524],
+      ["ofl/bellotatext/BellotaText-BoldItalic.ttf", 700, true, 204100],
+      ["ofl/bellotatext/BellotaText-Italic.ttf", 400, true, 195724],
+      ["ofl/bellotatext/BellotaText-Light.ttf", 300, false, 190388],
+      ["ofl/bellotatext/BellotaText-LightItalic.ttf", 300, true, 195940],
+      ["ofl/bellotatext/BellotaText-Regular.ttf", 400, false, 191092]
+    ],
+    "ofl/bellotatext/OFL.txt"
+  ],
+  [
+    "BenchNine",
+    "sans",
+    [
+      ["ofl/benchnine/BenchNine-Bold.ttf", 700, false, 58996],
+      ["ofl/benchnine/BenchNine-Light.ttf", 300, false, 54816],
+      ["ofl/benchnine/BenchNine-Regular.ttf", 400, false, 57172]
+    ],
+    "ofl/benchnine/OFL.txt"
+  ],
+  ["Benne", "serif", [["ofl/benne/Benne-Regular.ttf", 400, false, 230896]], "ofl/benne/OFL.txt"],
+  [
+    "Bentham",
+    "serif",
+    [["ofl/bentham/Bentham-Regular.ttf", 400, false, 55468]],
+    "ofl/bentham/OFL.txt"
+  ],
+  [
+    "Berkshire Swash",
+    "handwriting",
+    [["ofl/berkshireswash/BerkshireSwash-Regular.ttf", 400, false, 58400]],
+    "ofl/berkshireswash/OFL.txt"
+  ]
+]

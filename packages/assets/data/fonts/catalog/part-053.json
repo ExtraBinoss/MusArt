@@ -1,0 +1,213 @@
+[
+  [
+    "Parkinsans",
+    "sans",
+    [["ofl/parkinsans/Parkinsans[wght].ttf", 400, false, 93096]],
+    "ofl/parkinsans/OFL.txt"
+  ],
+  [
+    "Passero One",
+    "display",
+    [["ofl/passeroone/PasseroOne-Regular.ttf", 400, false, 33624]],
+    "ofl/passeroone/OFL.txt"
+  ],
+  [
+    "Passion One",
+    "display",
+    [
+      ["ofl/passionone/PassionOne-Black.ttf", 900, false, 24288],
+      ["ofl/passionone/PassionOne-Bold.ttf", 700, false, 24716],
+      ["ofl/passionone/PassionOne-Regular.ttf", 400, false, 24940]
+    ],
+    "ofl/passionone/OFL.txt"
+  ],
+  [
+    "Passions Conflict",
+    "handwriting",
+    [["ofl/passionsconflict/PassionsConflict-Regular.ttf", 400, false, 149128]],
+    "ofl/passionsconflict/OFL.txt"
+  ],
+  [
+    "Pathway Extreme",
+    "sans",
+    [
+      ["ofl/pathwayextreme/PathwayExtreme-Italic[opsz,wdth,wght].ttf", 400, true, 225420],
+      ["ofl/pathwayextreme/PathwayExtreme[opsz,wdth,wght].ttf", 400, false, 305108]
+    ],
+    "ofl/pathwayextreme/OFL.txt"
+  ],
+  [
+    "Pathway Gothic One",
+    "sans",
+    [["ofl/pathwaygothicone/PathwayGothicOne-Regular.ttf", 400, false, 49944]],
+    "ofl/pathwaygothicone/OFL.txt"
+  ],
+  [
+    "Patrick Hand",
+    "handwriting",
+    [["ofl/patrickhand/PatrickHand-Regular.ttf", 400, false, 214772]],
+    "ofl/patrickhand/OFL.txt"
+  ],
+  [
+    "Patrick Hand SC",
+    "handwriting",
+    [["ofl/patrickhandsc/PatrickHandSC-Regular.ttf", 400, false, 167376]],
+    "ofl/patrickhandsc/OFL.txt"
+  ],
+  [
+    "Pattaya",
+    "sans",
+    [["ofl/pattaya/Pattaya-Regular.ttf", 400, false, 420092]],
+    "ofl/pattaya/OFL.txt"
+  ],
+  [
+    "Patua One",
+    "display",
+    [["ofl/patuaone/PatuaOne-Regular.ttf", 400, false, 35624]],
+    "ofl/patuaone/OFL.txt"
+  ],
+  [
+    "Pavanam",
+    "sans",
+    [["ofl/pavanam/Pavanam-Regular.ttf", 400, false, 63100]],
+    "ofl/pavanam/OFL.txt"
+  ],
+  [
+    "Paytone One",
+    "sans",
+    [["ofl/paytoneone/PaytoneOne-Regular.ttf", 400, false, 114648]],
+    "ofl/paytoneone/OFL.txt"
+  ],
+  [
+    "Peddana",
+    "serif",
+    [["ofl/peddana/Peddana-Regular.ttf", 400, false, 714796]],
+    "ofl/peddana/OFL.txt"
+  ],
+  [
+    "Peralta",
+    "serif",
+    [["ofl/peralta/Peralta-Regular.ttf", 400, false, 59600]],
+    "ofl/peralta/OFL.txt"
+  ],
+  [
+    "Permanent Marker",
+    "handwriting",
+    [["apache/permanentmarker/PermanentMarker-Regular.ttf", 400, false, 74632]],
+    "apache/permanentmarker/LICENSE.txt"
+  ],
+  [
+    "Petemoss",
+    "handwriting",
+    [["ofl/petemoss/Petemoss-Regular.ttf", 400, false, 143236]],
+    "ofl/petemoss/OFL.txt"
+  ],
+  [
+    "Petit Formal Script",
+    "handwriting",
+    [["ofl/petitformalscript/PetitFormalScript-Regular.ttf", 400, false, 175068]],
+    "ofl/petitformalscript/OFL.txt"
+  ],
+  [
+    "Petrona",
+    "serif",
+    [
+      ["ofl/petrona/Petrona-Italic[wght].ttf", 400, true, 230176],
+      ["ofl/petrona/Petrona[wght].ttf", 400, false, 218572]
+    ],
+    "ofl/petrona/OFL.txt"
+  ],
+  [
+    "Phetsarath",
+    "sans",
+    [
+      ["ofl/phetsarath/Phetsarath-Bold.ttf", 700, false, 156840],
+      ["ofl/phetsarath/Phetsarath-Regular.ttf", 400, false, 40544]
+    ],
+    "ofl/phetsarath/OFL.txt"
+  ],
+  [
+    "Philosopher",
+    "sans",
+    [
+      ["ofl/philosopher/Philosopher-Bold.ttf", 700, false, 110068],
+      ["ofl/philosopher/Philosopher-BoldItalic.ttf", 700, true, 118380],
+      ["ofl/philosopher/Philosopher-Italic.ttf", 400, true, 118000],
+      ["ofl/philosopher/Philosopher-Regular.ttf", 400, false, 111676]
+    ],
+    "ofl/philosopher/OFL.txt"
+  ],
+  ["Phudu", "display", [["ofl/phudu/Phudu[wght].ttf", 400, false, 129144]], "ofl/phudu/OFL.txt"],
+  [
+    "Piazzolla",
+    "serif",
+    [
+      ["ofl/piazzolla/Piazzolla-Italic[opsz,wght].ttf", 400, true, 618116],
+      ["ofl/piazzolla/Piazzolla[opsz,wght].ttf", 400, false, 624956]
+    ],
+    "ofl/piazzolla/OFL.txt"
+  ],
+  [
+    "Piedra",
+    "display",
+    [["ofl/piedra/Piedra-Regular.ttf", 400, false, 75984]],
+    "ofl/piedra/OFL.txt"
+  ],
+  [
+    "Pinyon Script",
+    "handwriting",
+    [["ofl/pinyonscript/PinyonScript-Regular.ttf", 400, false, 151412]],
+    "ofl/pinyonscript/OFL.txt"
+  ],
+  [
+    "Pirata One",
+    "display",
+    [["ofl/pirataone/PirataOne-Regular.ttf", 400, false, 56316]],
+    "ofl/pirataone/OFL.txt"
+  ],
+  [
+    "Pixelify Sans",
+    "display",
+    [["ofl/pixelifysans/PixelifySans[wght].ttf", 400, false, 79160]],
+    "ofl/pixelifysans/OFL.txt"
+  ],
+  [
+    "Plaster",
+    "display",
+    [["ofl/plaster/Plaster-Regular.ttf", 400, false, 32852]],
+    "ofl/plaster/OFL.txt"
+  ],
+  [
+    "Platypi",
+    "serif",
+    [
+      ["ofl/platypi/Platypi-Italic[wght].ttf", 400, true, 166552],
+      ["ofl/platypi/Platypi[wght].ttf", 400, false, 169476]
+    ],
+    "ofl/platypi/OFL.txt"
+  ],
+  [
+    "Play",
+    "sans",
+    [
+      ["ofl/play/Play-Bold.ttf", 700, false, 210704],
+      ["ofl/play/Play-Regular.ttf", 400, false, 199020]
+    ],
+    "ofl/play/OFL.txt"
+  ],
+  [
+    "Playball",
+    "display",
+    [["ofl/playball/Playball-Regular.ttf", 400, false, 190720]],
+    "ofl/playball/OFL.txt"
+  ],
+  [
+    "Playfair",
+    "serif",
+    [
+      ["ofl/playfair/Playfair-Italic[opsz,wdth,wght].ttf", 400, true, 1783732],
+      ["ofl/playfair/Playfair[opsz,wdth,wght].ttf", 400, false, 1776724]
+    ],
+    "ofl/playfair/OFL.txt"
+  ]
+]

@@ -1,0 +1,199 @@
+[
+  [
+    "B612 Mono",
+    "mono",
+    [
+      ["ofl/b612mono/B612Mono-Bold.ttf", 700, false, 139456],
+      ["ofl/b612mono/B612Mono-BoldItalic.ttf", 700, true, 125284],
+      ["ofl/b612mono/B612Mono-Italic.ttf", 400, true, 122448],
+      ["ofl/b612mono/B612Mono-Regular.ttf", 400, false, 140292]
+    ],
+    "ofl/b612mono/OFL.txt"
+  ],
+  [
+    "BBH Bartle",
+    "sans",
+    [["ofl/bbhbartle/BBHBartle-Regular.ttf", 400, false, 17880]],
+    "ofl/bbhbartle/OFL.txt"
+  ],
+  [
+    "BBH Bogle",
+    "sans",
+    [["ofl/bbhbogle/BBHBogle-Regular.ttf", 400, false, 15656]],
+    "ofl/bbhbogle/OFL.txt"
+  ],
+  [
+    "BBH Hegarty",
+    "sans",
+    [["ofl/bbhhegarty/BBHHegarty-Regular.ttf", 400, false, 28752]],
+    "ofl/bbhhegarty/OFL.txt"
+  ],
+  [
+    "BIZ UDGothic",
+    "sans",
+    [
+      ["ofl/bizudgothic/BIZUDGothic-Bold.ttf", 700, false, 4638128],
+      ["ofl/bizudgothic/BIZUDGothic-Regular.ttf", 400, false, 4667376]
+    ],
+    "ofl/bizudgothic/OFL.txt"
+  ],
+  [
+    "BIZ UDMincho",
+    "serif",
+    [
+      ["ofl/bizudmincho/BIZUDMincho-Bold.ttf", 700, false, 7107032],
+      ["ofl/bizudmincho/BIZUDMincho-Regular.ttf", 400, false, 6153932]
+    ],
+    "ofl/bizudmincho/OFL.txt"
+  ],
+  [
+    "BIZ UDPGothic",
+    "sans",
+    [
+      ["ofl/bizudpgothic/BIZUDPGothic-Bold.ttf", 700, false, 4640596],
+      ["ofl/bizudpgothic/BIZUDPGothic-Regular.ttf", 400, false, 4669688]
+    ],
+    "ofl/bizudpgothic/OFL.txt"
+  ],
+  [
+    "BIZ UDPMincho",
+    "serif",
+    [
+      ["ofl/bizudpmincho/BIZUDPMincho-Bold.ttf", 700, false, 7109432],
+      ["ofl/bizudpmincho/BIZUDPMincho-Regular.ttf", 400, false, 6156444]
+    ],
+    "ofl/bizudpmincho/OFL.txt"
+  ],
+  [
+    "BJCree",
+    "serif",
+    [
+      ["ofl/bjcree/BJCree-Bold.ttf", 700, false, 106376],
+      ["ofl/bjcree/BJCree-Medium.ttf", 500, false, 105820],
+      ["ofl/bjcree/BJCree-Regular.ttf", 400, false, 106236],
+      ["ofl/bjcree/BJCree-SemiBold.ttf", 600, false, 105548]
+    ],
+    "ofl/bjcree/OFL.txt"
+  ],
+  [
+    "Babylonica",
+    "handwriting",
+    [["ofl/babylonica/Babylonica-Regular.ttf", 400, false, 498620]],
+    "ofl/babylonica/OFL.txt"
+  ],
+  [
+    "Bacasime Antique",
+    "serif",
+    [["ofl/bacasimeantique/BacasimeAntique-Regular.ttf", 400, false, 30848]],
+    "ofl/bacasimeantique/OFL.txt"
+  ],
+  [
+    "Bad Script",
+    "handwriting",
+    [["ofl/badscript/BadScript-Regular.ttf", 400, false, 184216]],
+    "ofl/badscript/OFL.txt"
+  ],
+  [
+    "Badeen Display",
+    "display",
+    [["ofl/badeendisplay/BadeenDisplay-Regular.ttf", 400, false, 78908]],
+    "ofl/badeendisplay/OFL.txt"
+  ],
+  [
+    "Bagel Fat One",
+    "display",
+    [["ofl/bagelfatone/BagelFatOne-Regular.ttf", 400, false, 1585984]],
+    "ofl/bagelfatone/OFL.txt"
+  ],
+  [
+    "Bahiana",
+    "display",
+    [["ofl/bahiana/Bahiana-Regular.ttf", 400, false, 85984]],
+    "ofl/bahiana/OFL.txt"
+  ],
+  [
+    "Bahianita",
+    "display",
+    [["ofl/bahianita/Bahianita-Regular.ttf", 400, false, 142668]],
+    "ofl/bahianita/OFL.txt"
+  ],
+  [
+    "Bai Jamjuree",
+    "sans",
+    [
+      ["ofl/baijamjuree/BaiJamjuree-Bold.ttf", 700, false, 81840],
+      ["ofl/baijamjuree/BaiJamjuree-BoldItalic.ttf", 700, true, 87264],
+      ["ofl/baijamjuree/BaiJamjuree-ExtraLight.ttf", 200, false, 81880],
+      ["ofl/baijamjuree/BaiJamjuree-ExtraLightItalic.ttf", 200, true, 87492],
+      ["ofl/baijamjuree/BaiJamjuree-Italic.ttf", 400, true, 87608],
+      ["ofl/baijamjuree/BaiJamjuree-Light.ttf", 300, false, 82208],
+      ["ofl/baijamjuree/BaiJamjuree-LightItalic.ttf", 300, true, 87664],
+      ["ofl/baijamjuree/BaiJamjuree-Medium.ttf", 500, false, 82292],
+      ["ofl/baijamjuree/BaiJamjuree-MediumItalic.ttf", 500, true, 87888],
+      ["ofl/baijamjuree/BaiJamjuree-Regular.ttf", 400, false, 82112],
+      ["ofl/baijamjuree/BaiJamjuree-SemiBold.ttf", 600, false, 82316],
+      ["ofl/baijamjuree/BaiJamjuree-SemiBoldItalic.ttf", 600, true, 87760]
+    ],
+    "ofl/baijamjuree/OFL.txt"
+  ],
+  [
+    "Bakbak One",
+    "display",
+    [["ofl/bakbakone/BakbakOne-Regular.ttf", 400, false, 263136]],
+    "ofl/bakbakone/OFL.txt"
+  ],
+  [
+    "Ballet",
+    "handwriting",
+    [["ofl/ballet/Ballet[opsz].ttf", 400, false, 134000]],
+    "ofl/ballet/OFL.txt"
+  ],
+  [
+    "Baloo 2",
+    "display",
+    [["ofl/baloo2/Baloo2[wght].ttf", 400, false, 683200]],
+    "ofl/baloo2/OFL.txt"
+  ],
+  [
+    "Baloo Bhai 2",
+    "display",
+    [["ofl/baloobhai2/BalooBhai2[wght].ttf", 400, false, 710488]],
+    "ofl/baloobhai2/OFL.txt"
+  ],
+  [
+    "Baloo Bhaijaan 2",
+    "display",
+    [["ofl/baloobhaijaan2/BalooBhaijaan2[wght].ttf", 400, false, 285508]],
+    "ofl/baloobhaijaan2/OFL.txt"
+  ],
+  [
+    "Baloo Bhaina 2",
+    "display",
+    [["ofl/baloobhaina2/BalooBhaina2[wght].ttf", 400, false, 473060]],
+    "ofl/baloobhaina2/OFL.txt"
+  ],
+  [
+    "Baloo Chettan 2",
+    "display",
+    [["ofl/baloochettan2/BalooChettan2[wght].ttf", 400, false, 339860]],
+    "ofl/baloochettan2/OFL.txt"
+  ],
+  [
+    "Baloo Da 2",
+    "display",
+    [["ofl/balooda2/BalooDa2[wght].ttf", 400, false, 451504]],
+    "ofl/balooda2/OFL.txt"
+  ],
+  [
+    "Baloo Paaji 2",
+    "display",
+    [["ofl/baloopaaji2/BalooPaaji2[wght].ttf", 400, false, 243180]],
+    "ofl/baloopaaji2/OFL.txt"
+  ],
+  [
+    "Baloo Tamma 2",
+    "display",
+    [["ofl/balootamma2/BalooTamma2[wght].ttf", 400, false, 475932]],
+    "ofl/balootamma2/OFL.txt"
+  ]
+]

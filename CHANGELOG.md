@@ -46,6 +46,9 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
+- Plain rectangle/ellipse runs use one retained Three.js InstancedMesh and the shared TSL shape graph, preserving alpha, rotation, radius, stroke, order and isolated groups without per-primitive source targets or materials. A bounded shared buffer grows to 16,384 instances and is charged before allocation; complex compositing retains its isolated path.
+- Selection reveals reuse cached layer-viewport metrics, while small selections resolve through the immutable geometry index. Closed spotlights reuse prepared catalog rows and command gates without scoring document results; closed named-font pickers avoid full-catalog and installed-font reads. Visible thumbnail CPU preparation shares cancellable idle slots and yields to pending input or insufficient budget.
+
 - Opacity and blending now belong above Layers, with disabled empty-selection controls, explicit mixed values and one atomic committed edit for multiple layers. Footer icons add effects and corrections; grouping and ungrouping use one context-menu action, and layer ordering uses drag and drop.
 - Alignment chooses the common group, selection bounds or artboard automatically. Numeric fields display at most two decimals while preserving untouched document precision; Design/Animate tabs and layer rows use neutral active states.
 
@@ -64,8 +67,12 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
-- Canvas picking skips attached mask sources and their hidden subtrees, so visible masked artwork receives the click; masks remain directly selectable and editable in the layers panel.
+- Validated queued image exports against their original page, revision and selection at execution time, preventing a delayed adapter from exporting a replacement document.
+- Canvas picking and marquee selection skip attached mask sources and their hidden subtrees, so visible masked artwork receives the click; marquee also reads current committed opacity rather than a cached paint snapshot. Masks remain directly selectable and editable in the layers panel.
 
+- Bounded retained original-image identity strings by bytes as well as count, while weak per-object identities keep large live images stable without pinning unloaded originals.
+- Kept enlarged export previews inside their scroll viewport instead of expanding the settings grid and clipping the final export action.
+- Rejected interior gaps in stored replay sequences even when corrupted counts match the remaining rows, and validated history preferences before applying only their allowed fields.
 - Enforced mask dependency depth independently of layer ordering and protected cached geometry from shallow-frozen documents and external mutations of matrices, bounds, child lists or lookup maps.
 - Deferred layer menu operations retain the invoking selection and reject changed document/selection scopes instead of retargeting a later selection.
 - Blend selectors preview hovered and keyboard-focused modes without changing the document, restore on cancellation and commit one selected choice. Shared Select chevrons animate their Radix open state and honor reduced-motion preferences.
@@ -105,6 +112,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Verification
 
+- A native 10,000-primitive fixture reached its first retained frame in 4.427 seconds on headless Chromium 156/Linux/WebGPU: one instanced draw, three composition passes, two additional document targets, 1,966,220 bytes of shared instance data, and zero added image uploads or production pixel readbacks. Mixed rotated/stroked translucent shapes had identical interior pixels to the isolated path and identical decoded WebGPU/WebGL output; the mean difference from the previous rasterized edges was 0.46 byte values. Reports and the genuine canvas capture are in ignored `artifacts/primitives-*` files.
 - Deterministic rules reject tests under `src/`, missing mirrored tests, files over 600 lines, invalid core dependencies, native WebGPU engine code and production GPU readbacks.
 - Coverage includes all executable sources with an 85% minimum for every metric and an independent core threshold. Oxlint type-aware checks, React Hooks checks and Oxfmt are part of the gate.
 - Real browser tests compare GPU and fallback pixels, alpha, effects, masks, guides, live previews, exports, project management and video decoding.

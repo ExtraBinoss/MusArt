@@ -1,0 +1,176 @@
+[
+  [
+    "IBM Plex Sans Thai",
+    "sans",
+    [
+      ["ofl/ibmplexsansthai/IBMPlexSansThai-Bold.ttf", 700, false, 116552],
+      ["ofl/ibmplexsansthai/IBMPlexSansThai-ExtraLight.ttf", 200, false, 119896],
+      ["ofl/ibmplexsansthai/IBMPlexSansThai-Light.ttf", 300, false, 118380],
+      ["ofl/ibmplexsansthai/IBMPlexSansThai-Medium.ttf", 500, false, 116304],
+      ["ofl/ibmplexsansthai/IBMPlexSansThai-Regular.ttf", 400, false, 116004],
+      ["ofl/ibmplexsansthai/IBMPlexSansThai-SemiBold.ttf", 600, false, 116484],
+      ["ofl/ibmplexsansthai/IBMPlexSansThai-Thin.ttf", 100, false, 120904]
+    ],
+    "ofl/ibmplexsansthai/OFL.txt"
+  ],
+  [
+    "IBM Plex Sans Thai Looped",
+    "sans",
+    [
+      ["ofl/ibmplexsansthailooped/IBMPlexSansThaiLooped-Bold.ttf", 700, false, 124580],
+      ["ofl/ibmplexsansthailooped/IBMPlexSansThaiLooped-ExtraLight.ttf", 200, false, 128488],
+      ["ofl/ibmplexsansthailooped/IBMPlexSansThaiLooped-Light.ttf", 300, false, 126688],
+      ["ofl/ibmplexsansthailooped/IBMPlexSansThaiLooped-Medium.ttf", 500, false, 124476],
+      ["ofl/ibmplexsansthailooped/IBMPlexSansThaiLooped-Regular.ttf", 400, false, 125080],
+      ["ofl/ibmplexsansthailooped/IBMPlexSansThaiLooped-SemiBold.ttf", 600, false, 124760],
+      ["ofl/ibmplexsansthailooped/IBMPlexSansThaiLooped-Thin.ttf", 100, false, 129256]
+    ],
+    "ofl/ibmplexsansthailooped/OFL.txt"
+  ],
+  [
+    "IBM Plex Serif",
+    "serif",
+    [
+      ["ofl/ibmplexserif/IBMPlexSerif-Bold.ttf", 700, false, 163800],
+      ["ofl/ibmplexserif/IBMPlexSerif-BoldItalic.ttf", 700, true, 173032],
+      ["ofl/ibmplexserif/IBMPlexSerif-ExtraLight.ttf", 200, false, 163956],
+      ["ofl/ibmplexserif/IBMPlexSerif-ExtraLightItalic.ttf", 200, true, 172260],
+      ["ofl/ibmplexserif/IBMPlexSerif-Italic.ttf", 400, true, 173004],
+      ["ofl/ibmplexserif/IBMPlexSerif-Light.ttf", 300, false, 162748],
+      ["ofl/ibmplexserif/IBMPlexSerif-LightItalic.ttf", 300, true, 171364],
+      ["ofl/ibmplexserif/IBMPlexSerif-Medium.ttf", 500, false, 164104],
+      ["ofl/ibmplexserif/IBMPlexSerif-MediumItalic.ttf", 500, true, 173212],
+      ["ofl/ibmplexserif/IBMPlexSerif-Regular.ttf", 400, false, 163068],
+      ["ofl/ibmplexserif/IBMPlexSerif-SemiBold.ttf", 600, false, 164528],
+      ["ofl/ibmplexserif/IBMPlexSerif-SemiBoldItalic.ttf", 600, true, 173748],
+      ["ofl/ibmplexserif/IBMPlexSerif-Thin.ttf", 100, false, 161232],
+      ["ofl/ibmplexserif/IBMPlexSerif-ThinItalic.ttf", 100, true, 168660]
+    ],
+    "ofl/ibmplexserif/OFL.txt"
+  ],
+  [
+    "IM Fell DW Pica",
+    "serif",
+    [
+      ["ofl/imfelldwpica/IMFePIit28P.ttf", 400, false, 244584],
+      ["ofl/imfelldwpica/IMFePIrm28P.ttf", 400, false, 216968]
+    ],
+    "ofl/imfelldwpica/OFL.txt"
+  ],
+  [
+    "IM Fell DW Pica SC",
+    "serif",
+    [["ofl/imfelldwpicasc/IMFePIsc28P.ttf", 400, false, 198012]],
+    "ofl/imfelldwpicasc/OFL.txt"
+  ],
+  [
+    "IM Fell Double Pica",
+    "serif",
+    [
+      ["ofl/imfelldoublepica/IMFELLDoublePica-Italic.ttf", 400, true, 255092],
+      ["ofl/imfelldoublepica/IMFELLDoublePica-Regular.ttf", 400, false, 210736]
+    ],
+    "ofl/imfelldoublepica/OFL.txt"
+  ],
+  [
+    "IM Fell Double Pica SC",
+    "serif",
+    [["ofl/imfelldoublepicasc/IMFeDPsc28P.ttf", 400, false, 197012]],
+    "ofl/imfelldoublepicasc/OFL.txt"
+  ],
+  [
+    "IM Fell English",
+    "serif",
+    [
+      ["ofl/imfellenglish/IMFeENit28P.ttf", 400, false, 202368],
+      ["ofl/imfellenglish/IMFeENrm28P.ttf", 400, false, 194992]
+    ],
+    "ofl/imfellenglish/OFL.txt"
+  ],
+  [
+    "IM Fell English SC",
+    "serif",
+    [["ofl/imfellenglishsc/IMFeENsc28P.ttf", 400, false, 183932]],
+    "ofl/imfellenglishsc/OFL.txt"
+  ],
+  [
+    "IM Fell French Canon",
+    "serif",
+    [
+      ["ofl/imfellfrenchcanon/IMFeFCit28P.ttf", 400, false, 158184],
+      ["ofl/imfellfrenchcanon/IMFeFCrm28P.ttf", 400, false, 145832]
+    ],
+    "ofl/imfellfrenchcanon/OFL.txt"
+  ],
+  [
+    "IM Fell French Canon SC",
+    "serif",
+    [["ofl/imfellfrenchcanonsc/IMFeFCsc28P.ttf", 400, false, 136188]],
+    "ofl/imfellfrenchcanonsc/OFL.txt"
+  ],
+  [
+    "IM Fell Great Primer",
+    "serif",
+    [
+      ["ofl/imfellgreatprimer/IMFeGPit28P.ttf", 400, false, 249324],
+      ["ofl/imfellgreatprimer/IMFeGPrm28P.ttf", 400, false, 216552]
+    ],
+    "ofl/imfellgreatprimer/OFL.txt"
+  ],
+  [
+    "IM Fell Great Primer SC",
+    "serif",
+    [["ofl/imfellgreatprimersc/IMFeGPsc28P.ttf", 400, false, 203776]],
+    "ofl/imfellgreatprimersc/OFL.txt"
+  ],
+  [
+    "Iansui",
+    "handwriting",
+    [["ofl/iansui/Iansui-Regular.ttf", 400, false, 9420560]],
+    "ofl/iansui/OFL.txt"
+  ],
+  [
+    "Ibarra Real Nova",
+    "serif",
+    [
+      ["ofl/ibarrarealnova/IbarraRealNova-Italic[wght].ttf", 400, true, 120264],
+      ["ofl/ibarrarealnova/IbarraRealNova[wght].ttf", 400, false, 114164]
+    ],
+    "ofl/ibarrarealnova/OFL.txt"
+  ],
+  [
+    "Iceberg",
+    "display",
+    [["ofl/iceberg/Iceberg-Regular.ttf", 400, false, 42808]],
+    "ofl/iceberg/OFL.txt"
+  ],
+  [
+    "Iceland",
+    "display",
+    [["ofl/iceland/Iceland-Regular.ttf", 400, false, 47632]],
+    "ofl/iceland/OFL.txt"
+  ],
+  [
+    "Idiqlat",
+    "serif",
+    [
+      ["ofl/idiqlat/Idiqlat-ExtraLight.ttf", 200, false, 80500],
+      ["ofl/idiqlat/Idiqlat-Light.ttf", 300, false, 80932],
+      ["ofl/idiqlat/Idiqlat-Regular.ttf", 400, false, 81504]
+    ],
+    "ofl/idiqlat/OFL.txt"
+  ],
+  ["Imbue", "serif", [["ofl/imbue/Imbue[opsz,wght].ttf", 400, false, 220012]], "ofl/imbue/OFL.txt"],
+  [
+    "Imperial Script",
+    "handwriting",
+    [["ofl/imperialscript/ImperialScript-Regular.ttf", 400, false, 154824]],
+    "ofl/imperialscript/OFL.txt"
+  ],
+  [
+    "Imprima",
+    "sans",
+    [["ofl/imprima/Imprima-Regular.ttf", 400, false, 55692]],
+    "ofl/imprima/OFL.txt"
+  ]
+]
