@@ -1,0 +1,33 @@
+{
+  "plugins": ["typescript", "unicorn", "oxc"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "typescript/no-explicit-any": "error",
+    "typescript/ban-ts-comment": "error",
+    "eslint/eqeqeq": ["error", "smart"],
+    "eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "ignoreRestSiblings": true
+      }
+    ],
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": "error"
+  },
+  "ignorePatterns": ["**/node_modules/**", "**/dist/**", "coverage/**", "artifacts/**"],
+  "options": {
+    "typeAware": true,
+    "maxWarnings": 0
+  },
+  "overrides": [
+    {
+      "files": ["**/test/**", "test/**"],
+      "rules": {
+        "typescript/unbound-method": "off"
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "noEmit": true,
+    "types": ["vite/client", "vitest/globals", "node", "bun", "@webgpu/types"],
+    "paths": {
+      "@/*": ["./apps/web/src/*"],
+      "@musart/core": ["./packages/core/src/index.ts"],
+      "@musart/render": ["./packages/render/src/index.ts"]
+    }
+  },
+  "include": ["apps", "packages", "scripts", "test", "*.ts"],
+  "exclude": ["node_modules", "dist", "coverage", "artifacts"]
+}

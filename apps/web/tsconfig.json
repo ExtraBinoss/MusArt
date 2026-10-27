@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "@musart/core": ["../../packages/core/src/index.ts"],
+      "@musart/render": ["../../packages/render/src/index.ts"]
+    }
+  },
+  "include": ["src", "test"]
+}
