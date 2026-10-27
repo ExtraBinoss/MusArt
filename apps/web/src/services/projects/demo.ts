@@ -1,0 +1,125 @@
+import { createLayer, createPage, createProject, type Asset } from "@musart/core";
+/** Original vector artwork, embedded locally; every surrounding element remains editable. */
+export function createDemoProject() {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="960" viewBox="0 0 960 960"><defs><radialGradient id="orb" cx="32%" cy="24%" r="79%"><stop stop-color="#e3f4ff"/><stop offset=".22" stop-color="#a1bfff"/><stop offset=".5" stop-color="#466dff"/><stop offset=".75" stop-color="#243bdd"/><stop offset="1" stop-color="#0c1555"/></radialGradient><radialGradient id="light" cx="35%" cy="30%"><stop stop-color="#ffdfb6"/><stop offset=".5" stop-color="#ffb58a"/><stop offset="1" stop-color="#cf613a"/></radialGradient></defs><circle cx="480" cy="480" r="450" fill="url(#orb)"/><ellipse cx="482" cy="480" rx="452" ry="105" fill="none" stroke="#e4ecff" stroke-opacity=".55" stroke-width="2" transform="rotate(-31 480 480)"/><circle cx="705" cy="182" r="97" fill="url(#light)"/></svg>`;
+  const asset: Asset = {
+    id: "demo-orb",
+    name: "Orbite.svg",
+    mime: "image/svg+xml",
+    width: 960,
+    height: 960,
+    dataUrl: `data:image/svg+xml;base64,${btoa(svg)}`,
+  };
+  const page = createPage({
+    id: "demo-poster",
+    name: "01 — Orbite",
+    width: 1080,
+    height: 1350,
+    background: "#f1eee7",
+    layers: [
+      createLayer("text", {
+        name: "Édition",
+        text: "MUSART STUDIO     /     EXPLORATIONS VISUELLES",
+        x: 74,
+        y: 62,
+        width: 940,
+        height: 30,
+        fontSize: 17,
+        fontWeight: 500,
+        letterSpacing: 2,
+        fill: "#34383d",
+      }),
+      createLayer("image", {
+        name: "Orbite",
+        assetId: asset.id,
+        x: 144,
+        y: 235,
+        width: 890,
+        height: 890,
+      }),
+      createLayer("text", {
+        name: "Titre",
+        text: "Au-delà\ndu cadre.",
+        x: 67,
+        y: 133,
+        width: 950,
+        height: 280,
+        fontFamily: "Space Grotesk",
+        fontSize: 138,
+        fontWeight: 600,
+        lineHeight: 0.95,
+        letterSpacing: -7,
+        fill: "#202328",
+      }),
+      createLayer("rectangle", {
+        name: "Ligne",
+        x: 76,
+        y: 1190,
+        width: 930,
+        height: 2,
+        fill: "#30343a",
+      }),
+      createLayer("text", {
+        name: "Note",
+        text: "Un espace pour vos idées.\nSans limites, sans nuage.",
+        x: 76,
+        y: 1216,
+        width: 680,
+        height: 65,
+        fontSize: 22,
+        lineHeight: 1.4,
+        fill: "#43474e",
+      }),
+      createLayer("text", {
+        name: "Numéro",
+        text: "001",
+        x: 890,
+        y: 1212,
+        width: 120,
+        height: 65,
+        fontFamily: "Space Grotesk",
+        fontSize: 42,
+        fontWeight: 500,
+        fill: "#202328",
+        textAlign: "right",
+      }),
+    ],
+  });
+  const study = createPage({
+    name: "02 — Étude",
+    width: 1080,
+    height: 1080,
+    background: "#15286e",
+    layers: [
+      createLayer("ellipse", {
+        name: "Soleil",
+        x: 250,
+        y: 210,
+        width: 580,
+        height: 580,
+        fill: "#f5b98c",
+      }),
+      createLayer("text", {
+        name: "Texte",
+        text: "Et si ?",
+        x: 140,
+        y: 765,
+        width: 800,
+        height: 180,
+        fontFamily: "Space Grotesk",
+        fontSize: 130,
+        fontWeight: 500,
+        fill: "#f1eee7",
+        textAlign: "center",
+      }),
+    ],
+  });
+  const now = new Date().toISOString();
+  return createProject({
+    name: "Explorations — Vol. 01",
+    createdAt: now,
+    updatedAt: now,
+    pages: [page, study],
+    assets: { [asset.id]: asset },
+  });
+}
