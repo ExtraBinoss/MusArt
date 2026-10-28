@@ -111,6 +111,22 @@
   height: 100%;
   object-fit: cover;
 }
+.layer-thumbnail img[data-thumbnail-reveal="true"] {
+  animation: layer-thumbnail-reveal 100ms ease-out both;
+}
+@keyframes layer-thumbnail-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .layer-thumbnail img[data-thumbnail-reveal="true"] {
+    animation: none;
+  }
+}
 .layer-name {
   font-size: 11px;
   text-overflow: ellipsis;
@@ -266,11 +282,20 @@
   background: color-mix(in srgb, var(--foreground) 12%, var(--background));
   z-index: 5;
 }
-.layer-row[draggable="true"] {
-  cursor: grab;
-}
 .layer-row[data-dragging="true"] {
   cursor: grabbing;
+}
+.layer-chevron-icon {
+  transition: transform 160ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  transform: rotate(0deg);
+}
+.layer-chevron-icon[data-expanded="true"] {
+  transform: rotate(90deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .layer-chevron-icon {
+    transition: none !important;
+  }
 }
 
 .layer-compositing {
@@ -447,8 +472,15 @@
   opacity: 1;
 }
 .layer-attachment-popover[data-slot="popover-content"] {
+  --effect-control-height: 34px;
+  --attachment-available-height: min(
+    600px,
+    calc(100dvh - 32px),
+    var(--radix-popover-content-available-height, calc(100dvh - 32px))
+  );
   width: 300px;
-  max-height: min(600px, 75dvh);
+  max-width: calc(100dvw - 24px);
+  max-height: var(--attachment-available-height);
   overflow: hidden;
   padding: 0;
 }
@@ -490,10 +522,10 @@
 .effect-select-field > button {
   width: 58%;
   min-width: 0;
-  height: 30px;
+  height: var(--effect-control-height, 34px);
 }
 .effect-color-field > button {
-  height: 28px;
+  height: var(--effect-control-height, 34px);
   gap: 6px;
   font-size: 10px;
   color: var(--foreground);
@@ -518,19 +550,25 @@
   gap: 6px;
   margin: 10px 0;
 }
-.effect-compositing [data-slot="select-trigger"] {
+.layer-attachment-popover .effect-compositing [data-slot="select-trigger"] {
   width: 100%;
   min-width: 0;
-  height: 30px;
+  height: var(--effect-control-height);
+  padding-block: 0;
+}
+.effect-compositing .number-field {
+  height: var(--effect-control-height, 34px);
 }
 
 .layer-attachment-scroll {
-  max-height: min(600px, 75dvh);
+  max-height: calc(var(--attachment-available-height) - 2px);
 }
 .layer-attachment-viewport {
   max-height: inherit;
   padding: 14px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .layer-tree-scroll {

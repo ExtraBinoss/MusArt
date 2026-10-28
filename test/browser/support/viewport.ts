@@ -15,11 +15,14 @@ export async function zoomViewport(page: Page, target: number) {
   await expect(artboard).toHaveAttribute("data-view-moving", "false");
   const zoom = Number(await artboard.getAttribute("data-zoom"));
   let remaining = -Math.log(target / zoom) / WHEEL_ZOOM_GAIN;
+  const dpr = await page.evaluate(() => devicePixelRatio);
   await page.keyboard.down("Control");
   try {
     while (Math.abs(remaining) > 1e-7) {
       const delta = Math.sign(remaining) * Math.min(Math.abs(remaining), MAX_WHEEL_ZOOM_PIXELS);
-      await page.mouse.wheel(0, delta);
+      // Chromium CDP normalizes driver deltas by deviceScaleFactor. Scale only
+      // synthetic driver input so app handlers receive the requested CSS delta.
+      await page.mouse.wheel(0, delta * dpr);
       remaining -= delta;
     }
   } finally {

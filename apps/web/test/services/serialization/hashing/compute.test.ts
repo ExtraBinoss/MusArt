@@ -41,7 +41,7 @@ test("thumbnail metadata and digest retain the exact portable paint schema", asy
     ...paint
   } = layer;
   const expected = {
-    version: "gpu-webp-768-88-v1",
+    version: "gpu-webp-768-88-v3",
     width: page.width,
     height: page.height,
     background: page.background,
@@ -57,6 +57,15 @@ test("thumbnail metadata and digest retain the exact portable paint schema", asy
   expect(await computeCanonicalHash(job)).toBe(
     [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join(""),
   );
+  for (const version of ["gpu-webp-768-88-v1", "gpu-webp-768-88-v2"]) {
+    const previous = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(canonicalJson({ ...expected, version })),
+    );
+    expect(await computeCanonicalHash(job)).not.toBe(
+      [...new Uint8Array(previous)].map((byte) => byte.toString(16).padStart(2, "0")).join(""),
+    );
+  }
   expect(await computeCanonicalHash({ ...job, page: { ...page, background: "#ff0000" } })).not.toBe(
     await computeCanonicalHash(job),
   );

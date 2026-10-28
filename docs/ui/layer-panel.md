@@ -13,6 +13,23 @@ The layer list owns compositing controls, effect and mask entry points. Geometry
 
 The list is a project tree: every artboard is a collapsible root, followed by its own canonical layers and attachments. All roots share one virtual viewport. Activating or adding an artboard preserves that viewport and its native scroll position; selecting an inactive layer activates its artboard through the existing engine page port. Background previews name their target page explicitly and never activate an artboard just to render it. Layer drags remain scoped to their captured artboard; a different artboard is not an implicit cross-page move command.
 
+Effect popovers expose the renderer's actual controls through the typed catalogue:
+enabled state, opacity, blend mode, optional alpha composition and all applicable
+effect parameters. Dither and Grain include their deterministic seeds; Gradient
+exposes its complete style/treatment settings and shows colored output and levels
+only for treatments which consume those values. Pixel scales and quantization use
+the full validated ranges. Fine chromatic displacement is displayed in per mille
+so the shared numeric field can edit thousandth-unit document values precisely.
+Opacity and blend controls share a 34-pixel height. Long popovers use one bounded
+scroll viewport, constrained by Radix's available space and the browser viewport.
+Their previews remain imperative and completed gestures still commit once.
+
+Overlay autofocus keeps normal keyboard focus and accessible button names without
+opening tooltip labels. Tooltips appear on deliberate pointer hover; merely opening
+an effect, mask, export or color popover does not request them. Static labels close
+when the pointer leaves their trigger; the provider's explicit hoverable-content
+option remains available for a future interactive tooltip.
+
 Dragging onto a target layer's thumbnail creates an editable GPU layer mask, following the [current Affinity Photo 2 masking reference](https://affinity.help/photo2/fr.lproj/pages/Layers/LayerMasks.html). The thumbnail hit region includes a small horizontal tolerance while retaining insertion at row edges. Dropping elsewhere inserts above/below or inside a group; Alt remains an optional mask shortcut. Shape/vector clipping uses alpha coverage, so a blue rectangle clips as fully as an opaque white rectangle. Luminance remains an explicit mask mode for white-reveals/black-conceals raster workflows. The mask source remains canonical editable content, not a rasterized replacement.
 
 The accepted insertion/mask cue is translated and portaled above scroll clipping and Motion stacking contexts. Native drag sources remain mounted in canonical DOM order while only their displayed positions change. Hover changes no document state; a valid completed drop commits one command, an identical existing attachment creates no undo entry, and stale/locked/cyclic targets remain rejected. Mask controls expose inversion, enable/disable, mode and removal, with direct navigation to an editable linked source. A genuine isolated mask view requires a renderer presentation mode; document visibility edits or CSS previews must not impersonate it.
@@ -47,7 +64,7 @@ Mirrored unit tests cover mixed compositing, immutable previews, single undo, ca
 
 The layer window caches dimensions from resize/scroll notifications. Revealing an already-visible selected row performs no new layout reads; scrolling an offscreen selection still uses the browser's real scroll position. The application resolves selected IDs through the immutable geometry index instead of filtering every layer.
 
-Visible thumbnail preparation shares one idle callback, runs one job per slot, and waits when fewer than four milliseconds remain or native input is pending. Leaving a viewport cancels an unstarted job and aborts a started request. Foreground export priority remains owned by the platform preview pipeline. No placeholder is described as a completed GPU preview.
+Mounted thumbnail cards share one lazy visibility observer with generation and subscription-time guards. Visible thumbnail preparation shares one user-visible task with at most four owned requests, allowing cached rows to complete without waiting behind a cold render or another idle callback. Leaving a viewport cancels an unstarted job and aborts a started request. The platform preview pipeline serializes actual GPU work and pauses it during held pointers, live wheel bursts and queued native input. Visible rows resume 100 ms after the final wheel packet, bypassing the separate 600 ms background quiet period; canvas, layer-list and explicit-export work retain the same safety boundary; explicit export retains higher priority. The blob LRU retains up to 512 results within the existing 8 MiB budget. No placeholder is described as a completed GPU preview.
 
 The closed spotlight retains static command labels and shortcuts, updating only the availability needed by dock controls. It does not build document rows, normalize search terms or score results. Opening prepares the document catalog lazily; subsequent openings reuse it while its labels and ordering remain current. Project snapshots are held weakly so a closed search cannot retain removed original assets. App, layer menus, compositing controls and command availability share one immutable selection analysis; mutable inputs remain uncached. Closed font pickers use direct named-family labels, requesting installed metadata only when a persisted custom/local ID needs its readable label. The browser-wide metadata cache invalidates on library updates and refreshes when the picker opens.
 
@@ -66,5 +83,33 @@ Paint interning retains at most 1,024 signatures within 1 MiB. Original-image co
 In the frozen production build, a local headless Chromium session at 1600 × 1000 and DPR 1 scrolled the 150-layer AFTERHOURS fixture through twelve native wheel inputs (420 pixels). The traced diagnostic retained 17 layer rows, committed the Layers panel twice and recorded no App, Inspector, CanvasArea or EditorCanvas commits. Its frame gaps had a 16.7 ms median and p95, with one 33.4 ms maximum and no long tasks. A separate untraced functional run recorded a 16.7 ms median and a 16.8 ms p95/maximum. These measurements cover this interaction and fixture; they do not establish a universal result for every document or scene.
 
 The traced input window contained 14 style updates totaling 8.6 ms. CPU samples concentrated in native DOM removal during a virtual-window change rather than document traversal, rendering or preview preparation. Raw profiles, Blink invalidation traces and browser-clock windows remain under ignored `artifacts/layer-scroll-production*`.
+
+The heading menu, compositing controls and effect/adjustment buttons are memoized on
+their actual engine, page, selection and action inputs. Advancing the virtual row window
+does not rebuild these unchanged controls. Their own attachment and translation
+subscriptions remain live, and page/selection/handler changes still rebind controls and
+cancel stale drafts. Attachment-disabled compositing uses one private frozen empty
+selection rather than allocating a new array during every scroll update. In automation
+mode the existing DOM roots/buttons expose actual React commit counters, alongside the
+unchanged panel and canvas counters, so native checks can verify this boundary.
+
+Chevron toggles animate the bounded mounted row window through Motion. Exiting rows
+remain inert for the short transition; expansion never mounts an entire large group.
+Positions, opacity and row/window height animate without React updates per frame.
+Ordinary virtual scrolling and native drag start cancel these animations immediately;
+stable keys preserve real row identity and the drag source. Reduced motion and platforms
+without native element animation use immediate projection. One chevron glyph rotates
+instead of being replaced. Rows use the default arrow cursor, with grabbing reserved
+for the active native drag source and removed by normal drop/cancellation cleanup.
+
+Native drag feedback snapshots only the real decoded thumbnail (or its truthful type
+icon) and layer name on a transparent surface. It excludes row backgrounds, attachment
+cards and action buttons so drop targets remain visible. The original source stays in
+place, thumbnail reveal animations are disabled in the snapshot, and the drag owner
+removes the temporary node on every completion, cancellation or disposal path.
+The native drag image contains only the existing decoded thumbnail and layer name on
+a transparent background. A pending image uses the faithful layer-kind icon. The
+feedback DOM is separate from the retained source row and is explicitly removed on
+drop, cancellation, invalidation or unmount; it never includes row controls or attachments.
 
 A six-layer native fixture observed one new 96-pixel browser encoding and one preview request after editing one layer; the other five preview URLs remained unchanged. A project rename produced no new layer preview requests. Repeated solid/gradient saturation, hue, alpha and hexadecimal edits, including switching targets during a held gesture, produced no maximum-depth or cleanup errors in the tested development/StrictMode and production paths. The previously reported intermittent maximum-depth error was not reproduced by these scenarios; its exact original trigger remains unconfirmed.

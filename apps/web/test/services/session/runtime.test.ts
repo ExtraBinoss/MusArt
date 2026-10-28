@@ -28,6 +28,84 @@ afterEach(() => {
   vi.useRealTimers();
   history.replaceState(null, "", "/");
 });
+it("requeues thumbnails after a successful current canonical save and ignores a superseded save", async () => {
+  const store = new ProjectStore(crypto.randomUUID()),
+    renderer = new ThumbnailRenderer(async () => {
+      throw Error("Unexpected GPU");
+    }),
+    thumbnails = new ThumbnailPipeline(store, { renderer }),
+    schedule = vi.spyOn(thumbnails, "schedule"),
+    runtime = await createRuntime(vi.fn(), {
+      store,
+      thumbnails,
+      project: createProject(),
+      selection: selection(),
+      autosaveDelay: 10000,
+    });
+  try {
+    runtime.engine.execute({ type: "renameProject", name: "Saved current" });
+    schedule.mockClear();
+    await runtime.flush();
+    expect(schedule).toHaveBeenCalledExactlyOnceWith(runtime.engine.getSnapshot().project);
+    let release!: () => void, started!: () => void;
+    const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      }),
+      ready = new Promise<void>((resolve) => {
+        started = resolve;
+      });
+    vi.spyOn(store, "saveCurrent").mockImplementationOnce(async () => {
+      started();
+      await gate;
+    });
+    runtime.engine.execute({ type: "renameProject", name: "First awaiting save" });
+    const pending = runtime.flush();
+    await ready;
+    runtime.engine.execute({ type: "renameProject", name: "New canonical" });
+    schedule.mockClear();
+    release();
+    await pending;
+    expect(schedule).not.toHaveBeenCalled();
+    await runtime.flush();
+    expect(schedule).toHaveBeenCalledExactlyOnceWith(runtime.engine.getSnapshot().project);
+  } finally {
+    await runtime.dispose();
+  }
+});
+it("a save completing during disposal cannot restart disposed thumbnail work", async () => {
+  const store = new ProjectStore(crypto.randomUUID()),
+    renderer = new ThumbnailRenderer(async () => {
+      throw Error("Unexpected GPU");
+    }),
+    thumbnails = new ThumbnailPipeline(store, { renderer }),
+    schedule = vi.spyOn(thumbnails, "schedule"),
+    runtime = await createRuntime(vi.fn(), {
+      store,
+      thumbnails,
+      project: createProject(),
+      selection: selection(),
+      autosaveDelay: 10000,
+    });
+  let release!: () => void, started!: () => void;
+  const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    }),
+    ready = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+  vi.spyOn(store, "saveCurrent").mockImplementationOnce(async () => {
+    started();
+    await gate;
+  });
+  runtime.engine.execute({ type: "renameProject", name: "Pending at close" });
+  const pending = runtime.flush();
+  await ready;
+  const closing = runtime.dispose();
+  schedule.mockClear();
+  release();
+  await Promise.all([pending, closing]);
+  expect(schedule).not.toHaveBeenCalled();
+});
 describe("editor platform lifecycle", () => {
   it("restores the last local project and flushes document changes on pagehide and disposal", async () => {
     const store = new ProjectStore(crypto.randomUUID());

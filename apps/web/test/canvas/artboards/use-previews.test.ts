@@ -198,3 +198,58 @@ it("retains available artwork while a changed visibility batch loads or fails, t
   }
   expect(next.release).toHaveBeenCalledOnce();
 });
+
+it("retains each visible page through partial and empty revision refreshes without leaking superseded leases", async () => {
+  vi.stubGlobal("IntersectionObserver", undefined);
+  const d = fixture();
+  const lease = (...pages: [string, string][]): ProjectThumbnailLease => ({
+    items: pages.map(([pageId, url]) => ({ pageId, url, revision: url, width: 100, height: 80 })),
+    release: vi.fn(),
+  });
+  const first = lease(["a", "blob:a-old"], ["b", "blob:b-old"]),
+    nextA = lease(["a", "blob:a-new"]),
+    empty = lease(),
+    nextB = lease(["b", "blob:b-new"]);
+  d.services.loadProjectThumbnails
+    .mockResolvedValueOnce(first)
+    .mockResolvedValueOnce(nextA)
+    .mockResolvedValueOnce(empty)
+    .mockResolvedValueOnce(nextB)
+    .mockImplementation(() => new Promise(() => {}));
+  const view = renderHook(({ ids }) => useArtboardPreviews(d.root, "p", ids, d.services), {
+    initialProps: { ids: ["a", "b"] },
+  });
+  await waitFor(() => expect(view.result.current.items).toBe(first.items));
+  vi.useFakeTimers();
+  const refresh = async () => {
+    act(() => d.notify("p"));
+    await act(async () => vi.advanceTimersByTimeAsync(50));
+  };
+  await refresh();
+  expect(view.result.current.items.map((item) => item.url).sort()).toEqual([
+    "blob:a-new",
+    "blob:b-old",
+  ]);
+  expect(first.release).not.toHaveBeenCalled();
+  await refresh();
+  expect(view.result.current.items.map((item) => item.url).sort()).toEqual([
+    "blob:a-new",
+    "blob:b-old",
+  ]);
+  expect(empty.release).toHaveBeenCalledOnce();
+  expect(first.release).not.toHaveBeenCalled();
+  await refresh();
+  expect(view.result.current.items.map((item) => item.url).sort()).toEqual([
+    "blob:a-new",
+    "blob:b-new",
+  ]);
+  expect(first.release).toHaveBeenCalledOnce();
+  expect(nextA.release).not.toHaveBeenCalled();
+  view.rerender({ ids: ["a"] });
+  expect(view.result.current.items.map((item) => item.url)).toEqual(["blob:a-new"]);
+  expect(nextB.release).toHaveBeenCalledOnce();
+  view.unmount();
+  expect(first.release).toHaveBeenCalledOnce();
+  expect(nextA.release).toHaveBeenCalledOnce();
+  expect(nextB.release).toHaveBeenCalledOnce();
+});

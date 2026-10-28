@@ -6,7 +6,7 @@ import type { ThumbnailRenderer } from "./renderer";
 
 export interface ThumbnailPreviewOptions {
   edge?: number;
-  priority?: "foreground" | "background";
+  priority?: "foreground" | "visible" | "background";
   signal?: AbortSignal;
   isCurrent?: () => boolean;
 }
@@ -32,13 +32,13 @@ const abortError = (message = "Preview is no longer current.") =>
   new DOMException(message, "AbortError");
 const isAbort = (error: unknown) => error instanceof DOMException && error.name === "AbortError";
 
-/** Low-priority, bounded blob previews borrowing the pipeline's existing renderer and activity. */
+/** Bounded previews borrow one retained renderer; visible rows precede optional background work. */
 export class ThumbnailPreviews {
   private readonly pending = new Map<string, Job>();
   private readonly jobs = new Map<string, Job>();
   private readonly cache = new Map<string, ThumbnailPreview>();
   private cacheBytes = 0;
-  private active: Promise<void> | null = null;
+  private readonly active = new Map<Job, Promise<void>>();
   private timer: ReturnType<typeof setTimeout> | undefined;
   private idle: number | undefined;
   private closed = false;
@@ -46,7 +46,10 @@ export class ThumbnailPreviews {
   private readonly stopActivity: () => void;
   constructor(
     private readonly renderer: Pick<ThumbnailRenderer, "render">,
-    private readonly activity: Pick<ActivityPort, "busy" | "subscribe" | "interacting">,
+    private readonly activity: Pick<
+      ActivityPort,
+      "busy" | "subscribe" | "interacting" | "visibleBusy"
+    >,
     private readonly foreground: (priority: boolean) => boolean = () => false,
     private readonly onIdle: () => void = () => {},
   ) {
@@ -132,18 +135,33 @@ export class ThumbnailPreviews {
   private isForeground(job: Job) {
     return [...job.consumers].some((consumer) => consumer.options.priority === "foreground");
   }
-  hasForeground(): boolean {
-    return [...this.jobs.values()].some((job) => this.isForeground(job));
+  private isUrgent(job: Job) {
+    return [...job.consumers].some(
+      (consumer) =>
+        consumer.options.priority === "foreground" || consumer.options.priority === "visible",
+    );
+  }
+  hasPriority(): boolean {
+    return [...this.jobs.values()].some((job) => this.isUrgent(job));
   }
   isActive(): boolean {
-    return Boolean(this.active);
+    return this.active.size > 0;
+  }
+  private canStart(job: Job) {
+    if (!this.active.size) return true;
+    const smallVisible = (candidate: Job) =>
+      candidate.edge === 96 && this.isUrgent(candidate) && !this.isForeground(candidate);
+    return this.active.size < 2 && smallVisible(job) && [...this.active.keys()].every(smallVisible);
   }
   private blocked(job: Job) {
-    const priority = this.isForeground(job);
-    return (
-      (priority ? (this.activity.interacting?.() ?? this.activity.busy()) : this.activity.busy()) ||
-      this.foreground(priority)
-    );
+    const priority = this.isUrgent(job);
+    const interacting = () => this.activity.interacting?.() ?? this.activity.busy();
+    const busy = priority
+      ? this.isForeground(job)
+        ? interacting()
+        : (this.activity.visibleBusy?.() ?? interacting())
+      : this.activity.busy();
+    return busy || this.foreground(priority);
   }
   private canRender(job: Job) {
     return this.current(job) && !this.blocked(job);
@@ -152,6 +170,7 @@ export class ThumbnailPreviews {
     const jobs = [...this.pending.values()];
     return (
       jobs.find((job) => this.isForeground(job) && !this.blocked(job)) ??
+      jobs.find((job) => this.isUrgent(job) && !this.blocked(job)) ??
       jobs.find((job) => !this.blocked(job))
     );
   }
@@ -165,7 +184,8 @@ export class ThumbnailPreviews {
   }
   wake(): void {
     this.cancelStart();
-    if (this.closed || this.active || !this.next()) return;
+    const next = this.next();
+    if (this.closed || !next || !this.canStart(next)) return;
     this.timer = setTimeout(() => {
       this.timer = undefined;
       const job = this.next();
@@ -174,27 +194,29 @@ export class ThumbnailPreviews {
         this.idle = undefined;
         const current = this.next();
         if (!current) return;
-        if (!this.isForeground(current) && !hasThumbnailBudget(deadline)) {
+        if (!this.isUrgent(current) && !hasThumbnailBudget(deadline)) {
           this.wake();
           return;
         }
         this.pump();
       };
-      if (!this.isForeground(job) && typeof globalThis.requestIdleCallback === "function")
+      if (!this.isUrgent(job) && typeof globalThis.requestIdleCallback === "function")
         this.idle = requestIdleCallback(run, { timeout: 1500 });
       else run();
     }, 0);
   }
   private pump() {
-    if (this.closed || this.active) return;
+    if (this.closed) return;
     const job = this.next();
-    if (!job) return;
+    if (!job || !this.canStart(job)) return;
     this.pending.delete(job.key);
-    this.active = this.render(job).finally(() => {
-      this.active = null;
+    const rendering = this.render(job).finally(() => {
+      this.active.delete(job);
       this.onIdle();
       this.wake();
     });
+    this.active.set(job, rendering);
+    this.wake();
   }
   private async render(job: Job) {
     try {
@@ -228,7 +250,7 @@ export class ThumbnailPreviews {
     if (bytes > 8 * 1024 * 1024) return;
     this.cache.set(key, value);
     this.cacheBytes += bytes;
-    while (this.cache.size > 64 || this.cacheBytes > 8 * 1024 * 1024) {
+    while (this.cache.size > 512 || this.cacheBytes > 8 * 1024 * 1024) {
       const oldest = this.cache.keys().next().value!,
         entry = this.cache.get(oldest)!;
       this.cache.delete(oldest);
@@ -238,7 +260,7 @@ export class ThumbnailPreviews {
   stats() {
     return {
       pending: this.pending.size,
-      active: Number(Boolean(this.active)),
+      active: this.active.size,
       cacheEntries: this.cache.size,
       cacheBytes: this.cacheBytes,
     };
@@ -253,7 +275,10 @@ export class ThumbnailPreviews {
     this.jobs.clear();
     this.cache.clear();
     this.cacheBytes = 0;
-    this.disposal = Promise.resolve(this.active).then(() => undefined);
+    this.disposal = Promise.allSettled(this.active.values()).then((results) => {
+      const failure = results.find((result) => result.status === "rejected");
+      if (failure) throw failure.reason;
+    });
     return this.disposal;
   }
 }

@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { expect, test, vi } from "vitest";
 import { fireEvent, screen } from "@testing-library/react";
-import { createEffect, getEffectDefinition, GRADIENT_PRESETS } from "@musart/core";
+import {
+  createEffect,
+  getEffectDefinition,
+  GRADIENT_PRESETS,
+  EFFECT_CATALOG,
+  isEffectParameterVisible,
+  type EffectType,
+} from "@musart/core";
 import { EffectParameters } from "../../../../src/components/properties/effects/EffectParameters";
 import { i18n } from "../../../../src/state/i18n";
 import { setup } from "../../../support/ui";
@@ -57,6 +64,104 @@ test("typed settings presets/choices/colors and conditional number controls edit
   fireEvent.pointerUp(color);
   expect(commit).toHaveBeenLastCalledWith(
     expect.objectContaining({ settings: expect.objectContaining({ color0: "#aabbcc" }) }),
+  );
+});
+test.each(Object.keys(EFFECT_CATALOG) as EffectType[])(
+  "%s renders every real catalogue parameter with its translated label",
+  (type) => {
+    const d = setup(),
+      effect = createEffect(type),
+      definition = getEffectDefinition(type);
+    d.mount(<EffectParameters effect={effect} onChange={vi.fn()} />);
+    for (const parameter of definition.parameters.filter((parameter) =>
+      isEffectParameterVisible(effect, parameter),
+    )) {
+      const label = i18n.t(parameter.labelKey);
+      expect(label).not.toContain(":");
+      expect(
+        screen.getByRole(
+          parameter.kind === "number"
+            ? "textbox"
+            : parameter.kind === "boolean"
+              ? "switch"
+              : parameter.kind === "select"
+                ? "combobox"
+                : "button",
+          { name: label },
+        ),
+      ).toBeVisible();
+    }
+  },
+);
+test("Dither and Grain expose actual seeds while ASCII keeps its fixed glyph quantization private", () => {
+  const d = setup(),
+    change = vi.fn();
+  const view = d.mount(<EffectParameters effect={createEffect("dither")} onChange={change} />);
+  const seed = screen.getByRole("textbox", { name: "Graine" });
+  fireEvent.change(seed, { target: { value: "145" } });
+  fireEvent.blur(seed);
+  expect(change).toHaveBeenLastCalledWith({ seed: 145 }, false);
+  view.rerender(<EffectParameters effect={createEffect("grain")} onChange={change} />);
+  expect(screen.getByRole("textbox", { name: "Graine" })).toBeVisible();
+  view.rerender(<EffectParameters effect={createEffect("ascii")} onChange={change} />);
+  expect(screen.queryByRole("textbox", { name: "Graine" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("textbox", { name: "Niveaux" })).not.toBeInTheDocument();
+});
+test("Gradient treatment controls expose actual Dither levels and fine chromatic shift in document units", () => {
+  const d = setup(),
+    change = vi.fn();
+  const view = d.mount(
+    <EffectParameters
+      effect={createEffect("gradient", { settings: { treatment: "none" } })}
+      onChange={change}
+    />,
+  );
+  expect(screen.queryByRole("switch", { name: "Couleur" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("textbox", { name: "Niveaux" })).not.toBeInTheDocument();
+  view.rerender(
+    <EffectParameters
+      effect={createEffect("gradient", { settings: { treatment: "dither" } })}
+      onChange={change}
+    />,
+  );
+  expect(screen.getByRole("switch", { name: "Couleur" })).toBeVisible();
+  const levels = screen.getByRole("textbox", { name: "Niveaux" });
+  fireEvent.change(levels, { target: { value: "128" } });
+  fireEvent.blur(levels);
+  expect(change).toHaveBeenLastCalledWith({ levels: 128 }, false);
+  const chromatic = getEffectDefinition("gradient").parameters.find(
+    (parameter) => parameter.key === "chromaticShift",
+  )!;
+  const field = screen.getByRole("textbox", { name: i18n.t(chromatic.labelKey) });
+  fireEvent.change(field, { target: { value: "5" } });
+  fireEvent.blur(field);
+  expect(change).toHaveBeenLastCalledWith(
+    expect.objectContaining({ settings: expect.objectContaining({ chromaticShift: 0.005 }) }),
+    false,
+  );
+});
+test("Stripe's used third and fourth colors stay editable for an imported two-color setting", () => {
+  const d = setup(),
+    change = vi.fn();
+  d.mount(
+    <EffectParameters
+      effect={createEffect("gradient", { settings: { style: "stripes", colorCount: 2 } })}
+      onChange={change}
+    />,
+  );
+  for (let index = 1; index <= 4; index++)
+    expect(screen.getByRole("button", { name: `Couleur ${index}` })).toBeVisible();
+  expect(screen.queryByRole("button", { name: "Couleur 5" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("textbox", { name: "Couleurs" })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Couleur 3" }));
+  const color = screen.getByRole("textbox", { name: "Couleur hexadécimale" });
+  fireEvent.change(color, { target: { value: "#123456" } });
+  fireEvent.pointerUp(color);
+  expect(change).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      settings: expect.objectContaining({ style: "stripes", color2: "#123456" }),
+    }),
+    false,
   );
 });
 test("legacy numeric and boolean parameters retain normalized document values and disabled controls", () => {

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createLayer } from "@musart/core";
 import type { EditorServices } from "../../../../src/state/contracts";
 import { LayerThumbnail } from "../../../../src/components/layers/rows/LayerThumbnail";
@@ -15,6 +15,40 @@ beforeEach(() => {
   );
 });
 afterEach(() => vi.unstubAllGlobals());
+test("real load reveals a new blob once while cached revisits and ordinary renders stay opaque", async () => {
+  const layer = createLayer("rectangle"),
+    blob = new Blob(["cached preview"]),
+    previewExport = vi.fn(async () => ({ blob, width: 96, height: 96 })),
+    services = { previewExport };
+  const view = render(<LayerThumbnail layer={layer} services={services} previewKey="one" />);
+  const image = await screen.findByRole("presentation");
+  expect(image).not.toHaveAttribute("data-thumbnail-reveal");
+  fireEvent.load(image);
+  expect(image).toHaveAttribute("data-thumbnail-reveal", "true");
+  view.rerender(
+    <LayerThumbnail layer={{ ...layer, name: "Renamed" }} services={services} previewKey="one" />,
+  );
+  expect(screen.getByRole("presentation")).toBe(image);
+  expect(previewExport).toHaveBeenCalledOnce();
+  view.rerender(<LayerThumbnail layer={layer} services={services} previewKey="two" />);
+  await waitFor(() => expect(screen.getByRole("presentation")).not.toBe(image));
+  const cached = screen.getByRole("presentation");
+  fireEvent.load(cached);
+  expect(cached).not.toHaveAttribute("data-thumbnail-reveal");
+});
+test("a disposed image's late load cannot mark a new blob as already revealed", async () => {
+  const layer = createLayer("rectangle"),
+    blob = new Blob(["late preview"]),
+    services = { previewExport: vi.fn(async () => ({ blob, width: 96, height: 96 })) };
+  const first = render(<LayerThumbnail layer={layer} services={services} previewKey="late" />);
+  const stale = await screen.findByRole("presentation");
+  first.unmount();
+  fireEvent.load(stale);
+  render(<LayerThumbnail layer={layer} services={services} previewKey="late" />);
+  const current = await screen.findByRole("presentation");
+  fireEvent.load(current);
+  expect(current).toHaveAttribute("data-thumbnail-reveal", "true");
+});
 test("only visible rows request a final rendered thumbnail and revoke each owned URL on replacement/unmount", async () => {
   let notify!: IntersectionObserverCallback;
   const disconnect = vi.fn();
@@ -25,6 +59,7 @@ test("only visible rows request a final rendered thumbnail and revoke each owned
         notify = callback;
       }
       observe() {}
+      unobserve() {}
       disconnect = disconnect;
     },
   );
@@ -34,11 +69,20 @@ test("only visible rows request a final rendered thumbnail and revoke each owned
   const view = render(<LayerThumbnail layer={layer} services={services} previewKey="one" />);
   expect(previewExport).not.toHaveBeenCalled();
   await act(async () =>
-    notify([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver),
+    notify(
+      [
+        {
+          target: view.container.querySelector(".layer-thumbnail")!,
+          time: performance.now(),
+          isIntersecting: true,
+        } as IntersectionObserverEntry,
+      ],
+      {} as IntersectionObserver,
+    ),
   );
   await waitFor(() => expect(previewExport).toHaveBeenCalledOnce());
   expect(previewExport).toHaveBeenCalledExactlyOnceWith(
-    { selection: [layer.id], edge: 96 },
+    { selection: [layer.id], edge: 96, priority: "visible" },
     expect.any(AbortSignal),
   );
   expect(screen.getByRole("presentation")).toHaveAttribute("src", "blob:thumb-1");
@@ -51,7 +95,16 @@ test("only visible rows request a final rendered thumbnail and revoke each owned
   );
   expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:thumb-1");
   await act(async () =>
-    notify([{ isIntersecting: false } as IntersectionObserverEntry], {} as IntersectionObserver),
+    notify(
+      [
+        {
+          target: view.container.querySelector(".layer-thumbnail")!,
+          time: performance.now(),
+          isIntersecting: false,
+        } as IntersectionObserverEntry,
+      ],
+      {} as IntersectionObserver,
+    ),
   );
   expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:thumb-2");
   expect(screen.queryByRole("presentation")).toBeNull();
@@ -123,7 +176,7 @@ test("requests an inactive artboard preview explicitly without changing the acti
   );
   await waitFor(() => expect(previewExport).toHaveBeenCalledOnce());
   expect(previewExport).toHaveBeenCalledWith(
-    { pageId: "other-artboard", selection: [layer.id], edge: 96 },
+    { pageId: "other-artboard", selection: [layer.id], edge: 96, priority: "visible" },
     expect.any(AbortSignal),
   );
 });
@@ -178,6 +231,7 @@ test("requests genuine page-scoped effect/mask variants and rejects a late forei
     selection: [layer.id],
     pageId: "second",
     edge: 96,
+    priority: "visible",
     variant: { kind: "effect", effectId: "dither" },
   });
   const signal = previewExport.mock.calls[0]![1];
@@ -198,6 +252,7 @@ test("requests genuine page-scoped effect/mask variants and rejects a late forei
     selection: [layer.id],
     pageId: "third",
     edge: 96,
+    priority: "visible",
     variant: { kind: "mask" },
   });
   await act(async () => pending[1]!({ blob: new Blob(["current"]), width: 96, height: 96 }));

@@ -20,7 +20,7 @@ import { gradientHash } from "../../shared/noise";
 import { mixRGBA, readGradient, treatmentControls } from "../shared";
 export function blocksNode(context: EffectNodeContext) {
   const u = treatmentControls(context),
-    resolution = context.controls.resolution;
+    resolution = context.controls.logicalResolution;
   const size = max(vec2(u.size.mul(u.aspect), u.size), 2),
     angle = u.treatmentRotation.mul(Math.PI / 180);
   const coord = rotate(uv().mul(resolution).sub(resolution.mul(0.5)), angle).div(size);
@@ -54,7 +54,8 @@ export function blocksNode(context: EffectNodeContext) {
   const distance = length(max(q, 0))
     .add(min(max(q.x, q.y), 0))
     .sub(radius);
-  const aa = min(size.x, size.y).reciprocal().mul(0.65).add(u.feather.mul(0.06));
+  const pixel = max(context.controls.pixelFootprint.x, context.controls.pixelFootprint.y);
+  const aa = min(size.x, size.y).reciprocal().mul(pixel).mul(0.65).add(u.feather.mul(0.06));
   return vec4(
     clamp(color.rgb.add(bevel.mul(u.relief).mul(0.35)), 0, 1),
     color.a.mul(

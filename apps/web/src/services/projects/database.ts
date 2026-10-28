@@ -25,6 +25,7 @@ interface LegacyProject {
   thumbnail?: string;
   bytes?: ProjectBytes;
   pageRevisions?: Record<string, string>;
+  thumbnailRenderVersion?: string;
   thumbnailInfo?: ThumbnailInfo[];
 }
 interface StoredManifest {
@@ -35,6 +36,7 @@ interface StoredManifest {
   thumbnail?: string;
   bytes?: ProjectBytes;
   pageRevisions?: Record<string, string>;
+  thumbnailRenderVersion?: string;
   thumbnailInfo?: ThumbnailInfo[];
 }
 export type StoredProject = LegacyProject | StoredManifest;

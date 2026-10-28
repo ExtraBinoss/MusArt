@@ -19,7 +19,7 @@ import { texture, uv } from "three/tsl";
 import { createGlyphAtlas } from "./ascii/atlas";
 import { gradientStages, type EffectStage } from "./gradient/pipeline";
 import { compositeEffect } from "./shared/compositing/node";
-import { sampleEffect } from "./shared/context";
+import { sampleEffect, type EffectDimensions } from "./shared/context";
 import { EFFECT_NODES } from "./registry";
 import { createEffectUniforms, updateEffectUniforms, type EffectUniforms } from "./shared/uniforms";
 
@@ -64,6 +64,7 @@ export class GpuEffects {
     original: Texture,
     width: number,
     height: number,
+    logical: EffectDimensions,
   ): EffectPass {
     const advanced =
       stage.final &&
@@ -73,7 +74,7 @@ export class GpuEffects {
     if (!pass) {
       const source = texture(input),
         backdrop = texture(original);
-      const controls = createEffectUniforms(effect, width, height);
+      const controls = createEffectUniforms(effect, width, height, logical);
       const node = stage.builder({ source, backdrop, controls, getGlyphAtlas: this.getGlyphAtlas });
       const material = new MeshBasicNodeMaterial({
         depthTest: false,
@@ -96,7 +97,7 @@ export class GpuEffects {
     pass.backdrop.value = original;
     pass.controls.sourceFlipY.value = input.isRenderTargetTexture ? 1 : 0;
     pass.controls.backdropFlipY.value = original.isRenderTargetTexture ? 1 : 0;
-    updateEffectUniforms(pass.controls, effect, width, height);
+    updateEffectUniforms(pass.controls, effect, width, height, logical);
     if (stage.treatment) {
       pass.controls.amount.value = 1;
       pass.controls.scale.value = resolveGradientSettings(effect.settings).size;
@@ -165,10 +166,18 @@ export class GpuEffects {
     height: number,
     effects: readonly Effect[],
     output: RenderTarget,
+    logical: EffectDimensions = { width, height },
   ): Texture {
     if (this.disposed) throw new Error("L’opérateur d’effets a été fermé.");
     if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1)
       throw new Error("Dimensions GPU invalides.");
+    if (
+      !Number.isFinite(logical.width) ||
+      !Number.isFinite(logical.height) ||
+      logical.width <= 0 ||
+      logical.height <= 0
+    )
+      throw new Error("Invalid logical effect dimensions.");
     const enabled = effects.filter((effect) => effect.enabled);
     if (!enabled.length) return source;
     if (source === output.texture)
@@ -207,12 +216,18 @@ export class GpuEffects {
             builder: ({ source, controls }) => sampleEffect(source, controls, uv()),
             final: false,
           };
-          this.draw(this.getPass(block.effect, copy, input, input, width, height), this.backdrop);
+          this.draw(
+            this.getPass(block.effect, copy, input, input, width, height, logical),
+            this.backdrop,
+          );
           original = this.backdrop.texture;
         }
         for (const stage of block.stages) {
           const target = (total - index++) % 2 === 1 ? output : scratch!;
-          this.draw(this.getPass(block.effect, stage, input, original, width, height), target);
+          this.draw(
+            this.getPass(block.effect, stage, input, original, width, height, logical),
+            target,
+          );
           input = target.texture;
         }
       }

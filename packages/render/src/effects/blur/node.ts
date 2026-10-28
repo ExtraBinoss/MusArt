@@ -4,7 +4,7 @@ import { sampleEffect, type EffectNodeContext } from "../shared/context";
 export function blurNode({ source, controls }: EffectNodeContext) {
   const position = uv();
   const sample = sampleEffect(source, controls, position);
-  const step = controls.amount.mul(controls.scale).div(controls.resolution);
+  const step = controls.amount.mul(controls.scale).div(controls.logicalResolution);
   const sum = sample.rgb
     .mul(4)
     .add(sampleEffect(source, controls, position.add(vec2(step.x, 0))).rgb)

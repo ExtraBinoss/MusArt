@@ -7,6 +7,7 @@ export interface ProjectWriteFrame {
   originals: StoredAsset[];
   basis?: string;
   pageRevisions: Record<string, string>;
+  thumbnailRenderVersion: string;
   pagePayloads?: number[];
   thumbnail?: string;
   expectedRevision: string;

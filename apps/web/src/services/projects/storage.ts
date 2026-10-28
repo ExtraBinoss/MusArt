@@ -21,6 +21,8 @@ import { PersistenceClient } from "./persistence/client";
 import { validateThumbnail } from "./persistence/thumbnail";
 import { prepareProjectWrite, withFullOriginals } from "./persistence/prepare";
 import { ThumbnailDigestMemo } from "./thumbnails/digest-memo";
+import { THUMBNAIL_RENDER_VERSION } from "./thumbnails/model";
+import { refreshThumbnailSchema } from "./persistence/thumbnail-schema";
 import {
   readProjectWriteRevision,
   assertProjectWriteRevision,
@@ -194,6 +196,33 @@ export class ProjectStore {
     if (tx.mode === "readwrite") await tx.objectStore("preferences").put(id, "last-project");
     await tx.done;
     this.assertGeneration(generation);
+    if (record.thumbnailRenderVersion !== THUMBNAIL_RENDER_VERSION) {
+      // Capture the real stored input before exposing a mutable loaded document.
+      const captured = snapshotProject(project);
+      this.digestMemo.certify(captured);
+      const revisions = await thumbnailRevisions(
+        captured.pages,
+        captured.assets,
+        (job) => this.hash(job, generation),
+        (page) => this.thumbnailRevision(page, captured.assets),
+      );
+      this.assertGeneration(generation);
+      const refreshed = await refreshThumbnailSchema(
+        db,
+        {
+          id,
+          writeRevision,
+          rendererVersion: record.thumbnailRenderVersion,
+          storageVersion: record.storageVersion,
+          assetsRevision: record.storageVersion === 2 ? record.assetsRevision : undefined,
+          pageIds: captured.pages.map((page) => page.id),
+        },
+        revisions,
+        () => generation === this.generation,
+      );
+      this.assertGeneration(generation);
+      if (!refreshed) throw new StaleProjectWriteError(id);
+    }
     this.activeAssets =
       record.storageVersion === 2 && typeof record.assetsRevision === "string"
         ? {

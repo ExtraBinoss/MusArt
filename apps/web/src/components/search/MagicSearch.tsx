@@ -20,7 +20,8 @@ import { changeLanguage } from "../../state/i18n";
 import { importVectorFiles, VectorImportError } from "../../services/assets/vector/import-files";
 import type { TaskRunner } from "../projects/ProjectDialog";
 import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
+import { DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
+import { SearchDialog } from "./SearchDialog";
 import { IconButton } from "../shared/IconButton";
 import {
   Command,
@@ -100,6 +101,7 @@ export function MagicSearch({
     svgInput = useRef<HTMLInputElement>(null),
     portableInput = useRef<HTMLInputElement>(null);
   const pending = useRef<(() => void | Promise<void>) | null>(null);
+  const returnFocus = useRef<HTMLElement | null>(null);
   const openRef = useRef(false),
     dialogRef = useRef<HTMLDivElement>(null);
   const scope = useRef({ engine, alive: true });
@@ -113,6 +115,10 @@ export function MagicSearch({
   }, [engine, timing]);
   const setOpen = useCallback(
     (value: boolean) => {
+      if (value && pending.current) return;
+      if (value && !openRef.current)
+        returnFocus.current =
+          document.activeElement instanceof HTMLElement ? document.activeElement : null;
       openRef.current = value;
       if (value) timing.request();
       else timing.cancel();
@@ -154,7 +160,10 @@ export function MagicSearch({
     [items.length],
   );
   useLayoutEffect(() => {
-    if (open && dialogRef.current) timing.mounted(recordOpen);
+    if (open && dialogRef.current) {
+      searchInput.current?.focus();
+      timing.mounted(recordOpen);
+    }
   }, [open, timing, recordOpen]);
   const results = useMemo(
     () =>
@@ -184,7 +193,7 @@ export function MagicSearch({
     setLanguage: changeLanguage,
   };
   function choose(item: SearchItem) {
-    if (item.disabled) return;
+    if (item.disabled || !openRef.current) return;
     const origin = captureGestureOrigin(engine);
     const execute = captureSearchItem(item, actions);
     pending.current = () => {
@@ -305,94 +314,105 @@ export function MagicSearch({
       ) : (
         triggerNode
       )}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent
-          ref={dialogRef}
-          data-magic-search
-          className="floating-panel magic-search-dialog"
-          showCloseButton={false}
-          onOpenAutoFocus={() => timing.mounted(recordOpen)}
-          onCloseAutoFocus={(event) => {
-            event.preventDefault();
-            document.getElementById(triggerId)?.focus();
-            const task = pending.current;
-            pending.current = null;
-            if (task)
-              queueMicrotask(() => {
-                void onTask(task);
-              });
-          }}
+      <SearchDialog
+        open={open}
+        onOpenChange={setOpen}
+        reduced={!!reducedMotion}
+        ref={dialogRef}
+        data-magic-search
+        className="floating-panel magic-search-dialog"
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          searchInput.current?.focus();
+          timing.mounted(recordOpen);
+        }}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          if (openRef.current) return;
+          const origin = returnFocus.current;
+          const target =
+            origin?.isConnected && origin !== document.body
+              ? origin
+              : (document.querySelector<HTMLElement>(".editor-canvas") ??
+                document.getElementById(triggerId));
+          target?.focus({ preventScroll: true });
+          const task = pending.current;
+          pending.current = null;
+          if (task)
+            queueMicrotask(() => {
+              void onTask(task);
+            });
+        }}
+      >
+        <motion.div
+          className="magic-search-surface"
+          initial={reducedMotion ? false : { opacity: 0, y: 6, scale: 0.985 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: reducedMotion ? 0 : 0.16, ease: [0.2, 0.8, 0.2, 1] }}
         >
-          <motion.div
-            className="magic-search-surface"
-            initial={reducedMotion ? false : { opacity: 0, y: 6, scale: 0.985 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: reducedMotion ? 0 : 0.16, ease: [0.2, 0.8, 0.2, 1] }}
+          <DialogHeader className="sr-only">
+            <DialogTitle>{t("search:title")}</DialogTitle>
+            <DialogDescription>{t("search:description")}</DialogDescription>
+          </DialogHeader>
+          <Command
+            shouldFilter={false}
+            loop
+            value={activeItem?.id ?? ""}
+            onValueChange={setActiveId}
+            className="magic-search-command"
+            label={t("search:title")}
           >
-            <DialogHeader className="sr-only">
-              <DialogTitle>{t("search:title")}</DialogTitle>
-              <DialogDescription>{t("search:description")}</DialogDescription>
-            </DialogHeader>
-            <Command
-              shouldFilter={false}
-              loop
-              value={activeItem?.id ?? ""}
-              onValueChange={setActiveId}
-              className="magic-search-command"
-              label={t("search:title")}
-            >
-              <div className="magic-search-input-row">
-                <CommandInput
-                  ref={searchInput}
-                  value={query}
-                  onValueChange={(value) => {
-                    setQuery(value);
-                    setActiveId("");
-                  }}
-                  placeholder={t("search:search")}
-                />
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={t("close")}
-                  onClick={() => setOpen(false)}
-                >
-                  <Kbd>Esc</Kbd>
-                </Button>
-              </div>
-              <div
-                className="magic-search-categories"
-                role="group"
-                aria-label={t("search:categories")}
+            <div className="magic-search-input-row">
+              <CommandInput
+                ref={searchInput}
+                value={query}
+                onValueChange={(value) => {
+                  setQuery(value);
+                  setActiveId("");
+                }}
+                placeholder={t("search:search")}
+              />
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t("close")}
+                onClick={() => setOpen(false)}
               >
-                {categoryButton("all")}
-                {SEARCH_CATEGORIES.filter((value) => available.has(value)).map(categoryButton)}
-              </div>
-              <ScrollShadow>
-                <CommandList label={t("search:title")}>
-                  <CommandEmpty>{t("search:empty")}</CommandEmpty>
-                  {resultCategories.map(renderGroup)}
-                </CommandList>
-              </ScrollShadow>
-              <footer className="magic-search-footer">
-                <span aria-live="polite">
-                  {results.limited
-                    ? t(results.browsing ? "search:browse" : "search:limited", {
-                        count: results.items.length,
-                      })
-                    : t("search:resultCount", { count: results.total })}
-                </span>
-                <span className="magic-search-key-hint">
-                  <Kbd>↑↓</Kbd>
-                  {t("search:navigate")}
-                  <Kbd>↵</Kbd>
-                  {t("search:choose")}
-                </span>
-              </footer>
-            </Command>
-          </motion.div>
-        </DialogContent>
-      </Dialog>
+                <Kbd>Esc</Kbd>
+              </Button>
+            </div>
+            <div
+              className="magic-search-categories"
+              role="group"
+              aria-label={t("search:categories")}
+            >
+              {categoryButton("all")}
+              {SEARCH_CATEGORIES.filter((value) => available.has(value)).map(categoryButton)}
+            </div>
+            <ScrollShadow>
+              <CommandList label={t("search:title")}>
+                <CommandEmpty>{t("search:empty")}</CommandEmpty>
+                {resultCategories.map(renderGroup)}
+              </CommandList>
+            </ScrollShadow>
+            <footer className="magic-search-footer">
+              <span aria-live="polite">
+                {results.limited
+                  ? t(results.browsing ? "search:browse" : "search:limited", {
+                      count: results.items.length,
+                    })
+                  : t("search:resultCount", { count: results.total })}
+              </span>
+              <span className="magic-search-key-hint">
+                <Kbd>↑↓</Kbd>
+                {t("search:navigate")}
+                <Kbd>↵</Kbd>
+                {t("search:choose")}
+              </span>
+            </footer>
+          </Command>
+        </motion.div>
+      </SearchDialog>
       {help && <ShortcutsDialog onClose={() => setHelp(false)} />}
       <input
         ref={svgInput}

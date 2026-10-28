@@ -11,5 +11,7 @@ it("preserves source alpha and keeps halftone parameters as stable GPU uniforms"
   fixture.controls.color.value = 1;
   expect(node.getCacheKey()).toBe(key);
   expect(graphNodes(node).has(fixture.controls.amount)).toBe(true);
+  expect(graphNodes(node).has(fixture.controls.logicalResolution)).toBe(true);
+  expect(graphNodes(node).has(fixture.controls.resolution)).toBe(false);
   fixture.dispose();
 });

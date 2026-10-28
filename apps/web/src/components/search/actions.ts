@@ -6,6 +6,7 @@ import type { Theme } from "../../state/session/editor";
 import { snappingPreferences } from "../../state/snapping/preferences";
 import type { SearchAction, SearchItem, SearchTranslate } from "./catalog/model";
 import { capturePresentationDelete, attachmentSelection } from "../../state/selection/attachments";
+import { createClipboardController } from "../../services/clipboard/controller";
 
 export type ProjectView = "projects" | "newProject" | "settings" | "settingsEditor";
 export type PanelMode = "design" | "animate";
@@ -84,6 +85,9 @@ export function createSearchActions(context: SearchActions) {
     },
     undo: engine.undo,
     redo: engine.redo,
+    copy: () => createClipboardController(engine).copy(),
+    paste: () => createClipboardController(engine).paste(),
+    copyComposition: () => createClipboardController(engine).copy(true),
     duplicate: () => selectedCommand("duplicateLayers"),
     delete: () => capturePresentationDelete(engine)(),
     group: () => selectedCommand("groupLayers"),

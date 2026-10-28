@@ -21,11 +21,13 @@ import { flattenLayerTree } from "./tree/projection";
 import { projectLayerWorkspace } from "./tree/project";
 import { ArtboardRow } from "./rows/ArtboardRow";
 import { LAYER_ROW_HEIGHT, useVirtualRows } from "./tree/use-virtual-rows";
+import { useExpansion } from "./tree/use-expansion.tsx";
 import { SelectionPreviewIdentity } from "../../services/projects/thumbnails/selection-identity";
 import { useRenderMetrics } from "../../state/session/render-metrics";
 import { attachmentSelection } from "../../state/selection/attachments";
 import { useAttachmentSelection } from "../../state/selection/use-attachment-selection";
 import "./messages";
+const EMPTY_SELECTION: readonly string[] = Object.freeze([]);
 export function flattenLayers(layers: Layer[], parentId: string | null = null): Layer[] {
   return flattenLayerTree(layers, parentId);
 }
@@ -81,24 +83,6 @@ export function LayersPanel({
     window.addEventListener("keydown", cancel);
     return () => window.removeEventListener("keydown", cancel);
   }, []);
-  const toggle = useCallback((id: string, group: boolean) => {
-    const update = (previous: Set<string>) => {
-      const next = new Set(previous);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    };
-    if (group) setCollapsed(update);
-    else setAttachments(update);
-  }, []);
-  const togglePage = useCallback((id: string) => {
-    setCollapsedPages((previous) => {
-      const next = new Set(previous);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
   const layerCount = useMemo(
     () => project.pages.reduce((sum, item) => sum + item.layers.length, 0),
     [project.pages],
@@ -142,9 +126,47 @@ export function LayersPanel({
     state = layerSelection(page, selection),
     actions = layerActions(engine, page, run);
   const { onScroll, scheduleReveal } = list;
-  const visibleEntries = useMemo(
+  const currentEntries = useMemo(
     () => layerDragWindow(entries, canonicalEntries, list.first, list.last, drag.dragging),
     [entries, canonicalEntries, list.first, list.last, drag.dragging],
+  );
+  const {
+    items: visibleEntries,
+    begin: beginExpansion,
+    cancel: cancelExpansion,
+  } = useExpansion(
+    currentEntries,
+    entries,
+    list.height,
+    project,
+    listViewport,
+    reduced || !!drag.dragging,
+  );
+  const toggle = useCallback(
+    (id: string, group: boolean) => {
+      beginExpansion(`layer:${id}`);
+      const update = (previous: Set<string>) => {
+        const next = new Set(previous);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      };
+      if (group) setCollapsed(update);
+      else setAttachments(update);
+    },
+    [beginExpansion],
+  );
+  const togglePage = useCallback(
+    (id: string) => {
+      beginExpansion(`artboard:${id}`);
+      setCollapsedPages((previous) => {
+        const next = new Set(previous);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
+    },
+    [beginExpansion],
   );
   const thumbnailIdentities = useMemo(() => new SelectionPreviewIdentity(), []);
   const previewKeys = useMemo(() => {
@@ -184,7 +206,7 @@ export function LayersPanel({
         key={`${project.id}:${page.id}:${selection.join()}`}
         engine={engine}
         page={page}
-        selection={attachment ? [] : selection}
+        selection={attachment ? EMPTY_SELECTION : selection}
         run={run}
       />
       <p className="sr-only" id="layer-drag-hint">
@@ -199,7 +221,11 @@ export function LayersPanel({
               aria-label={t("layers")}
               aria-describedby="layer-drag-hint"
               className="layer-tree scrollable-panel"
-              onScroll={onScroll}
+              onScroll={(event) => {
+                cancelExpansion();
+                onScroll(event);
+              }}
+              onDragStartCapture={cancelExpansion}
               onDragOver={(event) => drag.overTree(event)}
               onDragEnter={(event) => drag.overTree(event)}
               onDrop={(event) => drag.drop(event)}
@@ -225,6 +251,7 @@ export function LayersPanel({
                     <div
                       key={`${project.id}:${entry.key}`}
                       className="empty-artboard-layers"
+                      data-layer-tree-key={`empty:${entry.page.id}`}
                       onDragOver={(event) => {
                         event.stopPropagation();
                         drag.clearTarget(event);

@@ -49,3 +49,38 @@ describe("stable effect uniforms", () => {
     expect(controls.color.value).toBe(0);
   });
 });
+
+it.each([0.25, 0.5, 1, 2, 4])(
+  "keeps authored motif sizes and seeds unchanged at raster density %s",
+  (density) => {
+    const effect = createEffect("grain", { amount: 0.7, scale: 1, seed: 9321 });
+    const logical = { width: 31.25, height: 23.5 };
+    const width = Math.ceil(logical.width * density),
+      height = Math.ceil(logical.height * density);
+    const controls = createEffectUniforms(effect, width, height, logical);
+    expect(controls.scale.value).toBe(1);
+    expect(controls.randomSeed.value).toBe(9321);
+    expect(controls.logicalResolution.value.toArray()).toEqual([31.25, 23.5]);
+    expect(controls.resolution.value.toArray()).toEqual([width, height]);
+    expect(controls.pixelFootprint.value.toArray()).toEqual([31.25 / width, 23.5 / height]);
+    const retained = { ...controls };
+    updateEffectUniforms(controls, effect, width * 2, height * 2, logical);
+    expect(controls.logicalResolution).toBe(retained.logicalResolution);
+    expect(controls.pixelFootprint).toBe(retained.pixelFootprint);
+    expect(controls.logicalResolution.value.toArray()).toEqual([31.25, 23.5]);
+    expect(controls.scale.value).toBe(1);
+  },
+);
+it("keeps gradient treatment, grain and corner dimensions in authored units at large density", () => {
+  const effect = createEffect("gradient", {
+    scale: 0.5,
+    settings: { size: 480, grainScale: 5, borderRadius: 1024 },
+  });
+  const controls = createEffectUniforms(effect, 4096, 4096, { width: 1024, height: 1024 });
+  expect(controls.gradient!.scale.value).toBe(0.5);
+  expect(controls.gradient!.size.value).toBe(480);
+  expect(controls.gradient!.grainScale.value).toBe(5);
+  expect(controls.gradient!.borderRadius.value).toBe(1024);
+  expect(controls.pixelFootprint.value.toArray()).toEqual([0.25, 0.25]);
+  expect(effect.settings).toEqual({ size: 480, grainScale: 5, borderRadius: 1024 });
+});

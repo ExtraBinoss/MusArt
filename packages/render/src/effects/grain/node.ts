@@ -2,7 +2,7 @@ import { sampleEffect, type EffectNodeContext } from "../shared/context";
 import { clamp, floor, mix, uv, vec2, vec3, vec4 } from "three/tsl";
 import { noise2d } from "../shared/noise";
 export function grainNode({ source, controls }: EffectNodeContext) {
-  const p = floor(uv().mul(controls.resolution).div(controls.scale));
+  const p = floor(uv().mul(controls.logicalResolution).div(controls.scale));
   const s = sampleEffect(source, controls, uv());
   const mono = noise2d(p, controls.randomSeed);
   const colored = vec3(

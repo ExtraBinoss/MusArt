@@ -1,5 +1,6 @@
 import type { Project } from "@musart/core";
 import type { ProjectWriteFrame } from "./model";
+import { THUMBNAIL_RENDER_VERSION } from "../thumbnails/model";
 export interface AssetBasis {
   projectId: string;
   revision: string;
@@ -31,6 +32,7 @@ export function prepareProjectWrite(
     descriptions,
     originals,
     pageRevisions,
+    thumbnailRenderVersion: THUMBNAIL_RENDER_VERSION,
     expectedRevision: options.expectedRevision,
     requireAbsent: options.requireAbsent ?? false,
     remember: options.remember !== false,

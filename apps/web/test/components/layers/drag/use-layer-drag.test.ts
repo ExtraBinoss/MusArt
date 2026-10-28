@@ -10,17 +10,21 @@ function fixture() {
   const page = d.engine.getSnapshot().project.pages[0]!;
   const transfer = {
     setData: vi.fn(),
+    setDragImage: vi.fn(),
     getData: () => d.rectangle.id,
     effectAllowed: "",
     dropEffect: "",
   };
+  const row = document.createElement("div");
+  vi.spyOn(row, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 200, 40));
   const event = {
     clientX: 20,
     clientY: 5,
     altKey: false,
     preventDefault: vi.fn(),
+    nativeEvent: new Event("dragstart", { cancelable: true }),
     dataTransfer: transfer,
-    currentTarget: { getBoundingClientRect: () => ({ top: 0, height: 40 }) },
+    currentTarget: row,
   } as unknown as DragEvent<HTMLElement>;
   const hook = renderHook(({ current }) => useLayerDrag(current, d.engine, d.run), {
     initialProps: { current: page },
@@ -31,6 +35,7 @@ test("projects on hover and only commits one semantic command on drop", () => {
   const d = fixture();
   const execute = vi.spyOn(d.engine, "execute");
   act(() => d.result.current.start(d.event, d.rectangle));
+  expect(document.querySelector(".layer-drag-preview")).not.toBeNull();
   act(() => d.result.current.over(d.event, d.text));
   expect(d.result.current.target).toEqual({ id: d.text.id, position: "before" });
   expect(d.result.current.dragging).toBe(d.rectangle.id);
@@ -40,12 +45,58 @@ test("projects on hover and only commits one semantic command on drop", () => {
   expect(execute).not.toHaveBeenCalled();
   expect(d.engine.getSnapshot().canUndo).toBe(false);
   act(() => d.result.current.drop(d.event, d.text));
+  expect(document.querySelector(".layer-drag-preview")).toBeNull();
   expect(execute).toHaveBeenCalledExactlyOnceWith(
     expect.objectContaining({ type: "reorderLayer", id: d.rectangle.id }),
   );
   expect(d.result.current.target).toBeNull();
   d.engine.undo();
   expect(d.engine.getSnapshot().project.pages[0]!.layers).toEqual(d.page.layers);
+});
+
+test("native drag feedback is owned through restart, Escape, dragend, blur and unmount", () => {
+  const d = fixture();
+  const start = () => act(() => d.result.current.start(d.event, d.rectangle));
+  start();
+  const first = document.querySelector(".layer-drag-preview");
+  start();
+  expect(first?.isConnected).toBe(false);
+  expect(document.querySelectorAll(".layer-drag-preview")).toHaveLength(1);
+  fireEvent.keyDown(window, { key: "Escape" });
+  expect(document.querySelector(".layer-drag-preview")).toBeNull();
+  start();
+  fireEvent.dragEnd(window);
+  expect(document.querySelector(".layer-drag-preview")).toBeNull();
+  start();
+  fireEvent.blur(window);
+  expect(document.querySelector(".layer-drag-preview")).toBeNull();
+  start();
+  d.unmount();
+  expect(document.querySelector(".layer-drag-preview")).toBeNull();
+});
+
+test("a subsequently rejected native dragstart clears its own feedback without canceling a replacement drag", async () => {
+  const d = fixture(),
+    before = d.engine.getSnapshot();
+  act(() => d.result.current.start(d.event, d.rectangle));
+  d.event.nativeEvent.preventDefault();
+  await act(async () => Promise.resolve());
+  expect(document.querySelector(".layer-drag-preview")).toBeNull();
+  expect(d.result.current.dragging).toBeNull();
+  expect(d.engine.getSnapshot()).toBe(before);
+  const native = () =>
+    new Event("dragstart", { cancelable: true }) as DragEvent<HTMLElement>["nativeEvent"];
+  const first = { ...d.event, nativeEvent: native() },
+    next = { ...d.event, nativeEvent: native() };
+  act(() => d.result.current.start(first, d.rectangle));
+  const stale = document.querySelector(".layer-drag-preview");
+  act(() => d.result.current.start(next, d.rectangle));
+  first.nativeEvent.preventDefault();
+  await act(async () => Promise.resolve());
+  expect(stale?.isConnected).toBe(false);
+  expect(document.querySelectorAll(".layer-drag-preview")).toHaveLength(1);
+  expect(d.result.current.dragging).toBe(d.rectangle.id);
+  d.unmount();
 });
 test("dropping a colored rectangle onto a target thumbnail creates one editable alpha mask", () => {
   const d = fixture(),

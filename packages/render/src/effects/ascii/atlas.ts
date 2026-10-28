@@ -1,4 +1,4 @@
-import { CanvasTexture, NearestFilter, NoColorSpace } from "three/webgpu";
+import { CanvasTexture, LinearFilter, NoColorSpace } from "three/webgpu";
 
 /** One immutable upload used by every ASCII pass; no rasterized effect results. */
 export function createGlyphAtlas(): CanvasTexture {
@@ -18,8 +18,8 @@ export function createGlyphAtlas(): CanvasTexture {
   );
   const atlas = new CanvasTexture(canvas);
   atlas.colorSpace = NoColorSpace;
-  atlas.minFilter = NearestFilter;
-  atlas.magFilter = NearestFilter;
+  atlas.minFilter = LinearFilter;
+  atlas.magFilter = LinearFilter;
   atlas.generateMipmaps = false;
   return atlas;
 }

@@ -1,12 +1,15 @@
 import { registerFeatureTranslations } from "../../../state/i18n/feature-resources";
 export const messages = {
   en: {
+    clipboardImages: "Include images when copying",
+    clipboardImagesDescription:
+      "Embed original images so copied items can be pasted into another project or shared. Turn off for references within this project only.",
     categories: "Preferences categories",
     general: "General",
     appearance: "Appearance",
     shortcuts: "Shortcuts",
     editor: "Editor",
-    generalDescription: "Choose the language used throughout your workspace.",
+    generalDescription: "Choose your workspace language and clipboard behavior.",
     appearanceDescription: "Make MusArt comfortable in your environment.",
     shortcutsDescription: "Edit actual application shortcuts. Changes are saved on this device.",
     editorDescription: "Adjust the way objects respond while you work.",
@@ -26,12 +29,15 @@ export const messages = {
     tryReset: "Reset preview",
   },
   fr: {
+    clipboardImages: "Inclure les images à la copie",
+    clipboardImagesDescription:
+      "Intégrez les images originales pour coller dans un autre projet ou partager les éléments. Désactivez pour des références limitées à ce projet.",
     categories: "Catégories des préférences",
     general: "Général",
     appearance: "Apparence",
     shortcuts: "Raccourcis",
     editor: "Éditeur",
-    generalDescription: "Choisissez la langue de votre espace de travail.",
+    generalDescription: "Choisissez la langue et le comportement du presse-papiers.",
     appearanceDescription: "Adaptez MusArt à votre environnement.",
     shortcutsDescription:
       "Modifiez les vrais raccourcis de l’application. Ils sont enregistrés sur cet appareil.",

@@ -33,6 +33,7 @@ export class ThumbnailPipeline {
   private timer: ReturnType<typeof setTimeout> | undefined;
   private idle: number | undefined;
   private running: Promise<void> | null = null;
+  private generating: Request | null = null;
   private disposed = false;
   private disposal: Promise<void> | null = null;
   constructor(
@@ -57,7 +58,22 @@ export class ThumbnailPipeline {
     this.enqueue({ id: project.id, project });
   }
   request(projectId: string, pageIds?: readonly string[]): void {
-    this.enqueue({ id: projectId, pageIds });
+    const queued = this.pending.get(projectId),
+      active =
+        this.generating?.id === projectId && this.current(this.generating) ? this.generating : null,
+      previous = queued ?? active;
+    // A visible-card miss must not replace the latest all-page canonical snapshot
+    // with an older disk load, or cancel another requested page midway through rendering.
+    if (previous && (!previous.pageIds || pageIds?.every((id) => previous.pageIds!.includes(id))))
+      return;
+    this.enqueue({
+      id: projectId,
+      pageIds: previous
+        ? previous.pageIds && pageIds
+          ? [...new Set([...previous.pageIds, ...pageIds])]
+          : undefined
+        : pageIds,
+    });
   }
   private enqueue(request: Omit<Request, "token">): void {
     if (this.disposed) return;
@@ -84,7 +100,7 @@ export class ThumbnailPipeline {
       !this.pending.size ||
       this.activity.busy() ||
       this.previews.isActive() ||
-      this.previews.hasForeground()
+      this.previews.hasPriority()
     )
       return;
     this.timer = setTimeout(
@@ -121,7 +137,7 @@ export class ThumbnailPipeline {
         : thumbnailRevision(page, project.assets));
       if (!this.current(request)) return;
       if (existing.some((item) => item.pageId === page.id && item.revision === revision)) continue;
-      if (this.activity.busy() || this.previews.hasForeground()) {
+      if (this.activity.busy() || this.previews.hasPriority()) {
         this.pending.set(request.id, request);
         return;
       }
@@ -162,14 +178,17 @@ export class ThumbnailPipeline {
         this.pending.size &&
         !this.disposed &&
         !this.activity.busy() &&
-        !this.previews.hasForeground()
+        !this.previews.hasPriority()
       ) {
         const request = this.pending.values().next().value!;
         this.pending.delete(request.id);
+        this.generating = request;
         try {
           await this.generate(request);
         } catch (error) {
           if (!this.disposed) this.options.onError?.(error);
+        } finally {
+          this.generating = null;
         }
       }
     })().finally(() => {
@@ -187,7 +206,7 @@ export class ThumbnailPipeline {
     if (!this.pending.size && !this.running) return Promise.resolve();
     const result = new Promise<void>((resolve) => this.waiters.add(resolve));
     this.cancelStart();
-    if (!this.activity.busy() && !this.previews.isActive() && !this.previews.hasForeground())
+    if (!this.activity.busy() && !this.previews.isActive() && !this.previews.hasPriority())
       void this.pump();
     return result;
   }

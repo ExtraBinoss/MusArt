@@ -3,8 +3,14 @@ import { blendModeId } from "../../compositing/blends/registry";
 import { createGradientUniforms, updateGradientUniforms } from "../gradient/shared/uniforms";
 import { Vector2 } from "three/webgpu";
 import { uniform } from "three/tsl";
+import type { EffectDimensions } from "./context";
 
-export function createEffectUniforms(effect: Effect, width: number, height: number) {
+export function createEffectUniforms(
+  effect: Effect,
+  width: number,
+  height: number,
+  logical: EffectDimensions = { width, height },
+) {
   return {
     gradient: effect.type === "gradient" ? createGradientUniforms(effect) : null,
     blendMode: uniform(blendModeId(effect.blendMode ?? "normal")),
@@ -19,6 +25,8 @@ export function createEffectUniforms(effect: Effect, width: number, height: numb
     randomSeed: uniform(effect.seed),
     seed: uniform(new Vector2(effect.seed % 4, Math.floor(effect.seed / 4) % 4)),
     resolution: uniform(new Vector2(width, height)),
+    logicalResolution: uniform(new Vector2(logical.width, logical.height)),
+    pixelFootprint: uniform(new Vector2(logical.width / width, logical.height / height)),
   };
 }
 export type EffectUniforms = ReturnType<typeof createEffectUniforms>;
@@ -29,6 +37,7 @@ export function updateEffectUniforms(
   effect: Effect,
   width: number,
   height: number,
+  logical: EffectDimensions = { width, height },
 ): void {
   if (controls.gradient) updateGradientUniforms(controls.gradient, effect);
   controls.blendMode.value = blendModeId(effect.blendMode ?? "normal");
@@ -43,4 +52,6 @@ export function updateEffectUniforms(
   controls.randomSeed.value = effect.seed;
   controls.seed.value.set(effect.seed % 4, Math.floor(effect.seed / 4) % 4);
   controls.resolution.value.set(width, height);
+  controls.logicalResolution.value.set(logical.width, logical.height);
+  controls.pixelFootprint.value.set(logical.width / width, logical.height / height);
 }

@@ -9,6 +9,11 @@ export interface EffectNodeContext {
   readonly getGlyphAtlas: () => Texture;
 }
 export type EffectNodeBuilder = (context: EffectNodeContext) => Node<"vec4">;
+/** Authored layer dimensions, independent of its current raster density. */
+export interface EffectDimensions {
+  readonly width: number;
+  readonly height: number;
+}
 
 import { mix, vec2 } from "three/tsl";
 /** UV1 is the logical image top; WebGPU framebuffer textures store their top at UV0. */

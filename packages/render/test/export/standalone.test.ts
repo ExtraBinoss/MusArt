@@ -220,9 +220,7 @@ it("holds a retained native GPU canvas inside the atomic consumer queue without 
   expect(await second).toBe(canvas);
   expect(gpu.render).toHaveBeenCalledTimes(2);
   expect(gpu.init).toHaveBeenCalledOnce();
-  expect(gpu.compositorConstructors).toHaveBeenCalledWith(
-    expect.objectContaining({ fontResolver }),
-  );
+  expect(gpu.compositorConstructors).toHaveBeenCalledWith({ maxBytes: 1024, fontResolver });
   expect(createImageBitmap).not.toHaveBeenCalled();
   expect(session.stats()).toMatchObject({ readbacks: 0 });
   await session.dispose();
@@ -240,7 +238,7 @@ it("shares disposal completion and releases a retained context only once", async
   expect(session.stats()).toBeNull();
 });
 it("does not create a background context when the activity gate has become busy", async () => {
-  const session = createRenderSession({ sourceMaxEdge: 640 });
+  const session = createRenderSession();
   await expect(
     session.withCanvasFrame(createPage(), {}, () => {}, { canRender: () => false }),
   ).rejects.toMatchObject({ name: "AbortError" });

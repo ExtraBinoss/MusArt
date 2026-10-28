@@ -273,7 +273,7 @@ test("100,000 native journal events: cold document opens without reading history
               page.id,
               await digest(
                 canonical({
-                  version: "gpu-webp-768-88-v1",
+                  version: "gpu-webp-768-88-v3",
                   width: page.width,
                   height: page.height,
                   background: page.background,
@@ -292,6 +292,7 @@ test("100,000 native journal events: cold document opens without reading history
         assetsRevision: "assets:1",
         project: { ...finalProject, assets: metadata },
         pageRevisions,
+        thumbnailRenderVersion: "gpu-webp-768-88-v3",
         thumbnailInfo: [],
       };
       const projectBytes = {

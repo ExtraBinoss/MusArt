@@ -2,6 +2,9 @@ import { registerFeatureTranslations } from "../../state/i18n/feature-resources"
 
 export const messages = {
   en: {
+    copy: "Copy selected items",
+    paste: "Paste items",
+    copyComposition: "Copy composition as editable JSON",
     editorSettings: "Editor settings & snapping distance",
     enableSnapping: "Enable snapping to elements",
     disableSnapping: "Disable snapping to elements",
@@ -71,6 +74,9 @@ export const messages = {
     arrows: "Arrow keys",
   },
   fr: {
+    copy: "Copier les éléments sélectionnés",
+    paste: "Coller les éléments",
+    copyComposition: "Copier la composition en JSON modifiable",
     editorSettings: "Réglages de l’éditeur et distance de magnétisme",
     enableSnapping: "Activer le magnétisme des éléments",
     disableSnapping: "Désactiver le magnétisme des éléments",

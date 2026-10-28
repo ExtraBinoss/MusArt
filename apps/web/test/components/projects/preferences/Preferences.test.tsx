@@ -8,6 +8,33 @@ import {
   snappingPreferences,
   SNAPPING_STORAGE_KEY,
 } from "../../../../src/state/snapping/preferences";
+import {
+  clipboardPreferences,
+  CLIPBOARD_STORAGE_KEY,
+} from "../../../../src/state/clipboard/preferences";
+test("General stores the image portability choice without editing the document", () => {
+  const d = setup();
+  act(() => {
+    clipboardPreferences.update(true);
+  });
+  const before = d.engine.getSnapshot();
+  const view = d.mount(<Preferences />);
+  const images = screen.getByRole("switch", { name: "Inclure les images à la copie" });
+  expect(images).toBeChecked();
+  fireEvent.click(images);
+  expect(images).not.toBeChecked();
+  expect(JSON.parse(localStorage.getItem(CLIPBOARD_STORAGE_KEY)!)).toEqual({
+    version: 1,
+    includeImages: false,
+  });
+  view.unmount();
+  d.mount(<Preferences />);
+  expect(screen.getByRole("switch", { name: "Inclure les images à la copie" })).not.toBeChecked();
+  expect(d.engine.getSnapshot()).toBe(before);
+  act(() => {
+    clipboardPreferences.update(true);
+  });
+});
 test("applies persistent themes and changes between both real catalogs", async () => {
   const d = setup();
   d.mount(<Preferences />);

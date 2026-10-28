@@ -17,7 +17,6 @@ export class StandaloneRenderer {
   constructor(
     private readonly forceWebGL?: boolean,
     private readonly maxBytes?: number,
-    private readonly sourceMaxEdge?: number,
     private readonly fontResolver?: FontResolver,
   ) {}
   private async init(): Promise<void> {
@@ -46,7 +45,6 @@ export class StandaloneRenderer {
     this.renderer = renderer;
     this.compositor = new GpuCompositor(renderer, {
       maxBytes: this.maxBytes,
-      sourceMaxEdge: this.sourceMaxEdge,
       fontResolver: this.fontResolver,
     });
     this.presentation = new GpuPresentation(renderer);
@@ -164,12 +162,7 @@ export async function snapshotComposition(
   let entry = renderers.get(key);
   if (!entry) {
     entry = {
-      renderer: new StandaloneRenderer(
-        options.forceWebGL,
-        undefined,
-        undefined,
-        options.fontResolver,
-      ),
+      renderer: new StandaloneRenderer(options.forceWebGL, undefined, options.fontResolver),
       jobs: new Set(),
       retired: false,
     };
@@ -195,13 +188,6 @@ export async function disposeExportRenderers(): Promise<void> {
 }
 
 /** Reuses one context, shader graph, geometry and asset cache for an entire video/export job. */
-export function createRenderSession(
-  options: RenderOptions & { maxBytes?: number; sourceMaxEdge?: number } = {},
-) {
-  return new StandaloneRenderer(
-    options.forceWebGL,
-    options.maxBytes,
-    options.sourceMaxEdge,
-    options.fontResolver,
-  );
+export function createRenderSession(options: RenderOptions & { maxBytes?: number } = {}) {
+  return new StandaloneRenderer(options.forceWebGL, options.maxBytes, options.fontResolver);
 }

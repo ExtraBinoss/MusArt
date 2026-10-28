@@ -20,6 +20,7 @@ export interface BooleanEffectParameter {
   readonly kind: "boolean";
   readonly key: "color";
   readonly labelKey: string;
+  readonly visibleWhen?: { readonly key: GradientSettingKey; readonly values: readonly string[] };
 }
 export interface ChoiceEffectParameter {
   readonly kind: "select";
@@ -73,7 +74,7 @@ export const SCALE: NumberEffectParameter = {
   key: "scale",
   labelKey: "effectScale",
   min: 1,
-  max: 24,
+  max: 128,
   step: 1,
   displayScale: 1,
   unit: "px",
@@ -83,12 +84,23 @@ export const LEVELS: NumberEffectParameter = {
   key: "levels",
   labelKey: "levels",
   min: 2,
-  max: 16,
+  max: 256,
   step: 1,
   displayScale: 1,
   unit: "",
 };
 export const COLOR: BooleanEffectParameter = { kind: "boolean", key: "color", labelKey: "colored" };
+export const SEED: NumberEffectParameter = {
+  kind: "number",
+  key: "seed",
+  labelKey: "effectControls:seed",
+  min: 0,
+  max: 2147483647,
+  step: 1,
+  integer: true,
+  displayScale: 1,
+  unit: "",
+};
 
 export function defineEffect(
   type: EffectType,

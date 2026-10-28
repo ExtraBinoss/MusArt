@@ -1,4 +1,5 @@
 import "./gradient-messages";
+import "./messages";
 import {
   getEffectDefinition,
   getEffectParameter,

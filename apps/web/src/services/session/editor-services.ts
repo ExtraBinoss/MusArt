@@ -31,6 +31,8 @@ import { PixelSelectionController } from "../selection/wand/controller";
 import { i18n } from "../../state/i18n";
 import "../selection/wand/messages";
 import type { FontLibraryPort } from "../fonts/model";
+import { isEditingShortcutTarget } from "../../state/keybindings/matching";
+import { isMusArtClipboardText } from "../clipboard/controller";
 export interface ServiceDependencies {
   fonts?: FontLibraryPort;
   store: ProjectStore;
@@ -312,12 +314,7 @@ export function installClipboard(
   onError: (error: unknown) => void,
 ) {
   const paste = (event: ClipboardEvent) => {
-    const target = event.target;
-    if (
-      target instanceof HTMLElement &&
-      (target.isContentEditable || ["INPUT", "TEXTAREA"].includes(target.tagName))
-    )
-      return;
+    if (event.defaultPrevented || isEditingShortcutTarget(event.target)) return;
     const clipboard = event.clipboardData;
     if (!clipboard) return;
     const files = Array.from(clipboard.files);
@@ -327,7 +324,9 @@ export function installClipboard(
       return;
     }
     const text = clipboard.getData("text/plain");
-    if (!text.trim()) return;
+    // A disabled structured-paste binding must never turn a portable graph into
+    // a literal JSON text layer. Its capture listener owns this format.
+    if (!text.trim() || isMusArtClipboardText(text)) return;
     event.preventDefault();
     try {
       const layer = createLayer("text", {

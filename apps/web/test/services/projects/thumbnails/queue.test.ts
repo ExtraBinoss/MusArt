@@ -79,6 +79,57 @@ it("coalesces canonical commits, skips current pages, saves all missing composit
   await pipeline.dispose();
   expect(d.activity.dispose).toHaveBeenCalledOnce();
 });
+it("missing visible pages never replace a pending canonical all-page snapshot with older disk data", async () => {
+  const d = fixture(),
+    pipeline = new ThumbnailPipeline(d.store, d),
+    latest = {
+      ...d.project,
+      pages: d.project.pages.map((page) => ({ ...page, background: "#123456" })),
+    };
+  pipeline.schedule(latest);
+  const lease = await pipeline.acquire(d.project.id, ["two"]);
+  lease.release();
+  await pipeline.flush();
+  expect(d.store.load).not.toHaveBeenCalled();
+  expect(d.render).toHaveBeenCalledTimes(2);
+  expect(d.render.mock.calls.map(([page]) => page)).toEqual(latest.pages);
+  await pipeline.dispose();
+});
+it("coalesces missing lazy page requests instead of dropping earlier artboards", async () => {
+  const d = fixture(),
+    pipeline = new ThumbnailPipeline(d.store, d);
+  pipeline.request(d.project.id, ["page"]);
+  pipeline.request(d.project.id, ["two"]);
+  await pipeline.flush();
+  expect(d.store.load).toHaveBeenCalledOnce();
+  expect(d.render.mock.calls.map(([page]) => page.id)).toEqual(["page", "two"]);
+  await pipeline.dispose();
+});
+it("a visible-page miss cannot invalidate a canonical render already in progress", async () => {
+  const d = fixture(),
+    pipeline = new ThumbnailPipeline(d.store, d);
+  let finish!: (value: Awaited<ReturnType<typeof d.renderer.render>>) => void, started!: () => void;
+  const ready = new Promise<void>((resolve) => {
+    started = resolve;
+  });
+  d.render.mockImplementationOnce(() => {
+    started();
+    return new Promise((resolve) => {
+      finish = resolve;
+    });
+  });
+  pipeline.schedule(d.project);
+  const flushing = pipeline.flush();
+  await ready;
+  const lease = await pipeline.acquire(d.project.id, ["two"]);
+  lease.release();
+  finish({ blob: new Blob(["frame"], { type: "image/webp" }), width: 768, height: 768 });
+  await flushing;
+  expect(d.render).toHaveBeenCalledTimes(2);
+  expect(d.store.saveThumbnail).toHaveBeenCalledTimes(2);
+  expect(d.store.load).not.toHaveBeenCalled();
+  await pipeline.dispose();
+});
 it("never starts GPU work during pointer activity; explicit flush waits for quiet and cancellation removes queued idle callbacks", async () => {
   const d = fixture(),
     cancel = vi.fn();
@@ -264,14 +315,18 @@ it("prioritizes explicit previews before queued canonical and background jobs on
     page = d.project.pages[0]!;
   pipeline.schedule(d.project);
   const background = pipeline.preview("layer", page, {}, { edge: 96 });
+  const visible = pipeline.preview("visible-layer", page, {}, { edge: 96, priority: "visible" });
   const foreground = pipeline.preview("export", page, {}, { edge: 384, priority: "foreground" });
   await vi.advanceTimersByTimeAsync(0);
   await foreground;
   expect(d.render).toHaveBeenNthCalledWith(1, page, {}, expect.any(Function), 384);
+  await vi.runAllTimersAsync();
+  await visible;
+  expect(d.render).toHaveBeenNthCalledWith(2, page, {}, expect.any(Function), 96);
   await pipeline.flush();
   await vi.runAllTimersAsync();
   await background;
-  expect(d.render).toHaveBeenNthCalledWith(4, page, {}, expect.any(Function), 96);
+  expect(d.render).toHaveBeenNthCalledWith(5, page, {}, expect.any(Function), 96);
   await pipeline.dispose();
 });
 it("does not force canonical GPU work through an exhausted idle deadline and still honors explicit flush", async () => {

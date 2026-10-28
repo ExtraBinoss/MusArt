@@ -11,13 +11,11 @@ class ImageResource implements GpuResource {
     readonly texture: Texture,
     width: number,
     height: number,
-    private readonly bitmap?: ImageBitmap,
   ) {
     this.bytes = width * height * 4;
   }
   dispose(): void {
     this.texture.dispose();
-    this.bitmap?.close();
   }
 }
 function configure(texture: Texture): Texture {
@@ -31,13 +29,7 @@ function configure(texture: Texture): Texture {
 export class TextureSources {
   uploads = 0;
   private readonly prepared = new Map<string, Texture>();
-  constructor(
-    private readonly cache: GpuResourceCache,
-    private readonly options: { maxEdge?: number } = {},
-  ) {
-    if (options.maxEdge !== undefined && (!Number.isFinite(options.maxEdge) || options.maxEdge < 1))
-      throw new Error("Invalid source texture limit.");
-  }
+  constructor(private readonly cache: GpuResourceCache) {}
   async prepare(page: Composition, assets: Record<string, Asset>): Promise<void> {
     this.prepared.clear();
     const byParent = new Map<string | null, Layer[]>();
@@ -69,27 +61,7 @@ export class TextureSources {
         const image = await loadAsset(asset);
         const width = image.naturalWidth || asset.width,
           height = image.naturalHeight || asset.height;
-        const ratio = this.options.maxEdge
-          ? Math.min(1, this.options.maxEdge / Math.max(width, height))
-          : 1;
-        const bitmap =
-          ratio < 1
-            ? await createImageBitmap(image, {
-                resizeWidth: Math.max(1, Math.round(width * ratio)),
-                resizeHeight: Math.max(1, Math.round(height * ratio)),
-                resizeQuality: "high",
-                premultiplyAlpha: "none",
-                colorSpaceConversion: "none",
-                // TSL TextureNode compensates ImageBitmap flipY on the WebGL backend.
-                imageOrientation: "none",
-              })
-            : undefined;
-        entry = new ImageResource(
-          configure(new Texture(bitmap ?? image)),
-          bitmap?.width ?? width,
-          bitmap?.height ?? height,
-          bitmap,
-        );
+        entry = new ImageResource(configure(new Texture(image)), width, height);
         this.cache.set(key, entry);
         this.uploads++;
       }

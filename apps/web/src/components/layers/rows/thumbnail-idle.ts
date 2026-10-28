@@ -1,72 +1,69 @@
+import { yieldThumbnailInput } from "../../../services/projects/thumbnails/scheduling";
+
 interface Job {
   run: () => void | Promise<void>;
+  canceled: boolean;
 }
 const pending = new Set<Job>();
-let running = false;
-let idle: number | undefined, timer: ReturnType<typeof setTimeout> | undefined;
-const inputPending = () =>
-  (
-    navigator as Navigator & { scheduling?: { isInputPending?(): boolean } }
-  ).scheduling?.isInputPending?.() ?? false;
+const capacity = 4;
+let running = 0;
+let scheduled: AbortController | undefined;
+
 function stop() {
-  if (idle !== undefined) globalThis.cancelIdleCallback?.(idle);
-  if (timer !== undefined) clearTimeout(timer);
-  idle = undefined;
-  timer = undefined;
+  scheduled?.abort();
+  scheduled = undefined;
   if (!pending.size) document.removeEventListener("visibilitychange", wake);
 }
-function pump(deadline?: IdleDeadline) {
-  idle = undefined;
-  timer = undefined;
+function pump() {
+  scheduled = undefined;
   if (document.hidden) return;
-  if ((deadline && deadline.timeRemaining() < 4) || inputPending()) {
-    arm();
-    return;
-  }
-  const job = pending.values().next().value;
-  if (job) {
+  // Admission only prepares metadata and looks up cached blobs. The shared preview
+  // pipeline owns gesture guards and serializes every actual GPU submission.
+  let admitted = 0;
+  while (pending.size && running < capacity && admitted++ < capacity) {
+    const job = pending.values().next().value!;
     pending.delete(job);
-    running = true;
-    try {
-      const result = job.run();
-      if (result)
-        void result
-          .catch(() => undefined)
-          .finally(() => {
-            running = false;
-            arm();
-          });
-      else {
-        running = false;
+    running++;
+    void Promise.resolve()
+      .then(() => {
+        if (!job.canceled) return job.run();
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        running--;
         arm();
-      }
-    } catch (error) {
-      running = false;
-      arm();
-      throw error;
-    }
-  } else stop();
+      });
+  }
+  arm();
 }
 function arm() {
   if (!pending.size) {
     stop();
     return;
   }
-  if (document.hidden || running || idle !== undefined || timer !== undefined) return;
-  if (typeof requestIdleCallback === "function" && typeof cancelIdleCallback === "function")
-    idle = requestIdleCallback(pump);
-  else timer = setTimeout(() => pump(), 16);
+  if (document.hidden || running >= capacity || scheduled) return;
+  const controller = new AbortController();
+  scheduled = controller;
+  // Cached rows should not pay one idle callback/frame per decoded thumbnail.
+  // A task boundary still lets browser input run between small admission batches.
+  void yieldThumbnailInput(controller.signal).then(
+    () => {
+      if (scheduled === controller) pump();
+    },
+    () => undefined,
+  );
 }
 function wake() {
   if (!document.hidden) arm();
 }
-/** One shared request slot prevents visible rows from flooding the bounded GPU preview queue. */
+/** Four owned requests bound admission without serializing cached rows behind a cold GPU job. */
 export function scheduleLayerThumbnail(run: () => void | Promise<void>): () => void {
-  const job = { run };
+  const job = { run, canceled: false };
   pending.add(job);
   if (pending.size === 1) document.addEventListener("visibilitychange", wake);
   arm();
   return () => {
+    job.canceled = true;
     pending.delete(job);
     if (!pending.size) stop();
   };

@@ -86,7 +86,10 @@ export async function createRuntime(
     removeClipboard: (() => void) | undefined,
     stopDeferred: (() => void) | undefined,
     disposed = false;
-  const writes = new ProjectWriteQueue((project) => store.saveCurrent(project));
+  const writes = new ProjectWriteQueue(async (project) => {
+    await store.saveCurrent(project);
+    if (!disposed && engine.getSnapshot().project === project) thumbnails.schedule(project);
+  });
   const flush = async () => {
     await Promise.all([autosave?.flush(), journal.flush()]);
     await writes.flush();

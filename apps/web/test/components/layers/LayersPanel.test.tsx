@@ -22,6 +22,49 @@ function renderLayers() {
   data.mount(<Live />);
   return data;
 }
+test("virtual scroll retains memoized controls even while an attachment disables compositing", () => {
+  history.replaceState({}, "", "/?automation=1");
+  const d = renderLayers(),
+    effect = createEffect("brightness");
+  act(() => {
+    d.engine.execute({
+      type: "addLayers",
+      layers: Array.from({ length: 100 }, (_, at) =>
+        createLayer("rectangle", { name: `Window ${at}` }),
+      ),
+    });
+    d.engine.execute({ type: "updateLayers", ids: [d.rectangle.id], patch: { effects: [effect] } });
+  });
+  const page = d.engine.getSnapshot().project.pages[0]!;
+  act(() => {
+    attachmentSelection(d.engine).select(page, {
+      kind: "effect",
+      pageId: page.id,
+      layerId: d.rectangle.id,
+      effectId: effect.id,
+    });
+  });
+  const tree = screen.getByRole("tree", { name: "Calques" }),
+    compositing = screen.getByRole("group", { name: "Composition des calques" }),
+    menu = screen.getByRole("button", { name: "Actions des calques" }),
+    effects = screen.getByLabelText("Ajouter un effet"),
+    adjustments = screen.getByLabelText("Ajouter un réglage");
+  const before = [compositing, menu, effects, adjustments].map((node) => node.dataset.reactRenders),
+    panel = document.querySelector<HTMLElement>(".layers-panel")!,
+    panelBefore = Number(panel.dataset.reactRenders);
+  for (const top of [360, 720, 1080]) fireEvent.scroll(tree, { target: { scrollTop: top } });
+  expect(Number(panel.dataset.reactRenders)).toBeGreaterThan(panelBefore);
+  expect(
+    [compositing, menu, effects, adjustments].map((node) => node.dataset.reactRenders),
+  ).toEqual(before);
+  expect(screen.getByRole("textbox", { name: "Opacité" })).toBeDisabled();
+  act(() =>
+    d.engine.execute({ type: "updateLayers", ids: [d.rectangle.id], patch: { locked: true } }),
+  );
+  expect(effects).toBeDisabled();
+  expect(adjustments).toBeDisabled();
+  history.replaceState({}, "", "/");
+});
 test.each(["footer", "context"] as const)(
   "%s deletes the selected effect rather than its owner",
   async (surface) => {

@@ -22,6 +22,9 @@ import {
   Redo2,
   Magnet,
   Move,
+  Copy,
+  ClipboardPaste,
+  CopyPlus,
 } from "lucide-react";
 import type { SearchItem } from "./catalog/model";
 
@@ -50,6 +53,9 @@ const actions = {
   addPage: Plus,
   addTechnoArtboard: Wallpaper,
   redo: Redo2,
+  copy: Copy,
+  paste: ClipboardPaste,
+  copyComposition: CopyPlus,
   editorSettings: Settings2,
   enableSnapping: Magnet,
   disableSnapping: Move,

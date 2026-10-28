@@ -110,7 +110,7 @@ export const GRADIENT_PARAMETERS: readonly EffectParameter[] = Object.freeze([
   number("grain", 0.05, 0, 1),
   number("grainScale", 1, 0.5, 5),
   number("vignette", 0.12, 0, 1),
-  number("chromaticShift", 0, 0, 0.04, 0.001),
+  { ...number("chromaticShift", 0, 0, 0.04, 0.001), displayScale: 1000, unit: "‰" },
   number("borderRadius", 0, 0, 1024, 1, "px"),
   number("size", 44, 1, 480, 1, "px", ["ascii", "dither", "blocks", "glass", "folds"]),
   treatment("aspect", 1, 0.25, 4, ["blocks"]),

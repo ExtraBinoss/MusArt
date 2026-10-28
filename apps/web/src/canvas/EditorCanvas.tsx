@@ -27,6 +27,7 @@ import { useRenderMetrics } from "../state/session/render-metrics";
 import { EMPTY_PREVIEW_SOURCE, type PreviewSource } from "../state/session/preview-source";
 import {
   boxSelection,
+  clickSelection,
   patchesToCommands,
   selectedRoots,
   type Handle,
@@ -42,14 +43,12 @@ import { artboardStyle } from "./artboards/presentation";
 import { ArtboardHeadings } from "./artboards/ArtboardHeadings";
 import { InactiveArtboards } from "./artboards/InactiveArtboards";
 import type { ArtboardServices } from "./artboards/use-previews";
-import {
-  captureGestureOrigin,
-  isGestureOriginCurrent,
-  type GestureOrigin,
-} from "./interaction/gesture-origin";
+import { captureGestureOrigin, isGestureOriginCurrent } from "./interaction/gesture-origin";
 import "./artboards/artboards.css";
 import { QuickAdd } from "./quick-add/QuickAdd";
 import { SelectionOverlays } from "./selection/SelectionOverlays";
+import { useMarquee } from "./selection/use-marquee";
+import { prepareMarqueePage, type MarqueeScope } from "./selection/marquee-scope";
 import { useCanvasPresentation } from "./viewport/use-canvas-presentation";
 import { Rulers } from "./guides/Rulers";
 import { GuideOverlay } from "./guides/GuideOverlay";
@@ -75,11 +74,9 @@ export interface EditorCanvasProps {
   onDropFiles?: (files: File[]) => void;
   onImagePoint?: (layerId: string, x: number, y: number) => void;
 }
-interface Gesture extends TransformGesture {
-  origin: GestureOrigin;
+interface Gesture extends TransformGesture, MarqueeScope {
+  pointerId: number;
   mode: "pan" | "move" | "resize" | "box" | "draw";
-  from: Point;
-  client: Point;
   view: View;
   layers: Layer[];
   handle?: Handle;
@@ -134,7 +131,8 @@ export function EditorCanvas({
     gesture,
     patches: patchesRef,
   });
-  const [marquee, setMarquee] = useState<{ from: Point; to: Point } | null>(null);
+  const marqueeElement = useRef<HTMLDivElement>(null);
+  const marquee = useMarquee(marqueeElement);
   const [space, setSpace] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const wand = useWand({ port: services?.pixelSelection, store, tool, onError });
@@ -142,13 +140,16 @@ export function EditorCanvas({
   const pixelSelection = services?.pixelSelection;
   const cancelGesture = useCallback(() => {
     cancelWand();
+    const pointerId = gesture.current?.pointerId;
     gesture.current = null;
+    if (pointerId !== undefined && viewport.current?.hasPointerCapture(pointerId))
+      viewport.current.releasePointerCapture(pointerId);
     patchesRef.current = [];
     snapFeedback.clear();
     motion.stop();
     controller.setGesture([]);
-    setMarquee(null);
-  }, [motion, controller, cancelWand, snapFeedback]);
+    marquee.clear();
+  }, [motion, controller, cancelWand, snapFeedback, marquee]);
   const displayPage = page;
   const displayIndex = useMemo(() => createLayerGeometryIndex(displayPage), [displayPage]);
   const beforePaint = useCallback(() => {
@@ -180,6 +181,7 @@ export function EditorCanvas({
     const point = pagePoint(event);
     gesture.current = {
       origin: captureGestureOrigin(engine),
+      pointerId: event.pointerId,
       mode: "resize",
       from: point,
       current: point,
@@ -190,12 +192,15 @@ export function EditorCanvas({
     };
   }
   function handlePointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
+    if (event.button !== 0) return;
+    if (gesture.current && gesture.current.pointerId !== event.pointerId) return;
     const layer = page.layers.find((item) => item.id === event.currentTarget.dataset.layerId);
     const handle = event.currentTarget.dataset.handle as Handle;
     if (layer) beginHandle(event, layer, handle);
   }
   function pointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    if ((event.button !== 0 && event.button !== 1) || controller.read().playback) return;
+    if (event.button < 0 || event.button > 2 || controller.read().playback) return;
+    if (gesture.current && gesture.current.pointerId !== event.pointerId) return;
     if ((event.target as HTMLElement).closest("[data-canvas-control]")) return;
     event.preventDefault();
     event.currentTarget.focus({ preventScroll: true });
@@ -203,17 +208,17 @@ export function EditorCanvas({
     const point = pagePoint(event);
     const base = {
       origin: captureGestureOrigin(engine),
+      pointerId: event.pointerId,
       from: point,
       current: point,
       client: { x: event.clientX, y: event.clientY },
       view: viewRef.current,
       layers: [] as Layer[],
     };
-    if (tool === "hand" || space || event.button === 1) {
+    if (event.button !== 2 && (tool === "hand" || space || event.button === 1)) {
       gesture.current = { ...base, mode: "pan" };
       return;
     }
-    attachmentSelection(engine).clear();
     const world = workspace.read();
     const worldPoint = clientToPage(
       { x: event.clientX, y: event.clientY },
@@ -222,6 +227,23 @@ export function EditorCanvas({
       world,
     );
     const targetBoard = artboardAt(world, worldPoint);
+    const additive = event.shiftKey || event.ctrlKey || event.metaKey;
+    if (event.button === 2) {
+      gesture.current = {
+        ...base,
+        mode: "box",
+        boxSelection: {
+          initial: engine.getSnapshot().selection,
+          additive,
+          intersect: true,
+          ...(targetBoard && targetBoard.id !== controller.read().page.id
+            ? { pageId: targetBoard.id }
+            : {}),
+        },
+      };
+      return;
+    }
+    attachmentSelection(engine).clear();
     if (targetBoard && targetBoard.id !== controller.read().page.id) {
       engine.setPage(targetBoard.id);
       const hit = createLayerGeometryIndex(controller.read().page).hitTest({
@@ -276,18 +298,17 @@ export function EditorCanvas({
       return;
     }
     if (!hit) {
-      if (!event.shiftKey) engine.select([]);
-      gesture.current = { ...base, mode: "box" };
-      setMarquee({ from: point, to: point });
+      const initial = engine.getSnapshot().selection;
+      if (!additive) engine.select([]);
+      gesture.current = {
+        ...base,
+        mode: "box",
+        boxSelection: { initial, additive, intersect: false },
+      };
+      marquee.show(point, point);
       return;
     }
-    const ids = event.shiftKey
-      ? snapshot.selection.includes(hit.id)
-        ? snapshot.selection.filter((id) => id !== hit.id)
-        : [...snapshot.selection, hit.id]
-      : snapshot.selection.includes(hit.id)
-        ? snapshot.selection
-        : [hit.id];
+    const ids = clickSelection(engine.getSnapshot().selection, hit.id, additive);
     engine.select(ids);
     gesture.current = { ...base, mode: "move", layers: selectedRoots(currentPage, ids) };
   }
@@ -297,11 +318,12 @@ export function EditorCanvas({
       return;
     }
     const active = gesture.current;
-    if (!active) return;
+    if (!active || active.pointerId !== event.pointerId) return;
     if (!isGestureOriginCurrent(engine, active.origin)) {
       cancelGesture();
       return;
     }
+    prepareMarqueePage(engine, gesture, event, pagePoint);
     const point = pagePoint(event);
     active.current = point;
     if (active.mode === "pan") {
@@ -316,7 +338,8 @@ export function EditorCanvas({
       return;
     }
     if (active.mode === "box") {
-      setMarquee({ from: active.from, to: point });
+      if (Math.hypot(event.clientX - active.client.x, event.clientY - active.client.y) > 3)
+        marquee.show(active.from, point);
       return;
     }
     if (active.mode === "draw" && active.shape) {
@@ -334,11 +357,12 @@ export function EditorCanvas({
       return;
     }
     const active = gesture.current;
-    if (!active) return;
+    if (!active || active.pointerId !== event.pointerId) return;
     if (!isGestureOriginCurrent(engine, active.origin)) {
       cancelGesture();
       return;
     }
+    prepareMarqueePage(engine, gesture, event, pagePoint);
     if (active.mode === "move" || active.mode === "resize") {
       const finalPoint = pagePoint(event);
       if (
@@ -369,10 +393,20 @@ export function EditorCanvas({
         engine.execute({ type: "addLayers", layers: [shape] });
         engine.select([shape.id]);
       } else if (active.mode === "box") {
-        const selected = boxSelection(controller.read().page, active.from, active.current);
-        engine.select(
-          event.shiftKey ? [...new Set([...snapshot.selection, ...selected])] : selected,
-        );
+        const box = active.boxSelection!;
+        if (
+          !box.intersect ||
+          Math.hypot(event.clientX - active.client.x, event.clientY - active.client.y) > 3
+        ) {
+          const selected = boxSelection(
+            controller.read().page,
+            active.from,
+            pagePoint(event),
+            box.intersect ? "intersect" : "contain",
+          );
+          attachmentSelection(engine).clear();
+          engine.select(box.additive ? [...new Set([...box.initial, ...selected])] : selected);
+        }
       }
     } catch (error) {
       onError?.(error instanceof Error ? error.message : String(error));
@@ -382,6 +416,9 @@ export function EditorCanvas({
     }
   }
 
+  function pointerCancel(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!gesture.current || gesture.current.pointerId === event.pointerId) cancelGesture();
+  }
   const selected = useMemo(() => {
     const ids = new Set(snapshot.selection);
     return displayPage.layers.filter(
@@ -401,7 +438,13 @@ export function EditorCanvas({
       onPointerDown={pointerDown}
       onPointerMove={pointerMove}
       onPointerUp={pointerUp}
-      onPointerCancel={cancelGesture}
+      onPointerCancel={pointerCancel}
+      onLostPointerCapture={(event) => {
+        if (gesture.current || wand.active()) pointerCancel(event);
+      }}
+      onContextMenu={(event) => {
+        if (!(event.target as HTMLElement).closest("[data-canvas-control]")) event.preventDefault();
+      }}
       onKeyDown={(event) => {
         if ((event.target as HTMLElement).closest("[data-canvas-control]")) return;
         if (event.code === "Space") {
@@ -409,14 +452,15 @@ export function EditorCanvas({
           setSpace(true);
         }
         if (event.key === "Escape") {
+          const pendingBox = gesture.current?.boxSelection;
           const pixelSelection = Boolean(services?.pixelSelection?.read());
-          if (pixelSelection) {
+          if (pixelSelection || pendingBox?.intersect) {
             event.preventDefault();
             event.stopPropagation();
           }
           wand.escape();
           cancelGesture();
-          if (!pixelSelection) engine.select([]);
+          if (!pixelSelection && !pendingBox?.intersect) engine.select([]);
         }
       }}
       onKeyUp={(event) => {
@@ -500,17 +544,7 @@ export function EditorCanvas({
               onHandle={handlePointerDown}
             />
           )}
-          {marquee && (
-            <div
-              className="canvas-marquee"
-              style={{
-                left: Math.min(marquee.from.x, marquee.to.x),
-                top: Math.min(marquee.from.y, marquee.to.y),
-                width: Math.abs(marquee.to.x - marquee.from.x),
-                height: Math.abs(marquee.to.y - marquee.from.y),
-              }}
-            />
-          )}
+          <div ref={marqueeElement} className="canvas-marquee" hidden />
         </div>
         <PixelSelectionOverlay
           port={services?.pixelSelection}

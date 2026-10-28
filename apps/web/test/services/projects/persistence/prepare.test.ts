@@ -5,6 +5,7 @@ import {
   withFullOriginals,
 } from "../../../../src/services/projects/persistence/prepare";
 import { project } from "./fixtures";
+import { THUMBNAIL_RENDER_VERSION } from "../../../../src/services/projects/thumbnails/model";
 it("captures only changed originals while preserving the full document and exact hash/accounting metadata", () => {
   const input = project(),
     basis = {
@@ -21,6 +22,7 @@ it("captures only changed originals while preserving the full document and exact
     basis,
   );
   expect(value.frame).toMatchObject({
+    thumbnailRenderVersion: THUMBNAIL_RENDER_VERSION,
     basis: "assets:1",
     expectedRevision: "before",
     remember: false,

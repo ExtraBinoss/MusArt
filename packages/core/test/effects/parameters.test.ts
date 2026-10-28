@@ -10,6 +10,44 @@ import {
 const gradient = createEffect("gradient");
 const parameter = (key: string) =>
   getEffectDefinition("gradient").parameters.find((item) => item.key === key)!;
+it("Stripe always exposes its four consumed colors even when the incoming palette count is two", () => {
+  const stripes = createEffect("gradient", { settings: { style: "stripes", colorCount: 2 } });
+  for (let index = 0; index < 6; index++)
+    expect(isEffectParameterVisible(stripes, parameter(`color${index}`))).toBe(index < 4);
+  for (const key of [
+    "colorCount",
+    "blending",
+    "flow",
+    "twist",
+    "pressureX",
+    "pressureY",
+    "shadows",
+    "highlights",
+    "influence0",
+    "influence5",
+  ])
+    expect(isEffectParameterVisible(stripes, parameter(key))).toBe(false);
+  for (const key of [
+    "brightness",
+    "saturation",
+    "hue",
+    "contrast",
+    "frequencyX",
+    "frequencyY",
+    "amplitude",
+    "rotation",
+    "time",
+    "duration",
+    "scale",
+  ])
+    expect(isEffectParameterVisible(stripes, parameter(key))).toBe(true);
+  expect(
+    isEffectParameterVisible(
+      createEffect("gradient", { settings: { style: "mesh", colorCount: 2 } }),
+      parameter("color2"),
+    ),
+  ).toBe(false);
+});
 it("applies named presets atomically, edits independent settings and preserves legacy controls", () => {
   const patch = patchEffectParameter(gradient, parameter("preset"), "citrus");
   expect(patch).toMatchObject({

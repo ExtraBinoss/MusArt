@@ -3,6 +3,7 @@ import { createLayer, createPage, getWorldMatrix, transformPoint } from "@musart
 import {
   applyPreview,
   boxSelection,
+  clickSelection,
   movePatches,
   patchesToCommands,
   resizePatch,
@@ -121,6 +122,10 @@ describe("transient canvas gestures", () => {
     const invisible = createLayer("rectangle", { visible: false });
     const page = createPage({ layers: [a, b, group, hidden, locked, invisible] });
     expect(boxSelection(page, { x: 100, y: 100 }, { x: 0, y: 0 })).toEqual([a.id]);
+    expect(boxSelection(page, { x: 100, y: 100 }, { x: 0, y: 0 }, "intersect")).toEqual([
+      a.id,
+      b.id,
+    ]);
   });
   it("keeps preview outside the document and produces one command per selected root", () => {
     const layer = createLayer("rectangle");
@@ -141,6 +146,47 @@ describe("transient canvas gestures", () => {
       },
     ]);
   });
+});
+
+it("click selection toggles only under an additive modifier and preserves an existing multiple selection", () => {
+  expect(clickSelection(["a"], "b", true)).toEqual(["a", "b"]);
+  expect(clickSelection(["a", "b"], "a", true)).toEqual(["b"]);
+  expect(clickSelection(["a", "b"], "a", false)).toEqual(["a", "b"]);
+  expect(clickSelection(["a"], "b", false)).toEqual(["b"]);
+});
+
+it("intersection marquee includes crossing nested bounds but excludes edge-only contact, locked and mask subtrees", () => {
+  const group = createLayer("group", {
+    id: "group",
+    x: 40,
+    y: 40,
+    width: 80,
+    height: 80,
+    rotation: 20,
+  });
+  const child = createLayer("rectangle", {
+    id: "child",
+    parentId: group.id,
+    x: 10,
+    y: 10,
+    width: 30,
+    height: 30,
+  });
+  const locked = createLayer("group", { id: "locked", locked: true, width: 300, height: 300 });
+  const lockedChild = createLayer("rectangle", { id: "locked-child", parentId: locked.id });
+  const edge = createLayer("rectangle", { id: "edge", x: 200, y: 0, width: 50, height: 50 });
+  const mask = createLayer("group", { id: "mask", maskSource: true });
+  const maskChild = createLayer("rectangle", { id: "mask-child", parentId: mask.id });
+  const page = createPage({ layers: [group, child, locked, lockedChild, edge, mask, maskChild] });
+  expect(boxSelection(page, { x: 0, y: 0 }, { x: 200, y: 200 }, "intersect")).toEqual([
+    "group",
+    "child",
+  ]);
+  expect(boxSelection(page, { x: 65, y: 65 }, { x: 75, y: 75 }, "contain")).toEqual([]);
+  expect(boxSelection(page, { x: 65, y: 65 }, { x: 75, y: 75 }, "intersect")).toEqual([
+    "group",
+    "child",
+  ]);
 });
 it("previews and commits ten thousand distinct moves as one validated atomic undo entry", () => {
   const layers = Array.from({ length: 10000 }, (_, index) =>

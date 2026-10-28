@@ -2,7 +2,11 @@ import type { Effect } from "../document/model";
 import { ensure, type EngineErrorCode } from "../errors";
 import { getEffectDefinition } from "./catalog";
 import type { EffectParameter } from "./definition";
-import { GRADIENT_DEFAULT_SETTINGS, resolveGradientSettings } from "./gradient/definition";
+import {
+  GRADIENT_DEFAULT_SETTINGS,
+  resolveGradientSettings,
+  STRIPE_UNUSED_PARAMETERS,
+} from "./gradient/definition";
 import type { GradientSettingKey } from "./gradient/model";
 import { GRADIENT_PRESETS, gradientPresetSettings } from "./gradient/presets";
 
@@ -57,6 +61,15 @@ export function getEffectParameter(
   return value;
 }
 export function isEffectParameterVisible(effect: Effect, parameter: EffectParameter): boolean {
+  if (
+    effect.type === "gradient" &&
+    settingsScoped(parameter) &&
+    resolveGradientSettings(effect.settings).style === "stripes"
+  ) {
+    if (parameter.kind === "color")
+      return ["color0", "color1", "color2", "color3"].includes(parameter.key);
+    if (STRIPE_UNUSED_PARAMETERS.includes(parameter.key as GradientSettingKey)) return false;
+  }
   if (!("visibleWhen" in parameter) || !parameter.visibleWhen) return true;
   const condition = parameter.visibleWhen;
   return condition.values.includes(String(resolveGradientSettings(effect.settings)[condition.key]));

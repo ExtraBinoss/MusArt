@@ -4,7 +4,7 @@ export function hasThumbnailBudget(deadline?: IdleDeadline): boolean {
     !deadline || (typeof deadline.timeRemaining === "function" && deadline.timeRemaining() >= 8)
   );
 }
-/** Yield the completed GPU frame to queued input before native encoding can synchronously flush it. */
+/** Yield to queued input before admitting a GPU frame; never yield between draw and native snapshot. */
 export function yieldThumbnailInput(signal: AbortSignal): Promise<void> {
   signal.throwIfAborted();
   const scheduler = (

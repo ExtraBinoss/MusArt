@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { NearestFilter, NoColorSpace } from "three/webgpu";
+import { LinearFilter, NoColorSpace } from "three/webgpu";
 import { createGlyphAtlas } from "../../../src/effects/ascii/atlas";
 import { installCanvasMock } from "../../canvas-fixture";
 let context: ReturnType<typeof installCanvasMock>;
@@ -17,8 +17,8 @@ describe("immutable ASCII glyph upload", () => {
     expect(atlas.image.height).toBe(16);
     expect(atlas.isCanvasTexture).toBe(true);
     expect(atlas.colorSpace).toBe(NoColorSpace);
-    expect(atlas.minFilter).toBe(NearestFilter);
-    expect(atlas.magFilter).toBe(NearestFilter);
+    expect(atlas.minFilter).toBe(LinearFilter);
+    expect(atlas.magFilter).toBe(LinearFilter);
     expect(atlas.generateMipmaps).toBe(false);
     expect(context.fillText).toHaveBeenCalledTimes(16);
     expect(context.fillText).toHaveBeenLastCalledWith("#", 248, 8);

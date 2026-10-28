@@ -1,4 +1,5 @@
 import { MoreHorizontal, Copy, Trash2, ScanLine } from "lucide-react";
+import { memo, useRef } from "react";
 import type { Composition, EnginePort } from "@musart/core";
 import { useTranslation } from "react-i18next";
 import {
@@ -14,7 +15,8 @@ import { layerActions } from "./menu/actions";
 import "./messages";
 import { attachmentSelection } from "../../state/selection/attachments";
 import { useAttachmentSelection } from "../../state/selection/use-attachment-selection";
-export function LayerMenu({
+import { useRenderMetrics } from "../../state/session/render-metrics";
+export const LayerMenu = memo(function LayerMenu({
   engine,
   page,
   selection,
@@ -25,6 +27,8 @@ export function LayerMenu({
   selection: string[];
   run: (action: () => void) => void;
 }) {
+  const element = useRef<HTMLButtonElement>(null);
+  useRenderMetrics(element);
   const { t } = useTranslation();
   const attachment = useAttachmentSelection(engine);
   const state = layerSelection(page, selection),
@@ -32,7 +36,7 @@ export function LayerMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <IconButton label={t("layerActions")}>
+        <IconButton ref={element} label={t("layerActions")}>
           <MoreHorizontal size={15} />
         </IconButton>
       </DropdownMenuTrigger>
@@ -65,4 +69,4 @@ export function LayerMenu({
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+});

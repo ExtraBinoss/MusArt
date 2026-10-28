@@ -114,3 +114,6 @@ export type { FillGradient, GradientStop } from "./paint/gradient";
 export { validateFillGradient, sampleGradientColor } from "./paint/gradient";
 export { selectionComposition } from "./export/selection";
 export { createLayerGeometryIndex, LayerGeometryIndex } from "./layers/geometry-index";
+export { copyContent, parseClipboard, MAX_CLIPBOARD_CHARACTERS } from "./clipboard/content";
+export { pasteContent } from "./clipboard/paste";
+export type { ClipboardContent } from "./clipboard/model";

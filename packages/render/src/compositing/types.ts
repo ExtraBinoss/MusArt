@@ -27,6 +27,13 @@ export interface GpuStats {
   primitiveInstances?: number;
   primitiveBytes?: number;
 }
+/** Ceil true fractional coverage without adding a texel for multiplication roundoff. */
+export function rasterExtent(extent: number, scale: number): number {
+  const value = extent * scale;
+  if (!Number.isFinite(value) || extent <= 0 || scale <= 0)
+    throw new RangeError("Invalid raster extent.");
+  return Math.max(1, Math.ceil(value - Math.max(1, Math.abs(value)) * Number.EPSILON * 4));
+}
 export function assertRenderSize(page: Composition, scale: number): void {
   if (!Number.isFinite(scale) || scale <= 0 || scale > 8)
     throw new Error("Échelle d’export invalide (0–8×).");

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { EFFECT_CATALOG, getEffectDefinition } from "../../src/effects/catalog";
-import { getEffectParameter } from "../../src/effects/parameters";
+import { getEffectParameter, patchEffectParameter } from "../../src/effects/parameters";
 import { GRADIENT_DEFINITION } from "../../src/effects/gradient/definition";
 import { createEffect, createLayer } from "../../src/document/factories";
 import type { EffectType } from "../../src/document/model";
@@ -48,7 +48,7 @@ describe("portable effect definitions", () => {
   });
   it("provides typed controls in document units and meaningful display metadata", () => {
     const expected: Record<EffectType, string[]> = {
-      dither: ["amount", "scale", "levels", "color"],
+      dither: ["amount", "scale", "levels", "color", "seed"],
       ascii: ["amount", "scale", "color"],
       brightness: ["amount"],
       contrast: ["amount"],
@@ -65,7 +65,7 @@ describe("portable effect definitions", () => {
       sepia: ["amount"],
       threshold: ["amount"],
       posterize: ["amount", "levels"],
-      grain: ["amount", "scale", "color"],
+      grain: ["amount", "scale", "color", "seed"],
       halftone: ["amount", "scale", "color"],
       vignette: ["amount", "scale"],
       gradient: GRADIENT_DEFINITION.parameters.map((parameter) => parameter.key),
@@ -100,17 +100,17 @@ describe("portable effect definitions", () => {
               displayScale: 100,
               unit: "%",
             });
-          if (parameter.key === "scale" && definition.type !== "gradient")
+          if (parameter.key === "scale" && !["gradient", "vignette"].includes(definition.type))
             expect(parameter.unit).toBe("px");
         }
       }
     }
     expect(
       getEffectDefinition("ascii").parameters.find((parameter) => parameter.key === "scale"),
-    ).toMatchObject({ max: 48 });
+    ).toMatchObject({ max: 128 });
     expect(
       getEffectDefinition("dither").parameters.find((parameter) => parameter.key === "scale"),
-    ).toMatchObject({ max: 24 });
+    ).toMatchObject({ max: 128 });
   });
   it("keeps shared definitions deeply immutable while factories produce independent effect instances", () => {
     const definition = getEffectDefinition("dither");
@@ -132,5 +132,25 @@ describe("portable effect definitions", () => {
     expect(() => getEffectDefinition("unknown" as never)).toThrow("Effet inconnu");
     expect(() => getEffectDefinition("toString" as never)).toThrow("Effet inconnu");
     expect(() => createEffect("unknown" as never)).toThrow("Effet inconnu");
+  });
+  it("accepts the complete supported pixel and quantization ranges and real deterministic seeds", () => {
+    const ascii = createEffect("ascii"),
+      dither = createEffect("dither"),
+      grain = createEffect("grain");
+    const scale = getEffectDefinition("ascii").parameters.find(
+      (parameter) => parameter.key === "scale",
+    )!;
+    const levels = getEffectDefinition("dither").parameters.find(
+      (parameter) => parameter.key === "levels",
+    )!;
+    expect(patchEffectParameter(ascii, scale, 128)).toEqual({ scale: 128 });
+    expect(patchEffectParameter(dither, levels, 256)).toEqual({ levels: 256 });
+    for (const effect of [dither, grain]) {
+      const seed = getEffectDefinition(effect.type).parameters.find(
+        (parameter) => parameter.key === "seed",
+      )!;
+      expect(patchEffectParameter(effect, seed, 145)).toEqual({ seed: 145 });
+      expect(() => patchEffectParameter(effect, seed, 145.5)).toThrow();
+    }
   });
 });

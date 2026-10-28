@@ -15,6 +15,10 @@ import { i18n } from "../i18n";
 import "../../components/search/keybindings/messages";
 import { pixelSelectionShortcut } from "../../services/selection/wand/shortcuts";
 import { attachmentSelection } from "../selection/attachments";
+import {
+  createClipboardController,
+  nativeClipboardShortcut,
+} from "../../services/clipboard/controller";
 
 export function useShortcuts(
   engine: EnginePort,
@@ -28,6 +32,18 @@ export function useShortcuts(
   useLayoutEffect(() => {
     latest.current = { engine, services, onTask, enabled };
   }, [engine, services, onTask, enabled]);
+  useEffect(
+    () =>
+      createClipboardController(engine).retain({
+        enabled: () => latest.current.engine === engine && latest.current.enabled,
+        onError: (error) => {
+          void latest.current.onTask(() => {
+            throw error;
+          });
+        },
+      }),
+    [engine],
+  );
   useEffect(() => {
     const stopPreferences = keybindings.subscribe(() => {});
     const onKeyDown = (event: KeyboardEvent) => {
@@ -48,6 +64,7 @@ export function useShortcuts(
       const target = event.target;
       if (target instanceof HTMLElement && target.closest("[data-keybinding-capture]")) return;
       if (command !== "action:save" && isEditingShortcutTarget(target)) return;
+      if (nativeClipboardShortcut(command, event)) return;
       const fallback = documentShortcut(command, { engine, save: services.saveProject, setTool });
       if (command === "action:undo" || command === "action:redo" || command === "action:deselect")
         setPreview(null);

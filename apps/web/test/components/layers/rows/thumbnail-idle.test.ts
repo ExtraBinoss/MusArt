@@ -1,127 +1,128 @@
-import { afterEach, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { scheduleLayerThumbnail } from "../../../../src/components/layers/rows/thumbnail-idle";
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.stubGlobal("scheduler", undefined);
+});
 afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
-test("visible rows share one idle callback, yield when the deadline/input budget is exhausted, and cancel individually", () => {
-  const callbacks: IdleRequestCallback[] = [],
-    request = vi.fn((callback: IdleRequestCallback) => {
-      callbacks.push(callback);
-      return callbacks.length;
-    }),
-    cancel = vi.fn();
-  vi.stubGlobal("requestIdleCallback", request);
-  vi.stubGlobal("cancelIdleCallback", cancel);
+test("visible rows share a cancellable task and cached rows do not wait for idle callbacks", async () => {
+  const callbacks: (() => void)[] = [];
+  const postTask = vi.fn(
+    (task: () => void, options: { signal: AbortSignal }) =>
+      new Promise<void>((resolve, reject) => {
+        callbacks.push(() => {
+          task();
+          resolve();
+        });
+        options.signal.addEventListener("abort", () => reject(options.signal.reason), {
+          once: true,
+        });
+      }),
+  );
+  vi.stubGlobal("scheduler", { postTask });
+  const idle = vi.fn();
+  vi.stubGlobal("requestIdleCallback", idle);
   const first = vi.fn(),
-    second = vi.fn(),
-    stopFirst = scheduleLayerThumbnail(first),
+    second = vi.fn();
+  const stopFirst = scheduleLayerThumbnail(first),
     stopSecond = scheduleLayerThumbnail(second);
-  expect(request).toHaveBeenCalledOnce();
-  callbacks[0]!({ timeRemaining: () => 0 } as IdleDeadline);
-  expect(first).not.toHaveBeenCalled();
-  expect(request).toHaveBeenCalledTimes(2);
+  expect(postTask).toHaveBeenCalledOnce();
+  expect(postTask.mock.calls[0]![1]).toMatchObject({ priority: "user-visible" });
+  expect(idle).not.toHaveBeenCalled();
   stopFirst();
-  callbacks[1]!({ timeRemaining: () => 10 } as IdleDeadline);
+  callbacks[0]!();
+  await vi.runAllTimersAsync();
   expect(first).not.toHaveBeenCalled();
   expect(second).toHaveBeenCalledOnce();
   stopSecond();
-  expect(request).toHaveBeenCalledTimes(2);
-  const stop = scheduleLayerThumbnail(first);
+  const canceled = vi.fn(),
+    stop = scheduleLayerThumbnail(canceled);
+  const signal = postTask.mock.calls.at(-1)![1].signal;
   stop();
-  expect(cancel).toHaveBeenCalled();
+  expect(signal.aborted).toBe(true);
+  callbacks.at(-1)!();
+  await vi.runAllTimersAsync();
+  expect(canceled).not.toHaveBeenCalled();
 });
-test("fallback timers prepare at most one row per frame and hidden documents resume without polling", () => {
-  vi.useFakeTimers();
-  vi.stubGlobal("requestIdleCallback", undefined);
-  const first = vi.fn(),
-    second = vi.fn();
-  const a = scheduleLayerThumbnail(first),
-    b = scheduleLayerThumbnail(second);
-  vi.advanceTimersByTime(15);
-  expect(first).not.toHaveBeenCalled();
-  vi.advanceTimersByTime(1);
-  expect(first).toHaveBeenCalledOnce();
-  expect(second).not.toHaveBeenCalled();
-  vi.advanceTimersByTime(16);
-  expect(second).toHaveBeenCalledOnce();
-  a();
-  b();
-  const visibility = vi.spyOn(document, "hidden", "get").mockReturnValue(true);
-  const stop = scheduleLayerThumbnail(first);
-  vi.advanceTimersByTime(1000);
-  expect(first).toHaveBeenCalledOnce();
-  visibility.mockReturnValue(false);
+test("hidden documents resume on visibility without polling or leaking admission tasks", async () => {
+  const hidden = vi.spyOn(document, "hidden", "get").mockReturnValue(true);
+  const run = vi.fn(),
+    stop = scheduleLayerThumbnail(run);
+  await vi.runAllTimersAsync();
+  expect(vi.getTimerCount()).toBe(0);
+  expect(run).not.toHaveBeenCalled();
+  hidden.mockReturnValue(false);
   document.dispatchEvent(new Event("visibilitychange"));
-  vi.advanceTimersByTime(16);
-  expect(first).toHaveBeenCalledTimes(2);
+  await vi.runAllTimersAsync();
+  expect(run).toHaveBeenCalledOnce();
   stop();
+  const delayed = vi.fn(),
+    stopDelayed = scheduleLayerThumbnail(delayed);
+  hidden.mockReturnValue(true);
+  await vi.runAllTimersAsync();
+  expect(delayed).not.toHaveBeenCalled();
+  hidden.mockReturnValue(false);
+  document.dispatchEvent(new Event("visibilitychange"));
+  await vi.runAllTimersAsync();
+  expect(delayed).toHaveBeenCalledOnce();
+  stopDelayed();
 });
-
-test("native pending input defers preparation until its next idle slot", () => {
-  const callbacks: IdleRequestCallback[] = [];
-  vi.stubGlobal("requestIdleCallback", (callback: IdleRequestCallback) => {
-    callbacks.push(callback);
-    return callbacks.length;
-  });
-  vi.stubGlobal("cancelIdleCallback", vi.fn());
-  const busy = vi.fn(() => true);
-  vi.stubGlobal("navigator", { scheduling: { isInputPending: busy } });
-  const task = vi.fn(),
-    stop = scheduleLayerThumbnail(task);
-  callbacks[0]!({ timeRemaining: () => 10 } as IdleDeadline);
-  expect(task).not.toHaveBeenCalled();
-  busy.mockReturnValue(false);
-  callbacks[1]!({ timeRemaining: () => 10 } as IdleDeadline);
-  expect(task).toHaveBeenCalledOnce();
-  stop();
+test("cancellation after task admission still prevents an unstarted request microtask", async () => {
+  const second = vi.fn();
+  const stopFirst = scheduleLayerThumbnail(() => stopSecond());
+  const stopSecond = scheduleLayerThumbnail(second);
+  await vi.runAllTimersAsync();
+  expect(second).not.toHaveBeenCalled();
+  stopFirst();
+  stopSecond();
 });
-
-test("awaits the owned request before admitting another row, preventing preview-capacity eviction", async () => {
-  vi.useFakeTimers();
-  vi.stubGlobal("requestIdleCallback", undefined);
-  let resolve!: () => void;
-  const first = vi.fn(
-    () =>
-      new Promise<void>((done) => {
-        resolve = done;
-      }),
+test("one cold request never blocks cached rows, while at most four requests own pipeline slots", async () => {
+  const done: (() => void)[] = [];
+  const held = Array.from({ length: 4 }, () =>
+    vi.fn(() => new Promise<void>((resolve) => done.push(resolve))),
   );
   const rest = Array.from({ length: 40 }, () => vi.fn());
-  const stops = [
-    scheduleLayerThumbnail(first),
-    ...rest.map((task) => scheduleLayerThumbnail(task)),
-  ];
-  await vi.advanceTimersByTimeAsync(16);
-  expect(first).toHaveBeenCalledOnce();
-  await vi.advanceTimersByTimeAsync(1000);
+  const stops = [...held, ...rest].map(scheduleLayerThumbnail);
+  await vi.runAllTimersAsync();
+  expect(held.every((task) => task.mock.calls.length === 1)).toBe(true);
   expect(rest.every((task) => !task.mock.calls.length)).toBe(true);
-  resolve();
-  await vi.advanceTimersByTimeAsync(16);
-  expect(rest[0]).toHaveBeenCalledOnce();
-  expect(rest[1]).not.toHaveBeenCalled();
-  for (const stop of stops) stop();
+  done[1]!();
+  await vi.runAllTimersAsync();
+  expect(rest.every((task) => task.mock.calls.length === 1)).toBe(true);
+  expect(done).toHaveLength(4);
+  done[0]!();
+  done[2]!();
+  done[3]!();
+  await vi.runAllTimersAsync();
+  stops.forEach((stop) => stop());
+  expect(vi.getTimerCount()).toBe(0);
 });
-test("a rejected owned request releases admission and canceled pending rows never run", async () => {
-  vi.useFakeTimers();
-  vi.stubGlobal("requestIdleCallback", undefined);
-  let reject!: (error: Error) => void;
-  const a = scheduleLayerThumbnail(
-    () =>
-      new Promise<void>((_resolve, fail) => {
-        reject = fail;
-      }),
+test("failed owned requests release admission and canceled pending rows never run", async () => {
+  const reject: ((error: Error) => void)[] = [];
+  const held = Array.from(
+    { length: 4 },
+    () => () => new Promise<void>((_resolve, fail) => reject.push(fail)),
   );
+  const stops = held.map(scheduleLayerThumbnail);
   const next = vi.fn(),
     skipped = vi.fn(),
-    b = scheduleLayerThumbnail(next),
-    c = scheduleLayerThumbnail(skipped);
-  await vi.advanceTimersByTimeAsync(16);
-  c();
-  reject(Error("real preview failure"));
-  await vi.advanceTimersByTimeAsync(16);
+    throws = vi.fn(() => {
+      throw Error("preparation failed");
+    });
+  stops.push(scheduleLayerThumbnail(next), scheduleLayerThumbnail(throws));
+  const cancel = scheduleLayerThumbnail(skipped);
+  await vi.runAllTimersAsync();
+  cancel();
+  reject[0]!(Error("real preview failure"));
+  await vi.runAllTimersAsync();
   expect(next).toHaveBeenCalledOnce();
+  expect(throws).toHaveBeenCalledOnce();
   expect(skipped).not.toHaveBeenCalled();
-  a();
-  b();
+  reject.slice(1).forEach((fail) => fail(Error("closing")));
+  await vi.runAllTimersAsync();
+  stops.forEach((stop) => stop());
 });

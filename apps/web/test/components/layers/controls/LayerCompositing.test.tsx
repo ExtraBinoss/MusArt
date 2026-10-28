@@ -4,6 +4,7 @@ import { LayerCompositing } from "../../../../src/components/layers/controls/Lay
 import { useEngine, previewAtom } from "../../../../src/state/session/editor";
 import { setup } from "../../../support/ui";
 import { choose } from "../../../support/select";
+import { i18n } from "../../../../src/state/i18n";
 function fixture(selection: "none" | "single" | "mixed") {
   const d = setup();
   if (selection === "mixed")
@@ -37,6 +38,46 @@ test("disables empty selection and presents mixed values until one absolute edit
   fixture("none");
   expect(screen.getByRole("textbox", { name: "Opacité" })).toBeDisabled();
   expect(screen.getByRole("combobox", { name: "Fusion" })).toBeDisabled();
+});
+
+test("stable virtual-window parent props skip compositing renders while selected paint and language rebind", async () => {
+  history.replaceState({}, "", "/?automation=1");
+  const d = setup();
+  d.engine.select([d.rectangle.id]);
+  let snapshot = d.engine.getSnapshot();
+  const props = {
+    engine: d.engine,
+    page: snapshot.project.pages[0]!,
+    selection: snapshot.selection,
+    run: d.run,
+  };
+  const view = d.mount(<LayerCompositing {...props} />),
+    group = screen.getByRole("group", { name: "Composition des calques" });
+  const initial = group.dataset.reactRenders;
+  view.rerender(<LayerCompositing {...props} />);
+  view.rerender(<LayerCompositing {...props} />);
+  expect(group.dataset.reactRenders).toBe(initial);
+  act(() =>
+    d.engine.execute({ type: "updateLayers", ids: [d.rectangle.id], patch: { opacity: 0.35 } }),
+  );
+  snapshot = d.engine.getSnapshot();
+  view.rerender(<LayerCompositing {...props} page={snapshot.project.pages[0]!} />);
+  expect(screen.getByRole("textbox", { name: "Opacité" })).toHaveValue("35");
+  expect(Number(group.dataset.reactRenders)).toBeGreaterThan(Number(initial));
+  act(() =>
+    d.engine.execute({ type: "updateLayers", ids: [d.rectangle.id], patch: { locked: true } }),
+  );
+  snapshot = d.engine.getSnapshot();
+  view.rerender(<LayerCompositing {...props} page={snapshot.project.pages[0]!} />);
+  expect(screen.getByRole("textbox", { name: "Opacité" })).toBeDisabled();
+  await act(async () => {
+    await i18n.changeLanguage("en");
+  });
+  expect(screen.getByRole("group", { name: "Layer compositing" })).toBe(group);
+  await act(async () => {
+    await i18n.changeLanguage("fr");
+  });
+  history.replaceState({}, "", "/");
 });
 test("resetting mixed opacity to its first value still restores every layer with one undo", () => {
   const d = fixture("mixed");

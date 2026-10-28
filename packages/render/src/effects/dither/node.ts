@@ -5,11 +5,11 @@ import { bayer4 } from "./bayer";
 export function ditherNode({ source, controls }: EffectNodeContext) {
   const position = uv();
   const sample = sampleEffect(source, controls, position);
-  const cell = floor(position.mul(controls.resolution).div(controls.scale));
+  const cell = floor(position.mul(controls.logicalResolution).div(controls.scale));
   const blocked = sampleEffect(
     source,
     controls,
-    cell.add(0.5).mul(controls.scale).div(controls.resolution),
+    cell.add(0.5).mul(controls.scale).div(controls.logicalResolution),
   );
   const luma = vec3(dot(blocked.rgb, vec3(0.2126, 0.7152, 0.0722)));
   const channel = mix(luma, blocked.rgb, controls.color);

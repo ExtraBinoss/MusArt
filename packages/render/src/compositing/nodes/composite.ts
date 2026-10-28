@@ -20,12 +20,19 @@ export function normalNode(controls: SourceControls) {
   return vec4(straight, sample.a.mul(controls.opacity));
 }
 export function copyControls() {
-  return { source: texture(new Texture()), normalize: uniform(0), flipY: uniform(0) };
+  return {
+    source: texture(new Texture()),
+    normalize: uniform(0),
+    premultiply: uniform(0),
+    flipY: uniform(0),
+  };
 }
 export function copyNode(controls: ReturnType<typeof copyControls>) {
   const sample = controls.source.sample(textureUv(controls.flipY));
   return vec4(
-    mix(sample.rgb, sample.rgb.div(max(sample.a, 0.000001)), controls.normalize),
+    mix(sample.rgb, sample.rgb.div(max(sample.a, 0.000001)), controls.normalize).mul(
+      mix(1, sample.a, controls.premultiply),
+    ),
     sample.a,
   );
 }

@@ -1,14 +1,6 @@
 import { memo, useRef, useState } from "react";
 import { motion } from "motion/react";
-import {
-  ChevronDown,
-  ChevronRight,
-  Eye,
-  EyeOff,
-  LockKeyhole,
-  LockKeyholeOpen,
-  ScanLine,
-} from "lucide-react";
+import { ChevronRight, Eye, EyeOff, LockKeyhole, LockKeyholeOpen, ScanLine } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   createLayerGeometryIndex,
@@ -115,6 +107,7 @@ export const LayerRow = memo(function LayerRow({
       tabIndex={0}
       draggable={!locked}
       data-layer-id={layer.id}
+      data-layer-tree-key={`layer:${layer.id}`}
       data-dragging={dragging || undefined}
       className={`layer-row ${selected && !attachmentTarget ? "selected" : ""} ${!layer.visible ? "is-hidden" : ""} ${drop ? `drop-${drop}` : ""}`}
       style={{ position: "absolute", left: 0, right: 0, top, paddingLeft: 12 + depth * 16 }}
@@ -156,7 +149,7 @@ export const LayerRow = memo(function LayerRow({
             onToggle(layer.id, layer.kind === "group");
           }}
         >
-          {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+          <ChevronRight size={12} className="layer-chevron-icon" data-expanded={expanded} />
         </button>
       )}
       <LayerThumbnail

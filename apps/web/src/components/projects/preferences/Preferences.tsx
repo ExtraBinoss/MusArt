@@ -5,6 +5,7 @@ import { Laptop, Sun, Moon, Keyboard, SlidersHorizontal, Paintbrush, Magnet } fr
 import { applyTheme, themeAtom } from "../../../state/session/editor";
 import { changeLanguage } from "../../../state/i18n";
 import { snappingAtom, DEFAULT_SNAPPING } from "../../../state/snapping/preferences";
+import { clipboardAtom } from "../../../state/clipboard/preferences";
 import { SegmentedTabs } from "../../shared/segmented/SegmentedTabs";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../ui/tabs";
 import { Switch } from "../../ui/switch";
@@ -47,7 +48,8 @@ export function Preferences({
 } = {}) {
   const { t, i18n } = useTranslation();
   const [theme, setTheme] = useAtom(themeAtom),
-    [snapping, setSnapping] = useAtom(snappingAtom);
+    [snapping, setSnapping] = useAtom(snappingAtom),
+    [clipboard, setClipboard] = useAtom(clipboardAtom);
   const modes = [
     ["system", Laptop],
     ["light", Sun],
@@ -72,6 +74,19 @@ export function Preferences({
       <div className="preferences-content">
         <Panel section="general">
           <div className="preferences-card">
+            <label className="preferences-setting-row">
+              <span>
+                <strong>{t("preferences:clipboardImages")}</strong>
+                <small className="preferences-setting-description">
+                  {t("preferences:clipboardImagesDescription")}
+                </small>
+              </span>
+              <Switch
+                aria-label={t("preferences:clipboardImages")}
+                checked={clipboard.includeImages}
+                onCheckedChange={setClipboard}
+              />
+            </label>
             <div className="preferences-setting-row">
               <div>
                 <strong>{t("language")}</strong>

@@ -22,7 +22,7 @@ import { readGradient, treatmentControls } from "./treatments/shared";
 export function gradientFinishNode(context: EffectNodeContext) {
   const u = treatmentControls(context),
     position = uv(),
-    resolution = context.controls.resolution;
+    resolution = context.controls.logicalResolution;
   const sample = readGradient(context, position),
     offset = position.sub(0.5).mul(u.chromaticShift);
   let color: Node<"vec3"> = vec3(
@@ -49,7 +49,8 @@ export function gradientFinishNode(context: EffectNodeContext) {
   const sdf = length(max(q, 0))
     .add(min(max(q.x, q.y), 0))
     .sub(radius);
-  const rounded = radius.greaterThan(0).select(smoothstep(-0.75, 0.75, sdf).oneMinus(), 1);
+  const edge = max(context.controls.pixelFootprint.x, context.controls.pixelFootprint.y).mul(0.75);
+  const rounded = radius.greaterThan(0).select(smoothstep(edge.negate(), edge, sdf).oneMinus(), 1);
   const original = context.backdrop
     ? sampleEffect(
         context.backdrop,

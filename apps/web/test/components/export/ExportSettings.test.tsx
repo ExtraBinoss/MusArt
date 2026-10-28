@@ -1,9 +1,10 @@
-import { expect, test, vi } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { setup } from "../../support/ui";
 import { ExportSettings } from "../../../src/components/export/ExportSettings";
 import "../../../src/components/export/messages";
 import { ExportScopeError } from "../../../src/services/session/export-scope";
+afterEach(() => vi.unstubAllGlobals());
 test("exports cropped selected content by default and switches explicitly to the complete artboard", async () => {
   const data = setup(),
     change = vi.fn();
@@ -59,6 +60,70 @@ test("releases the pending gate and reports a rejecting task runner without simu
   await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("L’export a échoué"));
   expect(pending.current).toBe(false);
   expect(change).not.toHaveBeenCalled();
+});
+
+test("uses the selected scope aspect before a blob and preserves expanded state while its resolution changes", async () => {
+  vi.stubGlobal("devicePixelRatio", 1);
+  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockImplementation(function (
+    this: HTMLElement,
+  ) {
+    return this.classList.contains("export-preview") ? 300 : 0;
+  });
+  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockImplementation(function (
+    this: HTMLElement,
+  ) {
+    return this.classList.contains("export-preview") ? 200 : 0;
+  });
+  const BaseURL = URL;
+  let sequence = 0;
+  vi.stubGlobal(
+    "URL",
+    class extends BaseURL {
+      static createObjectURL() {
+        return `blob:preview-${++sequence}`;
+      }
+      static revokeObjectURL = vi.fn();
+    },
+  );
+  const data = setup(),
+    method = vi.fn().mockResolvedValue({
+      blob: new Blob(["encoded"], { type: "image/webp" }),
+      width: 128,
+      height: 128,
+    });
+  data.services.previewExport = method;
+  const view = data.mount(
+    <ExportSettings
+      page={data.page}
+      pageCount={1}
+      selection={[data.rectangle.id]}
+      services={data.services}
+      onTask={data.onTask}
+      onOpenChange={vi.fn()}
+      pendingRef={{ current: false }}
+    />,
+  );
+  const body = document.querySelector(".export-preview-body");
+  await waitFor(() =>
+    expect(screen.getByRole("img")).toHaveStyle({ width: "300px", height: "150px" }),
+  );
+  expect(method).toHaveBeenCalledTimes(1);
+  expect(method).toHaveBeenLastCalledWith(
+    { selection: [data.rectangle.id], edge: 300, priority: "foreground" },
+    expect.any(AbortSignal),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Agrandir l’aperçu" }));
+  await waitFor(() =>
+    expect(screen.getByRole("img")).toHaveStyle({ width: "600px", height: "300px" }),
+  );
+  expect(method).toHaveBeenCalledTimes(2);
+  expect(method).toHaveBeenLastCalledWith(
+    { selection: [data.rectangle.id], edge: 600, priority: "foreground" },
+    expect.any(AbortSignal),
+  );
+  expect(document.querySelector(".export-preview-body")).toBe(body);
+  expect(body).toHaveAttribute("data-expanded", "true");
+  view.unmount();
 });
 
 test("translates a stale queued request and keeps the export open", async () => {

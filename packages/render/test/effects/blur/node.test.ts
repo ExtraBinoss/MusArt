@@ -10,7 +10,7 @@ it("keeps radius amount and scale live in one graph while preserving the unclutt
   expectSourceAlpha(node, fixture.input);
   expect(graph.has(fixture.controls.amount)).toBe(true);
   expect(graph.has(fixture.controls.scale)).toBe(true);
-  expect(graph.has(fixture.controls.resolution)).toBe(true);
+  expect(graph.has(fixture.controls.logicalResolution)).toBe(true);
   const cacheKey = node.getCacheKey();
   updateEffectUniforms(
     fixture.controls,

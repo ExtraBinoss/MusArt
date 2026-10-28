@@ -7,7 +7,7 @@ import { gradientHash } from "../../shared/noise";
 import { premultiply, readGradient, treatmentControls, unpremultiply } from "../shared";
 export function glassNode(context: EffectNodeContext) {
   const u = treatmentControls(context),
-    resolution = context.controls.resolution,
+    resolution = context.controls.logicalResolution,
     size = max(2, u.size);
   const px = uv().mul(resolution),
     angle = u.treatmentRotation.mul(Math.PI / 180);

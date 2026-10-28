@@ -9,7 +9,9 @@ describe("dither node", () => {
     expectSourceAlpha(node, fixture.input);
     for (const control of Object.entries(fixture.controls)
       .filter(([name]) =>
-        ["amount", "scale", "levels", "color", "sourceFlipY", "seed", "resolution"].includes(name),
+        ["amount", "scale", "levels", "color", "sourceFlipY", "seed", "logicalResolution"].includes(
+          name,
+        ),
       )
       .map(([, node]) => node))
       expect(graph.has(control as never)).toBe(true);

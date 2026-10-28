@@ -6,6 +6,7 @@ interface Resource {
   page: Composition;
   key: string;
   revision: number;
+  edge: number;
   services: Pick<EditorServices, "previewExport">;
   url: string | null;
   failed: boolean;
@@ -19,6 +20,7 @@ export function useExportPreview(
   selectionOnly: boolean,
   revision: number,
   services: Pick<EditorServices, "previewExport">,
+  edge: number | null,
 ) {
   const key = useMemo(
     () => JSON.stringify(selectionOnly ? selection : []),
@@ -27,7 +29,7 @@ export function useExportPreview(
   const requestedIds = useMemo(() => JSON.parse(key) as string[], [key]);
   const [resource, setResource] = useState<Resource | null>(null);
   useEffect(() => {
-    if (!services.previewExport) return;
+    if (!services.previewExport || edge === null) return;
     const controller = new AbortController();
     let url: string | undefined;
     void Promise.resolve()
@@ -35,8 +37,8 @@ export function useExportPreview(
         controller.signal.throwIfAborted();
         return services.previewExport!(
           selectionOnly
-            ? { selection: requestedIds, edge: 384, priority: "foreground" }
-            : { all: true, edge: 384, priority: "foreground" },
+            ? { selection: requestedIds, edge, priority: "foreground" }
+            : { all: true, edge, priority: "foreground" },
           controller.signal,
         );
       })
@@ -49,6 +51,7 @@ export function useExportPreview(
               page,
               key,
               revision,
+              edge,
               services,
               url,
               failed: false,
@@ -60,6 +63,7 @@ export function useExportPreview(
               page,
               key,
               revision,
+              edge,
               services,
               url: null,
               failed: true,
@@ -74,6 +78,7 @@ export function useExportPreview(
               page,
               key,
               revision,
+              edge,
               services,
               url: null,
               failed: true,
@@ -86,13 +91,14 @@ export function useExportPreview(
       controller.abort();
       if (url) URL.revokeObjectURL(url);
     };
-  }, [page, requestedIds, selectionOnly, revision, services, key]);
+  }, [page, requestedIds, selectionOnly, revision, services, key, edge]);
   if (!services.previewExport)
     return { url: null, loading: false, failed: true, width: 0, height: 0 };
   const current =
     resource?.page === page &&
     resource.key === key &&
     resource.revision === revision &&
+    resource.edge === edge &&
     resource.services === services;
   return {
     url: current ? resource.url : null,

@@ -2,6 +2,7 @@ import { getAncestors, getWorldMatrix, invertMatrix, type EnginePort } from "@mu
 import type { Tool } from "../../canvas/EditorCanvas";
 import type { CommandId } from "./model";
 import { capturePresentationDelete } from "../selection/attachments";
+import { createClipboardController } from "../../services/clipboard/controller";
 
 interface Context {
   engine: EnginePort;
@@ -34,6 +35,9 @@ export function documentShortcut(
     };
   const actions: Partial<Record<CommandId, () => void | Promise<void>>> = {
     "action:save": context.save,
+    "action:copy": () => createClipboardController(engine).copy(),
+    "action:paste": () => createClipboardController(engine).paste(),
+    "action:copyComposition": () => createClipboardController(engine).copy(true),
     "action:undo": engine.undo,
     "action:redo": engine.redo,
     "action:duplicate": selected("duplicateLayers"),

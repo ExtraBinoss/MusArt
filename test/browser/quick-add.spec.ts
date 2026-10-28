@@ -58,12 +58,17 @@ test("workspace plus and empty-world quick add use real shared actions, native f
   await expect(addButton).toHaveCSS("opacity", "0");
   await addButton.focus();
   await expect(addButton).toHaveCSS("opacity", "1");
+  await expect(page.getByRole("tooltip")).toHaveCount(0);
+  await addButton.hover();
   await expect(
     page.getByRole("tooltip", { name: "Ajouter un plan de travail", exact: true }),
   ).toBeVisible();
+  await page.mouse.move(1590, 990);
   await page.keyboard.press("Tab");
   const options = page.locator('.artboard-heading[data-active="true"] .artboard-options');
   await options.focus();
+  await expect(page.getByRole("tooltip")).toHaveCount(0);
+  await options.hover();
   await expect(
     page.getByRole("tooltip", { name: "Options du plan de travail", exact: true }),
   ).toBeVisible();

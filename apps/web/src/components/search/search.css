@@ -2,6 +2,12 @@
   flex-shrink: 0;
 }
 .magic-search-dialog[data-slot="dialog-content"] {
+  position: fixed;
+  left: 50%;
+  display: grid;
+  border: 1px solid var(--border);
+  background: var(--popover);
+  outline: none;
   z-index: 51;
   top: min(15vh, 125px);
   translate: -50% 0;
@@ -14,6 +20,12 @@
   box-shadow:
     0 20px 90px #0004,
     0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent);
+}
+.magic-search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: #0008;
 }
 .magic-search-command[data-slot="command"] {
   background: transparent;

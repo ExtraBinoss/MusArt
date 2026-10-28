@@ -2,6 +2,24 @@ import { expect, test, vi } from "vitest";
 import { EditorEngine, createLayer, createPage, createProject, createEffect } from "@musart/core";
 import { attachmentSelection } from "../../../src/state/selection/attachments";
 import { documentShortcut } from "../../../src/state/keybindings/document-actions";
+import { createClipboardController } from "../../../src/services/clipboard/controller";
+test("headless clipboard shortcuts use the shared platform controller", async () => {
+  const engine = new EditorEngine(createProject()),
+    controller = createClipboardController(engine);
+  const copy = vi.spyOn(controller, "copy").mockResolvedValue(),
+    paste = vi.spyOn(controller, "paste").mockResolvedValue();
+  const context = { engine, save: vi.fn(async () => {}), setTool: vi.fn() };
+  try {
+    await documentShortcut("action:copy", context)!();
+    await documentShortcut("action:copyComposition", context)!();
+    await documentShortcut("action:paste", context)!();
+    expect(copy.mock.calls).toEqual([[], [true]]);
+    expect(paste).toHaveBeenCalledOnce();
+  } finally {
+    copy.mockRestore();
+    paste.mockRestore();
+  }
+});
 test("runs the same document commands without a UI bridge and keeps directional commits atomic", async () => {
   const layer = createLayer("rectangle"),
     engine = new EditorEngine(createProject({ pages: [createPage({ layers: [layer] })] })),

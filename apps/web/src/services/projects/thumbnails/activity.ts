@@ -1,12 +1,16 @@
 export interface ActivityPort {
   busy(): boolean;
   interacting?(): boolean;
+  visibleBusy?(): boolean;
   subscribe(listener: () => void): () => void;
   dispose(): void;
 }
 /** Real input postpones optional GPU work; one quiet timer replaces polling or idle render loops. */
 export class ThumbnailActivity implements ActivityPort {
   private readonly pointers = new Set<number>();
+  private readonly keys = new Set<string>();
+  private dragging = false;
+  private dragGeneration = 0;
   private until = 0;
   private wheelUntil = 0;
   private wheelTimer: ReturnType<typeof setTimeout> | undefined;
@@ -21,8 +25,12 @@ export class ThumbnailActivity implements ActivityPort {
     for (const type of ["pointerup", "pointercancel", "lostpointercapture"])
       surface.addEventListener(type, this.up, true);
     surface.addEventListener("wheel", this.wheel, true);
-    surface.addEventListener("keydown", this.quiet, true);
+    surface.addEventListener("keydown", this.keyDown, true);
+    surface.addEventListener("keyup", this.keyUp, true);
+    surface.addEventListener("dragstart", this.dragStart, true);
+    for (const type of ["dragend", "drop"]) surface.addEventListener(type, this.dragEnd, true);
     surface.addEventListener("blur", this.blur);
+    surface.document.addEventListener("visibilitychange", this.notify);
   }
   private inputPending = () => {
     const scheduling = (
@@ -32,8 +40,26 @@ export class ThumbnailActivity implements ActivityPort {
     ).scheduling;
     return scheduling?.isInputPending?.({ includeContinuous: true }) ?? false;
   };
-  busy = () => this.pointers.size > 0 || Date.now() < this.until || this.inputPending();
-  interacting = () => this.pointers.size > 0 || Date.now() < this.wheelUntil || this.inputPending();
+  busy = () =>
+    this.surface.document.hidden ||
+    this.dragging ||
+    this.pointers.size > 0 ||
+    this.keys.size > 0 ||
+    Date.now() < this.until ||
+    this.inputPending();
+  interacting = () =>
+    this.surface.document.hidden ||
+    this.dragging ||
+    this.pointers.size > 0 ||
+    Date.now() < this.wheelUntil ||
+    this.inputPending();
+  visibleBusy = () =>
+    this.surface.document.hidden ||
+    this.dragging ||
+    this.pointers.size > 0 ||
+    this.keys.size > 0 ||
+    Date.now() < this.wheelUntil ||
+    this.inputPending();
   subscribe = (listener: () => void) => {
     this.listeners.add(listener);
     return () => {
@@ -48,6 +74,33 @@ export class ThumbnailActivity implements ActivityPort {
     clearTimeout(this.timer);
     this.timer = setTimeout(this.notify, this.quietMs);
     this.notify();
+  };
+  private keyDown = (event: Event) => {
+    const key = event as KeyboardEvent;
+    this.keys.add(key.code || key.key || "");
+    this.quiet();
+  };
+  private keyUp = (event: Event) => {
+    const key = event as KeyboardEvent;
+    this.keys.delete(key.code || key.key || "");
+    this.notify();
+  };
+  private dragStart = (event: Event) => {
+    const generation = ++this.dragGeneration;
+    this.dragging = true;
+    this.quiet();
+    // A canceled native drag has no later dragend. Read cancellation after the
+    // source's bubbling handlers, without releasing a newer drag or disposed owner.
+    queueMicrotask(() => {
+      if (this.dragGeneration !== generation || !event.defaultPrevented) return;
+      this.dragging = false;
+      this.notify();
+    });
+  };
+  private dragEnd = () => {
+    this.dragGeneration++;
+    this.dragging = false;
+    this.quiet();
   };
   private wheel = () => {
     this.wheelUntil = Date.now() + 100;
@@ -64,12 +117,18 @@ export class ThumbnailActivity implements ActivityPort {
     this.quiet();
   };
   private blur = () => {
+    this.dragGeneration++;
+    this.dragging = false;
     this.pointers.clear();
+    this.keys.clear();
     this.wheelUntil = 0;
     clearTimeout(this.wheelTimer);
     this.quiet();
   };
   dispose(): void {
+    this.dragGeneration++;
+    this.dragging = false;
+    this.keys.clear();
     clearTimeout(this.timer);
     clearTimeout(this.wheelTimer);
     this.surface.removeEventListener("pointermove", this.quiet, true);
@@ -77,8 +136,13 @@ export class ThumbnailActivity implements ActivityPort {
     for (const type of ["pointerup", "pointercancel", "lostpointercapture"])
       this.surface.removeEventListener(type, this.up, true);
     this.surface.removeEventListener("wheel", this.wheel, true);
-    this.surface.removeEventListener("keydown", this.quiet, true);
+    this.surface.removeEventListener("keydown", this.keyDown, true);
+    this.surface.removeEventListener("keyup", this.keyUp, true);
+    this.surface.removeEventListener("dragstart", this.dragStart, true);
+    for (const type of ["dragend", "drop"])
+      this.surface.removeEventListener(type, this.dragEnd, true);
     this.surface.removeEventListener("blur", this.blur);
+    this.surface.document.removeEventListener("visibilitychange", this.notify);
     this.listeners.clear();
   }
 }

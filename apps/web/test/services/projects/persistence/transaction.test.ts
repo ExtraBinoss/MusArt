@@ -7,6 +7,7 @@ import { prepareProjectWrite } from "../../../../src/services/projects/persisten
 import { retireProject } from "../../../../src/services/projects/lifecycle";
 import { manifestBytes } from "../../../../src/services/projects/records";
 import { fixture } from "./fixtures";
+import { THUMBNAIL_RENDER_VERSION } from "../../../../src/services/projects/thumbnails/model";
 it("writes originals, manifest, live accounting and preferences atomically, with delta-only warm writes", async () => {
   const d = await fixture();
   try {
@@ -14,6 +15,7 @@ it("writes originals, manifest, live accounting and preferences atomically, with
     expect(first).toMatchObject({ projectId: d.project.id, assetsRevision: "assets:1" });
     expect(await d.db.get("preferences", "last-project")).toBe(d.project.id);
     const record = (await d.db.get("projects", d.project.id))!;
+    expect(record.thumbnailRenderVersion).toBe(THUMBNAIL_RENDER_VERSION);
     expect(record.bytes!.manifest).toBe(manifestBytes(record));
     const next = prepareProjectWrite(
       { ...d.project, name: "Changed" },

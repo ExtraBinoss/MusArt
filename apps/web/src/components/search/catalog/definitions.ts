@@ -143,6 +143,27 @@ export const ACTIONS: readonly ActionDefinition[] = [
     gate: "redo",
   },
   {
+    action: "copy",
+    category: "edit",
+    label: "search:copy",
+    terms: "copy clipboard layers items copier presse-papiers calques éléments",
+    shortcut: ["Mod", "C"],
+    gate: "selection",
+  },
+  {
+    action: "paste",
+    category: "edit",
+    label: "search:paste",
+    terms: "paste clipboard layers items coller presse-papiers calques éléments",
+    shortcut: ["Mod", "V"],
+  },
+  {
+    action: "copyComposition",
+    category: "edit",
+    label: "search:copyComposition",
+    terms: "copy composition artboard page clipboard json share copier partager plan travail",
+  },
+  {
     action: "duplicate",
     category: "edit",
     label: "duplicate",

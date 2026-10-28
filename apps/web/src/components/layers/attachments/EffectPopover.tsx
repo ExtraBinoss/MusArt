@@ -9,6 +9,7 @@ import {
   type EnginePort,
   type Layer,
   type Effect,
+  EFFECT_COMPOSITE_MODES,
 } from "@musart/core";
 import { useTranslation } from "react-i18next";
 import { Popover, PopoverTrigger, PopoverContent } from "../../ui/popover";
@@ -97,9 +98,12 @@ function EffectDetails({
   const edit = useLayerPreview(engine, page, [layer.id], run);
   const disabled = createLayerGeometryIndex(page).isLocked(layer.id);
   function update(effect: Effect, patch: Partial<Effect>, preview = false) {
-    const effects = layer.effects.map((item) =>
-      item.id === effect.id ? { ...item, ...patch } : item,
-    );
+    const effects = layer.effects.map((item) => {
+      if (item.id !== effect.id) return item;
+      const next = { ...item, ...patch };
+      if ("composite" in patch && patch.composite === undefined) delete next.composite;
+      return next;
+    });
     if (preview) edit.preview({ effects });
     else edit.commit({ effects });
   }
@@ -148,6 +152,7 @@ function EffectDetails({
             </div>
             <div className="effect-compositing">
               <NumberInput
+                identity={effect}
                 resetValue={100}
                 label={t("opacity")}
                 scrubLabel={<Sun size={14} aria-hidden="true" />}
@@ -176,6 +181,34 @@ function EffectDetails({
                 onValueChange={(mode) => update(effect, { blendMode: mode as Effect["blendMode"] })}
               />
             </div>
+            <label className="effect-select-field">
+              <span>{t("effectControls:composite")}</span>
+              <SelectField
+                label={t("effectControls:composite")}
+                value={effect.composite ?? "default"}
+                disabled={disabled}
+                options={[
+                  { value: "default", label: t("effectControls:replacement") },
+                  ...EFFECT_COMPOSITE_MODES.map((value) => ({
+                    value,
+                    label: t(`effectControls:operation.${value}`),
+                  })),
+                ]}
+                onPreview={(mode) =>
+                  update(
+                    effect,
+                    { composite: mode === "default" ? undefined : (mode as Effect["composite"]) },
+                    true,
+                  )
+                }
+                onPreviewCancel={edit.cancel}
+                onValueChange={(mode) =>
+                  update(effect, {
+                    composite: mode === "default" ? undefined : (mode as Effect["composite"]),
+                  })
+                }
+              />
+            </label>
             <EffectParameters
               effect={effect}
               disabled={disabled}

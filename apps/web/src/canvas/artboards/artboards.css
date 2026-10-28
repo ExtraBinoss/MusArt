@@ -7,7 +7,7 @@
 .canvas-artboard-inactive:focus-visible {
   outline: 2px solid var(--ring);
 }
-.canvas-artboard-backdrop {
+.canvas-artboard.canvas-artboard-backdrop {
   background-image:
     linear-gradient(
       var(--artboard-background, transparent),
@@ -19,7 +19,7 @@
     );
   background-size: 16px 16px;
 }
-.canvas-artboard-editor {
+.canvas-artboard.canvas-artboard-editor {
   background: transparent;
 }
 .canvas-artboard-backdrop > img {

@@ -9,17 +9,13 @@ export type {
   EffectParameter,
   EffectDefinition,
 } from "./definition";
-import { defineEffect, AMOUNT, SCALE, LEVELS, COLOR } from "./definition";
+import { defineEffect, AMOUNT, SCALE, LEVELS, COLOR, SEED } from "./definition";
 import type { EffectDefinition } from "./definition";
 import { GRADIENT_DEFINITION } from "./gradient/definition";
 /** Portable effect metadata shared by factories, validation and client controls. */
 export const EFFECT_CATALOG: Readonly<Record<EffectType, EffectDefinition>> = Object.freeze({
-  dither: defineEffect("dither", {}, [AMOUNT, SCALE, LEVELS, COLOR]),
-  ascii: defineEffect("ascii", { scale: 10, levels: 10, color: true }, [
-    AMOUNT,
-    { ...SCALE, max: 48 },
-    COLOR,
-  ]),
+  dither: defineEffect("dither", {}, [AMOUNT, SCALE, LEVELS, COLOR, SEED]),
+  ascii: defineEffect("ascii", { scale: 10, levels: 10, color: true }, [AMOUNT, SCALE, COLOR]),
   brightness: defineEffect("brightness", { amount: 0.5 }, [AMOUNT], "adjustment"),
   contrast: defineEffect("contrast", { amount: 0.5 }, [AMOUNT], "adjustment"),
   grayscale: defineEffect("grayscale", {}, [AMOUNT], "adjustment"),
@@ -34,15 +30,13 @@ export const EFFECT_CATALOG: Readonly<Record<EffectType, EffectDefinition>> = Ob
   invert: defineEffect("invert", {}, [AMOUNT], "adjustment"),
   sepia: defineEffect("sepia", {}, [AMOUNT], "adjustment"),
   threshold: defineEffect("threshold", { amount: 0.5 }, [AMOUNT], "adjustment"),
-  posterize: defineEffect(
-    "posterize",
-    { levels: 6 },
-    [AMOUNT, { ...LEVELS, max: 32 }],
-    "adjustment",
-  ),
-  grain: defineEffect("grain", { amount: 0.2, scale: 1 }, [AMOUNT, SCALE, COLOR]),
-  halftone: defineEffect("halftone", { scale: 8 }, [AMOUNT, { ...SCALE, max: 48 }, COLOR]),
-  vignette: defineEffect("vignette", { amount: 0.5, scale: 2 }, [AMOUNT, { ...SCALE, max: 8 }]),
+  posterize: defineEffect("posterize", { levels: 6 }, [AMOUNT, LEVELS], "adjustment"),
+  grain: defineEffect("grain", { amount: 0.2, scale: 1 }, [AMOUNT, SCALE, COLOR, SEED]),
+  halftone: defineEffect("halftone", { scale: 8 }, [AMOUNT, SCALE, COLOR]),
+  vignette: defineEffect("vignette", { amount: 0.5, scale: 2 }, [
+    AMOUNT,
+    { ...SCALE, labelKey: "effectControls:falloff", unit: "×" },
+  ]),
   gradient: GRADIENT_DEFINITION,
 });
 

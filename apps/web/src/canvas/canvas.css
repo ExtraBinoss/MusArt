@@ -76,10 +76,10 @@
 .canvas-recenter {
   position: absolute;
   right: 20px;
-  bottom: 28px;
-  height: 32px;
+  bottom: 24px;
+  height: 40px;
   padding-inline: 12px;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 11px;
   z-index: 5;
 }

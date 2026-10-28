@@ -266,7 +266,7 @@ describe("direct GPU preview ownership and scheduling", () => {
     release();
     await d.resources.dispose();
   });
-  it("changes zoom density only across quality buckets and publishes the actual scale", async () => {
+  it("tracks minification and quantized magnification while publishing the actual scale", async () => {
     const d = fixture(),
       density = vi.fn();
     const release = d.resources.activate(d.scene, d.camera, d.invalidate, d.error, density);
@@ -277,7 +277,16 @@ describe("direct GPU preview ownership and scheduling", () => {
     expect(density).toHaveBeenLastCalledWith(1);
     d.resources.setDensity(0.5);
     await frame();
-    expect(gpu.render).toHaveBeenCalledTimes(1);
+    expect(gpu.render).toHaveBeenCalledTimes(2);
+    expect(gpu.render).toHaveBeenLastCalledWith(
+      page,
+      {},
+      { scale: 0.5, canRender: expect.any(Function) },
+    );
+    expect(density).toHaveBeenLastCalledWith(0.5);
+    d.resources.setDensity(0.50000000001);
+    await frame();
+    expect(gpu.render).toHaveBeenCalledTimes(2);
     d.resources.setDensity(4);
     await frame();
     expect(gpu.render).toHaveBeenLastCalledWith(
@@ -289,11 +298,11 @@ describe("direct GPU preview ownership and scheduling", () => {
     d.resources.setDensity(4);
     d.resources.setDensity(-1);
     await frame();
-    expect(gpu.render).toHaveBeenCalledTimes(2);
+    expect(gpu.render).toHaveBeenCalledTimes(3);
     release();
     await d.resources.dispose();
     d.resources.setDensity(2);
-    expect(gpu.render).toHaveBeenCalledTimes(2);
+    expect(gpu.render).toHaveBeenCalledTimes(3);
   });
   it("shares the R3F renderer, presents texture directly, updates frustum and compiles display material only once", async () => {
     const d = fixture();

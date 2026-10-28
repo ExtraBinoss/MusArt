@@ -53,3 +53,19 @@ describe("shared effect allocations inside the hard cache budget", () => {
     effects.dispose();
   });
 });
+
+it("passes logical layer dimensions through the shared operator without changing its allocation budget", () => {
+  const { renderer } = makeGpuRenderer();
+  const effects = new EffectResources(renderer);
+  const source = new Texture(),
+    output = new RenderTarget(8, 8);
+  const stack = [createEffect("grain", { scale: 1 })];
+  expect(effects.apply(source, 8, 8, stack, output, { width: 31.25, height: 23.5 })).toBe(
+    output.texture,
+  );
+  expect(effects.bytes).toBe(0);
+  expect(effects.stats().passes).toBe(1);
+  effects.dispose();
+  source.dispose();
+  output.dispose();
+});

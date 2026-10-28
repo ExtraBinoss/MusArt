@@ -7,7 +7,11 @@ it("quantizes zoom and device density within image, pixel and retained-memory li
     height: 140,
     layers: [createLayer("text", { width: 180, height: 100 })],
   });
-  expect(previewScale(page, 0.4)).toBe(1);
+  for (const density of [0.05, 0.4, 0.49, 0.5, 0.51])
+    expect(previewScale(page, density)).toBe(density);
+  expect(previewScale(page, 0.500000003)).toBe(0.5);
+  expect(previewScale(createPage({ width: 16, height: 16 }), 0.05)).toBe(1 / 16);
+  expect(previewScale(createPage({ width: 1, height: 16 }), 0.05)).toBe(1);
   expect(previewScale(page, 1.8)).toBe(2);
   expect(previewScale(page, 4)).toBe(4);
   expect(previewScale(page, 4.000000000000001)).toBe(4);

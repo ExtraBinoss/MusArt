@@ -11,6 +11,7 @@ import type { SearchItem } from "../../../src/components/search/catalog/model";
 import { createViewportActions } from "../../../src/canvas/session/viewport-actions";
 import { snappingPreferences, SNAPPING_STORAGE_KEY } from "../../../src/state/snapping/preferences";
 import { attachmentSelection } from "../../../src/state/selection/attachments";
+import { createClipboardController } from "../../../src/services/clipboard/controller";
 
 function context() {
   const d = setup();
@@ -37,6 +38,22 @@ const item = (target: SearchItem["target"]): SearchItem => ({
   label: "test",
   terms: "",
   target,
+});
+test("search clipboard actions share the actual engine clipboard port", async () => {
+  const d = context(),
+    controller = createClipboardController(d.engine);
+  const copy = vi.spyOn(controller, "copy").mockResolvedValue(),
+    paste = vi.spyOn(controller, "paste").mockResolvedValue();
+  try {
+    await d.actions.copy();
+    await d.actions.copyComposition();
+    await d.actions.paste();
+    expect(copy.mock.calls).toEqual([[], [true]]);
+    expect(paste).toHaveBeenCalledOnce();
+  } finally {
+    copy.mockRestore();
+    paste.mockRestore();
+  }
 });
 test("search deletion preserves the captured attachment while a dialog/task closes", async () => {
   const d = context(),

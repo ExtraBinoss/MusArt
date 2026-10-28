@@ -13,6 +13,8 @@ import { clearSourceCache } from "../../src/surface/sources";
 import { installCanvasMock } from "../canvas-fixture";
 import { makeGpuRenderer } from "../gpu-fixture";
 import { outlineFont } from "../text-fixture";
+import { EffectResources } from "../../src/compositing/effect-resources";
+import { GpuPasses } from "../../src/compositing/passes";
 const asset: Asset = {
   id: "image",
   name: "photo",
@@ -166,15 +168,20 @@ describe("retained GPU document graph", () => {
     const { renderer } = makeGpuRenderer();
     const graph = new GpuCompositor(renderer);
     const effect = createEffect("dither");
+    const paint = vi.spyOn(GpuPasses.prototype, "shapeTo");
     const layer = createLayer("rectangle", { effects: [effect] });
     const page = createPage({ layers: [layer] });
     await graph.render(page, {});
+    expect(paint).toHaveBeenCalledOnce();
+    paint.mockClear();
     const before = graph.stats();
     await graph.render(
       { ...page, layers: [{ ...layer, effects: [{ ...effect, amount: 0.3 }] }] },
       {},
     );
-    expect(graph.stats().passes - before.passes).toBe(4);
+    // Effect, canonical reference copy, and the three root composition passes.
+    expect(graph.stats().passes - before.passes).toBe(5);
+    expect(paint).not.toHaveBeenCalled();
     expect(graph.stats().uploads).toBe(0);
     await graph.dispose();
   });
@@ -283,6 +290,46 @@ it("renders retained vector geometry, transformed referenced masks and truthful 
     ),
   ).rejects.toThrow("absente");
   await graph.dispose();
+});
+
+it("evaluates an arbitrary effect stack and its masked group descendants in one density-independent reference", async () => {
+  const { renderer, fake } = makeGpuRenderer();
+  const graph = new GpuCompositor(renderer);
+  const group = createLayer("group", {
+    id: "canonical-group",
+    width: 80,
+    height: 60,
+    effects: [createEffect("brightness"), createEffect("blur")],
+    mask: { layerId: "canonical-mask", enabled: true, inverted: false },
+  });
+  const child = createLayer("rectangle", {
+    id: "canonical-child",
+    parentId: group.id,
+    width: 80,
+    height: 60,
+  });
+  const mask = createLayer("ellipse", {
+    id: "canonical-mask",
+    maskSource: true,
+    width: 80,
+    height: 60,
+    effects: [createEffect("grain")],
+  });
+  const page = createPage({ width: 128, height: 96, layers: [group, child, mask] });
+  const apply = vi.spyOn(EffectResources.prototype, "apply");
+  for (const scale of [0.125, 0.49, 1, 2, 4]) await graph.render(page, {}, { scale });
+  expect(apply).toHaveBeenCalledTimes(2);
+  for (const call of apply.mock.calls) expect(call.slice(1, 3)).toEqual([80, 60]);
+  const planes = new Set(
+    fake.setRenderTarget.mock.calls
+      .map(([target]) => target)
+      .filter((target) => target?.texture.generateMipmaps),
+  );
+  expect(planes.size).toBe(2);
+  for (const target of planes) expect(target?.texture.minFilter).not.toBeUndefined();
+  expect(fake.readRenderTargetPixelsAsync).not.toHaveBeenCalled();
+  await graph.dispose();
+  expect(graph.stats().cacheBytes).toBe(0);
 });
 it("defers background GPU submission when user input becomes active during async source preparation", async () => {
   const { renderer, fake } = makeGpuRenderer(),
@@ -411,4 +458,30 @@ it("checks shared instance allocations against the hard GPU budget before replac
   expect(dispose).not.toHaveBeenCalled();
   await graph.dispose();
   expect(dispose).toHaveBeenCalledOnce();
+});
+
+it("retains one authored effect reference and samples it at every requested raster density", async () => {
+  const { renderer } = makeGpuRenderer();
+  const graph = new GpuCompositor(renderer);
+  const effect = createEffect("grain", { scale: 1, amount: 0.6, seed: 17 });
+  const layer = createLayer("rectangle", {
+    id: "logical-grain",
+    width: 31.25,
+    height: 23.5,
+    effects: [effect],
+  });
+  const page = createPage({ width: 64, height: 64, layers: [layer] });
+  const apply = vi.spyOn(EffectResources.prototype, "apply");
+  for (const density of [0.25, 0.5, 1, 2, 4]) {
+    await graph.render(page, {}, { scale: density });
+    const call = apply.mock.calls.at(-1)!;
+    expect(call[1]).toBe(Math.ceil(31.25));
+    expect(call[2]).toBe(Math.ceil(23.5));
+    expect(call[3]).toBe(layer.effects);
+    expect(call[3][0]!.scale).toBe(1);
+    expect(call[5]).toEqual({ width: 31.25, height: 23.5 });
+  }
+  expect(apply).toHaveBeenCalledOnce();
+  expect(effect.scale).toBe(1);
+  await graph.dispose();
 });

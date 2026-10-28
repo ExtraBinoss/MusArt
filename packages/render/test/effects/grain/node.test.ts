@@ -11,5 +11,10 @@ it("preserves source alpha and keeps grain parameters as stable GPU uniforms", (
   fixture.controls.color.value = 1;
   expect(node.getCacheKey()).toBe(key);
   expect(graphNodes(node).has(fixture.controls.amount)).toBe(true);
+  expect(graphNodes(node).has(fixture.controls.logicalResolution)).toBe(true);
+  expect(graphNodes(node).has(fixture.controls.pixelFootprint)).toBe(false);
+  fixture.controls.pixelFootprint.value.set(0.25, 0.25);
+  expect(node.getCacheKey()).toBe(key);
+  expect(graphNodes(node).has(fixture.controls.resolution)).toBe(false);
   fixture.dispose();
 });

@@ -85,10 +85,16 @@ export class GpuPasses {
     this.clearColor.value.copy(rgba);
     this.draw(this.clearMaterial, target);
   }
-  copyTo(source: FrameTexture, target: RenderTarget | null, normalize = false): void {
+  copyTo(
+    source: FrameTexture,
+    target: RenderTarget | null,
+    normalize = false,
+    premultiply = false,
+  ): void {
     this.copy.source.value = source.texture;
     this.copy.flipY.value = textureFlip(source.texture);
     this.copy.normalize.value = normalize ? 1 : 0;
+    this.copy.premultiply.value = premultiply ? 1 : 0;
     this.draw(this.copyMaterial, target);
   }
   maskTo(

@@ -28,5 +28,6 @@ export interface ThumbnailLease {
   release: () => void;
 }
 export const THUMBNAIL_EDGE = 768;
+export const THUMBNAIL_RENDER_VERSION = "gpu-webp-768-88-v3";
 export const THUMBNAIL_QUALITY = 0.88;
 export const MAX_THUMBNAIL_BYTES = 1024 * 1024;

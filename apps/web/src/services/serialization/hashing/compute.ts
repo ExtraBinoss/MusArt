@@ -1,8 +1,9 @@
 import { fingerprintState } from "../../history/fingerprint";
 import { canonicalJson } from "../canonical-json";
 import type { CanonicalHashJob, ThumbnailHashJob } from "./protocol";
+import { THUMBNAIL_RENDER_VERSION } from "../../projects/thumbnails/model";
 
-/** Exact existing thumbnail schema: editing-only metadata never invalidates rendered pixels. */
+/** Versioned renderer schema: editing-only metadata never invalidates rendered pixels. */
 export function thumbnailPaintMetadata({ page, sources }: ThumbnailHashJob) {
   const layers = page.layers.map((layer) => {
     const {
@@ -20,7 +21,7 @@ export function thumbnailPaintMetadata({ page, sources }: ThumbnailHashJob) {
     };
   });
   return {
-    version: "gpu-webp-768-88-v1",
+    version: THUMBNAIL_RENDER_VERSION,
     width: page.width,
     height: page.height,
     background: page.background,

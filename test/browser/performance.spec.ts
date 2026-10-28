@@ -250,11 +250,25 @@ test("50 image layers and 100 effects: GPU-only composition, bounded updates, id
   const afterView = await waitForRender(page);
   expect(afterView.renders).toBe(beforeView.renders);
   expect(afterView.uploads).toBe(beforeView.uploads);
+  // Actual display density below 100% now gets one deferred GPU frame, so
+  // document-space effects can filter their real pixel footprint after zoom.
+  await page.waitForFunction(() => {
+    const canvas = document.querySelector<HTMLCanvasElement>(".editor-gpu-scene canvas")!,
+      artboard = document.querySelector<HTMLElement>('[data-testid="artboard"]')!,
+      zoom = Math.round(Number(artboard.dataset.zoom) * 1_000_000) / 1_000_000;
+    return (
+      Number(canvas.dataset.renderWidth) === Math.ceil(2400 * zoom) &&
+      canvas.dataset.rendererReady === "true"
+    );
+  });
+  const settledView = await waitForRender(page);
+  expect(settledView.renders).toBe(beforeView.renders + 1);
+  expect(settledView.uploads).toBe(beforeView.uploads);
   // A bounded observation window is intentional: no frame is expected while the document is idle.
   await page.waitForTimeout(1000);
   const idle = await waitForRender(page);
-  expect(idle.renders).toBe(afterView.renders);
-  expect(idle.displayFrames).toBe(afterView.displayFrames);
+  expect(idle.renders).toBe(settledView.renders);
+  expect(idle.displayFrames).toBe(settledView.displayFrames);
   const previewReads = await page.evaluate(() => window.__musartReadbacks!);
   expect({
     gpu: previewReads.gpuReads,

@@ -26,7 +26,7 @@ test("shows an assigned plus key without empty or duplicate keycaps", async () =
       <span>Zoom</span>
     </IconButton>,
   );
-  fireEvent.focus(screen.getByLabelText("Zoom"));
+  fireEvent.pointerMove(screen.getByLabelText("Zoom"), { pointerType: "mouse" });
   const tooltip = await screen.findByRole("tooltip");
   expect(
     [...tooltip.querySelectorAll('[data-slot="kbd"]')].map((node) => node.textContent),

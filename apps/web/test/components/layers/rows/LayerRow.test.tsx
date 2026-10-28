@@ -47,8 +47,13 @@ test("row expansion, keyboard rename, controls and native drag events remain ind
   const d = fixture(),
     group = createLayer("group", { name: "Group" });
   const view = d.mount(<LayerRow {...d.props} layer={group} />);
+  const chevron = screen.getByRole("button", { name: "Group" }).querySelector("svg")!;
+  expect(chevron).toHaveAttribute("data-expanded", "false");
   fireEvent.click(screen.getByRole("button", { name: "Group" }));
   expect(d.props.onToggle).toHaveBeenCalledWith(group.id, true);
+  view.rerender(<LayerRow {...d.props} layer={group} expanded />);
+  expect(screen.getByRole("button", { name: "Group" }).querySelector("svg")).toBe(chevron);
+  expect(chevron).toHaveAttribute("data-expanded", "true");
   view.rerender(<LayerRow {...d.props} />);
   const row = screen.getByRole("treeitem");
   fireEvent.keyDown(row, { key: "F2" });

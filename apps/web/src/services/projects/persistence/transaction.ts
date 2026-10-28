@@ -126,6 +126,7 @@ export async function persistProjectWrite(
       assetsRevision: revision,
       project: { ...frame.document, assets: metadata },
       pageRevisions: frame.pageRevisions,
+      thumbnailRenderVersion: frame.thumbnailRenderVersion,
       thumbnailInfo: infos.filter((info) => Object.hasOwn(frame.pageRevisions, info.pageId)),
       ...(preview ? { thumbnail: preview } : {}),
       bytes: {

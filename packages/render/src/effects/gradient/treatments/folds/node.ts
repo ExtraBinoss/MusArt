@@ -5,7 +5,7 @@ import { rotate } from "../../shared/field";
 import { readGradient, treatmentControls } from "../shared";
 export function foldsNode(context: EffectNodeContext) {
   const u = treatmentControls(context),
-    resolution = context.controls.resolution,
+    resolution = context.controls.logicalResolution,
     size = max(2, u.size),
     angle = u.treatmentRotation.mul(Math.PI / 180);
   const p = rotate(uv().mul(resolution).sub(resolution.mul(0.5)), angle),

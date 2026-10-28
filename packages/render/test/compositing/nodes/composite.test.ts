@@ -1,4 +1,5 @@
 import { expect, it } from "vitest";
+import { graphNodes } from "../../effects/node-fixture";
 import {
   blendControls,
   blendNode,
@@ -29,4 +30,10 @@ it("builds source-over, alpha mask, normalization and W3C blend graphs with muta
   controls.mode.value = 2;
   controls.parentSize.value.set(300, 200);
   expect(blend.getCacheKey()).toBe(key);
+  const copy = copyControls();
+  const node = copyNode(copy);
+  expect(graphNodes(node).has(copy.premultiply)).toBe(true);
+  const copyKey = node.getCacheKey();
+  copy.premultiply.value = 1;
+  expect(node.getCacheKey()).toBe(copyKey);
 });

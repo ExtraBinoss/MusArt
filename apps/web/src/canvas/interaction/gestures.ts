@@ -24,6 +24,20 @@ export interface LayerPatch {
   patch: Partial<Layer>;
 }
 
+export function clickSelection(
+  selection: readonly string[],
+  id: string,
+  additive: boolean,
+): string[] {
+  return additive
+    ? selection.includes(id)
+      ? selection.filter((item) => item !== id)
+      : [...selection, id]
+    : selection.includes(id)
+      ? [...selection]
+      : [id];
+}
+
 export function selectedRoots(page: Composition, ids: string[]): Layer[] {
   const index = createLayerGeometryIndex(page),
     requested = new Set(ids),
@@ -149,7 +163,12 @@ export function patchesToCommands(patches: LayerPatch[]): Command[] {
     : [];
 }
 
-export function boxSelection(page: Composition, from: Point, to: Point): string[] {
+export function boxSelection(
+  page: Composition,
+  from: Point,
+  to: Point,
+  mode: "contain" | "intersect" = "contain",
+): string[] {
   const x = Math.min(from.x, to.x);
   const y = Math.min(from.y, to.y);
   const right = Math.max(from.x, to.x);
@@ -161,13 +180,17 @@ export function boxSelection(page: Composition, from: Point, to: Point): string[
     for (const layer of index.children(pending.pop()!)) {
       if (!layer.visible || layer.opacity <= 0 || layer.locked || layer.maskSource) continue;
       const bounds = index.worldBounds(layer.id);
-      if (
-        bounds.x >= x &&
-        bounds.y >= y &&
-        bounds.x + bounds.width <= right &&
-        bounds.y + bounds.height <= bottom
-      )
-        included.add(layer.id);
+      const selected =
+        mode === "intersect"
+          ? bounds.x < right &&
+            bounds.y < bottom &&
+            bounds.x + bounds.width > x &&
+            bounds.y + bounds.height > y
+          : bounds.x >= x &&
+            bounds.y >= y &&
+            bounds.x + bounds.width <= right &&
+            bounds.y + bounds.height <= bottom;
+      if (selected) included.add(layer.id);
       if (layer.kind === "group") pending.push(layer.id);
     }
   return page.layers.filter((layer) => included.has(layer.id)).map((layer) => layer.id);

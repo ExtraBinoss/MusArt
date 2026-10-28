@@ -3,6 +3,7 @@ import { previewComposition } from "./preview-composition";
 import type { ExportPreviewOptions } from "../../state/contracts";
 import type { ThumbnailPipeline } from "../projects/thumbnails";
 import { SelectionPreviewIdentity } from "../projects/thumbnails/selection-identity";
+import { THUMBNAIL_RENDER_VERSION } from "../projects/thumbnails/model";
 
 /** A page-scoped preview never changes the editing page or publishes document state. */
 export function createPreviewExport(
@@ -55,6 +56,7 @@ export function createPreviewExport(
         ? selectedPreviewIdentity.read(source, snapshot.project.assets, ids, identityOptions)
         : null;
     const key = JSON.stringify([
+      THUMBNAIL_RENDER_VERSION,
       snapshot.project.id,
       source.id,
       appearance !== null ? appearance : [identity(source), identity(snapshot.project.assets)],

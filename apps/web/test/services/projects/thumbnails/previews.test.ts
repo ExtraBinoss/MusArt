@@ -4,6 +4,7 @@ import {
   ThumbnailPreviews,
   type ThumbnailPreview,
 } from "../../../../src/services/projects/thumbnails/previews";
+import { ThumbnailActivity } from "../../../../src/services/projects/thumbnails/activity";
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => {
@@ -186,16 +187,16 @@ it("bounds pending consumers and LRU blob bytes/entries without owning the share
   expect(await Promise.all(bounded)).toEqual(Array(40).fill("aborted"));
   expect(d.render).not.toHaveBeenCalled();
   const cache = fixture();
-  for (let index = 0; index < 70; index++) {
+  for (let index = 0; index < 514; index++) {
     const done = cache.queue.preview(`entry-${index}`, cache.page, {});
     await vi.runAllTimersAsync();
     await done;
   }
-  expect(cache.queue.stats().cacheEntries).toBe(64);
+  expect(cache.queue.stats().cacheEntries).toBe(512);
   const evicted = cache.queue.preview("entry-0", cache.page, {});
   await vi.runAllTimersAsync();
   await evicted;
-  expect(cache.render).toHaveBeenCalledTimes(71);
+  expect(cache.render).toHaveBeenCalledTimes(515);
   cache.render.mockImplementation(async () => cache.result(600000));
   for (let index = 0; index < 20; index++) {
     const done = cache.queue.preview(`large-${index}`, cache.page, {});
@@ -264,7 +265,7 @@ it("cancels idle callbacks, drains active jobs after disposal and rejects guard 
   ).rejects.toThrow("guard-failed");
   await guarded.queue.dispose();
 });
-it("runs explicit foreground previews after pointer release while background previews remain quiet", async () => {
+it("runs visible rows after release, ahead of background work but behind explicit export", async () => {
   let held = true,
     quiet = true;
   const listeners = new Set<() => void>(),
@@ -282,20 +283,25 @@ it("runs explicit foreground previews after pointer release while background pre
   const queue = new ThumbnailPreviews({ render }, activity),
     page = createPage();
   const background = queue.preview("background", page, {}, { edge: 96 }),
+    visible = queue.preview("visible", page, {}, { edge: 96, priority: "visible" }),
     foreground = queue.preview("export", page, {}, { edge: 384, priority: "foreground" });
+  expect(queue.hasPriority()).toBe(true);
   await vi.runAllTimersAsync();
   expect(render).not.toHaveBeenCalled();
   held = false;
   listeners.forEach((listener) => listener());
   await vi.runAllTimersAsync();
   await foreground;
-  expect(render).toHaveBeenCalledExactlyOnceWith(page, {}, expect.any(Function), 384);
+  await visible;
+  expect(render).toHaveBeenNthCalledWith(1, page, {}, expect.any(Function), 384);
+  expect(render).toHaveBeenNthCalledWith(2, page, {}, expect.any(Function), 96);
+  expect(queue.hasPriority()).toBe(false);
   expect(queue.stats().pending).toBe(1);
   quiet = false;
   listeners.forEach((listener) => listener());
   await vi.runAllTimersAsync();
   await background;
-  expect(render).toHaveBeenCalledTimes(2);
+  expect(render).toHaveBeenCalledTimes(3);
   await queue.dispose();
 });
 it("reschedules background work when an idle timeout has no budget while foreground export remains immediate", async () => {
@@ -318,5 +324,182 @@ it("reschedules background work when an idle timeout has no budget while foregro
   await vi.advanceTimersByTimeAsync(0);
   await foreground;
   expect(d.render).toHaveBeenCalledTimes(2);
+  await d.queue.dispose();
+});
+it("promotes an existing job for a visible consumer and returns cached pixels during live input", async () => {
+  let held = true;
+  const listeners = new Set<() => void>();
+  const render = vi.fn(async () => ({ blob: new Blob(["pixels"]), width: 96, height: 96 }));
+  const queue = new ThumbnailPreviews(
+    { render },
+    {
+      busy: () => true,
+      interacting: () => held,
+      subscribe: (listener) => {
+        listeners.add(listener);
+        return () => {
+          listeners.delete(listener);
+        };
+      },
+    },
+  );
+  const page = createPage();
+  const background = queue.preview("same", page, {}, { edge: 96 });
+  const visible = queue.preview("same", page, {}, { edge: 96, priority: "visible" });
+  await vi.runAllTimersAsync();
+  expect(render).not.toHaveBeenCalled();
+  expect(queue.stats().pending).toBe(1);
+  held = false;
+  listeners.forEach((listener) => listener());
+  await vi.runAllTimersAsync();
+  const result = await visible;
+  expect(await background).toBe(result);
+  expect(render).toHaveBeenCalledOnce();
+  held = true;
+  listeners.forEach((listener) => listener());
+  expect(await queue.preview("same", page, {}, { edge: 96, priority: "visible" })).toBe(result);
+  expect(render).toHaveBeenCalledOnce();
+  await queue.dispose();
+  expect(listeners.size).toBe(0);
+});
+it("visible consumers honor their activity guard while exports retain their separate wheel guard", async () => {
+  let visibleBusy = true,
+    interacting = true;
+  const listeners = new Set<() => void>();
+  const render = vi.fn(async () => ({ blob: new Blob(["pixels"]), width: 96, height: 96 }));
+  const queue = new ThumbnailPreviews(
+    { render },
+    {
+      busy: () => true,
+      interacting: () => interacting,
+      visibleBusy: () => visibleBusy,
+      subscribe: (listener) => {
+        listeners.add(listener);
+        return () => {
+          listeners.delete(listener);
+        };
+      },
+    },
+  );
+  const page = createPage();
+  const foreground = queue.preview("export", page, {}, { edge: 384, priority: "foreground" });
+  const visible = queue.preview("row", page, {}, { edge: 96, priority: "visible" });
+  await vi.runAllTimersAsync();
+  expect(render).not.toHaveBeenCalled();
+  visibleBusy = false;
+  listeners.forEach((listener) => listener());
+  await vi.runAllTimersAsync();
+  await visible;
+  expect(render).toHaveBeenCalledExactlyOnceWith(page, {}, expect.any(Function), 96);
+  expect(queue.stats().pending).toBe(1);
+  interacting = false;
+  listeners.forEach((listener) => listener());
+  await vi.runAllTimersAsync();
+  await foreground;
+  expect(render).toHaveBeenNthCalledWith(2, page, {}, expect.any(Function), 384);
+  await queue.dispose();
+});
+it("real held/repeating keys defer queued cold row rendering until keyup even when native input is no longer pending", async () => {
+  const activity = new ThumbnailActivity();
+  const render = vi.fn(async () => ({ blob: new Blob(["pixels"]), width: 96, height: 96 }));
+  const queue = new ThumbnailPreviews({ render }, activity);
+  window.dispatchEvent(new KeyboardEvent("keydown", { code: "ArrowRight", key: "ArrowRight" }));
+  const pending = queue.preview("held-row", createPage(), {}, { edge: 96, priority: "visible" });
+  await vi.advanceTimersByTimeAsync(1000);
+  expect(render).not.toHaveBeenCalled();
+  window.dispatchEvent(
+    new KeyboardEvent("keydown", { code: "ArrowRight", key: "ArrowRight", repeat: true }),
+  );
+  await vi.advanceTimersByTimeAsync(1000);
+  expect(render).not.toHaveBeenCalled();
+  window.dispatchEvent(new KeyboardEvent("keyup", { code: "ArrowRight", key: "ArrowRight" }));
+  await vi.runAllTimersAsync();
+  await pending;
+  expect(render).toHaveBeenCalledOnce();
+  await queue.dispose();
+  activity.dispose();
+});
+
+it("overlaps at most two small visible jobs, retains canceled active slots and drains both before closing", async () => {
+  const d = fixture();
+  const finish = new Map<string, (value: ThumbnailPreview) => void>();
+  d.render.mockImplementation(
+    (page) =>
+      new Promise((resolve) => {
+        finish.set(page.id, resolve);
+      }),
+  );
+  const pages = ["one", "two", "three"].map((id) => ({ ...d.page, id }));
+  const controller = new AbortController();
+  const first = d.queue.preview(
+    "one",
+    pages[0]!,
+    {},
+    { edge: 96, priority: "visible", signal: controller.signal },
+  );
+  const rejected = expect(first).rejects.toMatchObject({ name: "AbortError" });
+  const second = d.queue.preview("two", pages[1]!, {}, { edge: 96, priority: "visible" });
+  const third = d.queue.preview("three", pages[2]!, {}, { edge: 96, priority: "visible" });
+  await vi.runAllTimersAsync();
+  expect(d.render).toHaveBeenCalledTimes(2);
+  expect(d.queue.stats()).toMatchObject({ active: 2, pending: 1 });
+  controller.abort();
+  await rejected;
+  expect(d.queue.stats().active).toBe(2);
+  finish.get("one")!(d.result());
+  await vi.runAllTimersAsync();
+  expect(d.render).toHaveBeenCalledTimes(3);
+  expect(d.queue.stats()).toMatchObject({ active: 2, pending: 0, cacheEntries: 0 });
+  const aborted = [
+    expect(second).rejects.toMatchObject({ name: "AbortError" }),
+    expect(third).rejects.toMatchObject({ name: "AbortError" }),
+  ];
+  let closed = false;
+  const closing = d.queue.dispose().then(() => {
+    closed = true;
+  });
+  await Promise.all(aborted);
+  expect(closed).toBe(false);
+  finish.get("two")!(d.result());
+  await Promise.resolve();
+  expect(closed).toBe(false);
+  finish.get("three")!(d.result());
+  await closing;
+  expect(d.queue.stats().active).toBe(0);
+});
+it("foreground exports wait for active visible encodes and run before the next row; large/background jobs never overlap", async () => {
+  const d = fixture();
+  const finish = new Map<string, (value: ThumbnailPreview) => void>();
+  d.render.mockImplementation(
+    (page) =>
+      new Promise((resolve) => {
+        finish.set(page.id, resolve);
+      }),
+  );
+  const pages = ["one", "two", "three", "export"].map((id) => ({ ...d.page, id }));
+  const pending = pages
+    .slice(0, 3)
+    .map((page, index) =>
+      d.queue.preview(String(index), page, {}, { edge: 96, priority: "visible" }),
+    );
+  await vi.runAllTimersAsync();
+  const foreground = d.queue.preview(
+    "export",
+    pages[3]!,
+    {},
+    { edge: 384, priority: "foreground" },
+  );
+  finish.get("one")!(d.result());
+  await vi.runAllTimersAsync();
+  expect(d.render).toHaveBeenCalledTimes(2);
+  finish.get("two")!(d.result());
+  await vi.runAllTimersAsync();
+  expect(d.render.mock.calls.map((call) => call[0].id)).toEqual(["one", "two", "export"]);
+  finish.get("export")!(d.result());
+  await vi.runAllTimersAsync();
+  expect(d.render.mock.calls.at(-1)![0].id).toBe("three");
+  finish.get("three")!(d.result());
+  await vi.runAllTimersAsync();
+  await Promise.all([...pending, foreground]);
   await d.queue.dispose();
 });

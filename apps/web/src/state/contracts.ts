@@ -89,7 +89,7 @@ export interface ExportPreviewOptions {
   selection?: readonly string[];
   all?: boolean;
   edge?: number;
-  priority?: "foreground" | "background";
+  priority?: "foreground" | "visible" | "background";
 }
 export interface ExportPreview {
   blob: Blob;

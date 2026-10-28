@@ -1,7 +1,25 @@
-import { AMOUNT, COLOR, defineEffect } from "../definition";
+import { AMOUNT, COLOR, LEVELS, defineEffect } from "../definition";
 import { GRADIENT_PARAMETERS } from "./parameters";
-import type { GradientSettings } from "./model";
+import type { GradientSettings, GradientSettingKey } from "./model";
 import { GRADIENT_PRESETS, gradientPresetSettings } from "./presets";
+
+/** The Stripe field consumes a fixed four-color palette and bypasses the shared domain/palette. */
+export const STRIPE_UNUSED_PARAMETERS: readonly GradientSettingKey[] = Object.freeze([
+  "colorCount",
+  "blending",
+  "flow",
+  "twist",
+  "pressureX",
+  "pressureY",
+  "shadows",
+  "highlights",
+  "influence0",
+  "influence1",
+  "influence2",
+  "influence3",
+  "influence4",
+  "influence5",
+]);
 
 export const GRADIENT_DEFAULT_SETTINGS: Readonly<GradientSettings> = Object.freeze(
   Object.fromEntries(
@@ -63,7 +81,8 @@ export const GRADIENT_DEFINITION = defineEffect(
       displayScale: 1,
       unit: "s",
     },
-    COLOR,
+    { ...COLOR, visibleWhen: { key: "treatment", values: ["ascii", "dither"] } },
+    { ...LEVELS, visibleWhen: { key: "treatment", values: ["dither"] } },
     ...GRADIENT_PARAMETERS.slice(3),
   ],
 );

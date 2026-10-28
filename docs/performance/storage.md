@@ -33,6 +33,18 @@ The shared fragment assembly accepts at most **128 MiB of logical input**, count
 
 A known transaction failure remains a real rejection. Losing the acknowledgment after the final request was sent instead produces `UNCERTAIN_PROJECT_WRITE`: the transaction may have committed, so reopen and inspect the durable project before deciding how to retry. The client does not automatically replay an uncertain save. Closing stops new admission, drains already accepted writes to their actual outcomes and releases the worker. Cleanup completion does not turn a rejected write into success. A closed generation cannot adopt later revision/asset caches; a load finishing in that generation rejects, while an already committed rename retains its durable result without restoring the closed cache.
 
+Stored manifests also name the thumbnail renderer schema. Loading an older schema
+awaits bounded worker hashing of a private snapshot of the actual stored document,
+before exposing mutable caller input. A metadata-only transaction compares the
+captured document write token, original-asset revision, page IDs and old schema,
+and checks deletion and store generation again before writing. It updates only
+thumbnail revisions, the renderer marker and manifest byte accounting. It never
+renews the document write token, edits the portable document, rewrites original
+assets or touches the journal. A concurrent opener that already computed the same
+schema/hashes is accepted; a foreign document or newer schema is not overwritten.
+After a successful current canonical save, the runtime schedules thumbnails again,
+so a background result rejected before autosave caught up cannot remain missing.
+
 For focused verification, run the persistence mirrors together with `storage.test.ts`, `storage-concurrency.test.ts` and `storage-crud.test.ts` using the resource limits in [Protocol](protocol.md). Preserve real IndexedDB regressions for atomic rollback, tombstones, stale sessions, close races, mutable thumbnail callers, special asset IDs and lost acknowledgments. Mock worker transport tests establish message/lifetime behavior; frozen native input measurements are still required to establish the responsiveness improvement.
 
 ## Measure the actual boundary
@@ -94,11 +106,11 @@ Check actual message sizes and the synchronous work before each yield. An item-c
 | Active original comparison map  | The most recently opened/saved project's originals                                                                   |
 | Original digest cache           | 128 entries / 64 MiB of retained source strings; explicit cache cleanup is available                                 |
 | Project thumbnail queue         | Eight project requests, coalesced to the latest snapshot                                                             |
-| Selected-content previews       | 32 pending jobs; cached 64 blobs within 8 MiB                                                                        |
-| Thumbnail render session        | 96 MiB GPU resource budget, source edge limited to 640                                                               |
+| Selected-content previews       | 32 pending jobs; cached 512 blobs within 8 MiB                                                                       |
+| Thumbnail render session        | 384 MiB GPU resource budget, identical full original sources and fixed reference effect planes                       |
 | Thumbnail object URLs           | 80 entries / 32 MiB while unleased; active leases stay valid until release                                           |
 
-The preview key follows the selected paint dependency closure, including processing ancestors, nested descendants, enabled masks, original assets and color space. Selection or unrelated metadata changes must not regenerate every visible preview. Visible row requests are idle-scheduled, abortable and canceled on leave/unmount; one edited layer should enqueue its affected previews rather than all mounted rows. See [Layout](layout.md) for the corresponding native job-count and virtual-scroll checks.
+The preview key follows the selected paint dependency closure, including processing ancestors, nested descendants, enabled masks, original assets and color space. Selection or unrelated metadata changes must not regenerate every visible preview. Visible row requests use bounded task admission, are abortable and canceled on leave/unmount; one edited layer should enqueue its affected previews rather than all mounted rows. See [Layout](layout.md) for the corresponding native job-count and virtual-scroll checks.
 
 Measure browser-process RSS, JavaScript heap, DOM nodes, retained object URLs and renderer cache counters independently. An active engine document and undo history legitimately retain immutable state. A bounded cache is not automatically a leak, and summing browser-process RSS does not establish GPU-memory consumption. Compare before/after loading a smaller document and after complete runtime disposal, with the same diagnostic collection method each time.
 

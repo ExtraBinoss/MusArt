@@ -1,5 +1,5 @@
 import { memo, type DragEvent } from "react";
-import { ChevronDown, ChevronRight, Frame } from "lucide-react";
+import { ChevronRight, Frame } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { Composition, EnginePort } from "@musart/core";
 import { IconButton } from "../../shared/IconButton";
@@ -33,6 +33,7 @@ export const ArtboardRow = memo(function ArtboardRow({
       aria-label={t("layerControls:artboardLayers", { name: page.name, count: page.layers.length })}
       tabIndex={0}
       data-artboard-id={page.id}
+      data-layer-tree-key={`artboard:${page.id}`}
       className={`layer-artboard-row ${active ? "is-active" : ""}`}
       style={{ position: "absolute", left: 0, right: 0, top }}
       onClick={() => activateLayerPage(engine, page)}
@@ -68,7 +69,7 @@ export const ArtboardRow = memo(function ArtboardRow({
           })}
           onClick={() => onToggle(page.id)}
         >
-          {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+          <ChevronRight size={12} className="layer-chevron-icon" data-expanded={expanded} />
         </IconButton>
       </span>
       <Frame size={14} aria-hidden="true" />

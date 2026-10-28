@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { act, fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { createEffect, createProject } from "@musart/core";
 import { EffectPopover } from "../../../../src/components/layers/attachments/EffectPopover";
 import { previewAtom, useEngine } from "../../../../src/state/session/editor";
@@ -45,8 +45,11 @@ test("FX avatars expose actual blend/opacity and parameters; previews cancel or 
   fireEvent.keyDown(amount, { key: "Escape" });
   fireEvent.blur(amount);
   expect(d.store.get(previewAtom)).toBeNull();
-  fireEvent.change(amount, { target: { value: "45" } });
-  fireEvent.blur(amount);
+  await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  fireEvent.click(screen.getByRole("button", { name: "FX" }));
+  const next = screen.getAllByLabelText("Intensité")[0]!;
+  fireEvent.change(next, { target: { value: "45" } });
+  fireEvent.blur(next);
   expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.effects[0]!.amount).toBe(0.45);
   act(() => d.engine.undo());
   expect(d.engine.getSnapshot().canUndo).toBe(false);
@@ -102,4 +105,36 @@ test("closing clears held drafts and a replaced project rejects late parameter c
     fireEvent.blur(next);
   });
   expect(d.engine.getSnapshot().canUndo).toBe(false);
+});
+test("real alpha composition previews cancel and commits restore the sparse default with one undo", async () => {
+  const d = fixture();
+  fireEvent.click(screen.getByRole("button", { name: "FX" }));
+  const fields = screen.getAllByRole("combobox", { name: "Composition alpha" });
+  expect(fields).toHaveLength(2);
+  const before = d.engine.getSnapshot();
+  fireEvent.pointerDown(fields[0]!, { button: 0, ctrlKey: false, pointerType: "mouse" });
+  fireEvent.pointerMove(await screen.findByRole("option", { name: "Source au-dessus" }));
+  expect(d.store.get(previewAtom)).toMatchObject({
+    patch: { effects: [expect.objectContaining({ composite: "source-over" }), expect.anything()] },
+  });
+  expect(d.engine.getSnapshot()).toBe(before);
+  fireEvent.keyDown(screen.getByRole("listbox"), { key: "Escape" });
+  expect(d.store.get(previewAtom)).toBeNull();
+  fireEvent.pointerDown(fields[0]!, { button: 0, ctrlKey: false, pointerType: "mouse" });
+  fireEvent.click(await screen.findByRole("option", { name: "Source au-dessus" }));
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.effects[0]!.composite).toBe(
+    "source-over",
+  );
+  expect(d.engine.getSnapshot().revision).toBe(before.revision + 1);
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project).toBe(before.project);
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+  fireEvent.pointerDown(fields[0]!, { button: 0, ctrlKey: false, pointerType: "mouse" });
+  fireEvent.click(await screen.findByRole("option", { name: "Source seule" }));
+  const composite = screen.getAllByRole("combobox", { name: "Composition alpha" })[0]!;
+  fireEvent.pointerDown(composite, { button: 0, ctrlKey: false, pointerType: "mouse" });
+  fireEvent.click(await screen.findByRole("option", { name: "Remplacement de l’effet (défaut)" }));
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.effects[0]).not.toHaveProperty(
+    "composite",
+  );
 });

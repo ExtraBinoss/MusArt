@@ -1,4 +1,4 @@
-import { resolveGradientSettings, type Effect, type EffectType } from "@musart/core";
+import type { EffectType } from "@musart/core";
 import { asciiNode } from "./ascii/node";
 import { blurNode } from "./blur/node";
 import { brightnessNode } from "./brightness/node";
@@ -45,26 +45,3 @@ export const EFFECT_NODES: Readonly<Record<Exclude<EffectType, "gradient">, Effe
     halftone: halftoneNode,
     vignette: vignetteNode,
   });
-
-/** Only pixel-sized motifs/radii scale with final export resolution. */
-export const PIXEL_SCALE_EFFECTS = new Set(["dither", "ascii", "blur", "grain", "halftone"]);
-
-/** Pixel motifs follow export/preview density while field coordinates remain resolution-independent. */
-export function scaleEffectPixels(effect: Effect, scale: number): Effect {
-  if (effect.type === "gradient") {
-    const settings = resolveGradientSettings(effect.settings);
-    return {
-      ...effect,
-      settings: {
-        ...settings,
-        size: settings.size * scale,
-        borderRadius: settings.borderRadius * scale,
-        grainScale: settings.grainScale * scale,
-      },
-    };
-  }
-  return {
-    ...effect,
-    scale: PIXEL_SCALE_EFFECTS.has(effect.type) ? effect.scale * scale : effect.scale,
-  };
-}

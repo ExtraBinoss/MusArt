@@ -34,6 +34,7 @@ export function ExportSettings({
   const [whole, setWhole] = useState(false),
     [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [previewEdge, setPreviewEdge] = useState<number | null>(null);
   const alive = useRef(true);
   useEffect(() => {
     alive.current = true;
@@ -46,7 +47,7 @@ export function ExportSettings({
     () => (selectionOnly ? selectionComposition(page, selection) : page),
     [page, selection, selectionOnly],
   );
-  const preview = useExportPreview(page, selection, selectionOnly, revision, services);
+  const preview = useExportPreview(page, selection, selectionOnly, revision, services, previewEdge);
   async function submit() {
     if (pendingRef.current) return;
     pendingRef.current = true;
@@ -75,7 +76,13 @@ export function ExportSettings({
   }
   return (
     <div className="export-settings-panel">
-      <ExportPreviewFrame key={preview.url ?? "pending"} {...preview} format={options.format} />
+      <ExportPreviewFrame
+        {...preview}
+        width={scope.width}
+        height={scope.height}
+        format={options.format}
+        onResolution={setPreviewEdge}
+      />
       <p className="export-scope">
         {selectionOnly
           ? t("exportPanel:selection", { count: selection.length })

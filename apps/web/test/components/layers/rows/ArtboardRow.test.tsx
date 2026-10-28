@@ -40,6 +40,13 @@ test("artboard roots activate by pointer or keyboard and collapse without editin
   );
   fireEvent.keyDown(screen.getByRole("treeitem"), { key: "ArrowRight" });
   expect(onToggle).toHaveBeenCalledTimes(3);
+  expect(screen.getByRole("treeitem")).toHaveAttribute(
+    "data-layer-tree-key",
+    `artboard:${page.id}`,
+  );
+  expect(
+    screen.getByRole("button", { name: "Déplier Story" }).querySelector("svg"),
+  ).toHaveAttribute("data-expanded", "false");
   act(() => d.engine.load(d.project));
   const replacement = d.engine.getSnapshot();
   fireEvent.keyDown(screen.getByRole("treeitem"), { key: "Enter" });

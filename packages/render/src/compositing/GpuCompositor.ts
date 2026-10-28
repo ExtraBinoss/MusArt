@@ -10,7 +10,6 @@ import type { RenderTarget, WebGPURenderer } from "three/webgpu";
 import { ColorPipeline } from "../color/ColorPipeline";
 import { GpuResourceCache } from "../cache/GpuResourceCache";
 import { createSourceKeys } from "../cache/keys";
-import { scaleEffectPixels } from "../effects/registry";
 import { maskLayerMapping } from "./mask-binding";
 import { EffectResources } from "./effect-resources";
 import { VectorSources } from "../surface/vector/source";
@@ -22,12 +21,19 @@ import { isInstancedPrimitive, primitivePaintKey } from "./primitives/eligibilit
 import { NormalBatch } from "./normal-batch";
 import { GpuPasses } from "./passes";
 import { LayerTargets } from "./targets";
-import { assertRenderSize, type FrameTexture, type GpuStats, type RenderOptions } from "./types";
+import {
+  assertRenderSize,
+  rasterExtent,
+  type FrameTexture,
+  type GpuStats,
+  type RenderOptions,
+} from "./types";
 
 interface RenderFrame {
   readonly page: Composition;
   readonly scale: number;
   readonly keyFor: (layer: Layer) => string;
+  readonly referenceKeyFor: (layer: Layer) => string;
   readonly geometry: ReturnType<typeof createLayerGeometryIndex>;
 }
 
@@ -59,12 +65,10 @@ export class GpuCompositor {
 
   constructor(
     private readonly renderer: WebGPURenderer,
-    options: { maxBytes?: number; sourceMaxEdge?: number; fontResolver?: FontResolver } = {},
+    options: { maxBytes?: number; fontResolver?: FontResolver } = {},
   ) {
     this.cache = new GpuResourceCache(options.maxBytes);
-    this.sources = new TextureSources(this.cache, {
-      maxEdge: options.sourceMaxEdge,
-    });
+    this.sources = new TextureSources(this.cache);
     this.texts = new TextSources(renderer, this.cache, { fontResolver: options.fontResolver });
   }
 
@@ -133,6 +137,7 @@ export class GpuCompositor {
         page,
         scale,
         keyFor: createSourceKeys(page, assets, scale, { geometry }),
+        referenceKeyFor: createSourceKeys(page, assets, 1, { geometry }),
         geometry,
       };
       const { keyFor } = frame;
@@ -218,13 +223,19 @@ export class GpuCompositor {
     role: string,
     width: number,
     height: number,
+    mipmapped = false,
   ): RenderTarget {
-    this.cache.ensureCapacity(key, entry.projectedBytes(role, width, height));
-    const target = entry.target(role, width, height);
+    this.cache.ensureCapacity(key, entry.projectedBytes(role, width, height, mipmapped));
+    const target = entry.target(role, width, height, mipmapped);
     this.cache.synchronize(key);
     return target;
   }
   private layer(layer: Layer, frame: RenderFrame): FrameTexture {
+    const reference = layer.effects.some((effect) => effect.enabled) || !!layer.mask?.enabled;
+    // Effects and masks consume the same authored reference pixels in every
+    // caller. Output density changes sampling of this plane, never its content.
+    if (reference && frame.scale !== 1)
+      frame = { ...frame, scale: 1, keyFor: frame.referenceKeyFor };
     const { page, scale, keyFor, geometry } = frame;
     const key = `layer:${page.id}:${layer.id}:${scale}`;
     const entry = this.entry(key);
@@ -234,8 +245,8 @@ export class GpuCompositor {
       return entry.output;
     }
     entry.signature = "";
-    const width = Math.max(1, Math.ceil(layer.width * scale));
-    const height = Math.max(1, Math.ceil(layer.height * scale));
+    const width = rasterExtent(layer.width, scale);
+    const height = rasterExtent(layer.height, scale);
     let source: FrameTexture;
     if (layer.kind === "group")
       source = this.children(layer.id, layer.width, layer.height, "transparent", entry, key, frame);
@@ -286,14 +297,17 @@ export class GpuCompositor {
         source = { texture: straight.texture, width, height, premultiplied: false };
       }
       const output = this.target(entry, key, "effects", width, height);
-      const effects = layer.effects.map((effect) => scaleEffectPixels(effect, scale));
+      const effects = layer.effects;
       this.cache.ensureCapacity(
         "shared-effects",
         this.effects!.projectedBytes(width, height, effects),
       );
       let texture;
       try {
-        texture = this.effects!.apply(source.texture, width, height, effects, output);
+        texture = this.effects!.apply(source.texture, width, height, effects, output, {
+          width: layer.width,
+          height: layer.height,
+        });
       } finally {
         this.cache.synchronize("shared-effects");
       }
@@ -319,6 +333,11 @@ export class GpuCompositor {
       } else throw new Error("Source de masque absente.");
       source = { ...source, texture: target.texture };
     }
+    if (reference) {
+      const filtered = this.target(entry, key, "reference", width, height, true);
+      this.passes!.copyTo(source, filtered, false, !source.premultiplied);
+      source = { texture: filtered.texture, width, height, premultiplied: true };
+    }
     entry.output = source;
     entry.signature = signature;
     return source;
@@ -334,8 +353,8 @@ export class GpuCompositor {
     frame: RenderFrame,
   ): FrameTexture {
     const { scale, geometry } = frame;
-    const pixelWidth = Math.max(1, Math.ceil(width * scale));
-    const pixelHeight = Math.max(1, Math.ceil(height * scale));
+    const pixelWidth = rasterExtent(width, scale);
+    const pixelHeight = rasterExtent(height, scale);
     let target = this.target(entry, key, "children-a", pixelWidth, pixelHeight);
     this.passes!.clear(target, background);
     const layers = geometry.children(parentId);

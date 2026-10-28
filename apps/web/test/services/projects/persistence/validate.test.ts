@@ -8,6 +8,8 @@ it("rejects corrupt/incomplete metadata before any transaction can persist it", 
   for (const patch of [
     { expectedRevision: 3 },
     { remember: undefined },
+    { thumbnailRenderVersion: undefined },
+    { thumbnailRenderVersion: "gpu-webp-768-88-v2" },
     { originals: [] },
     { basis: 3 },
     { pageRevisions: {} },

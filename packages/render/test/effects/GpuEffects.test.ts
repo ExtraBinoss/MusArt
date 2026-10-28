@@ -310,3 +310,17 @@ describe("shared-renderer GPU effect operator", () => {
     },
   );
 });
+
+it.each([
+  { width: 0, height: 1 },
+  { width: 1, height: -1 },
+  { width: Number.NaN, height: 1 },
+  { width: 1, height: Number.POSITIVE_INFINITY },
+])("rejects invalid authored effect dimensions before GPU submission: %j", (logical) => {
+  const d = setup();
+  expect(() => d.gpu.apply(d.source, 4, 4, [createEffect("grain")], d.output, logical)).toThrow(
+    "logical effect dimensions",
+  );
+  expect(d.backend.render).not.toHaveBeenCalled();
+  d.dispose();
+});

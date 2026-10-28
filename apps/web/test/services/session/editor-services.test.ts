@@ -418,6 +418,12 @@ describe("shared clipboard command path", () => {
     editable.remove();
     expect(paste(document).defaultPrevented).toBe(false);
     expect(paste(document, { text: "  " }).defaultPrevented).toBe(false);
+    const claimed = new Event("paste", { cancelable: true });
+    claimed.preventDefault();
+    expect(() => document.dispatchEvent(claimed)).not.toThrow();
+    expect(
+      paste(document, { text: '{"format":"musart.clipboard","version":42}' }).defaultPrevented,
+    ).toBe(false);
     paste(document, { files: [new File([""], "bad.png")] });
     await Promise.resolve();
     expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: "Bad image" }));

@@ -61,6 +61,6 @@ export const stripesField: GradientField = ({ controls: u, position, phase }) =>
       .mul(0.07)
       .oneMinus(),
   );
-  // Static position grain is applied in the finishing pass, at actual texture resolution.
+  // Static position grain is applied in the finishing pass, in document pixels, independent of raster density.
   return { color: clamp(color, 0, 1), height: float(0) };
 };

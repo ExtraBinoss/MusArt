@@ -1,0 +1,46 @@
+import { registerFeatureTranslations } from "../../../state/i18n/feature-resources";
+export const messages = {
+  en: {
+    seed: "Seed",
+    falloff: "Falloff",
+    composite: "Alpha composition",
+    replacement: "Effect replacement (default)",
+    operation: {
+      "source-over": "Source over",
+      "destination-over": "Destination over",
+      "source-in": "Source in",
+      "destination-in": "Destination in",
+      "source-out": "Source out",
+      "destination-out": "Destination out",
+      "source-atop": "Source atop",
+      "destination-atop": "Destination atop",
+      xor: "Exclusive overlap",
+      copy: "Source only",
+      destination: "Destination only",
+      clear: "Clear",
+      lighter: "Add source and destination",
+    },
+  },
+  fr: {
+    seed: "Graine",
+    falloff: "Atténuation",
+    composite: "Composition alpha",
+    replacement: "Remplacement de l’effet (défaut)",
+    operation: {
+      "source-over": "Source au-dessus",
+      "destination-over": "Destination au-dessus",
+      "source-in": "Source à l’intérieur",
+      "destination-in": "Destination à l’intérieur",
+      "source-out": "Source à l’extérieur",
+      "destination-out": "Destination à l’extérieur",
+      "source-atop": "Source par-dessus",
+      "destination-atop": "Destination par-dessus",
+      xor: "Chevauchement exclusif",
+      copy: "Source seule",
+      destination: "Destination seule",
+      clear: "Effacer",
+      lighter: "Additionner source et destination",
+    },
+  },
+};
+registerFeatureTranslations("effectControls", messages);

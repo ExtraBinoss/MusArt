@@ -68,6 +68,10 @@ function transfer() {
 test("virtual children toggle/remove their exact effect and mask with semantic commands", () => {
   const d = fixture();
   const row = screen.getByText("Dither").closest('[role="treeitem"]')!;
+  expect(row).toHaveAttribute(
+    "data-layer-tree-key",
+    `effect:${d.image.id.length}:${d.image.id}:${d.first.id}`,
+  );
   fireEvent.click(within(row as HTMLElement).getByLabelText("Désactiver l’effet"));
   expect(d.engine.getSnapshot().project.pages[0]!.layers[2]!.effects[0]!.enabled).toBe(false);
   fireEvent.click(within(row as HTMLElement).getByLabelText("Activer l’effet"));

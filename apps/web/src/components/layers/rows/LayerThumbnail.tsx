@@ -2,6 +2,7 @@ import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Image, Type, Shapes, Folder, Square, Circle } from "lucide-react";
 import type { Layer, Asset } from "@musart/core";
 import { scheduleLayerThumbnail } from "./thumbnail-idle";
+import { observeLayerThumbnail } from "./thumbnail-visibility";
 import type { EditorServices, LayerPreviewVariant } from "../../../state/contracts";
 const icons = {
   image: Image,
@@ -11,6 +12,7 @@ const icons = {
   rectangle: Square,
   ellipse: Circle,
 };
+const revealed = new WeakSet<Blob>();
 /** One visible row owns one abortable request and explicitly releases its browser URL. */
 export const LayerThumbnail = memo(function LayerThumbnail({
   layer,
@@ -29,7 +31,7 @@ export const LayerThumbnail = memo(function LayerThumbnail({
 }) {
   const node = useRef<HTMLSpanElement>(null);
   const [visible, setVisible] = useState(() => typeof IntersectionObserver === "undefined");
-  const [value, setValue] = useState<{ key: string; url: string } | null>(null);
+  const [value, setValue] = useState<{ key: string; url: string; blob: Blob } | null>(null);
   const kind = variant?.kind,
     effectId = variant?.kind === "effect" ? variant.effectId : undefined;
   const requestVariant = useMemo<LayerPreviewVariant | undefined>(
@@ -41,16 +43,10 @@ export const LayerThumbnail = memo(function LayerThumbnail({
   const previewExport = services?.previewExport;
   useEffect(() => {
     if (!node.current || typeof IntersectionObserver === "undefined") return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const active = entries.some((entry) => entry.isIntersecting);
-        setVisible(active);
-        if (!active) setValue(null);
-      },
-      { rootMargin: "32px" },
-    );
-    observer.observe(node.current);
-    return () => observer.disconnect();
+    return observeLayerThumbnail(node.current, (active) => {
+      setVisible(active);
+      if (!active) setValue(null);
+    });
   }, []);
   useEffect(() => {
     if (!visible || !previewExport) return;
@@ -69,13 +65,14 @@ export const LayerThumbnail = memo(function LayerThumbnail({
           ...(pageId ? { pageId } : {}),
           ...(requestVariant ? { variant: requestVariant } : {}),
           edge: 96,
+          priority: "visible",
         },
         controller.signal,
       ).then(
         (result) => {
           if (!active || controller.signal.aborted) return;
           url = URL.createObjectURL(result.blob);
-          setValue({ key, url });
+          setValue({ key, url, blob: result.blob });
         },
         () => {
           /* A failed/stale preview retains its truthful layer-kind placeholder. */
@@ -105,7 +102,28 @@ export const LayerThumbnail = memo(function LayerThumbnail({
       data-thumbnail-effect-id={effectId}
       data-preview-ready={Boolean(source)}
     >
-      {source ? <img src={source} alt="" draggable={false} /> : <Icon size={14} />}
+      <Icon size={14} aria-hidden="true" style={source ? { display: "none" } : undefined} />
+      {source && (
+        <img
+          key={source}
+          src={source}
+          alt=""
+          draggable={false}
+          onLoad={(event) => {
+            const image = event.currentTarget;
+            if (
+              !image.isConnected ||
+              node.current?.querySelector("img") !== image ||
+              image.getAttribute("src") !== source
+            )
+              return;
+            if (value?.key === key && !revealed.has(value.blob)) {
+              revealed.add(value.blob);
+              image.dataset.thumbnailReveal = "true";
+            }
+          }}
+        />
+      )}
     </span>
   );
 });

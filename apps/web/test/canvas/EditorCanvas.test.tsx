@@ -311,25 +311,28 @@ describe("canvas input and renderer integration", () => {
     pointerDrag(canvas(), point(0, 0), point(90, 80));
     expect(engine.getSnapshot().selection).toEqual([layer.id]);
   });
-  it("supports additive selection, toggling and marquee without an unwanted document commit", async () => {
-    const one = rectangle();
-    const two = createLayer("ellipse", { x: 110, y: 20, width: 50, height: 50 });
-    const { engine } = setup([one, two]);
-    render(<EditorCanvas engine={engine} tool="pointer" />);
-    await ready();
-    pointerDrag(canvas(), point(30, 30), point(30, 30));
-    expect(engine.getSnapshot().canUndo).toBe(false);
-    pointerDrag(canvas(), point(120, 30), point(120, 30), { shiftKey: true });
-    expect(engine.getSnapshot().selection).toEqual([one.id, two.id]);
-    pointerDrag(canvas(), point(30, 30), point(30, 30), { shiftKey: true });
-    expect(engine.getSnapshot().selection).toEqual([two.id]);
-    pointerDrag(canvas(), point(0, 0), point(85, 75));
-    expect(engine.getSnapshot().selection).toEqual([one.id]);
-    pointerDrag(canvas(), point(100, 0), point(170, 80), { shiftKey: true });
-    expect(new Set(engine.getSnapshot().selection)).toEqual(new Set([one.id, two.id]));
-    fireEvent.keyDown(canvas(), { key: "Escape" });
-    expect(engine.getSnapshot().selection).toEqual([]);
-  });
+  it.each(["shiftKey", "ctrlKey", "metaKey"] as const)(
+    "supports %s selection, toggling and marquee without an unwanted document commit",
+    async (modifier) => {
+      const one = rectangle();
+      const two = createLayer("ellipse", { x: 110, y: 20, width: 50, height: 50 });
+      const { engine } = setup([one, two]);
+      render(<EditorCanvas engine={engine} tool="pointer" />);
+      await ready();
+      pointerDrag(canvas(), point(30, 30), point(30, 30));
+      expect(engine.getSnapshot().canUndo).toBe(false);
+      pointerDrag(canvas(), point(120, 30), point(120, 30), { [modifier]: true });
+      expect(engine.getSnapshot().selection).toEqual([one.id, two.id]);
+      pointerDrag(canvas(), point(30, 30), point(30, 30), { [modifier]: true });
+      expect(engine.getSnapshot().selection).toEqual([two.id]);
+      pointerDrag(canvas(), point(0, 0), point(85, 75));
+      expect(engine.getSnapshot().selection).toEqual([one.id]);
+      pointerDrag(canvas(), point(100, 0), point(170, 80), { [modifier]: true });
+      expect(new Set(engine.getSnapshot().selection)).toEqual(new Set([one.id, two.id]));
+      fireEvent.keyDown(canvas(), { key: "Escape" });
+      expect(engine.getSnapshot().selection).toEqual([]);
+    },
+  );
   it.each(["rectangle", "ellipse"] as const)(
     "draws %s and commits only at pointer release",
     async (tool) => {

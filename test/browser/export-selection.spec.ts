@@ -78,6 +78,8 @@ test("export popover previews and encodes only the selected masked child, or the
     .toBe(true);
   await popover.locator(".export-preview").hover();
   await popover.getByRole("button", { name: "Agrandir l’aperçu", exact: true }).click();
+  await expect(preview).toBeVisible();
+  await preview.evaluate((image: HTMLImageElement) => image.decode());
   const overflow = await popover.locator(".export-preview").evaluate((element) => ({
     x: element.scrollWidth > element.clientWidth,
     y: element.scrollHeight > element.clientHeight,
@@ -91,6 +93,8 @@ test("export popover previews and encodes only the selected masked child, or the
     popupBounds.x + popupBounds.width,
   );
   await popover.getByRole("button", { name: "Ajuster l’aperçu", exact: true }).click();
+  await expect(preview).toBeVisible();
+  await preview.evaluate((image: HTMLImageElement) => image.decode());
   await page.screenshot({ path: "artifacts/screenshots/export-selected-layer.png" });
   async function downloadPixels() {
     const waiting = page.waitForEvent("download");

@@ -46,6 +46,17 @@ Include immediate follow-up wheel/hand input after a large commit, before flushi
 - Page/ruler guides remain visible and editable in collective selection mode. Above 64 selected layers, per-layer detail handles are bounded, but full selection, metadata and bulk commands remain intact.
 - Exact nested/rotated/group/mask geometry must remain correct. Mask-source subtrees do not intercept canvas picking, but remain editable through Layers.
 
+Pointer selection accepts Shift, Ctrl or Cmd clicks to add/remove the hit layer.
+Dragging the right mouse button starts a crossing marquee even on painted artwork;
+release selects editable, visible layers whose world bounds intersect the box. Holding
+Shift/Ctrl/Cmd adds those hits to the captured selection. Left-drag on blank space
+retains containment selection. A stationary right click and canceled right marquee
+preserve selection, and selection changes never create document undo entries.
+Both marquees retain one DOM box and update its bounds imperatively, without publishing
+React or GPU preview frames on pointer movement. Pointer cancellation, capture loss,
+Escape and stale page/project/revision scopes discard the draft and release capture.
+These mouse gestures remain separate from the editable keyboard command registry.
+
 ## Failure triage
 
 | Symptom                                 | Inspect first                                                                                              |

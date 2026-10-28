@@ -2,6 +2,13 @@ import type { Composition } from "@musart/core";
 /** Quantized zoom/DPR quality, with conservative headroom for retained intermediates. */
 export function previewScale(page: Composition, density: number): number {
   if (!Number.isFinite(density) || density <= 0) return 1;
+  // Minification must reach the effect's document-pixel footprint; rendering at
+  // 1x and shrinking only in CSS aliases procedural patterns such as Bayer.
+  if (density < 1)
+    return Math.max(
+      1 / Math.min(page.width, page.height),
+      Math.round(density * 1_000_000) / 1_000_000 || density,
+    );
   const requested = Math.min(8, 2 ** Math.ceil(Math.log2(Math.max(1, density)) - 1e-6));
   const area = page.width * page.height;
   const layerPixels = page.layers.reduce((sum, layer) => {

@@ -1,4 +1,5 @@
 import { expect, test, vi } from "vitest";
+import { StrictMode } from "react";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { createLayer, createPage } from "@musart/core";
 import { setup } from "../../support/ui";
@@ -14,13 +15,13 @@ vi.mock("../../../src/services/assets/vector/import-files", async (original) => 
   ...(await original<typeof import("../../../src/services/assets/vector/import-files")>()),
   importVectorFiles: vi.fn().mockResolvedValue(undefined),
 }));
-function fixture() {
+function fixture(strict = false) {
   const d = setup();
   const onImport = vi.fn(),
     onProjects = vi.fn(),
     onExport = vi.fn(),
     onPanelMode = vi.fn();
-  d.mount(
+  const search = (
     <MagicSearch
       engine={d.engine}
       services={d.services}
@@ -29,22 +30,23 @@ function fixture() {
       onProjects={onProjects}
       onExport={onExport}
       onPanelMode={onPanelMode}
-    />,
+    />
   );
+  d.mount(strict ? <StrictMode>{search}</StrictMode> : search);
   const open = async () => {
     fireEvent.click(screen.getByRole("button", { name: "Rechercher dans MusArt" }));
     await screen.findByRole("dialog", { name: "Rechercher dans MusArt" });
     return screen.getByRole("combobox");
   };
   const choose = async (query: string, name: RegExp | string) => {
+    const previousTasks = d.onTask.mock.calls.length;
     const input = await open();
     fireEvent.change(input, { target: { value: query } });
     fireEvent.click(await screen.findByRole("option", { name }));
     await waitFor(() =>
-      expect(
-        screen.queryByRole("dialog", { name: "Rechercher dans MusArt" }),
-      ).not.toBeInTheDocument(),
+      expect(document.querySelector("[data-magic-search]")).not.toBeInTheDocument(),
     );
+    await waitFor(() => expect(d.onTask.mock.calls.length).toBeGreaterThan(previousTasks));
   };
   return { ...d, onImport, onProjects, onExport, onPanelMode, open, choose };
 }
@@ -131,6 +133,34 @@ test("selects cross-page layers and pages, and adds an effect as a single undoab
   fireEvent.change(input, { target: { value: "Affiche" } });
   fireEvent.click(screen.getByRole("option", { name: /Affiche/ }));
   await waitFor(() => expect(d.engine.getSnapshot().pageId).toBe(d.page.id));
+});
+
+test("keyboard palette focus survives StrictMode cleanup, returns to its origin and exiting results cannot dispatch stale commands", async () => {
+  const d = fixture(true),
+    origin = document.createElement("button");
+  origin.textContent = "Canvas focus origin";
+  document.body.append(origin);
+  origin.focus();
+  fireEvent.keyDown(origin, { key: "k", ctrlKey: true });
+  const input = await screen.findByRole("combobox");
+  expect(input).toHaveFocus();
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  expect(input).toHaveFocus();
+  const option = screen
+    .getAllByRole("option")
+    .find((item) => item.getAttribute("aria-disabled") !== "true")!;
+  const before = d.engine.getSnapshot();
+  fireEvent.click(screen.getByRole("button", { name: "Fermer" }));
+  expect(option.closest("[inert]")).not.toBeNull();
+  fireEvent.click(option);
+  expect(d.engine.getSnapshot()).toBe(before);
+  expect(d.onTask).not.toHaveBeenCalled();
+  await waitFor(() => expect(document.querySelector("[data-magic-search]")).toBeNull());
+  await waitFor(() => expect(origin).toHaveFocus());
+  expect(screen.getByRole("button", { name: "Rechercher dans MusArt" })).not.toHaveFocus();
+  origin.remove();
 });
 test("hands off image imports and dialogs after closing", async () => {
   const d = fixture();

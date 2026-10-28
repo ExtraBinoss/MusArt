@@ -1,4 +1,5 @@
 import { Sun } from "lucide-react";
+import { memo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   BLEND_MODES,
@@ -11,9 +12,10 @@ import { useLayerPreview } from "./use-layer-preview";
 import { layerSelection } from "../menu/selection";
 import { NumberInput } from "../../shared/NumberInput";
 import { SelectField } from "../../shared/SelectField";
+import { useRenderMetrics } from "../../../state/session/render-metrics";
 import "../messages";
 
-export function LayerCompositing({
+export const LayerCompositing = memo(function LayerCompositing({
   engine,
   page,
   selection,
@@ -21,9 +23,11 @@ export function LayerCompositing({
 }: {
   engine: EnginePort;
   page: Composition;
-  selection: string[];
+  selection: readonly string[];
   run: (task: () => void) => void;
 }) {
+  const element = useRef<HTMLDivElement>(null);
+  useRenderMetrics(element);
   const { t } = useTranslation();
   const edit = useLayerPreview(engine, page, selection, run, true);
   const state = layerSelection(page, selection),
@@ -34,7 +38,12 @@ export function LayerCompositing({
   const mixedOpacity = selected.some((layer) => layer.opacity !== opacity);
   const mixedBlend = selected.some((layer) => layer.blendMode !== blend);
   return (
-    <div className="layer-compositing" role="group" aria-label={t("layerControls:compositing")}>
+    <div
+      ref={element}
+      className="layer-compositing"
+      role="group"
+      aria-label={t("layerControls:compositing")}
+    >
       <NumberInput
         identity={selected}
         label={t("opacity")}
@@ -76,4 +85,4 @@ export function LayerCompositing({
       />
     </div>
   );
-}
+});

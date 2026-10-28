@@ -24,7 +24,13 @@ export function nodeFixture(type: EffectType) {
 }
 export function graphNodes(node: Node): Set<Node> {
   const nodes = new Set<Node>();
-  node.traverse((child) => nodes.add(child));
+  const pending = [node];
+  while (pending.length) {
+    const current = pending.pop()!;
+    if (nodes.has(current)) continue;
+    nodes.add(current);
+    pending.push(...current.getChildren());
+  }
   return nodes;
 }
 /** The last component must be the original per-pixel alpha, not a block sample. */

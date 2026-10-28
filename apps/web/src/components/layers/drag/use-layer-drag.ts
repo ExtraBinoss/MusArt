@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } fro
 import type { Composition, EnginePort, Layer, Project } from "@musart/core";
 import { getDropCommand, getDropPosition, type LayerDropPosition } from "../drop-target";
 import { projectLayerDrop } from "./projection";
+import { layerDragImage } from "./drag-image";
 
 const MIME = "application/x-musart-layer";
 export function useLayerDrag(
@@ -38,7 +39,10 @@ export function useLayerDrag(
     scrollTop: number;
     scrollLeft: number;
   } | null>(null);
+  const image = useRef<(() => void) | null>(null);
   const cancel = useCallback(() => {
+    image.current?.();
+    image.current = null;
     source.current = null;
     candidate.current = null;
     pointer.current = null;
@@ -63,7 +67,15 @@ export function useLayerDrag(
       if (event.key === "Escape") cancel();
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("dragend", cancel);
+    window.addEventListener("blur", cancel);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("dragend", cancel);
+      window.removeEventListener("blur", cancel);
+      image.current?.();
+      image.current = null;
+    };
   }, [cancel]);
   // The canonical engine invalidates a drag before stale DOM can deliver its drop.
   useEffect(() => {
@@ -76,6 +88,8 @@ export function useLayerDrag(
   }, [engine, cancel]);
   useEffect(() => {
     if (source.current?.page.id === page.id && source.current.page !== page) {
+      image.current?.();
+      image.current = null;
       source.current = null;
       candidate.current = null;
       pointer.current = null;
@@ -127,6 +141,14 @@ export function useLayerDrag(
         });
         event.dataTransfer.setData(MIME, layer.id);
         event.dataTransfer.effectAllowed = "move";
+        image.current?.();
+        const releaseImage = layerDragImage(event.currentTarget, event.dataTransfer, layer.name),
+          nativeEvent = event.nativeEvent;
+        image.current = releaseImage;
+        // A later listener can reject dragstart without the browser ever sending dragend.
+        queueMicrotask(() => {
+          if (image.current === releaseImage && nativeEvent.defaultPrevented) cancel();
+        });
       },
       over(event: DragEvent<HTMLElement>, layer: Layer, targetPage = page) {
         const current = source.current;

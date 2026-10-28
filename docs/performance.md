@@ -4,13 +4,14 @@ Use these runbooks when changing a hot path or investigating an interaction regr
 
 Read [AGENTS.md](../AGENTS.md) and [the architecture contracts](CONTRACTS.md) first. Keep release details in [CHANGELOG.md](../CHANGELOG.md), not in contribution instructions.
 
-| Domain                          | Start here                            | Primary boundary                                                       |
-| ------------------------------- | ------------------------------------- | ---------------------------------------------------------------------- |
-| Measurement and reproducibility | [Protocol](performance/protocol.md)   | Frozen builds, environment, isolated cohorts, clocks and artifacts     |
-| Canvas interactions             | [Canvas](performance/canvas.md)       | Navigation, selection, geometry, guides and drawing                    |
-| React and interface layout      | [Layout](performance/layout.md)       | Inspector, virtual layers, search, preview controls and browser layout |
-| Persistence and journals        | [Storage](performance/storage.md)     | IndexedDB, autosave, concurrency, history and reload                   |
-| GPU rendering and exports       | [Rendering](performance/rendering.md) | Sources, composition, analytical text, effects and retained resources  |
+| Domain                          | Start here                                         | Primary boundary                                                          |
+| ------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------- |
+| Measurement and reproducibility | [Protocol](performance/protocol.md)                | Frozen builds, environment, isolated cohorts, clocks and artifacts        |
+| Canvas interactions             | [Canvas](performance/canvas.md)                    | Navigation, selection, geometry, guides and drawing                       |
+| React and interface layout      | [Layout](performance/layout.md)                    | Inspector, virtual layers, search, preview controls and browser layout    |
+| Persistence and journals        | [Storage](performance/storage.md)                  | IndexedDB, autosave, concurrency, history and reload                      |
+| GPU rendering and exports       | [Rendering](performance/rendering.md)              | Sources, composition, analytical text, effects and retained resources     |
+| Visible thumbnails              | [Latency cohort](performance/thumbnail-latency.md) | Decoded previews after native scrolling and the first artboard activation |
 
 The detailed [GPU workload and measurement protocol](rendering/performance-protocol.md) remains the source for the 50-image fixture, native pan/control comparison and recorded cohorts. Domain runbooks link to it instead of maintaining competing copies of its values.
 

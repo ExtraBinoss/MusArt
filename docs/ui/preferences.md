@@ -7,6 +7,14 @@ controls use the neutral theme. Shortcuts embed the same `ShortcutSettings` and
 `BindingRow` controls as the standalone shortcut dialog, including real recording,
 conflict validation, clearing, resetting and persistent user overrides.
 
+General also controls **Include images when copying**, enabled by default. Its
+versioned `musart.clipboard.v1` preference contains one boolean and no project
+content. Turning it off keeps small local references in copied JSON; cross-project
+pastes then require copying again with images included. Native text copying is
+unaffected. The preference store validates external changes, releases its storage
+listener after the last subscriber, and retains the current choice when a storage
+write is blocked.
+
 Theme choices reuse the shared segmented Motion surface through genuine Radix radio
 semantics. Projects/Templates, guide categories and Design/Animate retain tab semantics;
 appearance values do not invent an empty tab panel. Full translated accessible names
@@ -41,3 +49,10 @@ updates, command routing, single numeric commits, actual shortcut recording and
 sandbox cancellation/cleanup. Native browser scenarios cover persistence, keyboard
 focus, short/narrow layouts, real drag input and screenshots. Run browser checks
 separately from coverage using [the shared protocol](../performance/protocol.md).
+
+Pinned shortcuts in the left toolbar expose a genuine Radix context menu on right-click
+or Shift+F10 / Menu-key input. **Unpin** updates the existing dock preference atom and
+local storage immediately, including for currently unavailable commands. Opening the
+menu cancels any reorder projection; removing a shortcut preserves the latest pin
+order and returns keyboard focus to a remaining shortcut or the pinned group. Built-in
+tools remain separate, and removing a shortcut never executes its document command.

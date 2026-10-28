@@ -15,6 +15,7 @@ describe("GPU-only compositing operators", () => {
     passes.clear(output, "#ff000080");
     passes.copyTo(source, output);
     passes.copyTo(source, null, true);
+    passes.copyTo(source, output, false, true);
     for (const premultiplied of [false, true])
       for (const inverted of [false, true])
         passes.maskTo({ ...source, premultiplied }, new Texture(), inverted, output);
@@ -28,7 +29,7 @@ describe("GPU-only compositing operators", () => {
         100,
         output,
       );
-    expect(passes.passes).toBe(11);
+    expect(passes.passes).toBe(12);
     expect(fake.getRenderTarget()).toBe(prior);
     expect(fake.autoClear).toBe(true);
     expect(fake.readRenderTargetPixelsAsync).not.toHaveBeenCalled();

@@ -1,4 +1,5 @@
 import type { ProjectWriteFrame } from "./model";
+import { THUMBNAIL_RENDER_VERSION } from "../thumbnails/model";
 /** Transport metadata is private, but incomplete/corrupt frames must fail before acquiring write locks. */
 export function validateProjectWrite(frame: ProjectWriteFrame): void {
   if (
@@ -16,6 +17,7 @@ export function validateProjectWrite(frame: ProjectWriteFrame): void {
     typeof frame.expectedRevision !== "string" ||
     typeof frame.requireAbsent !== "boolean" ||
     typeof frame.remember !== "boolean" ||
+    frame.thumbnailRenderVersion !== THUMBNAIL_RENDER_VERSION ||
     (frame.basis !== undefined && typeof frame.basis !== "string") ||
     !frame.pageRevisions ||
     typeof frame.pageRevisions !== "object"
