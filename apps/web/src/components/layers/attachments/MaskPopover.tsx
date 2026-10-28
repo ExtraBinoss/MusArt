@@ -12,10 +12,7 @@ import { MaskProperties } from "../../properties/MaskProperties";
 import { useLayerPreview } from "../controls/use-layer-preview";
 import { Button } from "../../ui/button";
 import { activateLayerPage } from "../tree/activation";
-import {
-  attachmentSelection,
-  capturePresentationDelete,
-} from "../../../state/selection/attachments";
+import { attachmentSelection } from "../../../state/selection/attachments";
 import { attachmentDeleteKey } from "../../../state/selection/attachment-keydown";
 import "../messages";
 export function MaskPopover({
@@ -96,11 +93,7 @@ function MaskDetails({
         engine={engine}
         layer={layer}
         run={run}
-        onCommand={(command) =>
-          command.type === "removeLayerMask"
-            ? run(capturePresentationDelete(engine))
-            : edit.command(command)
-        }
+        onCommand={edit.command}
         disabled={createLayerGeometryIndex(page).isLocked(layer.id)}
       />
     </>

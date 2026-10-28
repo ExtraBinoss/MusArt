@@ -28,6 +28,12 @@ test("a mask avatar edits the real linked mask with independent undoable command
   expect(d.engine.getSnapshot().canUndo).toBe(false);
   await choose("Mode du masque", "Luminosité");
   expect(d.engine.getSnapshot().project.pages[0]!.layers[2]!.mask?.mode).toBe("luminance");
+  const beforeRemoval = d.engine.getSnapshot().project;
   fireEvent.click(screen.getByLabelText("Retirer le masque"));
+  expect(d.engine.getSnapshot().project.pages[0]!.layers.map((layer) => layer.id)).toEqual(
+    beforeRemoval.pages[0]!.layers.map((layer) => layer.id),
+  );
   expect(d.engine.getSnapshot().project.pages[0]!.layers[2]!.mask).toBeNull();
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project).toEqual(beforeRemoval);
 });

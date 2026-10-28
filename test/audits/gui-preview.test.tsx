@@ -14,7 +14,8 @@ import { previewAtom } from "../../apps/web/src/state/session/editor";
 import { TooltipProvider } from "../../apps/web/src/components/ui/tooltip";
 import { NumberInput } from "../../apps/web/src/components/shared/NumberInput";
 vi.mock("../../apps/web/src/canvas/render/EditorScene", () => ({ EditorScene: () => null }));
-vi.mock("react-i18next", () => ({
+vi.mock("react-i18next", async (original) => ({
+  ...(await original<typeof import("react-i18next")>()),
   useTranslation: () => ({
     t: (key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? key,
   }),
