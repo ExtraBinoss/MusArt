@@ -1,5 +1,6 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { createProject, stateFromProject } from "@musart/core";
+import { createProject, createPage, EditorEngine, stateFromProject } from "@musart/core";
+import { logicalBytes } from "../../../../src/services/projects/logical-bytes";
 import {
   CanonicalHasher,
   type HashWorkerPort,
@@ -182,4 +183,71 @@ test("fallback computes real digests and validates constructor limits", async ()
     expect(() => new CanonicalHasher({ maxPending })).toThrow("limits");
   for (const timeoutMs of [0, Infinity])
     expect(() => new CanonicalHasher({ timeoutMs })).toThrow("limits");
+});
+
+test("publishes page accounting only after freshness checks, with the same no-Worker result", async () => {
+  const worker = new WorkerFixture(),
+    hasher = new CanonicalHasher({ createWorker: () => worker });
+  const page = createPage(),
+    job = { kind: "thumbnail" as const, page, sources: [] },
+    size = logicalBytes(page);
+  const onPageBytes = vi.fn();
+  const first = hasher.hash(job, { onPageBytes });
+  worker.reply(1, { value, pageBytes: size });
+  expect(await first).toBe(value);
+  expect(onPageBytes).toHaveBeenCalledWith(size);
+  let current = true;
+  const stale = hasher.hash(job, { onPageBytes, isCurrent: () => current });
+  current = false;
+  worker.reply(2, { value, pageBytes: size });
+  await expect(stale).rejects.toMatchObject({ name: "AbortError" });
+  expect(onPageBytes).toHaveBeenCalledOnce();
+  hasher.dispose();
+  const fallback = new CanonicalHasher({ createWorker: () => null });
+  await fallback.hash(job, { onPageBytes });
+  expect(onPageBytes).toHaveBeenCalledTimes(2);
+  expect(onPageBytes).toHaveBeenLastCalledWith(size);
+  fallback.dispose();
+});
+
+test("streams certified pages without a whole-page post and stops production on disposal", async () => {
+  const worker = new WorkerFixture(),
+    hasher = new CanonicalHasher({ createWorker: () => worker });
+  const engine = new EditorEngine(createProject());
+  const job = {
+    kind: "thumbnail" as const,
+    page: engine.getSnapshot().project.pages[0]!,
+    sources: [],
+  };
+  const pending = hasher.hash(job);
+  expect(worker.messages).toEqual([{ type: "begin-hash", id: 1 }]);
+  await vi.waitFor(() => expect(worker.messages.at(-1)?.type).toBe("finish-hash"));
+  expect(worker.messages.some((message) => message.type === "hash")).toBe(false);
+  worker.reply(1);
+  expect(await pending).toBe(value);
+  const next = hasher.hash(job),
+    failure = expect(next).rejects.toMatchObject({ name: "AbortError" });
+  const count = worker.messages.length;
+  hasher.dispose();
+  await failure;
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  expect(worker.messages).toHaveLength(count);
+});
+
+test("retains canceled streamed admission until the worker discards its partial snapshot", async () => {
+  const worker = new WorkerFixture(),
+    hasher = new CanonicalHasher({ createWorker: () => worker, maxPending: 1 });
+  const page = new EditorEngine(createProject()).getSnapshot().project.pages[0]!;
+  const job = { kind: "thumbnail" as const, page, sources: [] };
+  let current = true;
+  const pending = hasher.hash(job, { isCurrent: () => current });
+  current = false;
+  await expect(pending).rejects.toMatchObject({ name: "AbortError" });
+  expect(worker.messages.at(-1)).toEqual({ type: "cancel", id: 1 });
+  await expect(hasher.hash(job)).rejects.toThrow("full");
+  worker.reply(1, { error: "Hash cancelled." });
+  const next = hasher.hash(makeJob());
+  worker.reply(2);
+  expect(await next).toBe(value);
+  hasher.dispose();
 });

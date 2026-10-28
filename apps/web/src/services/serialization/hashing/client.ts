@@ -1,4 +1,8 @@
 import { computeCanonicalHash } from "./compute";
+import { isPublishedComposition } from "@musart/core";
+import { captureHashJob } from "./capture";
+import { sendHashFragments } from "./transport";
+import { logicalBytes } from "../../projects/logical-bytes";
 import { isHashResponse, type CanonicalHashJob, type HashRequest } from "./protocol";
 
 export interface HashWorkerPort {
@@ -11,6 +15,7 @@ export interface HashWorkerPort {
 interface HashOptions {
   signal?: AbortSignal;
   isCurrent?: () => boolean;
+  onPageBytes?: (bytes: number) => void;
 }
 interface Pending extends HashOptions {
   id: number;
@@ -19,6 +24,7 @@ interface Pending extends HashOptions {
   reject: (reason: unknown) => void;
   abort: () => void;
   timer: ReturnType<typeof setTimeout>;
+  transport: AbortController;
 }
 
 /** One owned worker, eight admitted snapshots, no originals or payload cache on the main thread. */
@@ -66,6 +72,7 @@ export class CanonicalHasher {
             entry,
             "value" in data ? data.value : undefined,
             "error" in data ? new Error(data.error) : undefined,
+            "pageBytes" in data ? data.pageBytes : undefined,
           );
       };
       worker.onerror = (event) =>
@@ -76,11 +83,12 @@ export class CanonicalHasher {
     return worker;
   }
   private release(entry: Pending) {
+    entry.transport.abort();
     clearTimeout(entry.timer);
     entry.signal?.removeEventListener("abort", entry.abort);
     this.pending.delete(entry.id);
   }
-  private finish(entry: Pending, value?: string, error?: unknown) {
+  private finish(entry: Pending, value?: string, error?: unknown, pageBytes?: number) {
     this.release(entry);
     if (entry.settled) return;
     entry.settled = true;
@@ -89,6 +97,7 @@ export class CanonicalHasher {
       if (entry.isCurrent && !entry.isCurrent())
         throw new DOMException("Canonical hash request is stale.", "AbortError");
       if (error !== undefined) throw error;
+      if (pageBytes !== undefined) entry.onPageBytes?.(pageBytes);
       entry.resolve(value!);
     } catch (failure) {
       entry.reject(failure);
@@ -131,6 +140,7 @@ export class CanonicalHasher {
         abort: () => {
           if (entry.settled) return;
           entry.settled = true;
+          entry.transport.abort();
           entry.reject(options.signal?.reason ?? new DOMException("Hash cancelled.", "AbortError"));
           entry.signal?.removeEventListener("abort", entry.abort);
           // Keep admission until the worker acknowledges, bounding physical cloned snapshots too.
@@ -144,20 +154,55 @@ export class CanonicalHasher {
           () => this.fail(new DOMException("Canonical hash timed out.", "TimeoutError")),
           this.options.timeoutMs ?? 30000,
         ),
+        transport: new AbortController(),
       };
       this.pending.set(id, entry);
       entry.signal?.addEventListener("abort", entry.abort, { once: true });
       try {
         const worker = this.connect();
         if (worker) {
-          // Native postMessage clones immediately, even when this job waits in the worker FIFO.
-          worker.postMessage({ type: "hash", id, job });
+          if (job.kind === "thumbnail" && isPublishedComposition(job.page)) {
+            const snapshot = captureHashJob(job);
+            worker.postMessage({ type: "begin-hash", id });
+            void sendHashFragments(
+              worker,
+              id,
+              snapshot,
+              entry.transport.signal,
+              () => this.pending.get(id) === entry && (!entry.isCurrent || entry.isCurrent()),
+            ).catch((error: unknown) => {
+              if (this.pending.get(id) !== entry || entry.settled) return;
+              entry.settled = true;
+              entry.transport.abort();
+              entry.reject(error);
+              entry.signal?.removeEventListener("abort", entry.abort);
+              // Keep physical admission until the incomplete remote assembly is acknowledged.
+              try {
+                worker.postMessage({ type: "cancel", id });
+              } catch (failure) {
+                this.fail(failure);
+              }
+            });
+          } else {
+            // External mutable inputs retain an immediate native call-time snapshot.
+            worker.postMessage({ type: "hash", id, job });
+          }
         } else {
           // No-Worker compatibility permits overlapping WebCrypto calls (including CAS races).
           const snapshot = structuredClone(job);
           void (this.options.compute ?? computeCanonicalHash)(snapshot).then(
             (value) => {
-              if (this.pending.get(id) === entry) this.finish(entry, value);
+              if (this.pending.get(id) !== entry) return;
+              try {
+                this.finish(
+                  entry,
+                  value,
+                  undefined,
+                  snapshot.kind === "thumbnail" ? logicalBytes(snapshot.page) : undefined,
+                );
+              } catch (error) {
+                this.finish(entry, undefined, error);
+              }
             },
             (error: unknown) => {
               if (this.pending.get(id) === entry) this.finish(entry, undefined, error);
