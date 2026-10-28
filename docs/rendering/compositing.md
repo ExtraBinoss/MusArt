@@ -6,6 +6,10 @@
 
 The live editor passes its existing R3F renderer to `new GpuCompositor(renderer)`. `render(page, assets, {scale})` returns a retained texture and dimensions; it never creates or disposes that renderer. Dispose the graph when its document viewport closes. All GPU passes execute synchronously after asynchronous source preparation, restore the previous render target and `autoClear`, and use a serialized render queue.
 
+Presentation readiness is separate from completion of the latest requested revision. Property previews and same-artboard dimension changes retain the last valid display plane and texture while the replacement is prepared. Only the first presentation or a different artboard starts the finite loading reveal; pending property work never restarts its overlay. The adapter relays Three's public device-loss callback, stops further submissions, preserves the native diagnostic and never labels a lost-device no-op as a completed frame. It does not create automatic replacement renderers. Disposal restores the callback only while the adapter still owns it.
+
+Live diagnostics include Three's actual uniform-buffer count/bytes, program count and renderer-target count alongside the graph's owned resources. These CPU bookkeeping counters do not read GPU pixels.
+
 Render-target samples explicitly flip Y at each sampling boundary. Imported images and glyph canvases retain their source orientation. Intermediate buffers contain encoded working RGB; some contain premultiplied alpha, declared by `FrameTexture.premultiplied`. The final texture is premultiplied. Presentation uses a `MeshBasicNodeMaterial`, `NoBlending`, and a linear Three output setting to avoid a second sRGB transfer.
 
 Ordinary source-over layers are batched into one draw per isolated group. Other modes use a ping-pong backdrop pass with W3C source-over alpha. Supported modes are normal, darken, multiply, color burn, linear burn, lighten, screen, color dodge, linear dodge, overlay, soft light, hard light, vivid light, linear light, pin light, hard mix, difference, exclusion, subtract, divide, hue, saturation, color, luminosity, Darker Color and Lighter Color. Changing the mode updates a uniform; it does not compile another material.
@@ -34,6 +38,12 @@ A 10,000-primitive run owns less than 2 MiB of GPU vertex/instance data and uses
 one primitive draw plus the normal document clear/presentation operations.
 `primitiveDraws`, `primitiveInstances` and `primitiveBytes` expose the actual
 operator submissions, cumulative submitted instances and current allocation.
+
+The operator also retains an LRU of decoded, frozen fill/stroke vectors, bounded
+to 128 colors and 16 KiB of key/component payload. Moving repeated-color shapes
+reuses these CPU values without parsing or allocating a vector for every
+instance. New color strings are validated before insertion; disposal clears
+the cache. The payload counter excludes JavaScript object/container overhead.
 
 A render job shares one indexed layer hierarchy and one memoized source-key
 resolver. Original identity strings are byte/count bounded; weak, bounded representatives keep live oversized originals stable across equivalent asset-object clones without strongly retaining their bytes.
@@ -91,5 +101,7 @@ The consumer callback is inside the session queue: the next frame cannot overwri
 ## Regression evidence
 
 `primitives.spec.ts` checks mixed ordered runs, rotated/stroked alpha shapes, isolated groups, both backends and a real 10,000-instance frame with bounded target/buffer counts and zero production readbacks.
+
+`render-lifecycle.spec.ts` records every animation frame during AFTERHOURS color previews, extreme position/rotation edits and same-artboard resizing. It checks loading/canvas visibility, retained context/resource counts, continuous-preview React commits, console diagnostics and actual readback hooks; screenshots and its environment report remain in ignored artifacts.
 
 `test/browser/rendering.spec.ts` checks nested target orientation, source-over alpha, the original 24 blend modes against independent W3C/Canvas2D references, vector holes and recoloring, and transformed group masks. `gradient-effects.spec.ts` additionally checks darker/lighter color using whole-RGB sums and ties, completing the 26-mode catalog. `rendering-adjustments.spec.ts` checks all new corrections, per-pixel alpha, deterministic grain, Display-P3 asset round trips and opaque print proof. Each scenario runs both WebGPU and Three's WebGL fallback. Test-only PNG decoding uses Canvas2D; production rendering does not.

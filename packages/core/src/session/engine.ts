@@ -5,7 +5,7 @@ import { reserveProjectIds } from "../document/identity";
 import type { Command, EnginePort, Project, SessionSnapshot } from "../document/model";
 import { validateProject } from "../document/validation";
 import { cloneValue as clone, freezeValue as freeze } from "../document/immutable";
-import type { CommandCommit } from "../animation/model";
+import type { CommandCommit, CommandCommitInfo } from "../animation/model";
 import { createLayerGeometryIndex } from "../layers/geometry-index";
 import { createCommandDraft } from "./drafts";
 
@@ -26,12 +26,20 @@ export interface EngineOptions {
   now?: () => string;
   historyLimit?: number;
 }
+interface CommitEnvelope {
+  info: CommandCommitInfo;
+  detailed?: CommandCommit;
+}
 
 /** A renderer-free document session. All edits are validated on an isolated draft. */
 export class EditorEngine implements EnginePort {
   private snapshot: SessionSnapshot;
   private listeners = new Set<() => void>();
   private commandListeners = new Set<(event: CommandCommit) => void>();
+  private commitInfoListeners = new Set<(event: CommandCommitInfo) => void>();
+  private readonly commits: CommitEnvelope[] = [];
+  private publications = 0;
+  private drainingCommits = false;
   private past: SessionSnapshot[] = [];
   private future: SessionSnapshot[] = [];
   private sequence = 0;
@@ -70,14 +78,79 @@ export class EditorEngine implements EnginePort {
       this.commandListeners.delete(listener);
     };
   };
-  private notifyCommands(kind: CommandCommit["kind"], commands: readonly Command[] = []): void {
-    if (!this.commandListeners.size) return;
-    const event = freeze({ kind, commands: clone(commands), snapshot: this.snapshot });
-    for (const listener of this.commandListeners) listener(event);
+  subscribeCommitInfo = (listener: (event: CommandCommitInfo) => void): (() => void) => {
+    this.commitInfoListeners.add(listener);
+    return () => {
+      this.commitInfoListeners.delete(listener);
+    };
+  };
+  private drainCommits(): void {
+    if (!this.commits.length || this.publications || this.drainingCommits) return;
+    this.drainingCommits = true;
+    let cursor = 0,
+      failed = false,
+      failure: unknown;
+    const deliver = <T>(listeners: Set<(event: T) => void>, event: T) => {
+      for (const listener of listeners) {
+        try {
+          listener(event);
+        } catch (error) {
+          if (!failed) {
+            failed = true;
+            failure = error;
+          }
+        }
+      }
+    };
+    try {
+      while (cursor < this.commits.length) {
+        const envelope = this.commits[cursor++]!;
+        deliver(this.commitInfoListeners, envelope.info);
+        if (envelope.detailed) deliver(this.commandListeners, envelope.detailed);
+      }
+    } finally {
+      this.commits.splice(0, cursor);
+      this.drainingCommits = false;
+    }
+    if (failed) throw failure;
   }
-  private publish(next: SessionSnapshot): void {
-    this.snapshot = freeze(next);
-    for (const listener of this.listeners) listener();
+  private publish(
+    next: SessionSnapshot,
+    kind?: CommandCommit["kind"],
+    commands: readonly Command[] = [],
+    detailedCommands?: readonly Command[],
+  ): void {
+    const snapshot = freeze(next);
+    if (kind) {
+      // Capture before state listeners can synchronously publish another transaction.
+      const detailed =
+        detailedCommands ?? (this.commandListeners.size && !commands.length ? [] : undefined);
+      this.commits.push({
+        info: freeze({ kind, types: commands.map((command) => command.type), snapshot }),
+        ...(detailed ? { detailed: freeze({ kind, commands: detailed, snapshot }) } : {}),
+      });
+    }
+    this.snapshot = snapshot;
+    this.publications++;
+    let failed = false,
+      failure: unknown;
+    try {
+      for (const listener of this.listeners) listener();
+    } catch (error) {
+      failed = true;
+      failure = error;
+    } finally {
+      this.publications--;
+      try {
+        this.drainCommits();
+      } catch (error) {
+        if (!failed) {
+          failed = true;
+          failure = error;
+        }
+      }
+    }
+    if (failed) throw failure;
   }
   select = (ids: string[]): void => {
     const page = currentPage(this.snapshot.project, this.snapshot.pageId);
@@ -111,6 +184,7 @@ export class EditorEngine implements EnginePort {
     let pageId = before.pageId;
     let selection = before.selection;
     let sequence = this.sequence;
+    let detailedCommands: readonly Command[] | undefined;
     const occupied = new Set<string>([project.id, ...Object.keys(project.assets)]);
     for (const page of project.pages) {
       occupied.add(page.id);
@@ -133,6 +207,7 @@ export class EditorEngine implements EnginePort {
     try {
       // Reserve explicit IDs from the entire batch before generating any IDs.
       collectExplicitIds(commands, occupied);
+      if (this.commandListeners.size) detailedCommands = freeze(clone(commands));
       for (const command of clone(commands)) {
         const result = applyCommand(project, pageId, command, nextId);
         pageId = result.pageId;
@@ -155,39 +230,47 @@ export class EditorEngine implements EnginePort {
     this.future = [];
     this.sequence = sequence;
     reserveProjectIds(project);
-    this.publish({
-      project,
-      pageId,
-      selection,
-      revision: before.revision + 1,
-      canUndo: true,
-      canRedo: false,
-    });
-    this.notifyCommands("commit", commands);
+    this.publish(
+      {
+        project,
+        pageId,
+        selection,
+        revision: before.revision + 1,
+        canUndo: true,
+        canRedo: false,
+      },
+      "commit",
+      commands,
+      detailedCommands,
+    );
   };
   undo = (): void => {
     const previous = this.past.pop();
     if (!previous) return;
     this.future.push(this.snapshot);
-    this.publish({
-      ...previous,
-      revision: this.snapshot.revision + 1,
-      canUndo: this.past.length > 0,
-      canRedo: true,
-    });
-    this.notifyCommands("undo");
+    this.publish(
+      {
+        ...previous,
+        revision: this.snapshot.revision + 1,
+        canUndo: this.past.length > 0,
+        canRedo: true,
+      },
+      "undo",
+    );
   };
   redo = (): void => {
     const next = this.future.pop();
     if (!next) return;
     this.past.push(this.snapshot);
-    this.publish({
-      ...next,
-      revision: this.snapshot.revision + 1,
-      canUndo: true,
-      canRedo: this.future.length > 0,
-    });
-    this.notifyCommands("redo");
+    this.publish(
+      {
+        ...next,
+        revision: this.snapshot.revision + 1,
+        canUndo: true,
+        canRedo: this.future.length > 0,
+      },
+      "redo",
+    );
   };
   load = (project: Project): void => {
     validateProject(project);
@@ -196,14 +279,16 @@ export class EditorEngine implements EnginePort {
     this.past = [];
     this.future = [];
     this.sequence = 0;
-    this.publish({
-      project: copy,
-      pageId: copy.pages[0]!.id,
-      selection: [],
-      revision: this.snapshot.revision + 1,
-      canUndo: false,
-      canRedo: false,
-    });
-    this.notifyCommands("load");
+    this.publish(
+      {
+        project: copy,
+        pageId: copy.pages[0]!.id,
+        selection: [],
+        revision: this.snapshot.revision + 1,
+        canUndo: false,
+        canRedo: false,
+      },
+      "load",
+    );
   };
 }

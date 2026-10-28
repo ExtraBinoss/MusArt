@@ -37,6 +37,12 @@ export interface CommandCommit {
   commands: readonly Command[];
   snapshot: SessionSnapshot;
 }
+/** Payload-free commit metadata for observers that only need command labels and immutable state. */
+export interface CommandCommitInfo {
+  kind: CommandCommit["kind"];
+  types: readonly Command["type"][];
+  snapshot: SessionSnapshot;
+}
 export interface ReplayRecording {
   snapshot(): ReplaySpec;
   stop(): ReplaySpec;
@@ -45,7 +51,14 @@ export interface ReplayRecording {
 export interface ReplayObserveOptions {
   now?: () => number;
   checkpointInterval?: number;
-  onEvent: (event: ReplayEvent, addedAssets: Record<string, Asset>) => void;
+  commandMode?: "full" | "summary";
+  /** Own ordering, awaiting and asynchronous error reporting for each captured emission. */
+  schedule?: (emit: () => void | Promise<void>) => void;
+  onEvent: (
+    event: ReplayEvent,
+    addedAssets: Record<string, Asset>,
+    snapshotCapture: SessionSnapshot,
+  ) => void | Promise<void>;
 }
 export interface ReplayRecordOptions {
   now?: () => number;

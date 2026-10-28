@@ -28,6 +28,13 @@ describe("local project storage", () => {
       {
         id: project.id,
         name: "Poster",
+        pages: project.pages.map((page) => ({
+          id: page.id,
+          name: page.name,
+          width: page.width,
+          height: page.height,
+          thumbnailRevision: expect.any(String),
+        })),
         updatedAt: project.updatedAt,
         width: 1080,
         height: 1080,
@@ -38,6 +45,10 @@ describe("local project storage", () => {
     expect((await db.list())[0]?.thumbnail).toContain("thumbnail");
     await db.save(project, "replacement");
     expect((await db.list())[0]?.thumbnail).toBe("replacement");
+    const backgroundCopy = { ...project, id: "background-copy" };
+    await db.save(backgroundCopy, undefined, { remember: false });
+    expect(await db.load(backgroundCopy.id)).toEqual(backgroundCopy);
+    expect(await db.last()).toBe(project.id);
   });
   it("sorts recent projects deterministically and handles missing, removed and corrupt records", async () => {
     const name = crypto.randomUUID();
@@ -158,7 +169,7 @@ describe("separate immutable originals and lightweight manifests", () => {
     const loaded = await db.load(project.id);
     expect(loaded).toEqual(project);
     const connection = await openDB(name);
-    expect(connection.version).toBe(2);
+    expect(connection.version).toBe(5);
     expect(await connection.count("assets")).toBe(0);
     expect((await connection.get("projects", project.id)).storageVersion).toBeUndefined();
     await db.save(loaded);
@@ -279,23 +290,20 @@ describe("original revision cache validation", () => {
     await first.save({ ...final, name: "Another transform" });
     expect(reads).toHaveBeenCalledTimes(3);
   });
-  it("does not reuse a stale cache after another session deletes and recreates the same project ID", async () => {
+  it("permanently rejects deleted identities across sessions instead of recreating from stale caches", async () => {
     const name = crypto.randomUUID();
     const first = store(name);
     const second = store(name);
     const project = assetProject();
     await first.save(project);
     await second.remove(project.id);
-    await second.save({
-      ...project,
-      assets: {
-        original: { ...project.assets.original!, dataUrl: "data:image/png;base64,recreated" },
-      },
-    });
-    await first.save(project);
-    expect(await first.load(project.id)).toEqual(project);
+    await expect(second.save(project)).rejects.toThrow("deleted");
+    await expect(first.save(project)).rejects.toThrow("deleted");
+    await expect(first.load(project.id)).rejects.toThrow("introuvable");
     const connection = await openDB(name);
-    expect((await connection.get("projects", project.id)).assetsRevision).toBe("assets:3");
+    expect(await connection.count("projects")).toBe(0);
+    expect(await connection.count("assets")).toBe(0);
+    expect(await first.isDeleted(project.id)).toBe(true);
     connection.close();
   });
   it("upgrades existing v2 manifests without revision tokens without rewriting their original bytes", async () => {

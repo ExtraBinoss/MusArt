@@ -81,6 +81,7 @@ export type {
   ReplayCommandSummary,
   ReplayRecording,
   CommandCommit,
+  CommandCommitInfo,
 } from "./animation/model";
 export { SOCIAL_PRESETS, safeAreaGuides, pageFromPreset } from "./layout/presets";
 export type { CompositionPreset, PresetBrand } from "./layout/presets";

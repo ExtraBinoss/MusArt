@@ -31,6 +31,15 @@ it("rejects 601 lines, allows 600, ignores dependencies and declarations", () =>
     { file: "scripts/long.ts", rule: "max-lines", detail: "601 lignes > 600" },
   ]);
 });
+it("ignores only the local reference-clone tree, never third-party production sources", () => {
+  file("third_party/clone/ts-slug/src/SlugGenerator.ts", "x\n".repeat(601));
+  file("third_party/runtime/src/owned.ts");
+  file("apps/web/src/third_party/clone/uncovered.ts");
+  expect(audit(root).map((entry) => entry.file)).toEqual([
+    "apps/web/src/third_party/clone/uncovered.ts",
+    "third_party/runtime/src/owned.ts",
+  ]);
+});
 it("enforces pure core boundaries", () => {
   file("packages/core/src/invalid.ts", `import {atom} from 'jotai';\n`);
   file("packages/core/test/invalid.test.ts");

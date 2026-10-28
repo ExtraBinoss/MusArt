@@ -1,0 +1,25 @@
+.shape-tool-slot {
+  position: relative;
+}
+.shape-tool-slot > button:first-child svg {
+  width: 20px;
+  height: 20px;
+}
+.shape-tool-disclosure {
+  position: absolute;
+  right: -3px;
+  bottom: -1px;
+  width: 15px;
+  height: 15px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 3px;
+  background: var(--popover);
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.shape-tool-disclosure:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}

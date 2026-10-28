@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createLayer, createPage, type Asset } from "@musart/core";
+import { createLayer, createPage, createLayerGeometryIndex, type Asset } from "@musart/core";
 import { assetIdentity, createSourceKeys, sourceKey } from "../../src/cache/keys";
 
 describe("bounded layer source cache", () => {
@@ -164,4 +164,25 @@ it("keeps deep group keys compact without recursively escaping serialized descen
   expect(createSourceKeys(page, {}, 1)(layers[0]!)).toBe(key);
   layers[63]!.fill = "#ff0000";
   expect(createSourceKeys(page, {}, 1)(layers[0]!)).not.toBe(key);
+});
+
+it("reuses the render job's geometry index instead of constructing a second mutable-frame index", () => {
+  let reads = 0;
+  const layer = {
+    ...createLayer("rectangle", { id: "shape" }),
+    get parentId() {
+      reads++;
+      return null;
+    },
+  };
+  const page = createPage({ layers: [layer] });
+  const geometry = createLayerGeometryIndex(page);
+  const before = reads;
+  const resolve = createSourceKeys(page, {}, 1, { geometry });
+  expect(reads).toBe(before);
+  expect(resolve(layer)).toBe(sourceKey(layer, page, {}, 1));
+  const afterIndependent = reads;
+  resolve(layer);
+  expect(reads).toBe(afterIndependent);
+  expect(afterIndependent - before).toBeGreaterThan(0);
 });

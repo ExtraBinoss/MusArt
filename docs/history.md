@@ -1,0 +1,54 @@
+# Durable project history
+
+The journal is separate from both the project manifest and the engine's short undo stack. The default retention is **10,000 completed transactions**, adjustable per project from **10 to 100,000** entries in Animate. Pointer previews, selection changes and viewport navigation do not produce entries. A completed multi-command transaction produces one entry.
+
+On first launch, the shared Projects/Templates dashboard owns an empty draft that exists only in memory. It creates no saved project, journal or preview. Opening or creating a real project activates autosave, history and preview scheduling synchronously; edits immediately after that choice are recorded. The explicit automation and benchmark entry points retain their seeded fixtures for reproducible verification.
+
+## Storage and access
+
+The journal uses four independent stores introduced in schema 3, with checkpoint indexing added in schema 4. The current database schema is 5, which also stores page thumbnails separately.
+
+| Store           | Contents                                                          | Normal access                    |
+| --------------- | ----------------------------------------------------------------- | -------------------------------- |
+| `journalMeta`   | Capacity, cursors, count, enabled state, last content fingerprint | One small header                 |
+| `journalBase`   | Initial state or the last pruned checkpoint                       | Replay preparation and retention |
+| `journalEvents` | Ordered deltas, action summaries, occasional checkpoints          | Pages of at most 100             |
+| `journalAssets` | One immutable original per asset ID                               | Import and replay preparation    |
+
+Project loading and project autosave do not scan historical entries. Original image bytes never enter a command delta or checkpoint. Command summaries identify actions; playback applies the authoritative deltas, avoiding duplicate inserted-layer geometry in command payloads. Checkpoints omit redundant deltas.
+
+Replay diffing indexes stable identities once for bulk property changes. Moving one item within an otherwise unchanged ID order is recognized by a linear scan and stored as one move, followed by any field edits at their final indices. General permutations and insertions/removals retain the full diff path; arbitrary reorderings are not claimed to have linear cost. Applying a replay batch copies each changed container once and leaves its source state untouched.
+
+`EditorEngine.subscribeCommitInfo` publishes frozen command types and the committed immutable snapshot without copying full command payloads. Detailed `subscribeCommands` observation remains available and clones its payload only when detailed listeners exist. `observeReplay` defaults to synchronous full-command behavior for portable `recordSession` recordings. A platform journal can opt into `commandMode: "summary"` and supply a scheduler: the observer captures before/after state references, originals, timestamp and checkpoint sequence synchronously, then computes and freezes its delta only when the scheduled emission runs. Its callback receives that exact captured snapshot as the third argument. Custom engines without the metadata port fall back to detailed observation and type summaries.
+
+The scheduler owns FIFO ordering, awaiting callback promises and reporting asynchronous failures. Emissions are idempotent; removing the subscription stops new captures but leaves already scheduled commits drainable, so disposal can flush them. No browser timer, rendering API or storage dependency enters the pure core observer.
+
+The engine captures commit envelopes before notifying snapshot subscribers and drains them in transaction order. A command, undo or load triggered by either a snapshot subscriber or a commit observer keeps its own immutable snapshot; it cannot replace the earlier event's state. Commit-observer failures are rethrown after queued committed transitions reach the other observers, preserving their order and the already-applied document state.
+
+When detailed observers are present, their command payload is detached before handler execution. Later commands in the same transaction and callbacks mutating the caller's array cannot rewrite that payload. Failure to capture it rejects the transaction before state publication; summary-only observation does not allocate this extra copy.
+
+The web journal uses summary observation and yields two animation-frame opportunities followed by a task before preparing a captured delta. Explicit flush and disposal drain captured work immediately, including tasks which have not started yet. Hidden documents use a task instead; a bounded fallback and visibility listener prevent suspended frames from blocking persistence. Every pending timer, frame and listener is released when the wait ends. Event timestamps and document snapshots are captured at commit time, independently of when preparation runs.
+
+Project-owned canonical hashing runs in one lazy module worker. The worker prepares paint metadata, canonical JSON and SHA-256; no original image bytes enter its history or thumbnail jobs. Existing hashes remain byte-compatible. Eight admitted snapshots bound native message clones; the worker computes FIFO, cancellation rejects callers promptly and frees admission on acknowledgment, and failure/disposal terminates the worker and rejects pending requests. Environments without Workers use the same algorithm and snapshot inputs before computing. Multi-artboard saves admit two thumbnail hashes at a time rather than posting the entire project at once.
+
+The event store has compound indexes for project order and checkpoints. Reducing capacity seeks the latest checkpoint in the removed prefix, applies only its remaining deltas, advances the base and deletes the old range atomically. Ordinary retention prunes in small batches. Native IndexedDB transactions protect the metadata, original pool, checkpoint and event changes together.
+
+SHA-256 fingerprints cover canonical portable metadata, excluding original bytes. They are calculated before opening write transactions. This detects a restored document whose timestamp was preserved. Concurrent writers use sequence checks; a divergent writer inserts a self-contained checkpoint. An interrupted write is reported and the next successful write reconciles document state and missing originals.
+
+Project document writes also read a small durable preference revision before asynchronous hash preparation and compare it again inside the manifest write transaction. A concurrent committed save or rename makes an older prepared write fail with `StaleProjectWriteError`; timestamps do not decide ordering, so deliberate sequential undo/import saves remain valid. Save inputs are cloned and frozen before the first await, preventing a caller mutation from mixing one paint revision with another manifest. The revision token advances only in the successful transaction and rolls back with failed payload/history writes. Thumbnail-only metadata retains its separate pixel-revision guard and does not invalidate document writes. These small concurrency tokens stay outside portable project/history payloads. The editor's `saveCurrent` path retains the revision observed by atomic load or its last successful write in a bounded 128-entry header cache. It rejects stale loaded sessions and requires reopening an unknown existing project; only an actually absent record may be created without a baseline. Explicit import/replacement uses raw `save`, which intentionally establishes a new baseline. Runtime autosave, manual editor saving and active rename use the guarded path. Utility reads for duplication, history management and background thumbnails explicitly avoid adopting an editor baseline; only a real project open/reopen does so. Restoring an unchanged project performs no redundant save.
+
+Journal entries remain a recovery record even when a stale editor's manifest save is rejected. A recovered local commit does not claim that its project manifest was saved successfully. The save error propagates to the editor, the newer session's manifest remains intact, and the stale editor must reopen or explicitly resolve the conflict. This preserves unsaved local edits without silently replacing another session's document.
+
+Deleting a project atomically removes its manifest, originals, previews and journal, and retires its ID with a small durable preference marker. Manifest and journal writes check that marker while holding the same IndexedDB transaction locks, including writes from other sessions that started hashing before deletion. A delayed save, history initialization or history reset therefore reports a deleted-project error without recreating payloads. Failed deletion rolls the marker back with the payload changes. Deliberately importing the deleted `.musart` file creates a fresh UUID; the old identity remains retired. These markers do not enter project payload accounting, and replay reads still access only the four journal stores.
+
+## Playback and export
+
+Opening Animate requests one history page. Preparing a timelapse explicitly reads a consistent bounded journal snapshot in batches. The engine validates it, indexes checkpoints and caches neighboring states. Subsequent scrubbing evaluates transforms and effects without modifying the document or its undo history.
+
+The journal can be downloaded as a separate `*-history.json` file. A normal `.musart` export contains the document and originals. Video uses the retained GPU canvas and Mediabunny; see [video encoding](rendering/animation-export.md).
+
+## Verification
+
+Mirrored tests cover transactions, pagination, fingerprints, resume, write errors, immutable originals and retention. Independent audit tests check cold reads, atomic rollback and final replay state.
+
+`test/browser/history-performance.spec.ts` seeds **100,000 entries over 50 layers** in native IndexedDB, measures cold opening, pages, retention and replay preparation, and counts actual IndexedDB reads/writes. It writes timings and logical serialized payload sizes to `artifacts/performance-history.json`. Logical JSON size is not an estimate of browser database allocation. The report records its browser and machine context; timing results are specific to that environment.

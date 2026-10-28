@@ -22,13 +22,15 @@ const sourceExtensions = new Set([".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", 
 const codeExtensions = new Set([...sourceExtensions, ".css", ".html", ".json", ".svg"]);
 const isTest = (name: string) => /\.(test|spec)\.[cm]?[jt]sx?$/.test(name);
 const isDeclaration = (name: string) => /\.d\.[cm]?ts$/.test(name);
-function walk(directory: string, inSource = false): string[] {
+function walk(directory: string, inSource = false, root = directory): string[] {
   return readdirSync(directory, { withFileTypes: true })
     .sort((a, b) => a.name.localeCompare(b.name, "en"))
     .flatMap((entry) => {
       if ((!inSource && ignored.has(entry.name)) || entry.isSymbolicLink()) return [];
       const path = resolve(directory, entry.name);
-      return entry.isDirectory() ? walk(path, inSource || entry.name === "src") : [path];
+      // Read-only upstream references are ignored by Git and never imported by production.
+      if (!inSource && path === resolve(root, "third_party/clone")) return [];
+      return entry.isDirectory() ? walk(path, inSource || entry.name === "src", root) : [path];
     });
 }
 const metrics = ["lines", "statements", "functions", "branches"] as const;

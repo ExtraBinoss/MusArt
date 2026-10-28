@@ -1,0 +1,11 @@
+{
+  "afterhours-techno": {
+    "file": "afterhours.webp",
+    "sha256": "58786b837abfeaf987ae4e0bc6fb0b145af9842b28419c52a3db41604cd93e34",
+    "width": 360,
+    "height": 640,
+    "source": "apps/web/src/services/projects/templates/techno.ts",
+    "sourceSha256": "93fbee082f3b6c446b78d03cb6fe6efff339940ce0566f6ff398d2ba3f052050",
+    "provenance": "Original MusArt composition; 150 editable layers. Preview exported from the real Three/TSL graph with the browser WebP encoder."
+  }
+}

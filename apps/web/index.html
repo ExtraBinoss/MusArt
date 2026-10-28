@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <meta name="theme-color" content="#17181b" />
+    <link rel="icon" href="/branding/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/branding/musart-icon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/branding/musart-icon-180.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta
+      name="description"
+      content="MusArt — an open-source creative studio for images, typography and GPU effects."
+    />
+    <title>MusArt</title>
+    <script>
+      try {
+        const t = localStorage.getItem("musart.theme") || "system";
+        const d =
+          t === "dark" || (t === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.classList.toggle("dark", d);
+        document.documentElement.style.colorScheme = d ? "dark" : "light";
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

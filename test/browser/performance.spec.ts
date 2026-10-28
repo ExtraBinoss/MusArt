@@ -298,6 +298,59 @@ test("50 image layers and 100 effects: GPU-only composition, bounded updates, id
     canvas: recoveryReads.canvasReads,
   }).toEqual({ gpu: 0, gl: 0, canvas: 0 });
 
+  const thumbnail = await page.evaluate(async () => {
+    const started = performance.now();
+    await window.musart!.flushThumbnails();
+    const { project, pageId } = window.musart!.snapshot();
+    const record = await new Promise<{ blob: Blob; width: number; height: number } | undefined>(
+      (resolve, reject) => {
+        const open = indexedDB.open("musart-studio");
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const db = open.result,
+            tx = db.transaction("thumbnails");
+          const request = tx.objectStore("thumbnails").get([project.id, pageId]);
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+          tx.oncomplete = () => db.close();
+        };
+      },
+    );
+    if (!record) throw new Error("The actual fifty-image project has no persisted thumbnail.");
+    const encoded = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") resolve(reader.result);
+        else reject(new Error("The thumbnail did not encode as a data URL."));
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(record.blob);
+    });
+    return {
+      width: record.width,
+      height: record.height,
+      bytes: record.blob.size,
+      type: record.blob.type,
+      flushMs: performance.now() - started,
+      encoded,
+    };
+  });
+  expect(Math.max(thumbnail.width, thumbnail.height)).toBe(768);
+  expect(thumbnail.type).toBe("image/webp");
+  expect(thumbnail.bytes).toBeLessThanOrEqual(1024 * 1024);
+  const thumbnailPixels = await inspectImage(page, thumbnail.encoded, contactSheetRegions);
+  expect(thumbnailPixels.regions).toHaveLength(50);
+  expect(
+    thumbnailPixels.regions.every(
+      (region) => region.opaque > 0.98 && region.backgroundDistance > 20,
+    ),
+  ).toBe(true);
+  const thumbnailReads = await page.evaluate(() => window.__musartReadbacks!);
+  expect({
+    gpu: thumbnailReads.gpuReads,
+    gl: thumbnailReads.webglReads,
+    canvas: thumbnailReads.canvasReads,
+  }).toEqual({ gpu: 0, gl: 0, canvas: 0 });
   const capabilities = await page.evaluate(async () => {
     const adapter = await navigator.gpu?.requestAdapter();
     return {
@@ -319,6 +372,8 @@ test("50 image layers and 100 effects: GPU-only composition, bounded updates, id
     browserName,
     platform: process.platform,
     capabilities,
+    thumbnail: { ...thumbnail, encoded: undefined, witness: thumbnailPixels },
+    thumbnailReadbacks: thumbnailReads,
     scene,
     coldMs,
     moves: summarize(moveMs),

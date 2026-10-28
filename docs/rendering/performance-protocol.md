@@ -19,6 +19,10 @@ The fixture is a visual contact sheet and a reproducible workload. It does not r
 
 Input → two requestAnimationFrame callbacks measures browser-side processing/presentation latency, not certified GPU duration. No universal FPS threshold is claimed without device and workload context. A software-rendered CI run can establish behavior and invariants when that backend is actually recorded; the final feel on a physical trackpad must be checked on the target machine. Headless Chromium with Vulkan must not be labeled software-rendered unless adapter evidence establishes that classification.
 
+The native selection suite records the first cold click before warming controls, then waits for real visible thumbnails before separate warm samples. Browser event timestamps and presentation timestamps delimit each click, select-all, movement and release. Reports preserve CDP `NavigationStart` and `Timestamp` alongside the browser clock, so CPU-profile samples can be mapped to those input windows instead of attributing a whole select/move/undo recording to release alone. Bulk release reports both the driver round-trip duration and pointer-up → canonical rendered-revision presentation; diagnostic full-document snapshots run outside those measured windows. Threshold failures remain in the reports and fail the corresponding browser checks.
+
+`pan-presentation.spec.ts` exercises AFTERHOURS with rulers, guides and selection visible. CDP sends native wheel or held-pointer inputs at a requested 120 Hz cadence; reports retain the actual delivered count because Chromium can coalesce inputs. Samples separate event → dispatch delay, handler → requestAnimationFrame, frame gaps and a second-RAF post-paint opportunity, while checking computed board poses and real React/GPU/readback counters. Diagnostic runs with `MUSART_PAN_TRACE=1` additionally capture Blink layout/style invalidation and must be kept separate from non-tracing latency results.
+
 ## Consulted documentation
 
 - [WebGPURenderer](https://threejs.org/manual/pages/webgpurenderer)

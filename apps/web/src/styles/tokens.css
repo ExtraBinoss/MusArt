@@ -1,0 +1,155 @@
+@custom-variant dark (&:is(.dark *));
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--primary);
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+}
+:root {
+  --background: #fbfbfc;
+  --foreground: #24252b;
+  --card: #ffffff;
+  --popover: #ffffff;
+  --primary: #262626;
+  --primary-foreground: #ffffff;
+  --action: #2563eb;
+  --action-foreground: #ffffff;
+  --secondary: #eceef3;
+  --muted: #edeef1;
+  --muted-foreground: #797d88;
+  --accent: #eeeeee;
+  --destructive: #db4349;
+  --border: #e3e4e9;
+  --input: #e4e5eb;
+  --radius: 10px;
+  --workspace: #eef0f2;
+  --workspace-dots: #c9cdd4;
+  --selection-fill: #e8e8e8;
+  --field: #f0f1f4;
+  --toolbar-foreground: #555862;
+  font-family: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+:root.dark {
+  --background: #202125;
+  --foreground: #e7e8ee;
+  --card: #25262b;
+  --popover: #292a30;
+  --primary: #e5e5e5;
+  --primary-foreground: #171717;
+  --action: #2563eb;
+  --action-foreground: #ffffff;
+  --secondary: #34363e;
+  --muted: #303139;
+  --muted-foreground: #9295a2;
+  --accent: #343434;
+  --destructive: #ff6b72;
+  --border: #37383f;
+  --input: #3b3d46;
+  --workspace: #17181c;
+  --workspace-dots: #373940;
+  --selection-fill: #363636;
+  --field: #2b2d34;
+  --toolbar-foreground: #c4c7d0;
+}
+* {
+  box-sizing: border-box;
+  border-color: var(--border);
+}
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  background: var(--workspace);
+  color: var(--foreground);
+  font-size: 13px;
+}
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: default;
+}
+button,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+svg {
+  flex-shrink: 0;
+}
+.musart-app {
+  width: 100%;
+  height: 100dvh;
+  min-height: 360px;
+}
+.workspace-panels {
+  width: 100%;
+  height: 100%;
+}
+.workspace {
+  position: relative;
+  background: var(--workspace);
+  overflow: hidden;
+  min-width: 0;
+}
+.floating-panel {
+  background: color-mix(in srgb, var(--popover) 82%, transparent);
+  color: var(--foreground);
+  border: 1px solid color-mix(in srgb, var(--foreground) 11%, transparent);
+  border-radius: var(--radius);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  box-shadow:
+    0 8px 32px #0000000f,
+    0 1px 3px #00000008,
+    inset 0 1px 0 color-mix(in srgb, var(--card) 60%, transparent);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .floating-panel {
+    background: var(--popover);
+  }
+}
+.scrollable-panel {
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--foreground) 20%, transparent) transparent;
+}

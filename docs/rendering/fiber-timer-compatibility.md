@@ -1,0 +1,11 @@
+# Fiber v9 timing compatibility
+
+MusArt pins React Three Fiber 9.8.2 and Three 0.186.1. Inspection of Fiber's installed `createStore` shows an unconditional `new THREE.Clock()` before root configuration; its v9 Canvas API has no clock-constructor injection. Three deprecated that constructor in r183. Replacing `state.clock` after creation would leave the startup warning unchanged.
+
+The Vite resolver in `scripts/vite/fiber-timer.ts` therefore redirects only the bare `three` import whose issuer belongs to `node_modules/@react-three/fiber/`. Both production resolution and development dependency optimization use the same resolver. Its small namespace adapter re-exports the actual Three classes and overrides only Fiber's Clock constructor with `FiberTimerClock`, backed by the official Three Timer. Application and renderer imports keep the original Three namespace, and mesh/material identities remain unchanged. No dependency files, warning handlers or console methods are patched. Re-evaluate and remove this compatibility bridge when upgrading to a Fiber release that no longer constructs Clock.
+
+The adapter preserves Fiber v9's start/stop, elapsed-time and manual-frame fields. Each legacy delta read advances Timer once. A committed composition leases the Timer's visibility integration; abandoned roots allocate no document listeners. A deferred final release supports StrictMode's immediate remount while ensuring final unmount disconnects the visibility listener. Timer's visibility handling prevents hidden-tab catch-up deltas. Externally supplied clocks remain caller-owned.
+
+This editor has no 3D shadows. Its Canvas passes `{ enabled: false, type: PCFShadowMap }` explicitly: Fiber v9 otherwise selects the removed PCFSoftShadowMap even for a boolean false value. Unit tests cover real Timer deltas, tab visibility, manual-frame fields, StrictMode leases, cleanup, namespace identity and issuer-specific resolution. The native console scenario records every browser warning/error from before startup and exercises a real demand-rendered update without message filtering.
+
+References: [Three Timer](https://threejs.org/docs/pages/Timer.html), [Fiber Canvas API](https://r3f.docs.pmnd.rs/api/canvas), [Vite plugin hooks](https://vite.dev/guide/api-plugin.html), [Vite dependency optimization](https://vite.dev/config/dep-optimization-options.html).

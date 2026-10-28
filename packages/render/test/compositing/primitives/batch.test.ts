@@ -4,6 +4,7 @@ import { InstancedMesh, Matrix4, RenderTarget, type Scene } from "three/webgpu";
 import { makeGpuRenderer } from "../../gpu-fixture";
 import { PrimitiveBatch } from "../../../src/compositing/primitives/batch";
 import { MAX_PRIMITIVE_INSTANCES } from "../../../src/compositing/primitives/attributes";
+import { PrimitivePaintCache } from "../../../src/compositing/primitives/paint-cache";
 it("draws ten thousand ordered shapes in one instanced submission without textures or per-layer materials", () => {
   const { renderer, fake } = makeGpuRenderer(),
     batch = new PrimitiveBatch(renderer),
@@ -52,16 +53,23 @@ it("draws ten thousand ordered shapes in one instanced submission without textur
   batch.draw(layers.slice(0, 1), 64, 64, 1, target);
   expect(instance!.count).toBe(1);
   expect(instance!.material).toBe(material);
+  batch.draw([{ ...layers[0]!, fill: "#00ff0080" }], 64, 64, 1, target);
+  expect(fill.getX(0)).toBe(0);
+  expect(fill.getY(0)).toBe(1);
+  expect(fill.getW(0)).toBeCloseTo(128 / 255);
   expect(fake.autoClear).toBe(true);
   expect(fake.getRenderTarget()).toBeNull();
   const disposeMesh = vi.spyOn(instance!, "dispose"),
     disposeGeometry = vi.spyOn(instance!.geometry, "dispose"),
-    disposeMaterial = vi.spyOn(material, "dispose");
+    disposeMaterial = vi.spyOn(material, "dispose"),
+    clearPaint = vi.spyOn(PrimitivePaintCache.prototype, "clear");
   batch.dispose();
   batch.dispose();
   expect(disposeMesh).toHaveBeenCalledOnce();
   expect(disposeGeometry).toHaveBeenCalledOnce();
   expect(disposeMaterial).toHaveBeenCalledOnce();
+  expect(clearPaint).toHaveBeenCalledOnce();
+  clearPaint.mockRestore();
   expect(batch.bytes).toBe(0);
   expect(() => batch.draw(layers, 64, 64, 1, target)).toThrow("disposed");
   target.dispose();

@@ -1,22 +1,41 @@
 import {
   createId,
+  PRESETS,
   createLayer,
   createPage,
   createProject,
   parseProject,
   serializeProject,
+  selectionComposition,
   type EnginePort,
+  type Project,
 } from "@musart/core";
-import type { EditorServices, ExportOptions, NewProjectOptions } from "../../state/contracts";
+import type {
+  EditorServices,
+  ExportOptions,
+  ExportScope,
+  ExportPreviewOptions,
+  NewProjectOptions,
+} from "../../state/contracts";
+import { getAnimationSession } from "../animation/session";
+import type { ThumbnailPipeline } from "../projects/thumbnails";
 import { ProjectStore } from "../projects/storage";
+import { DeletedProjectError } from "../projects/lifecycle";
+import { StaleProjectWriteError } from "../projects/writes/revision";
+import { assertExportScope } from "./export-scope";
+import { SelectionPreviewIdentity } from "../projects/thumbnails/selection-identity";
 import { importBatch, readDataUrl } from "../assets/imports";
 import { downloadBlob, safeName } from "../files/download";
 import { maskToDataUrl } from "../selection/pixel-selection";
 import { SelectionClient } from "../selection/selection";
+import type { FontLibraryPort } from "../fonts/model";
 export interface ServiceDependencies {
+  fonts?: FontLibraryPort;
   store: ProjectStore;
+  thumbnails?: ThumbnailPipeline;
   selection: SelectionClient;
   flush?: () => Promise<void>;
+  saveCurrent?: (project: Project) => Promise<void>;
   download?: typeof downloadBlob;
   render?: () => Promise<typeof import("@musart/render")>;
 }
@@ -24,9 +43,22 @@ export function createEditorServices(
   engine: EnginePort,
   dependencies: ServiceDependencies,
 ): EditorServices {
-  const { store, selection } = dependencies;
+  const { store, selection, thumbnails } = dependencies;
+  const saveCurrent =
+    dependencies.saveCurrent ?? ((project: Project) => store.saveCurrent(project));
   const download = dependencies.download ?? downloadBlob;
   const renderer = dependencies.render ?? (() => import("@musart/render"));
+  const previewIdentities = new WeakMap<object, number>();
+  const selectedPreviewIdentity = new SelectionPreviewIdentity();
+  let previewIdentity = 0;
+  const identity = (value: object) => {
+    let id = previewIdentities.get(value);
+    if (id === undefined) {
+      id = ++previewIdentity;
+      previewIdentities.set(value, id);
+    }
+    return id;
+  };
   const activePage = () => {
     const snapshot = engine.getSnapshot();
     return snapshot.project.pages.find((p) => p.id === snapshot.pageId)!;
@@ -37,7 +69,10 @@ export function createEditorServices(
   const create = async (options: NewProjectOptions) => {
     await switchReady();
     const now = new Date().toISOString();
+    const preset = PRESETS.find((item) => item.id === options.presetId);
+    const safe = preset?.safeArea;
     const project = createProject({
+      id: crypto.randomUUID(),
       name: options.name,
       createdAt: now,
       updatedAt: now,
@@ -47,59 +82,162 @@ export function createEditorServices(
           width: options.width,
           height: options.height,
           background: options.background,
+          ...(safe
+            ? {
+                margins: safe,
+                rulers: true,
+                guides: [
+                  { id: createId(), axis: "x" as const, position: safe.left },
+                  { id: createId(), axis: "x" as const, position: options.width - safe.right },
+                  { id: createId(), axis: "y" as const, position: safe.top },
+                  { id: createId(), axis: "y" as const, position: options.height - safe.bottom },
+                ],
+              }
+            : {}),
         }),
       ],
     });
     await store.save(project);
+    thumbnails?.schedule(project);
     engine.load(project);
   };
   return {
+    ...(thumbnails
+      ? {
+          previewExport: async (options: ExportPreviewOptions, signal?: AbortSignal) => {
+            signal?.throwIfAborted();
+            const snapshot = engine.getSnapshot(),
+              source = activePage(),
+              ids = [...new Set(options.selection ?? snapshot.selection)].sort(),
+              edge = options.edge ?? 384;
+            if (!Number.isInteger(edge) || edge < 16 || edge > 1024)
+              throw new Error("Invalid preview size.");
+            const page =
+              !options.all && ids.length
+                ? selectionComposition(source, ids, [
+                    snapshot.project.id,
+                    ...snapshot.project.pages.map((item) => item.id),
+                    ...Object.keys(snapshot.project.assets),
+                  ])
+                : source;
+            const appearance =
+              !options.all && ids.length
+                ? selectedPreviewIdentity.read(source, snapshot.project.assets, ids)
+                : null;
+            const key = JSON.stringify([
+              snapshot.project.id,
+              source.id,
+              appearance !== null
+                ? appearance
+                : [identity(source), identity(snapshot.project.assets)],
+              options.all ? [] : ids,
+              edge,
+            ]);
+            return thumbnails.preview(key, page, snapshot.project.assets, {
+              edge,
+              ...(options.priority ? { priority: options.priority } : {}),
+              ...(signal ? { signal } : {}),
+              isCurrent: () => {
+                const current = engine.getSnapshot();
+                if (
+                  current.project.id !== snapshot.project.id ||
+                  current.pageId !== snapshot.pageId
+                )
+                  return false;
+                const currentPage = current.project.pages.find(
+                  (candidate) => candidate.id === snapshot.pageId,
+                );
+                if (!currentPage) return false;
+                if (appearance !== null) {
+                  try {
+                    return (
+                      selectedPreviewIdentity.read(currentPage, current.project.assets, ids) ===
+                      appearance
+                    );
+                  } catch {
+                    return false;
+                  }
+                }
+                return currentPage === source && current.project.assets === snapshot.project.assets;
+              },
+            });
+          },
+        }
+      : {}),
+    ...(dependencies.fonts ? { fonts: dependencies.fonts } : {}),
     listProjects: () => store.list(),
+    listProjectPage: (options) => store.listPage(options),
+    loadProjectThumbnails: async (id, pageIds) =>
+      thumbnails ? thumbnails.acquire(id, pageIds) : { items: [], release: () => {} },
+    subscribeProjectThumbnails: (listener) => thumbnails?.subscribe(listener) ?? (() => {}),
+    flushThumbnails: async () => {
+      await switchReady();
+      await thumbnails?.flush();
+    },
+    async projectInsights(id) {
+      const usage = await store.usage(id),
+        origin = await store.estimateOriginStorage();
+      return { ...usage, ...(origin ? { origin } : {}) };
+    },
+    async renameProject(id, name) {
+      await switchReady();
+      if (engine.getSnapshot().project.id === id) {
+        engine.execute({ type: "renameProject", name });
+        await saveCurrent(engine.getSnapshot().project);
+        await dependencies.flush?.();
+      } else await store.rename(id, name);
+    },
+    async clearHistory(id) {
+      await switchReady();
+      if (engine.getSnapshot().project.id === id) await getAnimationSession(engine).clear();
+      else {
+        const project = await store.load(id, { observe: false });
+        await store.history.clear(project, project.pages[0]!.id);
+      }
+    },
     async openProject(id) {
       await switchReady();
-      const project = await store.load(id);
+      const project = await store.load(id, { remember: true });
       engine.load(project);
-      await store.save(project);
     },
     createProject: create,
     async saveProject() {
+      const origin = engine.getSnapshot().project.id;
+      await switchReady();
       const project = engine.getSnapshot().project;
-      await store.save(project);
-      const page = activePage();
-      try {
-        const preview = await (
-          await renderer()
-        ).renderComposition(page, project.assets, {
-          scale: Math.min(1, 320 / Math.max(page.width, page.height)),
-        });
-        if (engine.getSnapshot().project === project)
-          await store.save(project, preview.toDataURL("image/webp", 0.7));
-      } catch {
-        throw new Error("Projet enregistré. La miniature n’a pas pu être générée.");
-      }
+      if (project.id !== origin) throw new StaleProjectWriteError(origin);
+      await saveCurrent(project);
+      thumbnails?.schedule(project);
     },
     async deleteProject(id) {
       await switchReady();
+      thumbnails?.remove(id);
       await store.remove(id);
       if (engine.getSnapshot().project.id === id) {
         const projects = await store.list();
         if (projects[0]) {
-          engine.load(await store.load(projects[0].id));
+          const replacement = await store.load(projects[0].id);
+          await saveCurrent(replacement);
+          engine.load(replacement);
         } else
           await create({ name: "Sans titre", width: 1080, height: 1080, background: "#ffffff" });
       }
     },
     async duplicateProject(id) {
       await switchReady();
-      const source = await store.load(id);
+      const source = await store.load(id, { observe: false });
       const now = new Date().toISOString();
-      await store.save({
+      const duplicate = {
         ...source,
-        id: createId(),
+        id: crypto.randomUUID(),
         name: `${source.name} — copie`,
         createdAt: now,
         updatedAt: now,
-      });
+      };
+      await store.save(duplicate, undefined, { remember: false });
+      for (const thumbnail of await store.thumbnails(id))
+        await store.saveThumbnail({ ...thumbnail, projectId: duplicate.id, updatedAt: now });
+      thumbnails?.schedule(duplicate);
     },
     async importFiles(files) {
       const snapshot = engine.getSnapshot();
@@ -122,9 +260,20 @@ export function createEditorServices(
         reader.onerror = () => reject(new Error("Lecture du projet impossible."));
         reader.readAsText(file);
       });
-      const project = parseProject(text);
+      const parsed = parseProject(text);
+      const exists = (await store.list()).some((item) => item.id === parsed.id);
+      const deleted = await store.isDeleted(parsed.id);
+      let project = exists || deleted ? { ...parsed, id: crypto.randomUUID() } : parsed;
       await switchReady();
-      await store.save(project);
+      try {
+        await store.save(project);
+      } catch (error) {
+        // Another session can retire the identity after the import's initial read.
+        if (!(error instanceof DeletedProjectError)) throw error;
+        project = { ...parsed, id: crypto.randomUUID() };
+        await store.save(project);
+      }
+      thumbnails?.schedule(project);
       engine.load(project);
     },
     async exportProject() {
@@ -134,13 +283,28 @@ export function createEditorServices(
         `${safeName(project.name)}.musart`,
       );
     },
-    async exportImage(options: ExportOptions) {
-      const { project } = engine.getSnapshot();
-      const pages = options.allPages ? project.pages : [activePage()];
+    async exportImage(options: ExportOptions, scope?: ExportScope) {
+      const snapshot = engine.getSnapshot(),
+        { project } = snapshot;
+      assertExportScope(snapshot, scope);
+      const pages = options.allPages
+        ? project.pages
+        : [
+            options.selectionOnly
+              ? selectionComposition(activePage(), snapshot.selection, [
+                  project.id,
+                  ...project.pages.map((item) => item.id),
+                  ...Object.keys(project.assets),
+                ])
+              : activePage(),
+          ];
       const { exportComposition } = await renderer();
       const output: Record<string, Uint8Array> = {};
       for (const [index, page] of pages.entries()) {
-        const blob = await exportComposition(page, project.assets, options);
+        const blob = await exportComposition(page, project.assets, {
+          ...options,
+          ...(dependencies.fonts ? { fontResolver: dependencies.fonts.resolve } : {}),
+        });
         const filename = `${safeName(page.name)}.${options.format === "jpeg" ? "jpg" : options.format}`;
         if (!options.allPages) {
           download(blob, filename);
@@ -181,7 +345,7 @@ export function createEditorServices(
       )
         throw new Error("La cible a changé. Le masque a été abandonné.");
       const mask = {
-        id: createId(),
+        id: crypto.randomUUID(),
         name: `Masque — ${layer.name}`,
         mime: "image/png",
         width: result.width,

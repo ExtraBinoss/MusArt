@@ -1,4 +1,5 @@
-import type { EnginePort } from "@musart/core";
+import type { Composition, EnginePort } from "@musart/core";
+import type { FontLibraryPort } from "../services/fonts/model";
 
 export interface ProjectSummary {
   id: string;
@@ -7,8 +8,60 @@ export interface ProjectSummary {
   width: number;
   height: number;
   thumbnail?: string;
+  pages: ProjectPageSummary[];
+}
+export interface ProjectLibraryOptions {
+  limit?: number;
+  before?: [string, string];
+}
+export interface ProjectLibraryPage {
+  projects: ProjectSummary[];
+  before: [string, string] | null;
+}
+export interface ProjectPageSummary {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  thumbnailRevision?: string;
+  thumbnailBytes?: number;
+}
+export interface ProjectThumbnailView {
+  pageId: string;
+  revision: string;
+  url: string;
+  width: number;
+  height: number;
+}
+export interface ProjectThumbnailLease {
+  items: ProjectThumbnailView[];
+  release: () => void;
+}
+export interface ProjectUsage {
+  projectId: string;
+  basis: "logical-utf8";
+  bytes: {
+    manifest: number;
+    assets: number;
+    thumbnails: number;
+    historyEvents: number;
+    historyAssets: number;
+    historyBase: number;
+    historyMetadata: number;
+    total: number;
+  };
+  history: { count: number; limit: number; enabled: boolean };
+}
+export interface OriginStorageEstimate {
+  approximate: true;
+  usage?: number;
+  quota?: number;
+}
+export interface ProjectInsights extends ProjectUsage {
+  origin?: OriginStorageEstimate;
 }
 export interface NewProjectOptions {
+  presetId?: string;
   name: string;
   width: number;
   height: number;
@@ -19,18 +72,52 @@ export interface ExportOptions {
   format: "png" | "jpeg" | "webp";
   quality: number;
   allPages: boolean;
+  selectionOnly?: boolean;
+}
+export interface ExportScope {
+  page: Composition;
+  revision: number;
+  selection: readonly string[];
+}
+export interface ExportPreviewOptions {
+  selection?: readonly string[];
+  all?: boolean;
+  edge?: number;
+  priority?: "foreground" | "background";
+}
+export interface ExportPreview {
+  blob: Blob;
+  width: number;
+  height: number;
 }
 export interface EditorServices {
+  previewExport?(
+    this: void,
+    options: ExportPreviewOptions,
+    signal?: AbortSignal,
+  ): Promise<ExportPreview>;
+  fonts?: FontLibraryPort;
   listProjects(this: void): Promise<ProjectSummary[]>;
+  listProjectPage(this: void, options?: ProjectLibraryOptions): Promise<ProjectLibraryPage>;
   openProject(this: void, id: string): Promise<void>;
   createProject(this: void, options: NewProjectOptions): Promise<void>;
   saveProject(this: void): Promise<void>;
   deleteProject(this: void, id: string): Promise<void>;
   duplicateProject(this: void, id: string): Promise<void>;
+  renameProject(this: void, id: string, name: string): Promise<void>;
+  projectInsights(this: void, id: string): Promise<ProjectInsights>;
+  clearHistory(this: void, id: string): Promise<void>;
+  loadProjectThumbnails(
+    this: void,
+    id: string,
+    pageIds?: readonly string[],
+  ): Promise<ProjectThumbnailLease>;
+  subscribeProjectThumbnails(this: void, listener: (projectId: string) => void): () => void;
+  flushThumbnails(this: void): Promise<void>;
   importFiles(this: void, files: File[]): Promise<void>;
   openPortable(this: void, file: File): Promise<void>;
   exportProject(this: void): Promise<void>;
-  exportImage(this: void, options: ExportOptions): Promise<void>;
+  exportImage(this: void, options: ExportOptions, scope?: ExportScope): Promise<void>;
   selectImagePoint(
     this: void,
     layerId: string,
@@ -44,4 +131,6 @@ export interface EditorServices {
 export interface AppProps {
   engine: EnginePort;
   services: EditorServices;
+  /** Initial empty-library session; the draft stays private until a real project is chosen. */
+  welcome?: boolean;
 }

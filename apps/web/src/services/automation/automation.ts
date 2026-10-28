@@ -1,5 +1,7 @@
-import type { Command, EnginePort, Project } from "@musart/core";
+import type { Command, EnginePort, Project, ReplaySpec } from "@musart/core";
 import type { EditorServices } from "../../state/contracts";
+import { getAnimationSession, type AnimationState } from "../animation/session";
+import type { HistoryPage } from "../history/model";
 import { readDataUrl } from "../assets/imports";
 export interface AutomationApi {
   snapshot(): ReturnType<EnginePort["getSnapshot"]>;
@@ -11,6 +13,12 @@ export interface AutomationApi {
   undo(): void;
   redo(): void;
   save(): Promise<void>;
+  historyInfo: () => Promise<AnimationState>;
+  historyConfigure: (options: { limit?: number; enabled?: boolean }) => Promise<void>;
+  historyPage: (before?: number) => Promise<HistoryPage>;
+  historyReplay: () => Promise<ReplaySpec>;
+  flush: () => Promise<void>;
+  flushThumbnails: () => Promise<void>;
   render(options?: {
     scale?: number;
     format?: "png" | "jpeg" | "webp";
@@ -34,6 +42,20 @@ export function attachAutomation(engine: EnginePort, services: EditorServices) {
     undo: engine.undo,
     redo: engine.redo,
     save: () => services.saveProject(),
+    historyConfigure: async (options) => {
+      if (options.enabled !== undefined && typeof options.enabled !== "boolean")
+        throw new TypeError("History enabled must be a boolean.");
+      await getAnimationSession(engine).configure(options);
+    },
+    historyInfo: async () => {
+      const session = getAnimationSession(engine);
+      await session.flush();
+      return structuredClone(session.read());
+    },
+    historyPage: async (before) => structuredClone(await getAnimationSession(engine).page(before)),
+    historyReplay: async () => structuredClone(await getAnimationSession(engine).replay()),
+    flush: () => getAnimationSession(engine).flush(),
+    flushThumbnails: () => services.flushThumbnails(),
     async render(options = {}) {
       const { project, pageId } = engine.getSnapshot();
       const page = project.pages.find((page) => page.id === pageId)!;
@@ -42,10 +64,16 @@ export function attachAutomation(engine: EnginePort, services: EditorServices) {
         const canvas = await renderComposition(page, project.assets, {
           scale: options.scale,
           forceWebGL: true,
+          ...(services.fonts ? { fontResolver: services.fonts.resolve } : {}),
         });
         return canvas.toDataURL(`image/${options.format ?? "png"}`);
       }
-      return readDataUrl(await exportComposition(page, project.assets, options));
+      return readDataUrl(
+        await exportComposition(page, project.assets, {
+          ...options,
+          ...(services.fonts ? { fontResolver: services.fonts.resolve } : {}),
+        }),
+      );
     },
   };
   window.musart = api;

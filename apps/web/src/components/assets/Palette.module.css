@@ -1,0 +1,123 @@
+/* Adapted from ResumI (MIT); see docs/legal/resumi-MIT.txt. */
+.picker {
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  background: var(--popover);
+  backdrop-filter: blur(20px) saturate(1.15);
+  border-color: var(--border);
+  border-radius: var(--radius-md);
+}
+.picker header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+.picker header strong {
+  font-weight: 600;
+}
+.picker header button {
+  gap: 5px;
+  border-radius: 5px;
+}
+.categories {
+  width: calc(100% - 24px);
+  margin: 0 12px 4px;
+  border-radius: 6px;
+}
+.categories button {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 0 8px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+  background: transparent;
+  box-shadow: none;
+}
+.categories button[aria-pressed="true"] {
+  color: var(--foreground);
+  background: var(--secondary);
+  box-shadow: inset 0 -2px var(--primary);
+}
+.search {
+  padding: 8px 12px 10px;
+}
+.scroller {
+  height: 280px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.shapeSpace {
+  position: relative;
+}
+.shapeGrid {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+  padding: 3px 12px 12px;
+}
+.shapeGrid button {
+  display: grid;
+  place-items: center;
+  height: 46px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--muted) 70%, transparent);
+  color: var(--foreground);
+  cursor: pointer;
+}
+.shapeGrid button:hover {
+  color: var(--foreground);
+  border-color: var(--border);
+  background: var(--accent);
+}
+.shapeGrid svg {
+  width: 27px;
+  height: 27px;
+}
+.shapeGrid svg[data-preserve-paint] {
+  width: 33px;
+  height: 33px;
+  padding: 3px;
+  border-radius: 4px;
+  background: #fff;
+}
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  margin: 0;
+  padding: 20px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  text-align: center;
+}
+.count {
+  display: block;
+  padding: 0 12px 12px;
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+.error {
+  padding: 0 12px 10px;
+  max-height: 200px;
+  overflow: auto;
+}
+.hint {
+  margin: 0;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 11px;
+  text-align: center;
+}

@@ -1,0 +1,24 @@
+import { expect, test, vi } from "vitest";
+import { screen, fireEvent } from "@testing-library/react";
+import { ProjectName } from "../../../src/components/projects/ProjectName";
+import { setup } from "../../support/ui";
+test("renames on blur and Enter, cancels Escape and rejects empty names", () => {
+  const { mount } = setup();
+  const rename = vi.fn();
+  mount(<ProjectName name="Atelier" onRename={rename} />);
+  const field = screen.getByLabelText("Nom du projet");
+  fireEvent.change(field, { target: { value: "Collection" } });
+  fireEvent.blur(field);
+  expect(rename).toHaveBeenCalledWith("Collection");
+  fireEvent.change(field, { target: { value: "Atelier" } });
+  fireEvent.blur(field);
+  expect(rename).toHaveBeenCalledOnce();
+  fireEvent.change(field, { target: { value: "   " } });
+  fireEvent.blur(field);
+  expect(field).toHaveValue("Atelier");
+  fireEvent.change(field, { target: { value: "Annulé" } });
+  fireEvent.keyDown(field, { key: "Escape" });
+  fireEvent.blur(field);
+  expect(rename).toHaveBeenCalledOnce();
+  fireEvent.keyDown(field, { key: "Enter" });
+});

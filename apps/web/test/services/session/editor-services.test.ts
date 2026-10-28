@@ -8,6 +8,9 @@ import {
   type Asset,
 } from "@musart/core";
 import type { SelectionClient } from "../../../src/services/selection/selection";
+import { ThumbnailPipeline } from "../../../src/services/projects/thumbnails";
+import { ThumbnailRenderer } from "../../../src/services/projects/thumbnails/renderer";
+import { getAnimationSession } from "../../../src/services/animation/session";
 import { ProjectStore } from "../../../src/services/projects/storage";
 import {
   createEditorServices,
@@ -37,9 +40,17 @@ vi.mock("../../../src/services/selection/pixel-selection", () => ({
   maskToDataUrl: vi.fn(() => "data:image/png;base64,mask"),
 }));
 const stores: ProjectStore[] = [];
-async function setup(project = createProject()) {
+const pipelines: ThumbnailPipeline[] = [];
+async function setup(project = createProject(), databaseName = crypto.randomUUID()) {
+  vi.stubGlobal(
+    "URL",
+    class extends URL {
+      static createObjectURL = vi.fn(() => "blob:test-thumbnail");
+      static revokeObjectURL = vi.fn();
+    },
+  );
   const engine = new EditorEngine(project);
-  const store = new ProjectStore(crypto.randomUUID());
+  const store = new ProjectStore(databaseName);
   stores.push(store);
   await store.save(project);
   const selection = {
@@ -50,16 +61,28 @@ async function setup(project = createProject()) {
   };
   const download = vi.fn<(blob: Blob, name: string) => void>();
   const flush = vi.fn(async () => {});
+  const thumbnailRenderer = new ThumbnailRenderer(async () => {
+    throw new Error("Unexpected GPU adapter");
+  });
+  const renderThumbnail = vi.spyOn(thumbnailRenderer, "render").mockResolvedValue({
+    blob: new Blob(["native-webp"], { type: "image/webp" }),
+    width: 768,
+    height: 768,
+  });
+  const thumbnails = new ThumbnailPipeline(store, { renderer: thumbnailRenderer });
+  pipelines.push(thumbnails);
   const services = createEditorServices(engine, {
+    thumbnails,
     store,
     selection: selection as unknown as SelectionClient,
     download,
     flush,
     render: async () => renderer as unknown as typeof import("@musart/render"),
   });
-  return { engine, store, selection, download, flush, services };
+  return { engine, store, selection, download, flush, services, thumbnails, renderThumbnail };
 }
 afterEach(async () => {
+  for (const pipeline of pipelines.splice(0)) await pipeline.dispose();
   for (const store of stores.splice(0)) await store.close();
   vi.unstubAllGlobals();
 });
@@ -120,27 +143,25 @@ describe("project platform commands", () => {
     ).rejects.toThrow();
     expect(engine.getSnapshot().project.id).toBe(original.id);
   });
-  it("saves the full document before generating a bounded thumbnail and reports preview failures explicitly", async () => {
-    const { engine, services, store } = await setup();
-    const toDataURL = vi.fn(() => "data:image/webp;base64,preview");
-    renderer.renderComposition.mockResolvedValue({ toDataURL });
+  it("persists canonical saves immediately and schedules versioned GPU thumbnails without base64 manifests", async () => {
+    const { engine, services, store, thumbnails, renderThumbnail } = await setup();
     engine.execute({ type: "renameProject", name: "Saved title" });
     await services.saveProject();
-    expect((await store.list())[0]).toMatchObject({
-      name: "Saved title",
-      thumbnail: "data:image/webp;base64,preview",
-    });
-    expect(toDataURL).toHaveBeenCalledWith("image/webp", 0.7);
-    expect(renderer.renderComposition).toHaveBeenCalledWith(
-      engine.getSnapshot().project.pages[0],
-      {},
-      expect.objectContaining({ scale: 320 / 1080 }),
-    );
-    renderer.renderComposition.mockRejectedValueOnce(new Error("No GPU"));
-    engine.execute({ type: "renameProject", name: "Persisted despite thumbnail" });
-    await expect(services.saveProject()).rejects.toThrow("Projet enregistré");
-    expect((await store.load(engine.getSnapshot().project.id)).name).toBe(
-      "Persisted despite thumbnail",
+    expect((await store.list())[0]).toMatchObject({ name: "Saved title" });
+    expect(renderThumbnail).not.toHaveBeenCalled();
+    await services.flushThumbnails();
+    expect(renderThumbnail).toHaveBeenCalledOnce();
+    const lease = await services.loadProjectThumbnails(engine.getSnapshot().project.id, [
+      engine.getSnapshot().pageId,
+    ]);
+    expect(lease.items).toHaveLength(1);
+    lease.release();
+    renderThumbnail.mockRejectedValueOnce(new Error("GPU unavailable"));
+    engine.execute({ type: "updatePage", patch: { background: "#ff0000" } });
+    await services.saveProject();
+    await thumbnails.flush();
+    expect((await store.load(engine.getSnapshot().project.id)).pages[0]!.background).toBe(
+      "#ff0000",
     );
   });
   it("duplicates independently and removes inactive or active projects without leaving an empty workspace", async () => {
@@ -150,6 +171,7 @@ describe("project platform commands", () => {
     const copy = (await store.list()).find((item) => item.id !== original.id)!;
     expect(copy.name).toBe(`${original.name} — copie`);
     expect(engine.getSnapshot().project.id).toBe(original.id);
+    expect(await store.last()).toBe(original.id);
     await services.deleteProject(copy.id);
     expect(await store.list()).toHaveLength(1);
     expect(engine.getSnapshot().project.id).toBe(original.id);
@@ -157,6 +179,7 @@ describe("project platform commands", () => {
     const next = (await store.list()).find((item) => item.id !== original.id)!;
     await services.deleteProject(original.id);
     expect(engine.getSnapshot().project.id).toBe(next.id);
+    expect(await store.last()).toBe(next.id);
     await services.deleteProject(next.id);
     expect(engine.getSnapshot().project.name).toBe("Sans titre");
     expect(await store.list()).toHaveLength(1);
@@ -203,6 +226,11 @@ describe("project platform commands", () => {
       store,
       selection: selection as unknown as SelectionClient,
     });
+    expect(await services.loadProjectThumbnails(engine.getSnapshot().project.id)).toEqual({
+      items: [],
+      release: expect.any(Function),
+    });
+    services.subscribeProjectThumbnails(() => {})();
     renderer.renderComposition.mockResolvedValue({
       toDataURL: () => "data:image/webp;base64,preview",
     });
@@ -250,7 +278,10 @@ describe("asset and mask orchestration", () => {
     const snapshot = engine.getSnapshot();
     const mask = snapshot.project.pages[0]!.layers[0]!.mask;
     expect(mask).toMatchObject({ enabled: true, inverted: false });
-    expect(snapshot.project.assets[mask!.assetId]).toMatchObject({
+    expect(mask!.assetId).toMatch(
+      /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i,
+    );
+    expect(snapshot.project.assets[mask!.assetId!]).toMatchObject({
       name: "Masque — Image",
       width: 2,
       height: 1,
@@ -394,4 +425,164 @@ describe("shared clipboard command path", () => {
     expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: "Invalid command" }));
     dispose();
   });
+});
+
+it("uses persistent UUIDs for new, duplicate and colliding portable projects without overwriting inactive documents", async () => {
+  const { services, store, engine } = await setup();
+  const inactive = createProject({ id: "project-1", name: "Keep me" });
+  await store.save(inactive);
+  const ids = [
+    "00000000-0000-4000-8000-000000000001",
+    "00000000-0000-4000-8000-000000000002",
+    "00000000-0000-4000-8000-000000000003",
+  ] as const;
+  const uuid = vi.spyOn(crypto, "randomUUID");
+  uuid.mockReturnValueOnce(ids[0]);
+  await services.createProject({
+    name: "UUID project",
+    width: 100,
+    height: 100,
+    background: "#ffffff",
+  });
+  expect(engine.getSnapshot().project.id).toBe(ids[0]);
+  uuid.mockReturnValueOnce(ids[1]);
+  await services.duplicateProject(inactive.id);
+  expect((await store.load(ids[1])).name).toContain("copie");
+  uuid.mockReturnValueOnce(ids[2]);
+  await services.openPortable(new File([serializeProject(inactive)], "existing.musart"));
+  expect(engine.getSnapshot().project.id).toBe(ids[2]);
+  expect((await store.load(inactive.id)).name).toBe("Keep me");
+});
+it("adapts paginated metadata, rename, storage insights, history clearing and thumbnail notifications", async () => {
+  const { services, store, engine, thumbnails } = await setup();
+  const original = engine.getSnapshot().project,
+    other = createProject({ name: "Other" });
+  await store.save(other);
+  expect((await services.listProjectPage({ limit: 1 })).projects).toHaveLength(1);
+  await services.renameProject(other.id, "Inactive renamed");
+  expect((await store.load(other.id)).name).toBe("Inactive renamed");
+  const session = getAnimationSession(engine);
+  session.attach(store.history, vi.fn());
+  await session.flush();
+  await services.renameProject(original.id, "Active renamed");
+  await session.flush();
+  expect(engine.getSnapshot().project.name).toBe("Active renamed");
+  vi.spyOn(store, "estimateOriginStorage").mockResolvedValue({
+    approximate: true,
+    usage: 100,
+    quota: 1000,
+  });
+  expect(await services.projectInsights(original.id)).toMatchObject({
+    projectId: original.id,
+    origin: { approximate: true, usage: 100 },
+  });
+  await services.clearHistory(original.id);
+  expect(session.read().events).toBe(0);
+  await services.clearHistory(other.id);
+  expect((await store.history.info(other.id))!.count).toBe(0);
+  const listener = vi.fn(),
+    stop = services.subscribeProjectThumbnails(listener);
+  thumbnails.schedule(engine.getSnapshot().project);
+  await services.flushThumbnails();
+  expect(listener).toHaveBeenCalledWith(original.id);
+  stop();
+  await session.dispose();
+});
+it("prepares true cropped previews through the bounded shared pipeline and rejects stale frames", async () => {
+  const { services, engine, thumbnails } = await setup(sourceProject());
+  const signal = new AbortController(),
+    render = vi.spyOn(thumbnails, "preview").mockResolvedValue({
+      blob: new Blob(["preview"], { type: "image/webp" }),
+      width: 64,
+      height: 32,
+    });
+  engine.select(["image"]);
+  await services.previewExport!({ selection: ["image"], edge: 64 }, signal.signal);
+  const first = render.mock.calls[0]!;
+  expect(first[1]).toMatchObject({ width: 200, height: 100, background: "transparent" });
+  expect(first[3]).toMatchObject({ edge: 64, signal: signal.signal });
+  expect(first[3]!.isCurrent!()).toBe(true);
+  engine.select([]);
+  expect(first[3]!.isCurrent!()).toBe(true);
+  engine.execute({ type: "addLayers", layers: [createLayer("rectangle", { id: "unrelated" })] });
+  engine.execute({ type: "updateLayers", ids: ["unrelated"], patch: { fill: "#123456" } });
+  expect(first[3]!.isCurrent!()).toBe(true);
+  await services.previewExport!({ selection: ["image"], edge: 64 });
+  expect(render.mock.calls[1]![0]).toBe(first[0]);
+  engine.execute({ type: "updateLayers", ids: ["image"], patch: { width: 220 } });
+  expect(first[3]!.isCurrent!()).toBe(false);
+  await services.previewExport!({ all: true });
+  expect(render.mock.calls[2]![0]).not.toBe(first[0]);
+  expect(render.mock.calls[2]![1].background).not.toBe("transparent");
+  await expect(services.previewExport!({ edge: 1 })).rejects.toThrow("size");
+  await expect(services.previewExport!({ selection: ["missing"] })).rejects.toThrow("missing");
+  signal.abort();
+  await expect(services.previewExport!({}, signal.signal)).rejects.toThrow();
+  expect(render).toHaveBeenCalledTimes(3);
+});
+it("exports only selected layers with their cropped bounds and preserves the original document", async () => {
+  const { services, engine, download } = await setup(sourceProject());
+  const before = engine.getSnapshot().project;
+  renderer.exportComposition.mockClear();
+  renderer.exportComposition.mockResolvedValue(new Blob(["encoded"], { type: "image/png" }));
+  engine.select(["image"]);
+  await services.exportImage({
+    scale: 2,
+    format: "png",
+    quality: 1,
+    allPages: false,
+    selectionOnly: true,
+  });
+  expect(renderer.exportComposition.mock.calls[0]![0]).toMatchObject({
+    width: 200,
+    height: 100,
+    background: "transparent",
+  });
+  expect(download).toHaveBeenCalledWith(expect.any(Blob), "Image.png");
+  expect(engine.getSnapshot().project).toBe(before);
+  engine.select([]);
+  await expect(
+    services.exportImage({
+      scale: 1,
+      format: "png",
+      quality: 1,
+      allPages: false,
+      selectionOnly: true,
+    }),
+  ).rejects.toThrow("empty");
+  expect(renderer.exportComposition).toHaveBeenCalledTimes(1);
+});
+
+it("rejects a queued export after the engine changes before React can publish new props", async () => {
+  const { services, engine, download } = await setup(sourceProject());
+  const before = engine.getSnapshot();
+  const scope = {
+    page: before.project.pages[0]!,
+    revision: before.revision,
+    selection: before.selection,
+  };
+  renderer.exportComposition.mockClear();
+  const queued = () => services.exportImage(exportOptions, scope);
+  engine.load(sourceProject());
+  await expect(queued()).rejects.toThrow("target has changed");
+  expect(renderer.exportComposition).not.toHaveBeenCalled();
+  expect(download).not.toHaveBeenCalled();
+});
+it("editor save and active rename retain the loaded session's write revision", async () => {
+  const name = crypto.randomUUID(),
+    d = await setup(createProject(), name),
+    other = new ProjectStore(name);
+  try {
+    const project = d.engine.getSnapshot().project;
+    await other.save({ ...project, name: "Concurrent session" });
+    await expect(d.services.saveProject()).rejects.toMatchObject({ code: "STALE_PROJECT_WRITE" });
+    await d.services.duplicateProject(project.id);
+    await expect(d.services.saveProject()).rejects.toMatchObject({ code: "STALE_PROJECT_WRITE" });
+    await expect(d.services.renameProject(project.id, "Stale rename")).rejects.toMatchObject({
+      code: "STALE_PROJECT_WRITE",
+    });
+    expect((await other.load(project.id)).name).toBe("Concurrent session");
+  } finally {
+    await other.close();
+  }
 });

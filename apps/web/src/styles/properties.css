@@ -1,0 +1,349 @@
+.sidebar {
+  background: var(--background);
+  display: flex;
+  flex-direction: column;
+  z-index: 25;
+  min-width: 0;
+}
+.sidebar-panels {
+  min-height: 0;
+  flex: 1;
+}
+.inspector {
+  height: 100%;
+}
+.inspector-title {
+  height: 46px;
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--border);
+  gap: 15px;
+}
+.active-tab {
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 45px;
+  border-bottom: 2px solid var(--primary);
+}
+.inspector-selection {
+  margin-left: auto;
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+.inspector-section {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.inspector-section h3 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.inspector-section > h3 {
+  margin-bottom: 12px;
+}
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  margin-bottom: 13px;
+  min-height: 18px;
+}
+.section-title .icon-button {
+  height: 24px;
+  width: 24px;
+}
+.section-title > div {
+  display: flex;
+}
+.color-space {
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+.color-section {
+  padding-top: 16px;
+}
+.color-control {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.color-control .react-colorful {
+  width: 100%;
+  height: 148px;
+}
+.color-control .react-colorful__saturation {
+  border-radius: 5px;
+  border-bottom: none;
+  margin-bottom: 10px;
+}
+.color-control .react-colorful__hue,
+.color-control .react-colorful__alpha {
+  height: 9px;
+  border-radius: 5px;
+  margin: 0 3px 8px;
+}
+.color-control .react-colorful__pointer {
+  width: 13px;
+  height: 13px;
+  border-width: 2px;
+}
+.color-control .react-colorful__hue-pointer,
+.color-control .react-colorful__alpha-pointer {
+  width: 11px;
+  height: 13px;
+  border-radius: 4px;
+}
+.color-control .react-colorful__alpha {
+  margin-bottom: 0;
+}
+.color-value {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.color-swatch {
+  height: 26px;
+  width: 26px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+.color-value input {
+  height: 28px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  background: var(--field);
+  border: 1px solid transparent;
+  box-shadow: none;
+}
+.fields-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px 10px;
+  margin-top: 8px;
+}
+.blend-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.blend-row select {
+  font-size: 11px;
+  height: 27px;
+  box-shadow: none;
+  border-color: transparent;
+  background: var(--field);
+}
+.font-select {
+  width: 100%;
+  font-size: 12px;
+  margin-top: 10px;
+}
+.inspector textarea {
+  margin-bottom: 5px;
+  font-size: 12px;
+  background: var(--field);
+  border-color: transparent;
+}
+.alignment-group {
+  display: inline-flex;
+  gap: 5px;
+  padding: 3px;
+  margin-top: 10px;
+  border-radius: 6px;
+  background: var(--field);
+}
+.alignment-group .icon-button {
+  width: 28px;
+  height: 27px;
+}
+.effect-card {
+  margin: 10px 0;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 9px 11px 11px;
+}
+.effect-heading {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.effect-heading strong {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  font-weight: 600;
+}
+.effect-badge {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--field);
+  border-radius: 4px;
+  font-size: 10px;
+  font-style: italic;
+  color: var(--muted-foreground);
+}
+.effect-heading > [data-slot="switch"] {
+  margin-left: auto;
+  transform: scale(0.7);
+  transform-origin: right center;
+}
+.effect-heading .icon-button {
+  width: 20px;
+  height: 22px;
+  color: var(--muted-foreground);
+}
+.effect-disabled {
+  opacity: 0.65;
+  padding-bottom: 9px;
+}
+.effect-controls {
+  margin-top: 14px;
+}
+.effect-controls .continuous-control {
+  margin-bottom: 16px;
+}
+.effect-controls .continuous-header {
+  font-size: 10px;
+}
+.effect-footnote {
+  font-size: 10px;
+  color: var(--muted-foreground);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 8px 0 0;
+}
+.effect-footnote::before {
+  content: "↳";
+}
+.switch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  gap: 15px;
+}
+.switch-row [data-slot="switch"] {
+  transform: scale(0.8);
+  transform-origin: right center;
+}
+.muted-description {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+  margin: 8px 0 0;
+}
+.effect-menu,
+.guide-menu {
+  padding: 7px;
+  width: 220px;
+}
+.menu-item {
+  width: 100%;
+  justify-content: flex-start;
+  font-size: 12px;
+  height: 33px;
+  gap: 10px;
+}
+.popover-label {
+  display: block;
+  padding: 6px 10px 8px;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+
+.inspector-title {
+  height: 30px;
+  border: 0;
+}
+.inspector-selection {
+  margin-left: 0;
+}
+.inspector-section > [data-slot="select-trigger"] {
+  width: 100%;
+  margin-bottom: 10px;
+}
+.color-mode-select {
+  height: 25px;
+  width: auto;
+  max-width: 130px;
+  padding: 0 6px;
+  font-size: 10px;
+  background: var(--field);
+  box-shadow: none;
+  border: 0;
+}
+.property-select-menu {
+  max-height: min(360px, 60vh);
+}
+.alignment-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: 9px;
+}
+.alignment-tools .icon-button {
+  width: 29px;
+  height: 28px;
+}
+.spacing-section > div + div {
+  margin-top: 14px;
+}
+.image-scale {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+.guide-actions {
+  display: flex;
+  gap: 6px;
+}
+.guide-actions > button {
+  flex: 1;
+  padding: 0 6px;
+  font-size: 10px;
+  white-space: normal;
+  height: 34px;
+  line-height: 1.2;
+  text-align: left;
+}
+.guide-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+.guide-row .number-field {
+  flex: 1;
+}
+.mask-properties > .switch-row {
+  margin-bottom: 10px;
+}
+.effect-catalog-menu {
+  max-height: min(450px, 75vh);
+  overflow-y: auto;
+}
+.effect-controls > .number-field + .number-field {
+  margin-top: 8px;
+}
+.effect-controls > .switch-row {
+  margin-top: 10px;
+}
+
+.inspector-scroll {
+  height: 100%;
+  min-height: 0;
+}

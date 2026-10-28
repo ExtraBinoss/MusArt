@@ -1,0 +1,10 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "./tokens.css";
+@import "./workspace.css";
+@import "./properties.css";
+@import "./layers.css";
+@import "./dialogs.css";
+
+@import "./number-input.css";
+@import "./projects.css";

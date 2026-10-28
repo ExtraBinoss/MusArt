@@ -17,7 +17,13 @@
     "typescript/no-floating-promises": "error",
     "typescript/no-misused-promises": "error"
   },
-  "ignorePatterns": ["**/node_modules/**", "**/dist/**", "coverage/**", "artifacts/**"],
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "coverage/**",
+    "artifacts/**",
+    "third_party/clone/**"
+  ],
   "options": {
     "typeAware": true,
     "maxWarnings": 0

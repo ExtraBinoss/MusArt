@@ -17,6 +17,29 @@ function identities(items: unknown[]): string[] | null {
   }
   return ids;
 }
+/** A drag shifts one contiguous range; recognize both directions without repeated array searches. */
+function singleIdentityMove(
+  before: string[],
+  after: string[],
+): { from: number; to: number } | null {
+  if (before.length !== after.length) return null;
+  let first = 0;
+  while (first < before.length && before[first] === after[first]) first++;
+  if (first === before.length) return null;
+  let last = before.length - 1;
+  while (last > first && before[last] === after[last]) last--;
+  if (before[first] === after[last]) {
+    let index = first;
+    while (index < last && before[index + 1] === after[index]) index++;
+    if (index === last) return { from: first, to: last };
+  }
+  if (before[last] === after[first]) {
+    let index = first;
+    while (index < last && before[index] === after[index + 1]) index++;
+    if (index === last) return { from: last, to: first };
+  }
+  return null;
+}
 /** ID-bearing arrays are moved/inserted compactly instead of copying every following node. */
 export function diffReplayState(before: ReplayState, after: ReplayState): ReplayDelta[] {
   const output: ReplayDelta[] = [];
@@ -26,8 +49,15 @@ export function diffReplayState(before: ReplayState, after: ReplayState): Replay
       const beforeIds = identities(a),
         afterIds = identities(b);
       if (beforeIds && afterIds) {
-        const working = [...beforeIds],
-          original = new Map(beforeIds.map((id, index) => [id, a[index]]));
+        const original = new Map(beforeIds.map((id, index) => [id, a[index]])),
+          move = singleIdentityMove(beforeIds, afterIds);
+        if (move) {
+          output.push({ op: "move", from: [...path, move.from], path: [...path, move.to] });
+          for (const [index, id] of afterIds.entries())
+            walk(original.get(id), b[index], [...path, index]);
+          return;
+        }
+        const working = [...beforeIds];
         for (const [index, id] of afterIds.entries()) {
           if (working[index] !== id) {
             const source = working.indexOf(id, index + 1);

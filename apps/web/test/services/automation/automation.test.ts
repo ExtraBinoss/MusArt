@@ -71,3 +71,33 @@ describe("opt-in headless automation port", () => {
     expect(window.musart).toBeUndefined();
   });
 });
+
+it("exposes isolated durable history reads without mutating the engine session", async () => {
+  const { animationSetup } = await import("../../support/animation");
+  const d = await animationSetup(3);
+  try {
+    const detach = attachAutomation(d.engine, d.services),
+      api = window.musart!;
+    await api.flush();
+    await api.flushThumbnails();
+    expect(d.services.flushThumbnails).toHaveBeenCalledOnce();
+    const info = await api.historyInfo();
+    expect(info).toMatchObject({ ready: true, events: 3, pending: 0 });
+    info.events = 999;
+    expect(d.session.read().events).toBe(3);
+    const page = await api.historyPage();
+    expect(page.entries).toHaveLength(3);
+    expect((await api.historyPage(1)).entries).toHaveLength(1);
+    await api.historyConfigure({ limit: 10 });
+    expect((await api.historyInfo()).limit).toBe(10);
+    await expect(api.historyConfigure({ enabled: "yes" as unknown as boolean })).rejects.toThrow(
+      "boolean",
+    );
+    const replay = await api.historyReplay();
+    expect(replay.events).toHaveLength(3);
+    expect(replay.initial.id).toBe(d.project.id);
+    detach();
+  } finally {
+    await d.close();
+  }
+});

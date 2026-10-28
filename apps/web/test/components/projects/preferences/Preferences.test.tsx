@@ -1,0 +1,23 @@
+import { expect, test } from "vitest";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { Preferences } from "../../../../src/components/projects/preferences/Preferences";
+import { themeAtom } from "../../../../src/state/session/editor";
+import { choose } from "../../../support/select";
+import { setup } from "../../../support/ui";
+test("applies persistent themes and changes between both real catalogs", async () => {
+  const d = setup();
+  d.mount(<Preferences />);
+  expect(screen.getByRole("group", { name: "Thème" })).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "Sombre" }));
+  expect(screen.getByRole("button", { name: "Sombre" })).toHaveAttribute("aria-pressed", "true");
+  expect(screen.getByRole("button", { name: "Clair" })).toHaveAttribute("aria-pressed", "false");
+  expect(d.store.get(themeAtom)).toBe("dark");
+  expect(document.documentElement).toHaveClass("dark");
+  fireEvent.click(screen.getByRole("button", { name: "Clair" }));
+  fireEvent.click(screen.getByRole("button", { name: "Système" }));
+  expect(screen.getByRole("button", { name: "Système" })).toHaveAttribute("aria-pressed", "true");
+  expect(screen.getAllByRole("button", { pressed: true })).toHaveLength(1);
+  await choose("Langue", "English");
+  await waitFor(() => expect(document.documentElement.lang).toBe("en"));
+  await choose("Language", "Français");
+});

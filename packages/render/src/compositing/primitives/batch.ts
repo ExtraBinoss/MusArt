@@ -16,7 +16,6 @@ import {
   type WebGPURenderer,
 } from "three/webgpu";
 import type { GpuResource } from "../../cache/GpuResourceCache";
-import { parseColor } from "../nodes/color";
 import {
   BASE_GEOMETRY_BYTES,
   INSTANCE_BYTES,
@@ -25,6 +24,7 @@ import {
   primitiveGeometry,
 } from "./attributes";
 import { primitiveNode } from "./node";
+import { PrimitivePaintCache } from "./paint-cache";
 /** One bounded retained buffer is reused across contiguous ordered runs and isolated groups. */
 export class PrimitiveBatch implements GpuResource {
   readonly targets = 0;
@@ -49,6 +49,7 @@ export class PrimitiveBatch implements GpuResource {
   private readonly scale = new Vector3();
   private readonly rotation = new Quaternion();
   private readonly axis = new Vector3(0, 0, 1);
+  private readonly colors = new PrimitivePaintCache();
   constructor(private readonly renderer: WebGPURenderer) {
     this.camera.position.z = 1;
     this.material.fragmentNode = primitiveNode();
@@ -106,8 +107,8 @@ export class PrimitiveBatch implements GpuResource {
           this.scale.set(layer.width, -layer.height, 1);
           this.rotation.setFromAxisAngle(this.axis, (layer.rotation * Math.PI) / 180);
           mesh.setMatrixAt(index, this.matrix.compose(this.position, this.rotation, this.scale));
-          const fill = parseColor(layer.fill),
-            stroke = parseColor(layer.stroke);
+          const fill = this.colors.read(layer.fill),
+            stroke = this.colors.read(layer.stroke);
           attributes.primitiveFill!.setXYZW(index, fill.x, fill.y, fill.z, fill.w);
           attributes.primitiveStroke!.setXYZW(index, stroke.x, stroke.y, stroke.z, stroke.w);
           attributes.primitiveShape!.setXYZW(
@@ -151,6 +152,7 @@ export class PrimitiveBatch implements GpuResource {
     }
     this.mesh = null;
     this.capacity = 0;
+    this.colors.clear();
     this.material.dispose();
     this.scene.clear();
   }

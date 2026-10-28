@@ -38,12 +38,10 @@ it("supports smaller deterministic probes and rejects invalid counts or missing 
 it("loads local fixture bytes and reports HTTP failure", async () => {
   vi.stubGlobal(
     "fetch",
-    vi
-      .fn()
-      .mockResolvedValue({
-        ok: true,
-        blob: async () => new Blob(["local"], { type: "image/jpeg" }),
-      }),
+    vi.fn().mockResolvedValue({
+      ok: true,
+      blob: async () => new Blob(["local"], { type: "image/jpeg" }),
+    }),
   );
   expect(await loadFixtureImage("/benchmark/photo.jpg")).toMatch(/^data:image\/jpeg;base64,/);
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));

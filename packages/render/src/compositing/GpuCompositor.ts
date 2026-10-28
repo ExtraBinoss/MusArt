@@ -86,13 +86,14 @@ export class GpuCompositor {
         this.primitives = new PrimitiveBatch(this.renderer);
         this.cache.set("shared-primitives", this.primitives);
       }
+      const geometry = createLayerGeometryIndex(page);
       const frame: RenderFrame = {
         page,
         scale,
-        keyFor: createSourceKeys(page, assets, scale),
-        geometry: createLayerGeometryIndex(page),
+        keyFor: createSourceKeys(page, assets, scale, { geometry }),
+        geometry,
       };
-      const { keyFor, geometry } = frame;
+      const { keyFor } = frame;
       const rootKey = `page:${page.id}:${scale}`;
       const entry = this.entry(rootKey);
       const roots = geometry.children(null);

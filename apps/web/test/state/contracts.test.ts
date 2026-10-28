@@ -15,4 +15,5 @@ test("keeps platform services available through a typed app boundary", () => {
     identity<Pick<AppProps, "services"> | { services: Partial<EditorServices> }>({ services: {} }),
   ).toEqual({ services: {} });
   expect([format, theme, name]).toEqual(["png", "#ffffff", "Art"]);
+  expect(identity<Pick<AppProps, "welcome">>({ welcome: true })).toEqual({ welcome: true });
 });

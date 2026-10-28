@@ -1,4 +1,10 @@
-import { createLayerGeometryIndex, type Asset, type Composition, type Layer } from "@musart/core";
+import {
+  createLayerGeometryIndex,
+  type Asset,
+  type Composition,
+  type Layer,
+  type LayerGeometryIndex,
+} from "@musart/core";
 import { AssetIdentities } from "./asset-identities";
 import { SourceIdentities } from "./source-identities";
 
@@ -15,7 +21,7 @@ export function sourceKey(
   scale: number,
   trail: ReadonlySet<string> = new Set(),
 ): string {
-  return createSourceKeys(page, assets, scale, trail)(layer);
+  return createSourceKeys(page, assets, scale, { trail })(layer);
 }
 
 /** One indexed, memoized key resolver for a render job, including shared mask dependencies. */
@@ -23,11 +29,11 @@ export function createSourceKeys(
   page: Composition,
   assets: Record<string, Asset>,
   scale: number,
-  trail: ReadonlySet<string> = new Set(),
+  options: { trail?: ReadonlySet<string>; geometry?: LayerGeometryIndex } = {},
 ): (layer: Layer) => string {
-  const geometry = createLayerGeometryIndex(page);
+  const geometry = options.geometry ?? createLayerGeometryIndex(page);
   const keys = new WeakMap<Layer, string>();
-  const visiting = new Set(trail);
+  const visiting = new Set(options.trail);
   return function resolve(layer: Layer): string {
     if (visiting.has(layer.id)) throw new Error("Cycle du graphe de rendu.");
     const cached = keys.get(layer);

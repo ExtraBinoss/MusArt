@@ -1,0 +1,139 @@
+.toolbar-scroll {
+  width: 43px;
+  max-height: calc(100dvh - 170px);
+}
+.toolbar-contents {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 43px;
+  max-height: inherit;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.toolbar-contents > .icon-button,
+.toolbar-contents > [data-slot="separator"],
+.toolbar-contents > .dock-pinned {
+  flex-shrink: 0;
+}
+.dock-pinned {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.dock-pinned > div {
+  border-radius: 7px;
+  cursor: grab;
+}
+.dock-pinned > div[data-dragging="true"] {
+  background: var(--accent);
+  opacity: 0.7;
+  cursor: grabbing;
+}
+.dock-customizer {
+  width: 330px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  max-height: min(620px, calc(100dvh - 24px));
+  overflow: hidden;
+}
+.dock-customizer h2 {
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.dock-customizer h3 {
+  font-size: 11px;
+  font-weight: 550;
+  margin: 10px 0 6px;
+  flex-shrink: 0;
+}
+.dock-customizer p {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  line-height: 1.5;
+  margin: 5px 0;
+  flex-shrink: 0;
+}
+.dock-customizer > :has(> input) {
+  flex-shrink: 0;
+}
+.dock-customizer input[data-slot="input"] {
+  height: 32px;
+}
+.dock-customizer input[data-slot="input"]:focus-visible {
+  border-color: color-mix(in srgb, var(--foreground) 35%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--foreground) 15%, transparent);
+}
+.dock-customizer-pinned {
+  flex: 0 1 auto;
+  min-height: 27px;
+}
+.dock-customizer-pinned-viewport {
+  height: 100%;
+  overflow: auto;
+}
+.dock-customizer-pinned-viewport > div {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 27px;
+}
+.dock-customizer-pinned-viewport > div > span {
+  flex: 1;
+  font-size: 11px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.dock-customizer-pinned .icon-button {
+  width: 27px;
+  height: 27px;
+}
+.dock-customizer-available {
+  margin: 8px -12px 0;
+  height: 220px;
+  min-height: 70px;
+  flex: 1 1 220px;
+}
+.dock-catalog-viewport {
+  height: 100%;
+  overflow-y: auto;
+}
+.dock-catalog-space {
+  position: relative;
+  margin: 0 8px;
+}
+.dock-catalog-space [data-slot="button"] {
+  width: 100%;
+  justify-content: space-between;
+  height: 35px;
+  padding: 0 8px;
+  font-size: 11px;
+}
+.dock-catalog-space [data-slot="button"] > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-height: 500px) {
+  .dock-customizer .dock-customizer-hint {
+    display: none;
+  }
+  .dock-customizer h3 {
+    margin-top: 7px;
+  }
+}
+.toolbar .toolbar-contents .icon-button {
+  width: 35px;
+  height: 35px;
+  flex-shrink: 0;
+}
+.dock-customizer-pinned {
+  margin-inline: -12px;
+}
+.dock-customizer-pinned-viewport {
+  padding-inline: 12px;
+}

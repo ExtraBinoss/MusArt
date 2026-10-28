@@ -1,0 +1,44 @@
+.control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.control > svg {
+  position: absolute;
+  left: 10px;
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+.control input {
+  padding-left: 32px;
+  padding-right: 36px;
+}
+.searchButton {
+  position: absolute;
+  z-index: 1;
+  left: 2px;
+  top: 2px;
+  bottom: 2px;
+  width: 29px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted-foreground);
+}
+.searchButton:hover {
+  color: var(--foreground);
+  background: var(--accent);
+}
+.previews {
+  position: absolute;
+  right: 10px;
+  display: flex;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+.previews svg {
+  width: 20px;
+  height: 20px;
+}

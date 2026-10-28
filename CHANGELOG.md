@@ -46,10 +46,21 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
+- Layer thumbnails track their actual selected render graph instead of the global edit revision. Unrelated edits and metadata changes retain existing previews, while descendant paint, ancestor processing, masks, working color space and referenced originals invalidate the affected results. Weak asset aliases recognize equivalent original-object clones without retaining image bytes in signature tables.
+- Layer scrolling updates the React window in bounded row batches while tracking native scroll offsets immediately; scrolling within the existing window performs no React state update.
+
+- Commit observers can request frozen command types without cloning full patch payloads. Replay observers can capture exact immutable transitions immediately and defer delta construction to an ordered platform scheduler; portable session recording retains its synchronous detailed behavior.
+- Revisited spotlight command states reuse a bounded eight-state cache of prepared rows and normalized search terms. Document-label, language and shortcut changes invalidate the corresponding cached data without retaining older document revisions.
+
+- Gesture previews use native shallow merges for large layer batches with a safe path for prototype-looking data keys; renderer key preparation shares the frame's existing geometry index.
+- Geometry, typography and spacing scrub fields retain their input elements across selection changes. Immutable target rebinding cancels old pointer, typed and held-key drafts, including repeated keys awaiting release. Document search rows and normalized terms survive transform-only commits; repeated kind/page translations are shared instead of rebuilt per layer.
+
+- A single layer or page reorder is recognized in linear time and stored as one replay move, including first-to-last moves across 10,000 elements; accompanying field edits retain their final indices.
 - Single layer-patch transactions use isolated shallow layer drafts over immutable document resources; unrelated command domains retain deep draft isolation. Replay batches copy each modified container once while preserving sequential move/set/remove semantics.
 - Selection changes retain the genuine color-slider elements instead of remounting and synchronously measuring them. Optional offscreen layer reveals coalesce after the selected canvas/inspector paint and cancel superseded scopes. Scroll-shadow mutation observers leave size measurements to the browser resize phase.
 
 - Plain rectangle/ellipse runs use one retained Three.js InstancedMesh and the shared TSL shape graph, preserving alpha, rotation, radius, stroke, order and isolated groups without per-primitive source targets or materials. A bounded shared buffer grows to 16,384 instances and is charged before allocation; complex compositing retains its isolated path.
+- Instanced primitive runs reuse a bounded LRU of frozen decoded fill/stroke colors across moves, avoiding repeated color parsing while keeping paint changes immediate and clearing retained values on disposal.
 - Selection reveals reuse cached layer-viewport metrics, while small selections resolve through the immutable geometry index. Closed spotlights reuse prepared catalog rows and command gates without scoring document results; closed named-font pickers avoid full-catalog and installed-font reads. Visible thumbnail CPU preparation shares cancellable idle slots and yields to pending input or insufficient budget.
 
 - Opacity and blending now belong above Layers, with disabled empty-selection controls, explicit mixed values and one atomic committed edit for multiple layers. Footer icons add effects and corrections; grouping and ungrouping use one context-menu action, and layer ordering uses drag and drop.
@@ -70,11 +81,21 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
+- Serialized editor autosave and manual saves through one bounded FIFO writer, preserving immutable inputs, real failures and durable conflict checks. Opening an existing project updates its last-opened preference without rehashing or rewriting the document.
+- Preserved exact commit snapshots and FIFO observation when snapshot, summary or detailed listeners synchronously perform another edit, undo or project load. Callback failures no longer discard already-committed nested transitions. Detailed command payloads are detached before execution so caller mutations and later commands cannot rewrite them.
+- Captured lightweight journal commit metadata synchronously and deferred delta preparation until after presentation opportunities. Explicit flush and disposal preserve every captured commit in order. Canonical history and thumbnail metadata hashing use a bounded, owned module worker while retaining existing fingerprints, transaction conflict checks and a tested no-Worker path.
+- Kept the last valid canvas visible through color, movement and same-artboard size updates. Removed a legacy readiness selector that restarted the gray loading overlay on every pending property frame. Three device-loss callbacks now stop submissions and report the real failure without falsely publishing a ready frame or restarting renderers.
+- The text tool draws a document-sized text frame before committing on release. Dragging in either direction preserves the chosen rectangle, a click retains the default frame, and cancellation or a changed project/page discards the draft with no undo entry.
+- Panning retains ruler graduations in clipped compositor strips and preserves an unchanged zoom label's text node. This avoids repeated tick writes and a measured whole-canvas `:has()` style invalidation from unnecessary label replacement. Ruler and existing-guide drags also cancel and release capture when their originating project, page or revision changes.
+- GPU boundary failures and concurrent-save conflicts use English/French interface resources while preserving unknown diagnostic messages. Shared dialog close controls follow the current language, including accessible labels.
+
+- Cleared completed canvas drafts before canonical publication in the same input task, avoiding a second materialization of large selections while preserving cancellation and one undo entry.
+- Restored projects open directly from their validated IndexedDB snapshot without rehashing and rewriting the unchanged manifest before mounting the editor; migrations remain deferred to real writes.
 - Rejected prototype-changing JSON layer patches before mutation, preserving portable rendering and replay behavior.
-- Project saves capture an immutable input snapshot and compare durable document-write revisions after asynchronous hashing. Overlapping stale saves are rejected across store instances; rename/journal commits renew the same revision, and failed transactions roll it back with the document.
+- Project saves capture an immutable input snapshot and compare durable document-write revisions after asynchronous hashing. Overlapping stale saves are rejected across store instances; bounded loaded-session baselines also protect editor autosave, manual save and active rename while explicit replacement remains available. Background thumbnail/duplication reads cannot silently refresh a stale editor baseline. Atomic rename/history transactions renew the same revision, and failed writes roll it back with the document.
 
 - Kept optional thumbnail work behind pointer-approach quieting, queued native-input guards and a real idle budget. Completed frames yield and recheck activity before native encoding, cancel owned pending tasks on disposal and reject late encodes; explicit foreground export previews still bypass hover quiet after active gestures finish.
-- Pointer hit testing traverses parent-local coordinates and rejects plain bounds before allocating world geometry; selected-layer spacing reuses one geometry index instead of rescanning the document for each arrow.
+- Pointer hit testing traverses parent-local coordinates and rejects plain bounds before allocating world geometry; selected-layer spacing reuses one geometry index instead of rescanning the document for each arrow. Collective selection reads unrotated root bounds and visibility/lock flags without creating transformation matrices.
 
 - Removed quadratic identity scans from replay recording, avoided allocating paths for unchanged fields, and reused canonical fingerprint key layouts without changing stored SHA-256 values. Document cloning now copies fields directly while preserving prototype-looking JSON keys safely.
 - Validated queued image exports against their original page, revision and selection at execution time, preventing a delayed adapter from exporting a replacement document.

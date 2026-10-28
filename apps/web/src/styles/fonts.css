@@ -1,0 +1,72 @@
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("@fontsource-variable/inter/files/inter-latin-wght-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("@fontsource-variable/inter/files/inter-latin-wght-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Space Grotesk Variable";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2")
+    format("woff2");
+}
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2")
+    format("woff2");
+}
+.studio-loading {
+  height: 100dvh;
+  display: grid;
+  place-items: center;
+  background: var(--workspace, #17181b);
+  color: var(--foreground, #d9dbe1);
+  font:
+    13px "Inter Variable",
+    sans-serif;
+}
+.runtime-error {
+  position: fixed;
+  bottom: 22px;
+  left: 90px;
+  right: 350px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--destructive, #db4349);
+  border-radius: 8px;
+  background: var(--popover, #fff);
+  color: var(--foreground, #25252a);
+  font:
+    12px "Inter Variable",
+    sans-serif;
+  box-shadow: 0 8px 32px #0002;
+}
+.runtime-error button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 20px;
+}
+@media (max-width: 760px) {
+  .runtime-error {
+    left: 12px;
+    right: 12px;
+  }
+}

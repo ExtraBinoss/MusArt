@@ -119,18 +119,32 @@ export class LayerGeometryIndex {
     return this.matrices.get(id)!;
   }
   isLocked(id: string): boolean {
+    const layer = this.get(id);
+    if (layer.parentId === null) return layer.locked;
     this.worldMatrix(id);
     return this.flags.get(id)!.locked;
   }
   isVisible(id: string): boolean {
+    const layer = this.get(id);
+    if (layer.parentId === null) return layer.visible && layer.opacity > 0;
     this.worldMatrix(id);
     return this.flags.get(id)!.visible;
   }
   worldBounds(id: string): Readonly<Bounds> {
     const cached = this.bounds.get(id);
     if (cached) return cached;
-    const layer = this.get(id),
-      matrix = this.worldMatrix(id);
+    const layer = this.get(id);
+    if (layer.parentId === null && layer.rotation === 0) {
+      const direct = Object.freeze({
+        x: layer.x,
+        y: layer.y,
+        width: layer.width,
+        height: layer.height,
+      });
+      this.bounds.set(id, direct);
+      return direct;
+    }
+    const matrix = this.worldMatrix(id);
     const corners = [
       { x: 0, y: 0 },
       { x: layer.width, y: 0 },

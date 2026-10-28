@@ -1,0 +1,9 @@
+# Keyboard shortcuts
+
+Open **Keyboard shortcuts** from preferences, search or the default `?` key. The editor lists the actual tools, project actions, effects and directional commands with their icons. Search by command, category or current shortcut. Click a binding and press its replacement; Escape cancels recording. Each row can remove its binding or restore its defaults, and **Reset all** restores the complete set.
+
+Overrides are validated and saved under the versioned `musart.keybindings.v1` local preference. Invalid keys, unknown commands and conflicting assignments cannot silently replace another command. Storage failures remain visible and leave the previous working configuration intact. Changes update keyboard dispatch, command search, dock/tooltips and project save keycaps together, including after a reload. The platform modifier is stored as `Mod` and displayed as Ctrl or ⌘. Pointer gestures such as Space-drag and trackpad navigation retain their separate navigation semantics.
+
+Editor shortcuts leave text fields, sliders and modal controls to their own editing behavior. Save remains available while editing; shortcut recording consumes its keys without executing document commands. Search can toggle its own dialog but cannot bypass another modal dashboard or confirmation. The first-launch dashboard disables document shortcuts until a real project has been chosen. A queued command verifies its originating engine, project, page and revision before execution.
+
+The search catalogue is prepared while the dialog is closed and reuses page/layer records across selection and binding changes. Empty search mounts at most two results per category. Its input receives focus immediately, without a dialog opening animation. Native browser verification records the cold and warm request-to-first-paint upper bounds over two animation frames, the actual option count and environment in `artifacts/search-opening.json`.

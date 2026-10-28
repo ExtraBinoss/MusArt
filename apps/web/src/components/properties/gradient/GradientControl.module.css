@@ -1,0 +1,56 @@
+.control,
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.control {
+  margin-bottom: 12px;
+}
+.editor[inert] {
+  opacity: 0.5;
+}
+.preview {
+  height: 22px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+}
+.stops {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+.stops > button {
+  display: grid;
+  place-items: center;
+  width: 23px;
+  height: 26px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--field);
+}
+.stops > button[aria-pressed="true"] {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+.stops > button > span {
+  width: 14px;
+  height: 17px;
+  border-radius: 2px;
+}
+.actions {
+  margin-left: auto;
+}
+.actions button {
+  width: 24px;
+  height: 26px;
+  border: 1px solid var(--border);
+}
+.hint {
+  margin: -3px 0 0;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}

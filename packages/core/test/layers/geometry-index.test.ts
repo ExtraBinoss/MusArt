@@ -253,3 +253,28 @@ test("parent-local picking agrees with canonical rotations, clipping, ellipse ho
         expect(geometry.hitTest({ x, y })?.id).toBe(hitTest(page, { x, y })?.id);
   }
 });
+
+test("large root-only collective bounds and flags do not allocate transformation matrices", () => {
+  const layers = Array.from({ length: 10000 }, (_, index) =>
+    createLayer("rectangle", {
+      id: `collective-${index}`,
+      x: index,
+      y: -index,
+      width: 4,
+      height: 6,
+      locked: index === 1,
+      opacity: index === 2 ? 0 : 1,
+    }),
+  );
+  const geometry = createLayerGeometryIndex(createPage({ layers }));
+  const matrices = vi.spyOn(geometry, "worldMatrix");
+  for (const layer of layers) {
+    const bounds = geometry.worldBounds(layer.id);
+    expect(bounds).toEqual({ x: layer.x, y: layer.y, width: 4, height: 6 });
+    expect(Object.isFrozen(bounds)).toBe(true);
+    expect(geometry.worldBounds(layer.id)).toBe(bounds);
+    expect(geometry.isLocked(layer.id)).toBe(layer.locked);
+    expect(geometry.isVisible(layer.id)).toBe(layer.opacity > 0);
+  }
+  expect(matrices).not.toHaveBeenCalled();
+});

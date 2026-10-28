@@ -1,0 +1,55 @@
+.canvas-add-artboard {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 100ms ease;
+}
+.artboard-heading:hover .canvas-add-artboard,
+.artboard-heading:focus-within .canvas-add-artboard,
+.canvas-add-artboard:focus-visible,
+.editor-canvas:has(.canvas-artboard[data-active="true"]:hover)
+  .artboard-heading[data-active="true"]
+  .canvas-add-artboard {
+  opacity: 1;
+  pointer-events: auto;
+}
+.quick-add-anchor {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.quick-add-popover {
+  width: 290px;
+  padding: 0;
+  overflow: hidden;
+}
+.quick-add-categories {
+  display: flex;
+  margin: 8px;
+  width: calc(100% - 16px);
+}
+.quick-add-categories button {
+  font-size: 10px;
+  padding-inline: 8px;
+  height: 26px;
+  flex: 1;
+  min-width: 0;
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.quick-add-popover [data-slot="command-input"] {
+  font-size: 12px;
+}
+.quick-add-popover [data-slot="command-list"] {
+  max-height: 300px;
+}
+.quick-add-popover [data-slot="command-item"] {
+  font-size: 12px;
+  gap: 9px;
+}

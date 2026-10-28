@@ -1,0 +1,416 @@
+.layers-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.panel-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  height: 45px;
+  padding: 0 13px 0 18px;
+}
+.panel-heading h2 {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0;
+}
+.small-count {
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.heading-actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+.heading-actions .icon-button {
+  width: 26px;
+  height: 26px;
+  color: var(--muted-foreground);
+}
+.layer-tree {
+  flex: 1;
+  padding: 2px 6px 10px;
+}
+.layer-row {
+  height: 36px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 7px;
+  margin: 0;
+  position: relative;
+  outline-offset: -2px;
+  user-select: none;
+  cursor: default;
+  border: 1px solid transparent;
+}
+.layer-row:hover {
+  background: var(--accent);
+}
+.layer-row.selected {
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+  color: var(--foreground);
+}
+.layer-row.is-hidden {
+  opacity: 0.5;
+}
+.layer-row.drop-target {
+  border-top-color: var(--foreground);
+}
+.layer-thumbnail {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  flex-shrink: 0;
+  overflow: hidden;
+  color: var(--muted-foreground);
+  background: var(--field);
+}
+.layer-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.layer-name {
+  font-size: 11px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+.layer-name-input {
+  min-width: 20px;
+  height: 24px;
+  font-size: 11px;
+  padding: 2px 4px;
+}
+.layer-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  color: var(--muted-foreground);
+  opacity: 0;
+}
+.layer-row:hover .layer-actions,
+.layer-row:focus-within .layer-actions,
+.layer-row.is-hidden .layer-actions,
+.layer-row.selected .layer-actions {
+  opacity: 1;
+}
+.layer-actions .icon-button {
+  width: 22px;
+  height: 24px;
+}
+.effect-indicator {
+  font-size: 10px;
+  font-style: italic;
+  color: var(--muted-foreground);
+  margin-left: auto;
+}
+.group-chevron {
+  background: none;
+  border: none;
+  padding: 0;
+  width: 12px;
+  margin-left: -12px;
+  display: flex;
+  align-items: center;
+  color: var(--muted-foreground);
+}
+.layers-footer {
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 9px 0 15px;
+  color: var(--muted-foreground);
+  border-top: 1px solid var(--border);
+}
+.layers-footer > span {
+  font-size: 10px;
+}
+.layers-footer > div {
+  display: flex;
+}
+.layers-footer > div:last-child {
+  margin-left: auto;
+}
+.layers-footer > .layer-create-actions {
+  margin-right: 8px;
+}
+.layers-footer .icon-button {
+  width: 25px;
+  height: 25px;
+}
+.empty-layers {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 35px 15px;
+  color: var(--muted-foreground);
+}
+.empty-layers p {
+  font-size: 12px;
+  margin: 13px 0 4px;
+  color: var(--foreground);
+}
+.empty-layers span {
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.layer-row {
+  position: relative;
+}
+.layer-row.drop-before::before,
+.layer-row.drop-after::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  background: var(--foreground);
+  z-index: 3;
+  pointer-events: none;
+}
+.layer-row.drop-before::before {
+  top: 0;
+}
+.layer-row.drop-after::after {
+  bottom: 0;
+}
+.layer-row.drop-inside {
+  box-shadow: inset 0 0 0 2px var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+.layer-row.drop-mask {
+  box-shadow: inset 0 0 0 2px var(--foreground);
+}
+.drop-label {
+  position: absolute;
+  right: 6px;
+  bottom: 0;
+  font-size: 9px;
+  color: var(--background);
+  background: var(--foreground);
+  border-radius: 3px;
+  padding: 1px 4px;
+  z-index: 4;
+  pointer-events: none;
+}
+.mask-indicator {
+  color: var(--foreground);
+  display: inline-flex;
+}
+
+.layer-row[data-dragging="true"] {
+  background: color-mix(in srgb, var(--foreground) 12%, var(--background));
+  box-shadow: inset 2px 0 var(--foreground);
+  z-index: 5;
+}
+.layer-row[draggable="true"] {
+  cursor: grab;
+}
+.layer-row[data-dragging="true"] {
+  cursor: grabbing;
+}
+
+.layer-compositing {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 8px;
+  padding: 3px 12px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.layer-compositing .number-field {
+  height: 30px;
+}
+.layer-compositing [data-slot="select-trigger"] {
+  height: 30px;
+  font-size: 11px;
+  width: 100%;
+}
+.layer-badges {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.layer-attachment-avatar[data-slot="button"] {
+  width: 22px;
+  height: 24px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+  border-radius: 4px;
+  padding: 0;
+}
+.layer-attachment-avatar:hover {
+  color: var(--foreground);
+  background: var(--accent);
+}
+.layer-attachment-row {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 7px;
+  border-radius: 5px;
+  color: var(--muted-foreground);
+}
+.layer-attachment-row:hover,
+.layer-attachment-row:focus-within {
+  background: var(--accent);
+  color: var(--foreground);
+}
+.layer-attachment-row.is-hidden {
+  opacity: 0.5;
+}
+.attachment-name[data-slot="button"] {
+  flex: 1;
+  min-width: 0;
+  justify-content: flex-start;
+  height: 30px;
+  padding: 0 4px;
+  font-size: 11px;
+  gap: 8px;
+  background: none;
+  box-shadow: none;
+}
+.attachment-name > small {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.effect-avatar,
+.mask-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  background: var(--field);
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+.attachment-actions {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  margin-left: auto;
+}
+.attachment-actions .icon-button {
+  width: 23px;
+  height: 24px;
+}
+.layer-attachment-row .attachment-actions {
+  opacity: 0;
+}
+.layer-attachment-row:hover .attachment-actions,
+.layer-attachment-row:focus-within .attachment-actions {
+  opacity: 1;
+}
+.layer-attachment-popover[data-slot="popover-content"] {
+  width: 300px;
+  max-height: min(600px, 75dvh);
+  overflow: hidden;
+  padding: 0;
+}
+.layer-effect-details {
+  display: grid;
+  gap: 20px;
+}
+.layer-effect-details > section {
+  min-width: 0;
+}
+.layer-effect-details h3 {
+  font-size: 12px;
+}
+.layer-attachment-popover .mask-properties {
+  padding: 0;
+  border: 0;
+}
+.layer-attachment-popover [data-slot="switch"][data-state="checked"] {
+  background: var(--foreground);
+}
+.layer-row:focus-visible {
+  outline: 1px solid color-mix(in srgb, var(--foreground) 40%, transparent);
+}
+
+.effect-select-field,
+.effect-color-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.effect-select-field > span,
+.effect-color-field > span {
+  flex: 1;
+  min-width: 0;
+}
+.effect-select-field > button {
+  width: 58%;
+  min-width: 0;
+  height: 30px;
+}
+.effect-color-field > button {
+  height: 28px;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--foreground);
+}
+.effect-preset-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.effect-preset-swatch {
+  width: 30px;
+  height: 16px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px #0000000d;
+}
+.effect-color-popover {
+  width: 250px;
+}
+.effect-compositing {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 6px;
+  margin: 10px 0;
+}
+.effect-compositing [data-slot="select-trigger"] {
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+}
+
+.layer-attachment-scroll {
+  max-height: min(600px, 75dvh);
+}
+.layer-attachment-viewport {
+  max-height: inherit;
+  padding: 14px;
+  overflow-y: auto;
+}
+
+.layer-tree-scroll {
+  flex: 1;
+  min-height: 0;
+}
+.layer-tree-scroll > .layer-tree {
+  height: 100%;
+}

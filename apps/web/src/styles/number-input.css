@@ -1,0 +1,100 @@
+/* ResumI number-input.module.css, MIT, copyright 2026 ResumI contributors. */
+.number-field-wrapper {
+  min-width: 0;
+}
+.number-field {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--field);
+  box-shadow: none;
+  overflow: hidden;
+  transition:
+    border-color 0.12s,
+    box-shadow 0.12s;
+}
+.number-field:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 15%, transparent);
+}
+.number-scrub,
+.number-unit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+.number-scrub {
+  min-width: 29px;
+  max-width: 50%;
+  padding: 0 7px;
+  border: 0;
+  border-right: 1px solid var(--border);
+  background: color-mix(in srgb, var(--muted) 55%, transparent);
+  font-family: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: ew-resize;
+  touch-action: none;
+  user-select: none;
+}
+.number-scrub:hover,
+.number-field[data-dragging] .number-scrub {
+  color: var(--foreground);
+  background: var(--accent);
+}
+.number-field input,
+.number-field input[data-ui="input"] {
+  flex: 1;
+  min-width: 0;
+  width: 0;
+  height: 100%;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--foreground);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  outline: none;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.number-field input:focus,
+.number-field input:focus-visible {
+  border: 0;
+  box-shadow: none;
+  outline: none;
+}
+.number-field input::-webkit-inner-spin-button,
+.number-field input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+.number-unit {
+  min-width: 27px;
+  padding: 0 5px;
+  border-left: 1px solid var(--border);
+  font-size: 11px;
+  user-select: none;
+}
+.number-field[data-disabled] {
+  opacity: 0.5;
+}
+.number-field[data-disabled] .number-scrub {
+  cursor: default;
+}
+@media (prefers-reduced-motion: reduce) {
+  .number-field {
+    transition: none;
+  }
+}
