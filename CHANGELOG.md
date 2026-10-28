@@ -46,6 +46,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
+- Engine publications expose weak identity certificates for validated immutable projects and pages. Capture-only replay transitions preserve exact completed commits without preparing deltas inside engine listeners.
+- Layer patch drafts copy only affected layers, while collective geometry reuses internal lookup maps and computes one union without per-layer bounds allocations. Full document validation, mask cleanup and undo/redo remain intact.
 - Layer thumbnails track their actual selected render graph instead of the global edit revision. Unrelated edits and metadata changes retain existing previews, while descendant paint, ancestor processing, masks, working color space and referenced originals invalidate the affected results. Weak asset aliases recognize equivalent original-object clones without retaining image bytes in signature tables.
 - Layer scrolling updates the React window in bounded row batches while tracking native scroll offsets immediately; scrolling within the existing window performs no React state update.
 

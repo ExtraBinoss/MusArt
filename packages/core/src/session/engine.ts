@@ -5,6 +5,7 @@ import { reserveProjectIds } from "../document/identity";
 import type { Command, EnginePort, Project, SessionSnapshot } from "../document/model";
 import { validateProject } from "../document/validation";
 import { cloneValue as clone, freezeValue as freeze } from "../document/immutable";
+import { markPublishedProject } from "../document/published";
 import type { CommandCommit, CommandCommitInfo } from "../animation/model";
 import { createLayerGeometryIndex } from "../layers/geometry-index";
 import { createCommandDraft } from "./drafts";
@@ -13,9 +14,11 @@ function collectExplicitIds(value: unknown, occupied: Set<string>): void {
   if (Array.isArray(value)) {
     for (const item of value) collectExplicitIds(item, occupied);
   } else if (value !== null && typeof value === "object") {
-    for (const [key, child] of Object.entries(value)) {
+    for (const key in value) {
+      if (!Object.hasOwn(value, key)) continue;
+      const child = (value as Record<string, unknown>)[key];
       if (key === "id" && typeof child === "string") occupied.add(child);
-      else collectExplicitIds(child, occupied);
+      else if (child !== null && typeof child === "object") collectExplicitIds(child, occupied);
     }
   }
 }
@@ -47,7 +50,8 @@ export class EditorEngine implements EnginePort {
   private now: (() => string) | undefined;
 
   constructor(project: Project = createProject(), options: EngineOptions = {}) {
-    validateProject(project);
+    const copy = clone(project);
+    validateProject(copy);
     this.historyLimit = options.historyLimit ?? 100;
     ensure(
       Number.isInteger(this.historyLimit) && this.historyLimit >= 1 && this.historyLimit <= 100,
@@ -55,15 +59,16 @@ export class EditorEngine implements EnginePort {
       "Historique limité entre 1 et 100",
     );
     this.now = options.now;
-    reserveProjectIds(project);
+    reserveProjectIds(copy);
     this.snapshot = freeze({
-      project: clone(project),
-      pageId: project.pages[0]!.id,
+      project: copy,
+      pageId: copy.pages[0]!.id,
       selection: [],
       revision: 0,
       canUndo: false,
       canRedo: false,
     });
+    markPublishedProject(this.snapshot.project);
   }
   getSnapshot = (): SessionSnapshot => this.snapshot;
   subscribe = (listener: () => void): (() => void) => {
@@ -121,6 +126,7 @@ export class EditorEngine implements EnginePort {
     detailedCommands?: readonly Command[],
   ): void {
     const snapshot = freeze(next);
+    markPublishedProject(snapshot.project);
     if (kind) {
       // Capture before state listeners can synchronously publish another transaction.
       const detailed =
@@ -180,13 +186,13 @@ export class EditorEngine implements EnginePort {
     );
     if (commands.length === 0) return;
     const before = this.snapshot;
-    const project = createCommandDraft(before.project, before.pageId, commands);
+    let project: Project;
     let pageId = before.pageId;
     let selection = before.selection;
     let sequence = this.sequence;
     let detailedCommands: readonly Command[] | undefined;
-    const occupied = new Set<string>([project.id, ...Object.keys(project.assets)]);
-    for (const page of project.pages) {
+    const occupied = new Set<string>([before.project.id, ...Object.keys(before.project.assets)]);
+    for (const page of before.project.pages) {
       occupied.add(page.id);
       for (const layer of page.layers) {
         occupied.add(layer.id);
@@ -205,6 +211,7 @@ export class EditorEngine implements EnginePort {
       return id;
     };
     try {
+      project = createCommandDraft(before.project, before.pageId, commands);
       // Reserve explicit IDs from the entire batch before generating any IDs.
       collectExplicitIds(commands, occupied);
       if (this.commandListeners.size) detailedCommands = freeze(clone(commands));
@@ -273,9 +280,9 @@ export class EditorEngine implements EnginePort {
     );
   };
   load = (project: Project): void => {
-    validateProject(project);
-    reserveProjectIds(project);
     const copy = clone(project);
+    validateProject(copy);
+    reserveProjectIds(copy);
     this.past = [];
     this.future = [];
     this.sequence = 0;

@@ -26,6 +26,7 @@ export type { EngineOptions } from "./session/engine";
 export { EngineError } from "./errors";
 export type { EngineErrorCode } from "./errors";
 export { validateProject } from "./document/validation";
+export { isPublishedProject, isPublishedComposition } from "./document/published";
 export { parseProject, serializeProject } from "./document/serialization";
 export {
   getAncestors,
@@ -88,12 +89,16 @@ export type { CompositionPreset, PresetBrand } from "./layout/presets";
 export { layoutBoxes, measureLayer } from "./layout/measurements";
 export type { LayerMeasurement, MeasurementArrow } from "./layout/measurements";
 export { stateFromProject, normalizeReplayCommands } from "./animation/state";
+export { isCommandType } from "./session/registry";
 export { diffReplayState, applyReplayDelta } from "./animation/delta";
 export { recordSession, observeReplay } from "./animation/recording";
+export { observeReplayTransitions } from "./animation/transitions";
 export type {
   ReplayDelta,
   ReplayPath,
   ReplayObserveOptions,
+  ReplayTransition,
+  ReplayTransitionOptions,
   ReplayRecordOptions,
 } from "./animation/model";
 export { evaluateReplay } from "./animation/evaluate";

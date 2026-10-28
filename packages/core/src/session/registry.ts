@@ -7,6 +7,7 @@ import { renameProject } from "../document/commands";
 import { addAssets } from "../assets/commands";
 import { setReplay } from "../animation/commands";
 import type { CommandHandlers } from "./context";
+import type { Command } from "../document/model";
 import { updateLayerPatches } from "../layers/patches";
 /** Domain handlers are exhaustively checked against the portable command union. */
 export const COMMAND_HANDLERS: CommandHandlers = Object.freeze({
@@ -34,3 +35,7 @@ export const COMMAND_HANDLERS: CommandHandlers = Object.freeze({
   removeLayerMask: masks.removeLayerMask,
   setReplay,
 });
+/** Transport and journal boundaries validate names against the engine's authoritative registry. */
+export function isCommandType(value: unknown): value is Command["type"] {
+  return typeof value === "string" && Object.hasOwn(COMMAND_HANDLERS, value);
+}

@@ -43,6 +43,24 @@ export interface CommandCommitInfo {
   types: readonly Command["type"][];
   snapshot: SessionSnapshot;
 }
+/** Immutable references captured at commit time; preparation and persistence belong to the consumer. */
+export interface ReplayTransition {
+  before: ReplayState;
+  after: ReplayState;
+  previousAssets: Record<string, Asset>;
+  snapshot: SessionSnapshot;
+  at: number;
+  kind: CommandCommit["kind"];
+  types: readonly Command["type"][];
+  checkpoint: boolean;
+  commands?: readonly Command[];
+}
+export interface ReplayTransitionOptions {
+  now?: () => number;
+  checkpointInterval?: number;
+  commandMode?: "full" | "summary";
+  onTransition: (transition: ReplayTransition) => void;
+}
 export interface ReplayRecording {
   snapshot(): ReplaySpec;
   stop(): ReplaySpec;

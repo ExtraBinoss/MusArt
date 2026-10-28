@@ -44,6 +44,7 @@ function readonlyLayers(layers: Map<string, Layer>): ReadonlyMap<string, Layer> 
 
 export class LayerGeometryIndex {
   readonly byId: ReadonlyMap<string, Layer>;
+  readonly #lookup: Map<string, Layer>;
   private readonly childLists = new Map<string | null, readonly Layer[]>();
   private readonly matrices = new Map<string, Matrix>();
   private readonly localInverses = new Map<string, Matrix>();
@@ -51,6 +52,7 @@ export class LayerGeometryIndex {
   private readonly flags = new Map<string, { locked: boolean; visible: boolean }>();
   constructor(page: Composition) {
     const byId = new Map<string, Layer>();
+    this.#lookup = byId;
     const children = new Map<string | null, Layer[]>();
     for (const layer of page.layers) {
       ensure(!byId.has(layer.id), "INVALID_HIERARCHY", "Duplicate geometry ID");
@@ -72,7 +74,7 @@ export class LayerGeometryIndex {
       }
   }
   get(id: string): Layer {
-    const layer = this.byId.get(id);
+    const layer = this.#lookup.get(id);
     ensure(layer, "NOT_FOUND", "Geometry layer is missing");
     return layer;
   }
@@ -161,6 +163,25 @@ export class LayerGeometryIndex {
     });
     this.bounds.set(id, bounds);
     return bounds;
+  }
+  /** One union allocation; missing IDs are skipped for transient selections of removed layers. */
+  collectiveBounds(ids: Iterable<string>): Readonly<Bounds> | null {
+    let left = Infinity,
+      top = Infinity,
+      right = -Infinity,
+      bottom = -Infinity;
+    for (const id of ids) {
+      const layer = this.#lookup.get(id);
+      if (!layer) continue;
+      const bounds = layer.parentId === null && layer.rotation === 0 ? layer : this.worldBounds(id);
+      left = Math.min(left, bounds.x);
+      top = Math.min(top, bounds.y);
+      right = Math.max(right, bounds.x + bounds.width);
+      bottom = Math.max(bottom, bounds.y + bounds.height);
+    }
+    return Number.isFinite(left)
+      ? Object.freeze({ x: left, y: top, width: right - left, height: bottom - top })
+      : null;
   }
   /** Parent-local traversal rejects cheap bounds before allocating any world geometry. */
   hitTest(point: Point): Layer | null {

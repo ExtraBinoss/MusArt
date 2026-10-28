@@ -9,4 +9,7 @@ it("exposes a renderer-free public API usable without a browser", () => {
     "rectangle",
   );
   expect(core.FORMAT_VERSION).toBe(1);
+  expect(core.isPublishedComposition(engine.getSnapshot().project.pages[0]!)).toBe(true);
+  expect(core.isCommandType("updateLayers")).toBe(true);
+  expect(core.isCommandType("toString")).toBe(false);
 });

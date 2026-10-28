@@ -278,3 +278,46 @@ test("large root-only collective bounds and flags do not allocate transformation
   }
   expect(matrices).not.toHaveBeenCalled();
 });
+
+test("collective bounds union ten thousand roots without allocating per-layer bounds or matrices", () => {
+  const layers = Array.from({ length: 10000 }, (_, index) =>
+    createLayer("rectangle", { id: `union-${index}`, x: index, y: -index, width: 4, height: 6 }),
+  );
+  const geometry = createLayerGeometryIndex(createPage({ layers })),
+    bounds = vi.spyOn(geometry, "worldBounds"),
+    matrices = vi.spyOn(geometry, "worldMatrix");
+  const union = geometry.collectiveBounds(layers.map((layer) => layer.id));
+  expect(union).toEqual({ x: 0, y: -9999, width: 10003, height: 10005 });
+  expect(Object.isFrozen(union)).toBe(true);
+  expect(bounds).not.toHaveBeenCalled();
+  expect(matrices).not.toHaveBeenCalled();
+  expect(geometry.collectiveBounds(["missing"])).toBeNull();
+  expect(geometry.collectiveBounds([])).toBeNull();
+});
+
+test("collective bounds preserve canonical nested and rotated geometry and skip removed selections", () => {
+  const page = createPage({
+    layers: [
+      createLayer("group", { id: "parent", x: 100, y: 80, width: 200, height: 160, rotation: 27 }),
+      createLayer("rectangle", {
+        id: "child",
+        parentId: "parent",
+        x: 15,
+        y: 20,
+        width: 40,
+        height: 30,
+        rotation: -13,
+      }),
+      createLayer("ellipse", { id: "root", x: -50, y: -30, width: 90, height: 60, rotation: 45 }),
+    ],
+  });
+  const boxes = [getWorldBounds(page, "child"), getWorldBounds(page, "root")],
+    left = Math.min(...boxes.map((box) => box.x)),
+    top = Math.min(...boxes.map((box) => box.y));
+  expect(createLayerGeometryIndex(page).collectiveBounds(["child", "missing", "root"])).toEqual({
+    x: left,
+    y: top,
+    width: Math.max(...boxes.map((box) => box.x + box.width)) - left,
+    height: Math.max(...boxes.map((box) => box.y + box.height)) - top,
+  });
+});
