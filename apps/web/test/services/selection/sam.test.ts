@@ -39,6 +39,24 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 describe("local SAM loading and inference", () => {
+  it("forwards real file progress without exposing unrelated model lifecycle events", async () => {
+    const { prepareSam } = await import("../../../src/services/selection/sam");
+    const progress = vi.fn();
+    await prepareSam(progress);
+    const callback = fake.modelLoader.mock.calls[0]![1].progress_callback;
+    callback({ status: "download", file: "config.json", name: "model" });
+    callback({
+      status: "progress",
+      file: "vision_encoder.onnx",
+      name: "model",
+      progress: 10,
+      loaded: 100,
+      total: 1000,
+    });
+    callback({ status: "done", file: "vision_encoder.onnx", name: "model" });
+    expect(progress).toHaveBeenCalledTimes(2);
+    expect(progress).toHaveBeenLastCalledWith(expect.objectContaining({ status: "done" }));
+  });
   it("lazily shares a single WASM model preparation and keeps downloaded model execution local", async () => {
     const { prepareSam } = await import("../../../src/services/selection/sam");
     expect(fake.modelLoader).not.toHaveBeenCalled();

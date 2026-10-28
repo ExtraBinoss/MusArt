@@ -135,7 +135,7 @@ export function GradientControl({
           </div>
           {gradient.kind === "linear" && (
             <NumberInput
-              key={`${layer.id}:angle:${gradient.angle}`}
+              identity={layer}
               label={t("angle")}
               value={gradient.angle}
               min={-360000}
@@ -147,9 +147,15 @@ export function GradientControl({
             />
           )}
           <NumberInput
-            key={`${layer.id}:${index}:${stop.offset}`}
+            key={index}
+            identity={layer}
             label={t("position")}
             value={stop.offset * 100}
+            resetValue={() =>
+              ((gradient.stops[index - 1]?.offset ?? 0) +
+                (gradient.stops[index + 1]?.offset ?? 1)) *
+              50
+            }
             min={(gradient.stops[index - 1]?.offset ?? 0) * 100}
             max={(gradient.stops[index + 1]?.offset ?? 1) * 100}
             disabled={endpoint}
@@ -162,7 +168,8 @@ export function GradientControl({
           <div role="group" aria-label={t("stopColor", { number: index + 1 })}>
             <ColorControl
               disabled={layer.locked}
-              key={`${layer.id}:${index}:${stop.color}`}
+              key={index}
+              identity={`${layer.id}:${index}`}
               value={stop.color}
               onPreview={(color) => previewPaint(updateStop({ color }))}
               onCommit={(color) => commitPaint(updateStop({ color }))}

@@ -1,0 +1,22 @@
+import { expect, test } from "vitest";
+import { fireEvent, screen } from "@testing-library/react";
+import { WandOptions } from "../../../../src/components/toolbar/wand/WandOptions";
+import { toleranceAtom, selectionContiguousAtom } from "../../../../src/state/session/editor";
+import { setup } from "../../../support/ui";
+test("the main wand surface is tolerance plus help, with explanatory shortcuts and advanced matching inside help", () => {
+  const d = setup();
+  d.mount(<WandOptions />);
+  expect(screen.queryByRole("combobox")).toBeNull();
+  expect(screen.queryByRole("switch")).toBeNull();
+  const tolerance = screen.getByRole("textbox", { name: "Tolérance" });
+  fireEvent.change(tolerance, { target: { value: "40" } });
+  fireEvent.keyDown(tolerance, { key: "Enter" });
+  expect(d.store.get(toleranceAtom)).toBe(40);
+  fireEvent.click(screen.getByRole("button", { name: "Utiliser la baguette magique" }));
+  expect(screen.getByRole("dialog", { name: "Utiliser la baguette magique" })).toBeVisible();
+  expect(screen.getByText(/masque conserve la sélection exacte/)).toBeVisible();
+  expect(screen.getByText("Suppr")).toHaveAttribute("data-slot", "kbd");
+  fireEvent.click(screen.getByRole("switch", { name: "Pixels voisins uniquement" }));
+  expect(d.store.get(selectionContiguousAtom)).toBe(false);
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+});

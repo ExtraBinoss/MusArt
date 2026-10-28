@@ -1,19 +1,26 @@
 import { expect, test } from "vitest";
 import { createLayer, createPage, createProject } from "../../src/document/factories";
 import { EditorEngine } from "../../src/session/engine";
-import { isPublishedComposition, isPublishedProject } from "../../src/document/published";
+import {
+  isPublishedAssets,
+  isPublishedComposition,
+  isPublishedProject,
+} from "../../src/document/published";
 
 test("certifies only validated deeply frozen engine publications, without portable markers", () => {
   const input = createProject({
     pages: [createPage({ layers: [createLayer("rectangle", { id: "r" })] })],
   });
   expect(isPublishedProject(input)).toBe(false);
+  expect(isPublishedAssets(input.assets)).toBe(false);
   expect(isPublishedComposition(input.pages[0]!)).toBe(false);
   Object.freeze(input);
   expect(isPublishedProject(input)).toBe(false);
   const engine = new EditorEngine(input),
     before = engine.getSnapshot().project;
   expect(isPublishedProject(before)).toBe(true);
+  expect(isPublishedAssets(before.assets)).toBe(true);
+  expect(isPublishedAssets(Object.freeze(structuredClone(before.assets)))).toBe(false);
   expect(isPublishedComposition(before.pages[0]!)).toBe(true);
   expect(isPublishedComposition(structuredClone(before.pages[0]!))).toBe(false);
   expect(isPublishedProject(structuredClone(before))).toBe(false);

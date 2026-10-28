@@ -7,6 +7,7 @@ export async function thumbnailRevisions(
   pages: readonly Composition[],
   assets: Record<string, Asset>,
   hash: (job: ThumbnailHashJob) => Promise<string>,
+  resolvePage?: (page: Composition) => Promise<string>,
 ): Promise<Record<string, string>> {
   const revisions: (readonly [string, string])[] = [];
   let next = 0,
@@ -16,7 +17,10 @@ export async function thumbnailRevisions(
       const index = next++,
         page = pages[index]!;
       try {
-        revisions[index] = [page.id, await thumbnailRevision(page, assets, hash)];
+        revisions[index] = [
+          page.id,
+          await (resolvePage ? resolvePage(page) : thumbnailRevision(page, assets, hash)),
+        ];
       } catch (error) {
         failed = true;
         throw error;

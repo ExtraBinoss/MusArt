@@ -1,5 +1,6 @@
 import type { Composition, EnginePort } from "@musart/core";
 import type { FontLibraryPort } from "../services/fonts/model";
+import type { PixelSelectionPort } from "../services/selection/wand/model";
 
 export interface ProjectSummary {
   id: string;
@@ -79,7 +80,12 @@ export interface ExportScope {
   revision: number;
   selection: readonly string[];
 }
+export type LayerPreviewVariant = { kind: "effect"; effectId: string } | { kind: "mask" };
 export interface ExportPreviewOptions {
+  /** A genuine intermediate effect or mask coverage preview, scoped to one selected owner. */
+  variant?: LayerPreviewVariant;
+  /** Explicit artboard previews remain valid when another artboard becomes active. */
+  pageId?: string;
   selection?: readonly string[];
   all?: boolean;
   edge?: number;
@@ -91,6 +97,8 @@ export interface ExportPreview {
   height: number;
 }
 export interface EditorServices {
+  segmentationModel?: import("../services/selection/model/contract").LocalModelPort;
+  pixelSelection?: PixelSelectionPort;
   previewExport?(
     this: void,
     options: ExportPreviewOptions,

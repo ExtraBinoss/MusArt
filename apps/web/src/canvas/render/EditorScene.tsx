@@ -1,5 +1,5 @@
 import { Component, memo, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import {
   LinearSRGBColorSpace,
   NoToneMapping,
@@ -13,6 +13,7 @@ import type { FontResolver } from "@musart/render";
 import { useRenderMetrics } from "../../state/session/render-metrics";
 import { PlaneResources } from "./plane-resources";
 import { FiberTimerClock } from "./fiber-timer";
+import { DrawingDensity } from "./drawing-density";
 import "../../state/i18n/errors/messages";
 import "./loading.css";
 
@@ -53,7 +54,14 @@ export async function makeRenderer(
   renderer.setClearColor(0, 0);
   return renderer;
 }
-export function CompositionPlane({ controller, onError, zoom = 1, fontResolver }: SceneProps) {
+export function CompositionPlane({
+  controller,
+  onError,
+  zoom = 1,
+  fontResolver,
+  density: suppliedDensity,
+}: SceneProps & { density?: DrawingDensity }) {
+  const density = useMemo(() => suppliedDensity ?? new DrawingDensity(), [suppliedDensity]);
   const onErrorRef = useRef(onError);
   useEffect(() => {
     onErrorRef.current = onError;
@@ -70,24 +78,42 @@ export function CompositionPlane({ controller, onError, zoom = 1, fontResolver }
     [renderer, fontResolver],
   );
   useEffect(() => {
-    const release = resources.activate(
-      scene,
-      camera,
-      invalidate,
-      (message) => onErrorRef.current?.(message),
-      (scale) => setDpr(scale),
-    );
+    const presenter = controller.presentation.acquire();
+    let release: (() => void) | undefined;
+    let unsubscribe: (() => void) | undefined;
+    const cleanup = () => {
+      try {
+        unsubscribe?.();
+      } finally {
+        try {
+          release?.();
+        } finally {
+          presenter.release();
+        }
+      }
+    };
     const update = () => {
-      const { page, assets } = controller.read();
-      resources.submit(page, assets);
+      const { page, assets, presentation } = controller.read();
+      resources.submit(page, assets, presentation);
     };
-    const unsubscribe = controller.subscribe(update);
-    update();
-    return () => {
-      unsubscribe();
-      release();
-    };
-  }, [resources, scene, camera, invalidate, controller, setDpr]);
+    try {
+      release = resources.activate(
+        scene,
+        camera,
+        invalidate,
+        (message) => onErrorRef.current?.(message),
+        (scale) => density.apply(scale, setDpr),
+        presenter,
+      );
+      unsubscribe = controller.subscribe(update);
+      update();
+      return cleanup;
+    } catch (error) {
+      cleanup();
+      void resources.dispose().catch((failure: unknown) => onErrorRef.current?.(String(failure)));
+      throw error;
+    }
+  }, [resources, scene, camera, invalidate, controller, setDpr, density]);
   useEffect(() => {
     const timer = setTimeout(
       () => resources.setDensity(zoom * (window.devicePixelRatio || 1)),
@@ -95,7 +121,6 @@ export function CompositionPlane({ controller, onError, zoom = 1, fontResolver }
     );
     return () => clearTimeout(timer);
   }, [zoom, resources]);
-  useFrame(() => resources.present());
   return <primitive object={resources.mesh} dispose={null} />;
 }
 class GpuBoundary extends Component<
@@ -131,6 +156,7 @@ export const EditorScene = memo(function EditorScene({
   fontResolver,
 }: SceneProps) {
   const [{ page }] = useState(() => controller.read());
+  const density = useMemo(() => new DrawingDensity(), []);
   const { t } = useTranslation();
   const element = useRef<HTMLDivElement>(null);
   useRenderMetrics(element);
@@ -146,7 +172,7 @@ export const EditorScene = memo(function EditorScene({
           frameloop="demand"
           shadows={{ enabled: false, type: PCFShadowMap }}
           resize={{ offsetSize: true }}
-          dpr={1}
+          dpr={density.bounds}
           flat
           linear
           camera={{
@@ -168,6 +194,7 @@ export const EditorScene = memo(function EditorScene({
             onError={onError}
             zoom={zoom}
             fontResolver={fontResolver}
+            density={density}
           />
         </Canvas>
         <div className="canvas-loading" role="status" aria-label={t("loadingCanvas")}>

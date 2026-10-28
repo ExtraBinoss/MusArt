@@ -7,6 +7,12 @@ test("chooses the reference implicitly and executes real alignment/distribution 
   const selected = [d.rectangle, d.text, d.image];
   d.mount(<AlignmentPanel engine={d.engine} selected={selected} run={d.run} />);
   expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+  expect(
+    screen.getByRole("group", { name: "Alignement horizontal" }).querySelectorAll("button"),
+  ).toHaveLength(4);
+  expect(
+    screen.getByRole("group", { name: "Alignement vertical" }).querySelectorAll("button"),
+  ).toHaveLength(4);
   expect(screen.getByRole("region", { name: "Aligner dans la sélection" })).toBeVisible();
   fireEvent.click(screen.getByLabelText("Aligner à gauche de la référence"));
   expect(d.run).toHaveBeenCalledOnce();

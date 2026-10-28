@@ -9,6 +9,7 @@ export interface NumberInputProps {
   label: string;
   identity?: unknown;
   value: number;
+  resetValue?: number | (() => number);
   onCommit: (value: number) => void;
   onPreview?: (value: number) => void;
   onCancel?: () => void;
@@ -29,6 +30,7 @@ export function NumberInput({
   label,
   identity,
   value,
+  resetValue = 0,
   onCommit,
   onPreview,
   onCancel,
@@ -46,6 +48,9 @@ export function NumberInput({
 }: NumberInputProps) {
   const { t } = useTranslation();
   const id = useId();
+  const element = useRef<HTMLDivElement>(null);
+  const pulse = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useLayoutEffect(() => () => clearTimeout(pulse.current), []);
   const field = useRef<HTMLInputElement>(null);
   const gesture = useRef<{
     x: number;
@@ -107,7 +112,7 @@ export function NumberInput({
   function commit(next: number) {
     typing.current = false;
     heldKey.current = null;
-    if (next !== committed.current) {
+    if (mixed || next !== committed.current) {
       committed.current = next;
       onCommit(next);
     } else onCancel?.();
@@ -175,8 +180,39 @@ export function NumberInput({
     if (event.currentTarget.hasPointerCapture(event.pointerId))
       event.currentTarget.releasePointerCapture(event.pointerId);
   }
+  function reset() {
+    if (disabled) return;
+    const active = gesture.current;
+    gesture.current = null;
+    if (heldKey.current) blockedKey.current = true;
+    heldKey.current = null;
+    typing.current = false;
+    active?.handle.parentElement?.removeAttribute("data-dragging");
+    if (active?.handle.hasPointerCapture(active.pointerId))
+      active.handle.releasePointerCapture(active.pointerId);
+    onCancel?.();
+    const sourceValue = typeof resetValue === "function" ? resetValue() : resetValue;
+    if (!Number.isFinite(sourceValue)) {
+      skipBlur.current = true;
+      if (field.current) field.current.value = originalDisplay();
+      return;
+    }
+    const next = bounded(sourceValue);
+    skipBlur.current = true;
+    if (field.current) field.current.value = display(next);
+    if (mixed || next !== committed.current) {
+      committed.current = next;
+      onCommit(next);
+    }
+    const node = element.current;
+    if (node && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      clearTimeout(pulse.current);
+      node.setAttribute("data-resetting", "");
+      pulse.current = setTimeout(() => node.removeAttribute("data-resetting"), 360);
+    }
+  }
   return (
-    <div className="number-field" data-disabled={disabled || undefined}>
+    <div ref={element} className="number-field" data-disabled={disabled || undefined}>
       <button
         type="button"
         className="number-scrub"
@@ -184,6 +220,11 @@ export function NumberInput({
         disabled={disabled}
         aria-label={t("adjustValue", { label })}
         title={t("adjustHint")}
+        onDoubleClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          reset();
+        }}
         onPointerDown={start}
         onPointerMove={move}
         onPointerUp={finish}

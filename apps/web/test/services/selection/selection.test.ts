@@ -14,6 +14,26 @@ function reply(port: WorkerPort, data: SelectionResponse) {
 const mask: MaskResult = { data: new Uint8ClampedArray([255, 255, 255, 255]), width: 1, height: 1 };
 afterEach(() => vi.unstubAllGlobals());
 describe("bounded selection worker client", () => {
+  it("retains requests during real progress, reports completion and clears undecodable workers", async () => {
+    const port = worker(),
+      client = new SelectionClient(() => port);
+    const pending = client.model.prepare();
+    reply(port, {
+      id: 1,
+      progress: { file: "vision_encoder.onnx", status: "progress", loaded: 100 },
+    });
+    expect(client.model.read()).toMatchObject({ phase: "loading", loaded: 100 });
+    reply(port, { id: 1, result: null });
+    await pending;
+    expect(client.model.read().phase).toBe("ready");
+    const bad = client.prepare();
+    port.onmessageerror?.({} as MessageEvent);
+    await expect(bad).rejects.toThrow("could not be decoded");
+    expect(port.onmessage).toBeNull();
+    expect(port.onerror).toBeNull();
+    expect(port.terminate).toHaveBeenCalledOnce();
+    client.dispose();
+  });
   it("lazily connects, reuses one worker and ignores stale responses", async () => {
     const port = worker();
     const factory = vi.fn(() => port);

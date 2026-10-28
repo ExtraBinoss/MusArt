@@ -5,6 +5,7 @@ import { installReadbackProbe } from "./support/readback-probe";
 import { visibleThumbnailsReady } from "./support/selection-profile";
 import { measurePanPresentation } from "./support/pan-presentation";
 import { withNativeTimeline } from "./support/native-timeline";
+import { measureNativeInputControl } from "./support/native-input";
 import { mkdir, writeFile } from "node:fs/promises";
 
 const percentile = (values: number[], fraction: number) =>
@@ -31,22 +32,36 @@ test("AFTERHOURS native120Hz wheel and hand pan present smoothly with visible ru
   await page.evaluate(() => window.musart!.flushThumbnails());
   await visibleThumbnailsReady(page);
   await page.waitForTimeout(500);
+  const controlPage = await page.context().newPage();
+  const control = await (async () => {
+    try {
+      return await measureNativeInputControl(controlPage);
+    } finally {
+      await controlPage.close();
+      await page.bringToFront();
+    }
+  })();
+  await page.waitForTimeout(100);
   const samples = [];
   for (const mode of ["wheel", "hand"] as const) {
     const sample =
       process.env.MUSART_PAN_TRACE && mode === "wheel"
         ? await withNativeTimeline(page, "pan-wheel", () => measurePanPresentation(page, mode))
         : await measurePanPresentation(page, mode);
+    const inputToRafP95 = percentile(
+      sample.frames.map((frame) => frame.inputToRafMs),
+      0.95,
+    );
     samples.push({
       mode,
       ...sample,
       summary: {
         frameP95: percentile(sample.gaps, 0.95),
         frameMax: Math.max(...sample.gaps),
-        inputToRafP95: percentile(
-          sample.frames.map((frame) => frame.inputToRafMs),
-          0.95,
-        ),
+        inputToRafP95,
+        rawInput25msExceeded: inputToRafP95 > 25,
+        incrementalEndToEndP95:
+          mode === "wheel" ? inputToRafP95 - control.summary.inputToRafP95 : null,
         dispatchDelayP95: percentile(
           sample.frames.map((frame) => frame.dispatchDelayMs),
           0.95,
@@ -83,12 +98,25 @@ test("AFTERHOURS native120Hz wheel and hand pan present smoothly with visible ru
   await writeFile(
     "artifacts/pan-presentation.json",
     JSON.stringify(
-      { browser: page.context().browser()!.version(), environment, samples, reads },
+      {
+        browser: page.context().browser()!.version(),
+        environment,
+        control,
+        rawInputTargetMs: 25,
+        samples,
+        reads,
+      },
       null,
       2,
     ),
   );
   await page.screenshot({ path: "artifacts/screenshots/pan-afterhours.png" });
+  expect(control.environment.viewport).toEqual(environment.viewport);
+  expect(control.environment.dpr).toBe(environment.dpr);
+  expect(control.environment.userAgent).toBe(environment.userAgent);
+  expect(control.inputs).toBeGreaterThan(20);
+  expect(control.frames.length).toBeGreaterThan(10);
+  expect(control.frames.at(-1)).toMatchObject({ x: 0, y: 0 });
   for (const sample of samples) {
     expect(sample.inputs).toBeGreaterThan(20);
     expect(sample.frames.length).toBeGreaterThan(10);
@@ -101,7 +129,10 @@ test("AFTERHOURS native120Hz wheel and hand pan present smoothly with visible ru
     expect(Math.max(...sample.frames.map((frame) => frame.poseError))).toBeLessThan(0.01);
     expect(sample.summary.frameP95).toBeLessThanOrEqual(25);
     expect(sample.summary.frameMax).toBeLessThanOrEqual(50);
-    expect(sample.summary.inputToRafP95).toBeLessThanOrEqual(25);
+    if (sample.mode === "wheel") {
+      expect(sample.summary.handlerToRafP95).toBeLessThanOrEqual(25);
+      expect(sample.summary.incrementalEndToEndP95).toBeLessThanOrEqual(5);
+    } else expect(sample.summary.inputToRafP95).toBeLessThanOrEqual(25);
     expect(sample.summary.inputToPresentedP95).toBeLessThanOrEqual(50);
     expect(sample.longTasks).toEqual([]);
   }

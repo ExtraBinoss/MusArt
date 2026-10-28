@@ -1,4 +1,12 @@
-import { useEffect, useRef, useState, type PointerEvent, type RefObject } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+  type RefObject,
+  type CSSProperties,
+} from "react";
+import { DEFAULT_GUIDE_COLOR } from "../../state/guides/colors";
 import {
   createLayerGeometryIndex,
   invertMatrix,
@@ -41,7 +49,14 @@ export function GuideOverlay({
   viewport: RefObject<HTMLDivElement | null>;
 }) {
   const overlay = useRef<HTMLDivElement>(null);
-  const selection = new Set(selected);
+  const selectedGeometry =
+    selected.length > 0 && selected.length <= 64 ? createLayerGeometryIndex(page) : null;
+  const guideOwners = selectedGeometry
+    ? selected.flatMap((id) => {
+        const layer = selectedGeometry.byId.get(id);
+        return layer?.guides?.length && selectedGeometry.isVisible(id) ? [layer] : [];
+      })
+    : [];
   const active = useRef<{
     guide: Guide;
     layer?: Layer;
@@ -67,11 +82,19 @@ export function GuideOverlay({
       )
         clear();
     };
+    const key = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || !active.current) return;
+      event.preventDefault();
+      event.stopPropagation();
+      clear();
+    };
+    window.addEventListener("keydown", key, true);
     const stopEngine = engine.subscribe(changed),
       stopScene = controller?.subscribe(changed);
     return () => {
       stopEngine();
       stopScene?.();
+      window.removeEventListener("keydown", key, true);
       clear();
     };
   }, [engine, controller]);
@@ -91,17 +114,21 @@ export function GuideOverlay({
       previousPlayback = frame?.playback;
       if (!overlay.current) return;
       overlay.current.style.display = frame?.playback ? "none" : "";
-      const index = createLayerGeometryIndex(current);
-      for (const group of overlay.current.querySelectorAll<HTMLElement>(".layer-guides")) {
-        const layer = index.byId.get(group.dataset.layerId!);
-        if (layer) group.style.transform = `matrix(${index.worldMatrix(layer.id).join(",")})`;
+      const groups = overlay.current.querySelectorAll<HTMLElement>(".layer-guides");
+      const index = groups.length ? createLayerGeometryIndex(current) : null;
+      for (const group of groups) {
+        const layer = index?.byId.get(group.dataset.layerId!);
+        if (layer) group.style.transform = `matrix(${index!.worldMatrix(layer.id).join(",")})`;
       }
       for (const line of overlay.current.querySelectorAll<HTMLElement>("[data-guide-id]")) {
-        const layer = line.dataset.guideLayer ? index.byId.get(line.dataset.guideLayer) : undefined;
+        const layer = line.dataset.guideLayer
+          ? index?.byId.get(line.dataset.guideLayer)
+          : undefined;
         const guide = (layer?.guides ?? current.guides).find(
           (item) => item.id === line.dataset.guideId,
         );
         if (!guide) continue;
+        line.style.setProperty("--guide-color", guide.color ?? DEFAULT_GUIDE_COLOR);
         const horizontal = guide.axis === "y";
         line.style.left = `${horizontal ? 0 : guide.position}px`;
         line.style.top = `${horizontal ? guide.position : 0}px`;
@@ -137,7 +164,7 @@ export function GuideOverlay({
       : world;
   }
   function start(event: PointerEvent<HTMLDivElement>, guide: Guide, layer?: Layer) {
-    if (event.button !== 0) return;
+    if (event.button !== 0 || controller?.read().playback) return;
     event.preventDefault();
     event.stopPropagation();
     active.current = {
@@ -187,9 +214,22 @@ export function GuideOverlay({
         data-guide-layer={layer?.id}
         data-dragging={draft?.id === guide.id && draft.layerId === layer?.id ? "true" : undefined}
         style={
-          guide.axis === "x"
-            ? { left: position, top: 0, height: layer?.height ?? page.height, width: 8 / view.zoom }
-            : { top: position, left: 0, width: layer?.width ?? page.width, height: 8 / view.zoom }
+          {
+            "--guide-color": guide.color ?? DEFAULT_GUIDE_COLOR,
+            ...(guide.axis === "x"
+              ? {
+                  left: position,
+                  top: 0,
+                  height: layer?.height ?? page.height,
+                  width: 8 / view.zoom,
+                }
+              : {
+                  top: position,
+                  left: 0,
+                  width: layer?.width ?? page.width,
+                  height: 8 / view.zoom,
+                }),
+          } as CSSProperties
         }
         onPointerDown={(event) => start(event, guide, layer)}
         onPointerMove={(event) => {
@@ -215,26 +255,18 @@ export function GuideOverlay({
   return (
     <div className="canvas-guides-overlay" ref={overlay}>
       {page.guides.map((guide) => line(guide))}
-      {page.layers
-        .filter(
-          (layer) =>
-            selection.size <= 64 &&
-            selection.has(layer.id) &&
-            layer.guides?.length &&
-            createLayerGeometryIndex(page).isVisible(layer.id),
-        )
-        .map((layer) => (
-          <div
-            key={layer.id}
-            className="layer-guides"
-            data-layer-id={layer.id}
-            style={{
-              transform: `matrix(${createLayerGeometryIndex(page).worldMatrix(layer.id).join(",")})`,
-            }}
-          >
-            {layer.guides!.map((guide) => line(guide, layer))}
-          </div>
-        ))}
+      {guideOwners.map((layer) => (
+        <div
+          key={layer.id}
+          className="layer-guides"
+          data-layer-id={layer.id}
+          style={{
+            transform: `matrix(${createLayerGeometryIndex(page).worldMatrix(layer.id).join(",")})`,
+          }}
+        >
+          {layer.guides!.map((guide) => line(guide, layer))}
+        </div>
+      ))}
     </div>
   );
 }

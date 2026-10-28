@@ -2,10 +2,10 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { useStore } from "jotai";
 import { useRenderMetrics } from "./state/session/render-metrics";
 import { createPortal } from "react-dom";
-import { X, AlertCircle, CheckCircle2 } from "lucide-react";
+import { X, AlertCircle, CheckCircle2, PenTool, Clapperboard } from "lucide-react";
 import { MusArtLogo } from "./components/branding/MusArtLogo";
 import { useTranslation } from "react-i18next";
-import { createLayerGeometryIndex } from "@musart/core";
+import { layerSelection } from "./components/layers/menu/selection";
 import type { AppProps } from "./state/contracts";
 import { toolAtom, toleranceAtom, useEngine, useTheme } from "./state/session/editor";
 import { useShortcuts } from "./state/session/shortcuts";
@@ -40,12 +40,10 @@ export function App({ engine, services, welcome = false }: AppProps) {
   const page =
     snapshot.project.pages.find((item) => item.id === snapshot.pageId) ??
     snapshot.project.pages[0]!;
-  const selected = useMemo(() => {
-    const geometry = createLayerGeometryIndex(page);
-    return snapshot.selection
-      .map((id) => geometry.byId.get(id))
-      .filter((layer) => layer !== undefined);
-  }, [page, snapshot.selection]);
+  const selected = useMemo(
+    () => layerSelection(page, snapshot.selection).selected,
+    [page, snapshot.selection],
+  );
   const [welcomeProject] = useState(() => (welcome ? snapshot.project.id : null));
   const choosingProject = welcomeProject === snapshot.project.id;
   const [projectMenu, setProjectMenu] = useState<ProjectView | null>(welcome ? "projects" : null);
@@ -165,8 +163,14 @@ export function App({ engine, services, welcome = false }: AppProps) {
                       >
                         <div className="inspector-header">
                           <TabsList aria-label={t("panelMode")} className="inspector-mode">
-                            <TabsTrigger value="design">{t("design")}</TabsTrigger>
-                            <TabsTrigger value="animate">{t("animate")}</TabsTrigger>
+                            <TabsTrigger value="design">
+                              <PenTool aria-hidden />
+                              {t("design")}
+                            </TabsTrigger>
+                            <TabsTrigger value="animate">
+                              <Clapperboard aria-hidden />
+                              {t("animate")}
+                            </TabsTrigger>
                           </TabsList>
                           <ExportPopover
                             open={exportMenu}

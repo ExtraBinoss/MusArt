@@ -37,6 +37,7 @@ export function NewProjectForm({
         <Label htmlFor="new-project-name">{t("name")}</Label>
         <Input
           id="new-project-name"
+          autoFocus
           value={options.name}
           required
           maxLength={160}

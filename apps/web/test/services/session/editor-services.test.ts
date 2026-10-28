@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { Blob as NodeBlob } from "node:buffer";
 import {
   createLayer,
   createPage,
@@ -144,6 +145,7 @@ describe("project platform commands", () => {
     expect(engine.getSnapshot().project.id).toBe(original.id);
   });
   it("persists canonical saves immediately and schedules versioned GPU thumbnails without base64 manifests", async () => {
+    vi.stubGlobal("Blob", NodeBlob);
     const { engine, services, store, thumbnails, renderThumbnail } = await setup();
     engine.execute({ type: "renameProject", name: "Saved title" });
     await services.saveProject();
@@ -291,13 +293,14 @@ describe("asset and mask orchestration", () => {
     expect(engine.getSnapshot().project.pages[0]!.layers[0]!.mask).toBeNull();
     expect(Object.keys(engine.getSnapshot().project.assets)).toEqual(["source"]);
   });
-  it("reuses source pixels for wand selections and clamps seed coordinates to the original asset", async () => {
-    const { services, selection } = await setup(sourceProject());
-    const data = new Uint8ClampedArray(100 * 50 * 4);
-    renderer.sourcePixels.mockResolvedValue({ data, width: 100, height: 50 });
-    selection.wand.mockResolvedValue({ data: new Uint8ClampedArray(4), width: 1, height: 1 });
+  it("accepts a persistent wand selection without applying an automatic mask", async () => {
+    const { services, engine } = await setup(sourceProject());
+    const begin = vi.spyOn(services.pixelSelection!, "begin").mockResolvedValue();
+    const accept = vi.spyOn(services.pixelSelection!, "accept").mockResolvedValue();
     await services.selectImagePoint("image", 10000, 10000, "wand", 24);
-    expect(selection.wand).toHaveBeenCalledWith(data, 100, 50, 99, 49, 24);
+    expect(begin).toHaveBeenCalledWith("image", 10000, 10000, 24);
+    expect(accept).toHaveBeenCalledOnce();
+    expect(engine.getSnapshot().project.pages[0]!.layers[0]!.mask).toBeNull();
   });
   it("rejects non-image or locked targets before running models and discards stale masks", async () => {
     const { engine, services, selection } = await setup(sourceProject());

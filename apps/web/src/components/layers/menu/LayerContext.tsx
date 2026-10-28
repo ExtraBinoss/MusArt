@@ -5,6 +5,8 @@ import { ContextMenuContent, ContextMenuItem, ContextMenuSeparator } from "../..
 import { layerSelection } from "./selection";
 import { layerActions } from "./actions";
 import "../messages";
+import { attachmentSelection } from "../../../state/selection/attachments";
+import { useAttachmentSelection } from "../../../state/selection/use-attachment-selection";
 export function LayerContext({
   engine,
   page,
@@ -17,31 +19,44 @@ export function LayerContext({
   run: (task: () => void) => void;
 }) {
   const { t } = useTranslation();
+  const attachment = useAttachmentSelection(engine);
   const state = layerSelection(page, selection),
     actions = layerActions(engine, page, run);
   const GroupIcon = state.ungroup ? Ungroup : FolderPlus;
   return (
     <ContextMenuContent>
       <ContextMenuItem
-        disabled={state.ungroup ? !state.canUngroup : !state.canGroup}
+        disabled={Boolean(attachment) || (state.ungroup ? !state.canUngroup : !state.canGroup)}
         onSelect={state.ungroup ? actions.ungroup : actions.group}
       >
         <GroupIcon size={14} />
         {t(state.ungroup ? "ungroupLayers" : "groupLayers")}
       </ContextMenuItem>
       <ContextMenuSeparator />
-      <ContextMenuItem disabled={!state.editable} onSelect={actions.duplicate}>
+      <ContextMenuItem
+        disabled={!state.editable || Boolean(attachment)}
+        onSelect={actions.duplicate}
+      >
         <Copy size={14} />
         {t("duplicateLayer")}
       </ContextMenuItem>
-      <ContextMenuItem disabled={!state.editable || selection.length < 2} onSelect={actions.mask}>
+      <ContextMenuItem
+        disabled={!state.editable || selection.length < 2 || Boolean(attachment)}
+        onSelect={actions.mask}
+      >
         <ScanLine size={14} />
         {t("createMask")}
       </ContextMenuItem>
       <ContextMenuSeparator />
-      <ContextMenuItem disabled={!state.editable} variant="destructive" onSelect={actions.remove}>
+      <ContextMenuItem
+        disabled={attachment ? !attachmentSelection(engine).editable() : !state.editable}
+        variant="destructive"
+        onSelect={actions.remove}
+      >
         <Trash2 size={14} />
-        {t("layerControls:deleteSelection", { count: selection.length })}
+        {attachment
+          ? t(attachment.kind === "effect" ? "removeEffect" : "removeMask")
+          : t("layerControls:deleteSelection", { count: selection.length })}
       </ContextMenuItem>
     </ContextMenuContent>
   );

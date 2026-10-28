@@ -102,6 +102,8 @@ apps/web/src/
 
 See [architecture contracts](docs/CONTRACTS.md), [Three/WebGPU notes](docs/rendering/three-webgpu.md), [TSL notes](docs/rendering/tsl.md), and [contribution rules](AGENTS.md).
 
+For slow interactions or large-project regressions, start with the [performance runbooks](docs/performance.md). They map canvas, layout, rendering and storage ownership, define reproducible measurements and describe resource-limited verification on a shared workstation.
+
 Working-space options include sRGB, Display-P3 converted to the current sRGB output, and a generic CMYK soft proof. PNG/JPEG/WebP exports remain RGB; the proof is not an ICC print profile. [Color and compositing details](docs/rendering/compositing.md).
 
 ## Test the 50-image scene

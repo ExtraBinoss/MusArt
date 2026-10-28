@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { Eye, EyeOff, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Trash2, Sun } from "lucide-react";
 import {
   getEffectDefinition,
   BLEND_MODES,
@@ -17,6 +17,11 @@ import { ScrollShadow } from "../../shared/scroll/ScrollShadow";
 import { SelectField } from "../../shared/SelectField";
 import { NumberInput } from "../../shared/NumberInput";
 import { EffectParameters } from "../../properties/effects/EffectParameters";
+import {
+  attachmentSelection,
+  capturePresentationDelete,
+} from "../../../state/selection/attachments";
+import { attachmentDeleteKey } from "../../../state/selection/attachment-keydown";
 import { useLayerPreview } from "../controls/use-layer-preview";
 export function EffectPopover({
   engine,
@@ -35,13 +40,30 @@ export function EffectPopover({
 }) {
   const { t } = useTranslation();
   return (
-    <Popover>
+    <Popover
+      onOpenChange={(open) => {
+        const id = effectId ?? layer.effects[0]?.id;
+        if (open && id)
+          attachmentSelection(engine).select(page, {
+            kind: "effect",
+            pageId: page.id,
+            layerId: layer.id,
+            effectId: id,
+          });
+      }}
+    >
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent
         side="left"
         align="start"
         className="floating-panel layer-attachment-popover"
         aria-label={`${t("effects")} · ${layer.name}`}
+        onKeyDown={(event) => {
+          if (attachmentDeleteKey(event.nativeEvent, engine, run)) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        }}
       >
         <ScrollShadow className="layer-attachment-scroll">
           <div className="layer-attachment-viewport">
@@ -86,7 +108,25 @@ function EffectDetails({
       {layer.effects
         .filter((effect) => !effectId || effect.id === effectId)
         .map((effect) => (
-          <section key={effect.id}>
+          <section
+            key={effect.id}
+            onPointerDownCapture={() =>
+              attachmentSelection(engine).select(page, {
+                kind: "effect",
+                pageId: page.id,
+                layerId: layer.id,
+                effectId: effect.id,
+              })
+            }
+            onFocusCapture={() =>
+              attachmentSelection(engine).select(page, {
+                kind: "effect",
+                pageId: page.id,
+                layerId: layer.id,
+                effectId: effect.id,
+              })
+            }
+          >
             <div className="section-title">
               <h3>{t(getEffectDefinition(effect.type).nameKey)}</h3>
               <div className="attachment-actions">
@@ -100,9 +140,7 @@ function EffectDetails({
                 <IconButton
                   disabled={disabled}
                   label={t("removeEffect")}
-                  onClick={() =>
-                    edit.commit({ effects: layer.effects.filter((item) => item.id !== effect.id) })
-                  }
+                  onClick={() => run(capturePresentationDelete(engine))}
                 >
                   <Trash2 size={13} />
                 </IconButton>
@@ -110,7 +148,9 @@ function EffectDetails({
             </div>
             <div className="effect-compositing">
               <NumberInput
+                resetValue={100}
                 label={t("opacity")}
+                scrubLabel={<Sun size={14} aria-hidden="true" />}
                 value={(effect.opacity ?? 1) * 100}
                 min={0}
                 max={100}

@@ -7,6 +7,37 @@ beforeEach(() => {
   vi.stubGlobal("Blob", NodeBlob);
 });
 afterEach(() => vi.unstubAllGlobals());
+it("captures thumbnail getters and immutable Blob before validating or queueing a save", async () => {
+  const store = new ProjectStore(crypto.randomUUID()),
+    project = createProject({ id: "thumbnail-capture" });
+  try {
+    await store.save(project);
+    const page = (await store.list())[0]!.pages[0]!,
+      pageId = vi.fn(() => page.id),
+      input = {
+        projectId: project.id,
+        get pageId() {
+          return pageId();
+        },
+        revision: page.thumbnailRevision!,
+        blob: new Blob(["captured"], { type: "image/webp" }),
+        width: 40,
+        height: 40,
+        updatedAt: project.updatedAt,
+      },
+      saving = store.saveThumbnail(input);
+    Object.defineProperty(input, "pageId", { value: "replaced" });
+    input.revision = "stale-after-call";
+    input.blob = new Blob(["later"]);
+    expect(await saving).toBe(true);
+    expect(pageId).toHaveBeenCalledOnce();
+    const [actual] = await store.thumbnails(project.id, [page.id]);
+    expect(actual).toMatchObject({ pageId: page.id, revision: page.thumbnailRevision });
+    expect(await actual!.blob.text()).toBe("captured");
+  } finally {
+    await store.close();
+  }
+});
 it("renames through a valid command, preserves last-opened preference and journals genuine rename metadata", async () => {
   const store = new ProjectStore(crypto.randomUUID()),
     first = createProject({ id: "first" }),

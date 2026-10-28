@@ -43,9 +43,10 @@ export function PinnedCommands({
         aria-label={t("dock:pinned")}
         role="group"
         onDragOver={drag.overViewport}
+        onDragEnter={drag.overViewport}
         onDrop={drop}
       >
-        {drag.ids.map((id) => {
+        {ids.map((id) => {
           const command = catalog.get(id);
           if (!command) return null;
           const Icon = getSearchIcon(command);
@@ -56,6 +57,7 @@ export function PinnedCommands({
               transition={{ type: "spring", stiffness: 430, damping: 34, mass: 0.65 }}
               data-dock-command={id}
               data-dragging={drag.dragging === id || undefined}
+              style={{ order: drag.ids.indexOf(id) }}
               draggable
               onDragStartCapture={(event) => drag.start(event, id)}
               onDragOver={(event) => drag.over(event, id)}

@@ -13,7 +13,7 @@ it("keeps mixed-size artboard headings disjoint and screen-sized through extreme
       height: [220, 100, 300, 140, 160, 320][index]!,
     })),
   );
-  for (const zoom of [0.05, 0.1, 0.5, 1, 4]) {
+  for (const zoom of [0.05, 0.050001, 0.073, 0.1, 0.5, 1, 4]) {
     const headings = layoutArtboardHeadings(workspace, { x: 37, y: -20, zoom });
     for (const [index, heading] of headings.entries()) {
       expect(heading.width).toBeGreaterThanOrEqual(96);

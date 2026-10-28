@@ -37,6 +37,7 @@ Direct user instructions take precedence. Read the relevant architecture contrac
 - Before delivery, run reproducible GPU and storage load tests, including 50 image layers with effects. Instrument actual read APIs and React commits; report measured results and environment details.
 - Have independent agents audit completed domains when requested. Fix findings and rerun affected checks.
 - Run frozen installation, typecheck, lint, format, coverage, rules, production build and browser checks. Keep generated reports and captures in ignored `artifacts/`.
+- On shared workstations, run heavy checks serially across agents with bounded workers/resources and low priority; follow `docs/performance/protocol.md` and stop on memory pressure.
 
 ## Versions, changelog and Git
 

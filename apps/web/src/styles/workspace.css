@@ -59,7 +59,7 @@
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  padding: 7px;
+  padding: 6px;
   border-radius: 13px;
   color: var(--toolbar-foreground);
   max-height: calc(100dvh - 156px);
@@ -402,27 +402,40 @@
   height: 44px;
   flex-shrink: 0;
   justify-content: flex-start;
-  border-radius: 0;
+  border-radius: 8px;
   padding: 6px 12px;
   gap: 4px;
   background: var(--background);
   border-bottom: 1px solid var(--border);
 }
 .inspector-mode [data-slot="tabs-trigger"] {
-  flex: 0 0 auto;
-  font-size: 12px;
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 11px;
   border: 0;
   border-radius: 7px;
-  padding: 0 12px;
-  height: 30px;
+  padding: 0 8px;
+  height: 28px;
   background: transparent;
   box-shadow: none;
+  color: var(--muted-foreground);
+  transition:
+    background-color 0.14s,
+    color 0.14s,
+    box-shadow 0.14s;
+}
+.inspector-mode [data-slot="tabs-trigger"] > svg {
+  width: 13px;
+  height: 13px;
+}
+.inspector-mode [data-slot="tabs-trigger"]:hover {
+  color: var(--foreground);
 }
 .inspector-mode [data-state="active"] {
   border: 0;
-  background: color-mix(in srgb, var(--foreground) 7%, transparent);
+  background: var(--background);
   color: var(--foreground);
-  box-shadow: none;
+  box-shadow: 0 1px 3px #0000001a;
 }
 .inspector-mode [data-slot="tabs-trigger"]::after {
   display: none;
@@ -434,6 +447,11 @@
 .inspector-mode [data-slot="tabs-trigger"]:focus-visible {
   outline: 1px solid color-mix(in srgb, var(--foreground) 30%, transparent);
   outline-offset: 1px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .inspector-mode [data-slot="tabs-trigger"] {
+    transition: none;
+  }
 }
 .inspector-tabs > [data-slot="tabs-content"] {
   flex: 1;

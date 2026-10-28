@@ -112,8 +112,14 @@ export function QuickAdd({
       stopScene();
     };
   }, [engine, viewport, workspace, viewSource, controller]);
-  const items = session ? createQuickAddItems(engine.getSnapshot(), t) : [];
-  const results = searchItems(items, query, category).items;
+  const items = useMemo(
+    () => (session ? createQuickAddItems(engine.getSnapshot(), t) : []),
+    [session, engine, t],
+  );
+  const results = useMemo(
+    () => (session ? searchItems(items, query, category).items : []),
+    [session, items, query, category],
+  );
   function run(item: SearchItem) {
     if (
       !session ||

@@ -38,6 +38,28 @@ test("disables empty selection and presents mixed values until one absolute edit
   expect(screen.getByRole("textbox", { name: "Opacité" })).toBeDisabled();
   expect(screen.getByRole("combobox", { name: "Fusion" })).toBeDisabled();
 });
+test("resetting mixed opacity to its first value still restores every layer with one undo", () => {
+  const d = fixture("mixed");
+  act(() => {
+    d.engine.load(d.engine.getSnapshot().project);
+    d.engine.select([d.rectangle.id, d.text.id]);
+  });
+  const before = d.engine.getSnapshot();
+  fireEvent.doubleClick(screen.getByRole("button", { name: "Ajuster Opacité" }));
+  expect(
+    d.engine
+      .getSnapshot()
+      .project.pages[0]!.layers.slice(0, 2)
+      .map((layer) => layer.opacity),
+  ).toEqual([1, 1]);
+  const reset = d.engine.getSnapshot();
+  fireEvent.doubleClick(screen.getByRole("button", { name: "Ajuster Opacité" }));
+  expect(d.engine.getSnapshot()).toBe(reset);
+  expect(d.store.get(previewAtom)).toBeNull();
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project).toEqual(before.project);
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+});
 test("mixed opacity and blend mode resolve atomically for all selected layers", async () => {
   const d = fixture("mixed");
   const input = screen.getByRole("textbox", { name: "Opacité" });

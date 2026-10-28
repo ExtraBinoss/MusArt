@@ -10,6 +10,14 @@ import { Popover, PopoverTrigger, PopoverContent } from "../../ui/popover";
 import { ScrollShadow } from "../../shared/scroll/ScrollShadow";
 import { MaskProperties } from "../../properties/MaskProperties";
 import { useLayerPreview } from "../controls/use-layer-preview";
+import { Button } from "../../ui/button";
+import { activateLayerPage } from "../tree/activation";
+import {
+  attachmentSelection,
+  capturePresentationDelete,
+} from "../../../state/selection/attachments";
+import { attachmentDeleteKey } from "../../../state/selection/attachment-keydown";
+import "../messages";
 export function MaskPopover({
   engine,
   page,
@@ -25,13 +33,28 @@ export function MaskPopover({
 }) {
   const { t } = useTranslation();
   return (
-    <Popover>
+    <Popover
+      onOpenChange={(open) => {
+        if (open)
+          attachmentSelection(engine).select(page, {
+            kind: "mask",
+            pageId: page.id,
+            layerId: layer.id,
+          });
+      }}
+    >
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent
         side="left"
         align="start"
         className="floating-panel layer-attachment-popover"
         aria-label={`${t("mask")} · ${layer.name}`}
+        onKeyDown={(event) => {
+          if (attachmentDeleteKey(event.nativeEvent, engine, run)) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        }}
       >
         <ScrollShadow className="layer-attachment-scroll">
           <div className="layer-attachment-viewport">
@@ -53,14 +76,33 @@ function MaskDetails({
   layer: Layer;
   run: (task: () => void) => void;
 }) {
+  const { t } = useTranslation();
   const edit = useLayerPreview(engine, page, [layer.id], run);
   return (
-    <MaskProperties
-      engine={engine}
-      layer={layer}
-      run={run}
-      onCommand={edit.command}
-      disabled={createLayerGeometryIndex(page).isLocked(layer.id)}
-    />
+    <>
+      {layer.mask?.layerId && (
+        <Button
+          variant="ghost"
+          className="mask-source-navigation"
+          onClick={() => {
+            if (activateLayerPage(engine, page) && layer.mask?.layerId)
+              engine.select([layer.mask.layerId]);
+          }}
+        >
+          {t("layerControls:selectMaskSource")}
+        </Button>
+      )}
+      <MaskProperties
+        engine={engine}
+        layer={layer}
+        run={run}
+        onCommand={(command) =>
+          command.type === "removeLayerMask"
+            ? run(capturePresentationDelete(engine))
+            : edit.command(command)
+        }
+        disabled={createLayerGeometryIndex(page).isLocked(layer.id)}
+      />
+    </>
   );
 }

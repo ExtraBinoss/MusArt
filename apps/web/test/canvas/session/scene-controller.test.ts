@@ -4,6 +4,7 @@ import { createLayer, createPage, createProject, EditorEngine } from "@musart/co
 import { SceneController } from "../../../src/canvas/session/scene-controller";
 import { createPreviewSource } from "../../../src/state/session/preview-source";
 import { previewAtom } from "../../../src/state/session/editor";
+import { createPlaybackSource } from "../../../src/canvas/session/playback-source";
 function fixture() {
   const layer = createLayer("rectangle", { width: 80, height: 60, fill: "#3366ff" });
   const engine = new EditorEngine(
@@ -20,6 +21,10 @@ describe("stable imperative scene controller", () => {
     const first = d.controller.read();
     expect(d.controller.read()).toBe(first);
     expect(first.assets).toBe(d.engine.getSnapshot().project.assets);
+    expect(first.presentation).toEqual({
+      origin: { projectId: d.engine.getSnapshot().project.id, revision: 0 },
+      canonical: true,
+    });
     const stop = d.controller.subscribe(listener);
     d.engine.select([d.layer.id]);
     expect(listener).not.toHaveBeenCalled();
@@ -40,11 +45,13 @@ describe("stable imperative scene controller", () => {
       patch: { fill: "#00ff00", width: 120 },
     });
     expect(d.controller.read().page.layers[0]).toMatchObject({ fill: "#00ff00", width: 120 });
+    expect(d.controller.read().presentation?.canonical).toBe(false);
     expect(d.engine.getSnapshot()).toBe(baseline);
     d.store.set(previewAtom, { target: "page", patch: { background: "#123456" } });
     expect(d.controller.read().page.background).toBe("#123456");
     d.store.set(previewAtom, null);
     expect(d.controller.read().page).toBe(baseline.project.pages[0]);
+    expect(d.controller.read().presentation?.canonical).toBe(true);
     expect(changed).toHaveBeenCalledTimes(3);
     stop();
     d.store.set(previewAtom, { target: "layer", layerId: d.layer.id, patch: { opacity: 0.5 } });
@@ -89,4 +96,16 @@ test("applies one shared preview patch to multiple layers without mutating the d
   });
   expect(d.controller.read().page.layers.map((layer) => layer.opacity)).toEqual([0.3, 0.3]);
   expect(d.engine.getSnapshot()).toBe(baseline);
+});
+test("labels stable playback frames as transient rather than useful canonical presentation", () => {
+  const d = fixture(),
+    playback = createPlaybackSource(d.engine),
+    snapshot = d.engine.getSnapshot();
+  playback.set({ page: snapshot.project.pages[0]!, assets: snapshot.project.assets });
+  const frame = d.controller.read();
+  expect(d.controller.read()).toBe(frame);
+  expect(frame.playback).toBe(true);
+  expect(frame.presentation?.canonical).toBe(false);
+  playback.set(null);
+  expect(d.controller.read().presentation?.canonical).toBe(true);
 });

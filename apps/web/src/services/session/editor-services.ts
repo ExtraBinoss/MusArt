@@ -14,7 +14,6 @@ import type {
   EditorServices,
   ExportOptions,
   ExportScope,
-  ExportPreviewOptions,
   NewProjectOptions,
 } from "../../state/contracts";
 import { getAnimationSession } from "../animation/session";
@@ -23,11 +22,14 @@ import { ProjectStore } from "../projects/storage";
 import { DeletedProjectError } from "../projects/lifecycle";
 import { StaleProjectWriteError } from "../projects/writes/revision";
 import { assertExportScope } from "./export-scope";
-import { SelectionPreviewIdentity } from "../projects/thumbnails/selection-identity";
+import { createPreviewExport } from "./previews";
 import { importBatch, readDataUrl } from "../assets/imports";
 import { downloadBlob, safeName } from "../files/download";
 import { maskToDataUrl } from "../selection/pixel-selection";
 import { SelectionClient } from "../selection/selection";
+import { PixelSelectionController } from "../selection/wand/controller";
+import { i18n } from "../../state/i18n";
+import "../selection/wand/messages";
 import type { FontLibraryPort } from "../fonts/model";
 export interface ServiceDependencies {
   fonts?: FontLibraryPort;
@@ -48,17 +50,10 @@ export function createEditorServices(
     dependencies.saveCurrent ?? ((project: Project) => store.saveCurrent(project));
   const download = dependencies.download ?? downloadBlob;
   const renderer = dependencies.render ?? (() => import("@musart/render"));
-  const previewIdentities = new WeakMap<object, number>();
-  const selectedPreviewIdentity = new SelectionPreviewIdentity();
-  let previewIdentity = 0;
-  const identity = (value: object) => {
-    let id = previewIdentities.get(value);
-    if (id === undefined) {
-      id = ++previewIdentity;
-      previewIdentities.set(value, id);
-    }
-    return id;
-  };
+  const pixelSelection = new PixelSelectionController(engine, {
+    pixels: async (asset) => (await renderer()).sourcePixels(asset),
+    maskName: () => i18n.t("pixelSelection:maskName"),
+  });
   const activePage = () => {
     const snapshot = engine.getSnapshot();
     return snapshot.project.pages.find((p) => p.id === snapshot.pageId)!;
@@ -102,66 +97,10 @@ export function createEditorServices(
     engine.load(project);
   };
   return {
+    pixelSelection,
     ...(thumbnails
       ? {
-          previewExport: async (options: ExportPreviewOptions, signal?: AbortSignal) => {
-            signal?.throwIfAborted();
-            const snapshot = engine.getSnapshot(),
-              source = activePage(),
-              ids = [...new Set(options.selection ?? snapshot.selection)].sort(),
-              edge = options.edge ?? 384;
-            if (!Number.isInteger(edge) || edge < 16 || edge > 1024)
-              throw new Error("Invalid preview size.");
-            const page =
-              !options.all && ids.length
-                ? selectionComposition(source, ids, [
-                    snapshot.project.id,
-                    ...snapshot.project.pages.map((item) => item.id),
-                    ...Object.keys(snapshot.project.assets),
-                  ])
-                : source;
-            const appearance =
-              !options.all && ids.length
-                ? selectedPreviewIdentity.read(source, snapshot.project.assets, ids)
-                : null;
-            const key = JSON.stringify([
-              snapshot.project.id,
-              source.id,
-              appearance !== null
-                ? appearance
-                : [identity(source), identity(snapshot.project.assets)],
-              options.all ? [] : ids,
-              edge,
-            ]);
-            return thumbnails.preview(key, page, snapshot.project.assets, {
-              edge,
-              ...(options.priority ? { priority: options.priority } : {}),
-              ...(signal ? { signal } : {}),
-              isCurrent: () => {
-                const current = engine.getSnapshot();
-                if (
-                  current.project.id !== snapshot.project.id ||
-                  current.pageId !== snapshot.pageId
-                )
-                  return false;
-                const currentPage = current.project.pages.find(
-                  (candidate) => candidate.id === snapshot.pageId,
-                );
-                if (!currentPage) return false;
-                if (appearance !== null) {
-                  try {
-                    return (
-                      selectedPreviewIdentity.read(currentPage, current.project.assets, ids) ===
-                      appearance
-                    );
-                  } catch {
-                    return false;
-                  }
-                }
-                return currentPage === source && current.project.assets === snapshot.project.assets;
-              },
-            });
-          },
+          previewExport: createPreviewExport(engine, thumbnails),
         }
       : {}),
     ...(dependencies.fonts ? { fonts: dependencies.fonts } : {}),
@@ -203,7 +142,8 @@ export function createEditorServices(
     createProject: create,
     async saveProject() {
       const origin = engine.getSnapshot().project.id;
-      await switchReady();
+      // The shared writer already orders this write, including retries after a failed save.
+      if (!dependencies.saveCurrent) await switchReady();
       const project = engine.getSnapshot().project;
       if (project.id !== origin) throw new StaleProjectWriteError(origin);
       await saveCurrent(project);
@@ -321,6 +261,12 @@ export function createEditorServices(
       );
     },
     async selectImagePoint(layerId, x, y, mode, tolerance) {
+      if (mode === "wand") {
+        engine.select([layerId]);
+        await pixelSelection.begin(layerId, x, y, tolerance);
+        await pixelSelection.accept();
+        return;
+      }
       const snapshot = engine.getSnapshot(),
         page = activePage(),
         layer = page.layers.find((layer) => layer.id === layerId);
@@ -330,13 +276,7 @@ export function createEditorServices(
       if (layer.locked) throw new Error("Le calque est verrouillé.");
       const sx = Math.max(0, Math.min(asset.width - 1, (x / layer.width) * asset.width)),
         sy = Math.max(0, Math.min(asset.height - 1, (y / layer.height) * asset.height));
-      const result =
-        mode === "segment"
-          ? await selection.segment(asset.dataUrl, sx, sy)
-          : await (async () => {
-              const pixels = await (await renderer()).sourcePixels(asset);
-              return selection.wand(pixels.data, pixels.width, pixels.height, sx, sy, tolerance);
-            })();
+      const result = await selection.segment(asset.dataUrl, sx, sy);
       const latest = engine.getSnapshot();
       if (
         latest.project.id !== snapshot.project.id ||
@@ -361,7 +301,8 @@ export function createEditorServices(
         },
       ]);
     },
-    prepareSegmentation: () => selection.prepare(),
+    segmentationModel: selection.model,
+    prepareSegmentation: () => (selection.model ? selection.model.prepare() : selection.prepare()),
   };
 }
 // Clipboard text and files deliberately share the same command/import paths as the UI.

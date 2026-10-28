@@ -13,6 +13,8 @@ import { createPlaybackSource } from "../../../src/canvas/session/playback-sourc
 import { EMPTY_PREVIEW_SOURCE } from "../../../src/state/session/preview-source";
 import { createCommandPort } from "../../../src/state/keybindings/command-port";
 import { createLibraryActions } from "../../../src/components/assets/library-actions";
+import * as search from "../../../src/components/search/catalog/search";
+import * as quickCatalog from "../../../src/canvas/quick-add/catalog";
 const render = (node: ReactNode, options?: RenderOptions) =>
   renderBase(node, {
     ...options,
@@ -155,4 +157,43 @@ it("cancels stale/wheel/playback sessions, reports command rejection and cleans 
   d.viewport.current?.remove();
   const orphan = render(<QuickAdd {...d.props} viewport={{ current: null }} />);
   orphan.unmount();
+});
+
+it("does no catalog construction or search normalization while closed through document commits", async () => {
+  const score = vi.spyOn(search, "searchItems"),
+    build = vi.spyOn(quickCatalog, "createQuickAddItems");
+  const d = fixture();
+  try {
+    expect(score).not.toHaveBeenCalled();
+    expect(build).not.toHaveBeenCalled();
+    act(() => d.engine.execute({ type: "renameProject", name: "Closed quick add" }));
+    d.view.rerender(
+      <>
+        <AddArtboardOverlay engine={d.engine} controller={d.controller} onError={d.onError} />
+        <QuickAdd {...d.props} />
+      </>,
+    );
+    expect(score).not.toHaveBeenCalled();
+    expect(build).not.toHaveBeenCalled();
+    d.open();
+    expect(score).toHaveBeenCalled();
+    expect(build).toHaveBeenCalled();
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "rectangle" } });
+    fireEvent.click(screen.getByRole("option", { name: "rectangle" }));
+    expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.kind).toBe("rectangle");
+    score.mockClear();
+    build.mockClear();
+    act(() => d.engine.execute({ type: "renameProject", name: "Closed after insertion" }));
+    d.view.rerender(
+      <>
+        <AddArtboardOverlay engine={d.engine} controller={d.controller} onError={d.onError} />
+        <QuickAdd {...d.props} />
+      </>,
+    );
+    expect(score).not.toHaveBeenCalled();
+    expect(build).not.toHaveBeenCalled();
+  } finally {
+    d.view.unmount();
+    d.viewport.current?.remove();
+  }
 });

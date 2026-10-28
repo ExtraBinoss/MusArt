@@ -4,6 +4,7 @@ import { AnimationSession, getAnimationSession } from "../../../src/services/ani
 import { HistoryStore } from "../../../src/services/history/store";
 import { openStudioDatabase } from "../../../src/services/projects/database";
 import { projectAt } from "../history/fixtures";
+import { getCanonicalPresentation } from "../../../src/state/session/canonical-presentation";
 async function fixture() {
   const db = await openStudioDatabase(crypto.randomUUID()),
     store = new HistoryStore(async () => db),
@@ -30,6 +31,40 @@ const original = {
   height: 10,
   dataUrl: "data:image/png;base64,AAAA",
 };
+it("keeps heavy journal preparation behind the actual current canonical draw", async () => {
+  const d = await fixture();
+  const callbacks: FrameRequestCallback[] = [];
+  const port = getCanonicalPresentation(d.engine),
+    publisher = port.acquire();
+  try {
+    await d.attach();
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+      callbacks.push(callback);
+      return callbacks.length;
+    });
+    vi.stubGlobal("cancelAnimationFrame", vi.fn());
+    const append = vi.spyOn(d.store, "append");
+    d.engine.execute({ type: "renameProject", name: "Waiting for pixels" });
+    const snapshot = d.engine.getSnapshot(),
+      ticket = publisher.request(
+        { projectId: snapshot.project.id, revision: snapshot.revision },
+        true,
+      );
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(append).not.toHaveBeenCalled();
+    expect(callbacks).toHaveLength(0);
+    publisher.present(ticket);
+    callbacks[0]!(0);
+    await vi.waitFor(() => expect(append).toHaveBeenCalledOnce());
+    await d.session.flush();
+    expect(d.session.read()).toMatchObject({ events: 1, pending: 0, error: false });
+  } finally {
+    await d.session.dispose();
+    publisher.release();
+    d.db.close();
+    vi.unstubAllGlobals();
+  }
+});
 describe("automatic durable animation session", () => {
   it("captures each valid transaction once while selection and rejected edits do not write history", async () => {
     const { db, store, engine, session, errors, attach } = await fixture();

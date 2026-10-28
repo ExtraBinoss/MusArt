@@ -16,10 +16,10 @@
   box-shadow: 0 0 6rem 3rem color-mix(in srgb, var(--foreground) 3%, transparent);
   filter: blur(3rem);
 }
-.editor-gpu-scene:has(canvas[data-presentation-ready="true"]) > .canvas-loading {
+.editor-gpu-scene:has(canvas[data-display-initialized="true"]) > .canvas-loading {
   animation: canvas-glow-dismiss 180ms ease-out both;
 }
-.editor-gpu-scene:has(canvas[data-presentation-ready="true"]) canvas {
+.editor-gpu-scene:has(canvas[data-display-initialized="true"]) canvas {
   animation: canvas-content-reveal 180ms cubic-bezier(0.2, 0.6, 0.3, 1) both;
 }
 @keyframes canvas-glow-dismiss {
@@ -41,11 +41,11 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .editor-gpu-scene:has(canvas[data-presentation-ready="true"]) > .canvas-loading {
+  .editor-gpu-scene:has(canvas[data-display-initialized="true"]) > .canvas-loading {
     animation: none;
     visibility: hidden;
   }
-  .editor-gpu-scene:has(canvas[data-presentation-ready="true"]) canvas {
+  .editor-gpu-scene:has(canvas[data-display-initialized="true"]) canvas {
     animation: none;
   }
 }

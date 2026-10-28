@@ -2,11 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPage, type Composition } from "@musart/core";
 import { OrthographicCamera, Scene, Texture, type WebGPURenderer } from "three/webgpu";
 import { PlaneResources } from "../../../src/canvas/render/plane-resources";
+import { CanonicalPresentation } from "../../../src/state/session/canonical-presentation";
 const gpu = vi.hoisted(() => ({
   render: vi.fn(),
   dispose: vi.fn(),
   constructors: vi.fn(),
   stats: vi.fn(),
+  retainedFrame: vi.fn(),
+  releasePresentation: vi.fn(),
 }));
 vi.mock("@musart/render", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@musart/render")>()),
@@ -17,6 +20,8 @@ vi.mock("@musart/render", async (importOriginal) => ({
     render = gpu.render;
     dispose = gpu.dispose;
     stats = gpu.stats;
+    retainedFrame = gpu.retainedFrame;
+    releasePresentation = gpu.releasePresentation;
   },
 }));
 function result(width = 600, height = 500) {
@@ -27,6 +32,7 @@ function fixture(backend = {}) {
     domElement: document.createElement("canvas"),
     backend,
     compileAsync: vi.fn().mockResolvedValue(undefined),
+    getRenderTarget: vi.fn(() => null),
   } as unknown as WebGPURenderer;
   const resources = new PlaneResources(renderer);
   const camera = new OrthographicCamera();
@@ -56,6 +62,8 @@ beforeEach(() => {
     .mockImplementation(async (page: Composition) => result(page.width, page.height));
   gpu.dispose.mockReset().mockResolvedValue(undefined);
   gpu.constructors.mockClear();
+  gpu.retainedFrame.mockReset().mockReturnValue(null);
+  gpu.releasePresentation.mockClear();
   gpu.stats
     .mockReset()
     .mockReturnValue({ passes: 1, readbacks: 0, uploads: 1, targets: 2, cacheBytes: 100 });
@@ -66,6 +74,165 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 describe("direct GPU preview ownership and scheduling", () => {
+  it("installs a retained artboard immediately but acknowledges only its real draw, independent of an older pending job", async () => {
+    const d = fixture(),
+      port = new CanonicalPresentation(),
+      publisher = port.acquire();
+    const release = d.resources.activate(
+      d.scene,
+      d.camera,
+      d.invalidate,
+      d.error,
+      undefined,
+      publisher,
+    );
+    const a = createPage({ width: 320, height: 200 }),
+      b = createPage({ width: 200, height: 320 });
+    const origin = { projectId: "project", revision: 1 },
+      first = result(320, 200);
+    gpu.render.mockResolvedValueOnce(first);
+    d.resources.submit(a, {}, { origin, canonical: true });
+    await frame();
+    d.resources.present();
+    expect(d.renderer.domElement.dataset.displayInitialized).toBe("true");
+    let finish!: (value: ReturnType<typeof result>) => void;
+    gpu.render.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    d.resources.submit(b, {}, { origin, canonical: true });
+    expect(d.renderer.domElement.style.visibility).toBe("hidden");
+    expect(d.renderer.domElement.dataset.presentationReady).toBe("false");
+    await frame();
+    const canRender = gpu.render.mock.calls.at(-1)![2].canRender;
+    expect(canRender()).toBe(true);
+    gpu.retainedFrame.mockImplementation((page: Composition) => (page === a ? first : null));
+    d.resources.submit(a, {}, { origin, canonical: true });
+    expect(d.resources.sample.value).toBe(first.texture);
+    expect(d.resources.mesh.visible).toBe(true);
+    expect(d.renderer.domElement.dataset.rendererReady).toBe("false");
+    expect(port.ready(origin)).toBe(false);
+    expect(canRender()).toBe(false);
+    d.resources.present();
+    expect(port.ready(origin)).toBe(true);
+    expect(d.renderer.domElement.style.visibility).toBe("visible");
+    expect(d.renderer.domElement.dataset.pageId).toBe(a.id);
+    finish(result(200, 320));
+    await ticks();
+    expect(d.resources.sample.value).toBe(first.texture);
+    expect(gpu.render).toHaveBeenCalledTimes(2);
+    expect(gpu.constructors).toHaveBeenCalledOnce();
+    release();
+    publisher.release();
+    await d.resources.dispose();
+  });
+  it("keeps initial-loading history separate from a cold destination and cannot mark an old failed page ready", async () => {
+    const d = fixture(),
+      release = d.resources.activate(d.scene, d.camera, d.invalidate, d.error);
+    d.resources.submit(createPage(), {});
+    await frame();
+    d.resources.present();
+    gpu.render.mockRejectedValueOnce(new Error("destination font failed"));
+    const destination = createPage();
+    d.resources.submit(destination, {});
+    expect(d.renderer.domElement.dataset.displayInitialized).toBe("true");
+    expect(d.renderer.domElement.style.visibility).toBe("hidden");
+    await frame();
+    d.resources.present();
+    expect(d.renderer.domElement.dataset.rendererReady).toBe("false");
+    expect(d.renderer.domElement.dataset.presentationReady).toBe("false");
+    expect(d.error).toHaveBeenCalledWith("destination font failed");
+    d.resources.submit(destination, {});
+    await frame();
+    d.resources.present();
+    expect(d.renderer.domElement.style.visibility).toBe("visible");
+    expect(d.renderer.domElement.dataset.pageId).toBe(destination.id);
+    release();
+    await d.resources.dispose();
+  });
+  it("hides a same-ID page belonging to a replacement project until its own prepared frame is drawn", async () => {
+    const d = fixture(),
+      release = d.resources.activate(d.scene, d.camera, d.invalidate, d.error);
+    const page = createPage({ id: "shared-page" });
+    d.resources.submit(page, {}, { origin: { projectId: "old", revision: 1 }, canonical: true });
+    await frame();
+    d.resources.present();
+    d.resources.submit(
+      { ...page, background: "#000000" },
+      {},
+      { origin: { projectId: "new", revision: 2 }, canonical: true },
+    );
+    expect(d.resources.mesh.visible).toBe(false);
+    expect(d.renderer.domElement.style.visibility).toBe("hidden");
+    expect(d.renderer.domElement.dataset.rendererReady).toBe("false");
+    await frame();
+    d.resources.present();
+    expect(d.renderer.domElement.dataset.rendererReady).toBe("true");
+    release();
+    await d.resources.dispose();
+  });
+  it("signals useful canonical presentation only after the display scene draw and restores owned callbacks", async () => {
+    const d = fixture(),
+      port = new CanonicalPresentation(),
+      publisher = port.acquire(),
+      origin = { projectId: "A", revision: 1 },
+      previous = vi.fn();
+    d.scene.onAfterRender = previous;
+    const release = d.resources.activate(
+        d.scene,
+        d.camera,
+        d.invalidate,
+        d.error,
+        undefined,
+        publisher,
+      ),
+      after = d.scene.onAfterRender,
+      page = createPage({ width: 320, height: 200 });
+    d.resources.submit(page, {}, { origin, canonical: true });
+    await frame();
+    expect(port.ready(origin)).toBe(false);
+    Reflect.apply(after, d.scene, [d.renderer, d.scene, d.camera, null]);
+    expect(previous).toHaveBeenCalledOnce();
+    expect(port.ready(origin)).toBe(true);
+    expect(d.renderer.domElement.dataset.canonicalRevision).toBe("1");
+    d.resources.submit(page, {}, { origin, canonical: false });
+    await frame();
+    Reflect.apply(after, d.scene, [d.renderer, d.scene, d.camera, null]);
+    expect(port.ready(origin)).toBe(false);
+    release();
+    publisher.release();
+    await d.resources.dispose();
+    expect(d.scene.onAfterRender).toBe(previous);
+  });
+  it("does not acknowledge other renderer/target draws or replace a later scene callback owner", async () => {
+    const d = fixture(),
+      port = new CanonicalPresentation(),
+      publisher = port.acquire(),
+      origin = { projectId: "A", revision: 1 },
+      release = d.resources.activate(
+        d.scene,
+        d.camera,
+        d.invalidate,
+        d.error,
+        undefined,
+        publisher,
+      );
+    d.resources.submit(createPage(), {}, { origin, canonical: true });
+    await frame();
+    Reflect.apply(d.scene.onAfterRender, d.scene, [{}, d.scene, d.camera, null]);
+    expect(port.ready(origin)).toBe(false);
+    vi.mocked(d.renderer.getRenderTarget).mockReturnValueOnce({} as never);
+    Reflect.apply(d.scene.onAfterRender, d.scene, [d.renderer, d.scene, d.camera, null]);
+    expect(port.ready(origin)).toBe(false);
+    const replacement = vi.fn();
+    d.scene.onAfterRender = replacement;
+    release();
+    publisher.release();
+    await d.resources.dispose();
+    expect(d.scene.onAfterRender).toBe(replacement);
+  });
   it("retains the last valid presentation throughout property and same-artboard size updates", async () => {
     const d = fixture(),
       release = d.resources.activate(d.scene, d.camera, d.invalidate, d.error),
@@ -113,7 +280,11 @@ describe("direct GPU preview ownership and scheduling", () => {
     expect(gpu.render).toHaveBeenCalledTimes(1);
     d.resources.setDensity(4);
     await frame();
-    expect(gpu.render).toHaveBeenLastCalledWith(page, {}, { scale: 4 });
+    expect(gpu.render).toHaveBeenLastCalledWith(
+      page,
+      {},
+      { scale: 4, canRender: expect.any(Function) },
+    );
     expect(density).toHaveBeenLastCalledWith(4);
     d.resources.setDensity(4);
     d.resources.setDensity(-1);
@@ -135,7 +306,11 @@ describe("direct GPU preview ownership and scheduling", () => {
     await frame();
     d.resources.present();
     expect(gpu.constructors).toHaveBeenCalledWith(d.renderer);
-    expect(gpu.render).toHaveBeenCalledWith(page, {}, { scale: 1 });
+    expect(gpu.render).toHaveBeenCalledWith(
+      page,
+      {},
+      { scale: 1, canRender: expect.any(Function) },
+    );
     expect(d.renderer.domElement.dataset.rendererReady).toBe("true");
     expect(d.renderer.domElement.dataset.backend).toBe("webgpu");
     expect(d.resources.mesh.scale.toArray()).toEqual([600, 500, 1]);

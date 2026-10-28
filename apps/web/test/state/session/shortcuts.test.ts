@@ -1,14 +1,101 @@
 import { createElement } from "react";
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, renderHook } from "@testing-library/react";
 import { Provider } from "jotai";
 import { useShortcuts } from "../../../src/state/session/shortcuts";
 import { toolAtom, previewAtom } from "../../../src/state/session/editor";
 import { setup } from "../../support/ui";
 import { keybindings } from "../../../src/state/keybindings/store";
+import type {
+  PixelSelectionPort,
+  PixelSelectionState,
+} from "../../../src/services/selection/wand/model";
+import { attachmentSelection } from "../../../src/state/selection/attachments";
 afterEach(() => {
   act(() => keybindings.reset());
   localStorage.clear();
+});
+test("routes pixel-region Delete and CtrlD before layer commands and respects attachment intent", async () => {
+  const d = setup();
+  let region: PixelSelectionState | null = {
+    layerId: d.image.id,
+    width: 100,
+    height: 100,
+    path: "M0 0H10",
+    selected: 10,
+    simplified: false,
+    tolerance: 0,
+    mode: "new",
+    contiguous: true,
+    busy: false,
+    dragging: false,
+  };
+  const port: PixelSelectionPort = {
+    read: () => region,
+    subscribe: () => () => {},
+    begin: vi.fn(async () => {}),
+    update: vi.fn(async () => {}),
+    accept: vi.fn(async () => {}),
+    cancel: vi.fn(),
+    invert: vi.fn(async () => {}),
+    createMask: vi.fn(async () => {}),
+    erase: vi.fn(async () => {}),
+    deselect: vi.fn(() => {
+      region = null;
+    }),
+    dispose: vi.fn(),
+  };
+  d.services.pixelSelection = port;
+  d.engine.select([d.image.id]);
+  const hook = renderHook(() => useShortcuts(d.engine, d.services, d.onTask), {
+    wrapper: ({ children }) => createElement(Provider, { store: d.store }, children),
+  });
+  const before = d.engine.getSnapshot().project;
+  await act(() => fireEvent.keyDown(document, { key: "Delete" }));
+  expect(port.erase).toHaveBeenCalledOnce();
+  expect(d.engine.getSnapshot().project).toBe(before);
+  await act(() => fireEvent.keyDown(document, { key: "d", ctrlKey: true }));
+  expect(port.deselect).toHaveBeenCalledOnce();
+  expect(d.engine.getSnapshot().project).toBe(before);
+  await act(() => fireEvent.keyDown(document, { key: "d", ctrlKey: true }));
+  expect(d.engine.getSnapshot().project.pages[0]!.layers).toHaveLength(4);
+  d.engine.undo();
+  d.engine.execute({
+    type: "updateLayers",
+    ids: [d.image.id],
+    patch: {
+      mask: { assetId: "asset1", mode: "alpha", enabled: true, inverted: false },
+    },
+  });
+  const page = d.engine.getSnapshot().project.pages[0]!;
+  expect(
+    attachmentSelection(d.engine).select(page, {
+      kind: "mask",
+      pageId: page.id,
+      layerId: d.image.id,
+    }),
+  ).toBe(true);
+  region = {
+    layerId: d.image.id,
+    width: 100,
+    height: 100,
+    path: "M0 0H10",
+    selected: 10,
+    simplified: false,
+    tolerance: 0,
+    mode: "new",
+    contiguous: true,
+    busy: false,
+    dragging: false,
+  };
+  await act(() => fireEvent.keyDown(document, { key: "Delete" }));
+  expect(port.erase).toHaveBeenCalledOnce();
+  expect(
+    d.engine.getSnapshot().project.pages[0]!.layers.find((layer) => layer.id === d.image.id)?.mask,
+  ).toBeNull();
+  expect(d.engine.getSnapshot().project.pages[0]!.layers).toHaveLength(3);
+  attachmentSelection(d.engine).clear();
+  hook.unmount();
 });
 test("uses persisted tool/save overrides and refuses captured or editable key events", () => {
   const d = setup();

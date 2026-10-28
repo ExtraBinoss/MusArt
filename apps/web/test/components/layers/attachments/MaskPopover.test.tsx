@@ -19,6 +19,9 @@ test("a mask avatar edits the real linked mask with independent undoable command
   }
   d.mount(<Live />);
   fireEvent.click(screen.getByRole("button", { name: "Mask" }));
+  fireEvent.click(screen.getByRole("button", { name: "Sélectionner la source du masque" }));
+  expect(d.engine.getSnapshot().selection).toEqual([d.rectangle.id]);
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
   fireEvent.click(screen.getByLabelText("Inverser le masque"));
   expect(d.engine.getSnapshot().project.pages[0]!.layers[2]!.mask?.inverted).toBe(true);
   act(() => d.engine.undo());

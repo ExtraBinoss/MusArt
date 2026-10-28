@@ -14,6 +14,11 @@ import { IconButton } from "../../shared/IconButton";
 import { useLayerPreview } from "../controls/use-layer-preview";
 import { EffectPopover } from "./EffectPopover";
 import { MaskPopover } from "./MaskPopover";
+import { activateLayerPage } from "../tree/activation";
+import {
+  attachmentSelection,
+  capturePresentationDelete,
+} from "../../../state/selection/attachments";
 const MIME = "application/x-musart-effect";
 export interface EffectDragSession {
   snapshot: SessionSnapshot;
@@ -29,6 +34,7 @@ export const LayerAttachments = memo(function LayerAttachments({
   top,
   effectId,
   mask: showMask,
+  selected = false,
   run,
   drag,
 }: {
@@ -39,6 +45,7 @@ export const LayerAttachments = memo(function LayerAttachments({
   top: number;
   effectId?: string;
   mask: boolean;
+  selected?: boolean;
   run: (task: () => void) => void;
   drag: RefObject<EffectDragSession | null>;
 }) {
@@ -47,6 +54,14 @@ export const LayerAttachments = memo(function LayerAttachments({
   const disabled = createLayerGeometryIndex(page).isLocked(layer.id);
   const mask = layer.mask,
     effect = layer.effects.find((item) => item.id === effectId);
+  function selectAttachment() {
+    return attachmentSelection(engine).select(
+      page,
+      showMask
+        ? { kind: "mask", pageId: page.id, layerId: layer.id }
+        : { kind: "effect", pageId: page.id, layerId: layer.id, effectId: effectId! },
+    );
+  }
   const style = {
     position: "absolute" as const,
     top,
@@ -60,9 +75,12 @@ export const LayerAttachments = memo(function LayerAttachments({
         <div
           role="treeitem"
           aria-level={depth + 1}
+          aria-selected={selected}
           data-mask-for={layer.id}
-          className={`layer-attachment-row ${mask.enabled ? "" : "is-hidden"}`}
+          className={`layer-attachment-row ${selected ? "is-selected" : ""} ${mask.enabled ? "" : "is-hidden"}`}
           style={style}
+          onClickCapture={selectAttachment}
+          onContextMenu={selectAttachment}
         >
           <MaskPopover engine={engine} page={page} layer={layer} run={run}>
             <Button variant="ghost" className="attachment-name">
@@ -92,7 +110,7 @@ export const LayerAttachments = memo(function LayerAttachments({
             <IconButton
               disabled={disabled}
               label={t("removeMask")}
-              onClick={() => edit.command({ type: "removeLayerMask", targetId: layer.id })}
+              onClick={() => run(capturePresentationDelete(engine))}
             >
               <Trash2 size={12} />
             </IconButton>
@@ -105,12 +123,20 @@ export const LayerAttachments = memo(function LayerAttachments({
     <div
       role="treeitem"
       aria-level={depth + 1}
+      aria-selected={selected}
       data-effect-id={effect.id}
-      className={`layer-attachment-row ${effect.enabled ? "" : "is-hidden"}`}
+      className={`layer-attachment-row ${selected ? "is-selected" : ""} ${effect.enabled ? "" : "is-hidden"}`}
       style={style}
+      onClickCapture={selectAttachment}
+      onContextMenu={selectAttachment}
       draggable={!disabled}
       onDragStart={(event) => {
         event.stopPropagation();
+        if (!activateLayerPage(engine, page)) {
+          event.preventDefault();
+          return;
+        }
+        selectAttachment();
         drag.current = { snapshot: engine.getSnapshot(), layerId: layer.id, effectId: effect.id };
         event.dataTransfer.setData(MIME, effect.id);
       }}
@@ -175,9 +201,7 @@ export const LayerAttachments = memo(function LayerAttachments({
         <IconButton
           disabled={disabled}
           label={t("removeEffect")}
-          onClick={() =>
-            edit.commit({ effects: layer.effects.filter((item) => item.id !== effect.id) })
-          }
+          onClick={() => run(capturePresentationDelete(engine))}
         >
           <Trash2 size={12} />
         </IconButton>

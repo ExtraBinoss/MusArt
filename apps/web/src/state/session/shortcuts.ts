@@ -13,6 +13,8 @@ import { previewAtom, toolAtom } from "./editor";
 import type { EditorServices } from "../contracts";
 import { i18n } from "../i18n";
 import "../../components/search/keybindings/messages";
+import { pixelSelectionShortcut } from "../../services/selection/wand/shortcuts";
+import { attachmentSelection } from "../selection/attachments";
 
 export function useShortcuts(
   engine: EnginePort,
@@ -37,6 +39,11 @@ export function useShortcuts(
       }
       if (event.defaultPrevented || event.isComposing) return;
       const command = matchBinding(event, keybindings.readSnapshot());
+      if (
+        !attachmentSelection(engine).read() &&
+        pixelSelectionShortcut(event, services.pixelSelection, onTask, command)
+      )
+        return;
       if (!command || (event.repeat && !command.startsWith("nudge:"))) return;
       const target = event.target;
       if (target instanceof HTMLElement && target.closest("[data-keybinding-capture]")) return;

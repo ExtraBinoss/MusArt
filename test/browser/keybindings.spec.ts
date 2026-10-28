@@ -143,3 +143,53 @@ test("edited shortcuts persist across reload, display real keycaps and open the 
   await page.keyboard.press("Control+k");
   await expect(searchDialog(page)).toBeVisible();
 });
+
+test("the first ten-thousand-layer spotlight opening stays bounded after lazy document preparation", async ({
+  page,
+}) => {
+  test.setTimeout(90000);
+  await ready(page);
+  const board = createPage({
+    width: 1024,
+    height: 1024,
+    layers: Array.from({ length: 10000 }, (_, at) =>
+      createLayer("rectangle", {
+        id: `lazy-search-${at}`,
+        name: `Search row ${at}`,
+        x: (at % 100) * 10,
+        y: Math.floor(at / 100) * 10,
+        width: 8,
+        height: 8,
+      }),
+    ),
+  });
+  await page.evaluate((project) => window.musart!.load(project), createProject({ pages: [board] }));
+  await page.waitForFunction((id) => {
+    const data = document.querySelector<HTMLCanvasElement>(".canvas-artboard canvas")?.dataset;
+    return (
+      data?.pageId === id &&
+      data.rendererReady === "true" &&
+      data.sceneRevision === data.renderedRevision
+    );
+  }, board.id);
+  const cold = await opening(page);
+  expect(cold.catalogSize).toBeGreaterThan(10000);
+  expect(cold.paintUpperBoundMs).toBeLessThan(250);
+  expect(cold.initialOptionCount).toBeLessThanOrEqual(22);
+  await searchDialog(page).getByRole("combobox").fill("Search row 9999");
+  await searchDialog(page)
+    .getByRole("option", { name: /^Search row 9999/ })
+    .click();
+  await expect
+    .poll(() => page.evaluate(() => window.musart!.snapshot().selection))
+    .toEqual(["lazy-search-9999"]);
+  await page.evaluate(() =>
+    window.musart!.select(
+      window.musart!.snapshot().project.pages[0]!.layers.map((layer) => layer.id),
+    ),
+  );
+  const warm = await opening(page);
+  expect(warm.paintUpperBoundMs).toBeLessThan(250);
+  await mkdir("artifacts", { recursive: true });
+  await writeFile("artifacts/search-opening-10000.json", JSON.stringify({ cold, warm }, null, 2));
+});

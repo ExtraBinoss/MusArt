@@ -24,6 +24,16 @@
   min-height: 0;
   overflow: hidden;
 }
+:where(
+  [data-slot="popover-content"],
+  [data-slot="select-content"],
+  [data-slot="dialog-content"].floating-panel
+) {
+  --scroll-shadow-surface: var(--popover);
+}
+:where([data-slot="dialog-content"]:not(.floating-panel)) {
+  --scroll-shadow-surface: var(--background);
+}
 .scroll-shadow::before,
 .scroll-shadow::after {
   content: "";
@@ -38,11 +48,15 @@
 }
 .scroll-shadow::before {
   top: 0;
-  background: linear-gradient(to bottom, #00000024, transparent);
+  background: linear-gradient(
+    to bottom,
+    var(--scroll-shadow-surface, var(--background)),
+    transparent
+  );
 }
 .scroll-shadow::after {
   bottom: 0;
-  background: linear-gradient(to top, #00000024, transparent);
+  background: linear-gradient(to top, var(--scroll-shadow-surface, var(--background)), transparent);
 }
 .scroll-shadow[data-overflow-top]::before,
 .scroll-shadow[data-overflow-bottom]::after {

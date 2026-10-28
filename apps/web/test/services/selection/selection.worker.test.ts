@@ -9,6 +9,20 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 describe("selection worker protocol", () => {
+  it("posts bounded progress separately from the final model response", async () => {
+    const post = vi.fn();
+    vi.stubGlobal("postMessage", post);
+    sam.prepareSam.mockImplementationOnce(async (progress) => {
+      progress({ file: "vision_encoder.onnx", status: "progress", loaded: 100 });
+      progress({ file: "vision_encoder.onnx", status: "done" });
+    });
+    await handleSelection({ data: { id: 21, type: "prepare" } } as MessageEvent);
+    expect(post).toHaveBeenCalledWith({
+      id: 21,
+      progress: expect.objectContaining({ loaded: 100 }),
+    });
+    expect(post).toHaveBeenLastCalledWith({ id: 21, result: null }, []);
+  });
   it("returns connected wand masks and posts transferable result buffers", async () => {
     const request = {
       id: 3,

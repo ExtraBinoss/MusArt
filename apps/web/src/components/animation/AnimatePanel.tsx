@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useTranslation } from "react-i18next";
-import { Download, Pause, Play, RotateCcw } from "lucide-react";
+import { Clapperboard, Download, Pause, Play, RotateCcw } from "lucide-react";
 import { evaluateReplay, type EnginePort, type ReplaySpec } from "@musart/core";
 import type { EditorServices } from "../../state/contracts";
 import { useEngine } from "../../state/session/editor";
@@ -12,6 +12,7 @@ import { Button } from "../ui/button";
 import { Slider } from "../ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { NumberInput } from "../shared/NumberInput";
+import { ScrollShadow } from "../shared/scroll/ScrollShadow";
 import "./messages";
 import { HistoryPanel } from "./HistoryPanel";
 import { ProjectActionDialog } from "../projects/actions/ProjectActionDialog";
@@ -157,157 +158,161 @@ export function AnimatePanel({
     }
   }
   return (
-    <section className={styles.panel} aria-label={t("title")}>
-      <header>
-        <h2>{t("title")}</h2>
-        <p>{t("description")}</p>
-      </header>
-      <HistoryPanel
-        session={session}
-        state={recording}
-        projectId={snapshot.project.id}
-        busy={progress !== null || preparing}
-        onClear={() => setClearTarget({ id: snapshot.project.id, name: snapshot.project.name })}
-        onPrepare={() => {
-          void prepare();
-        }}
-        onDownload={() => {
-          void prepare(true);
-        }}
-      />
-      {spec && (
-        <>
-          <div className={styles.player}>
-            <Button
-              variant="secondary"
-              size="icon-sm"
-              aria-label={t(playing ? "pause" : "play")}
-              disabled={progress !== null || preparing}
-              onClick={() => {
-                if (!playing && time >= 1) seek(0);
-                setPlaying((value) => !value);
-              }}
-            >
-              {playing ? <Pause size={15} /> : <Play size={15} />}
-            </Button>
-            <Slider
-              aria-label={t("timeline")}
-              min={0}
-              max={1}
-              step={0.001}
-              value={[time]}
-              disabled={progress !== null || preparing}
-              onValueChange={([next]) => {
-                setPlaying(false);
-                seek(next ?? 0);
-              }}
-            />
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={t("reset")}
-              onClick={() => {
-                setPlaying(false);
-                timeRef.current = 0;
-                setTime(0);
-                playback.set(null);
-              }}
-            >
-              <RotateCcw size={14} />
-            </Button>
+    <ScrollShadow className={styles.scroll} surface="var(--background)">
+      <section className={`${styles.panel} scrollable-panel`} aria-label={t("title")}>
+        <header className={styles.heading}>
+          <Clapperboard size={17} aria-hidden />
+          <div>
+            <h2>{t("title")}</h2>
+            <p>{t("description")}</p>
           </div>
-          <div className={styles.fields}>
-            <NumberInput
-              key={`duration-${duration}`}
-              label={t("duration")}
-              value={duration}
-              min={0.1}
-              max={120}
-              step={0.1}
-              unit="s"
-              onCommit={setDuration}
-            />
-            <NumberInput
-              key={`fps-${fps}`}
-              label={t("fps")}
-              value={fps}
-              min={1}
-              max={60}
-              unit="fps"
-              onCommit={setFps}
-            />
-            <NumberInput
-              key={`scale-${scale}`}
-              label={t("scale")}
-              value={scale}
-              min={0.1}
-              max={4}
-              step={0.1}
-              unit="×"
-              onCommit={setScale}
-            />
-            <Select
-              value={container}
-              onValueChange={(value) => setContainer(value as typeof container)}
-            >
-              <SelectTrigger aria-label={t("format")}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="auto">{t("auto")}</SelectItem>
-                <SelectItem value="mp4">MP4</SelectItem>
-                <SelectItem value="webm">WebM</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Button
-            disabled={progress !== null || preparing}
-            onClick={() => {
-              void exportVideo();
-            }}
-          >
-            <Download size={14} />
-            {progress === null
-              ? t("export")
-              : t("exporting", { percent: Math.round(progress * 100) })}
-          </Button>
-          {progress !== null && (
-            <Button variant="ghost" onClick={() => abortExport.current?.abort()}>
-              {t("cancel")}
-            </Button>
-          )}
-          <p className={styles.hint}>{t("encodingHint")}</p>
-          <p className={styles.hint}>{t("saved")}</p>
-        </>
-      )}
-      {clearTarget && (
-        <ProjectActionDialog
-          name={clearTarget.name}
-          action="clearHistory"
-          onCancel={() => setClearTarget(null)}
-          onConfirm={async () => {
-            try {
-              await services.clearHistory(clearTarget.id);
-              if (engine.getSnapshot().project.id === clearTarget.id) {
-                setPrepared(null);
-                setPlaying(false);
-                setTime(0);
-                timeRef.current = 0;
-                playback.set(null);
-              }
-              return true;
-            } catch {
-              setError(t("historyFailed"));
-              return false;
-            }
+        </header>
+        <HistoryPanel
+          session={session}
+          state={recording}
+          projectId={snapshot.project.id}
+          busy={progress !== null || preparing}
+          onClear={() => setClearTarget({ id: snapshot.project.id, name: snapshot.project.name })}
+          onPrepare={() => {
+            void prepare();
+          }}
+          onDownload={() => {
+            void prepare(true);
           }}
         />
-      )}
-      {error && (
-        <p className={styles.error} role="alert">
-          {error}
-        </p>
-      )}
-    </section>
+        {spec && (
+          <section className={styles.video} aria-label={t("videoSettings")}>
+            <h3>{t("videoSettings")}</h3>
+            <div className={styles.player}>
+              <Button
+                variant="secondary"
+                size="icon-sm"
+                aria-label={t(playing ? "pause" : "play")}
+                disabled={progress !== null || preparing}
+                onClick={() => {
+                  if (!playing && time >= 1) seek(0);
+                  setPlaying((value) => !value);
+                }}
+              >
+                {playing ? <Pause size={15} /> : <Play size={15} />}
+              </Button>
+              <Slider
+                aria-label={t("timeline")}
+                min={0}
+                max={1}
+                step={0.001}
+                value={[time]}
+                disabled={progress !== null || preparing}
+                onValueChange={([next]) => {
+                  setPlaying(false);
+                  seek(next ?? 0);
+                }}
+              />
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t("reset")}
+                onClick={() => {
+                  setPlaying(false);
+                  timeRef.current = 0;
+                  setTime(0);
+                  playback.set(null);
+                }}
+              >
+                <RotateCcw size={14} />
+              </Button>
+            </div>
+            <div className={styles.fields}>
+              <NumberInput
+                label={t("duration")}
+                value={duration}
+                resetValue={8}
+                min={0.1}
+                max={120}
+                step={0.1}
+                unit="s"
+                onCommit={setDuration}
+              />
+              <NumberInput
+                label={t("fps")}
+                value={fps}
+                resetValue={30}
+                min={1}
+                max={60}
+                unit="fps"
+                onCommit={setFps}
+              />
+              <NumberInput
+                label={t("scale")}
+                value={scale}
+                resetValue={1}
+                min={0.1}
+                max={4}
+                step={0.1}
+                unit="×"
+                onCommit={setScale}
+              />
+              <Select
+                value={container}
+                onValueChange={(value) => setContainer(value as typeof container)}
+              >
+                <SelectTrigger aria-label={t("format")}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">{t("auto")}</SelectItem>
+                  <SelectItem value="mp4">MP4</SelectItem>
+                  <SelectItem value="webm">WebM</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              disabled={progress !== null || preparing}
+              onClick={() => {
+                void exportVideo();
+              }}
+            >
+              <Download size={14} />
+              {progress === null
+                ? t("export")
+                : t("exporting", { percent: Math.round(progress * 100) })}
+            </Button>
+            {progress !== null && (
+              <Button variant="ghost" onClick={() => abortExport.current?.abort()}>
+                {t("cancel")}
+              </Button>
+            )}
+          </section>
+        )}
+        {clearTarget && (
+          <ProjectActionDialog
+            name={clearTarget.name}
+            action="clearHistory"
+            onCancel={() => setClearTarget(null)}
+            onConfirm={async () => {
+              try {
+                await services.clearHistory(clearTarget.id);
+                if (engine.getSnapshot().project.id === clearTarget.id) {
+                  setPrepared(null);
+                  setPlaying(false);
+                  setTime(0);
+                  timeRef.current = 0;
+                  playback.set(null);
+                }
+                return true;
+              } catch {
+                setError(t("historyFailed"));
+                return false;
+              }
+            }}
+          />
+        )}
+        {error && (
+          <p className={styles.error} role="alert">
+            {error}
+          </p>
+        )}
+      </section>
+    </ScrollShadow>
   );
 }

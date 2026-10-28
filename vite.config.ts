@@ -9,7 +9,10 @@ const fiberThreeAdapter = fileURLToPath(
 export default defineConfig({
   root: "apps/web",
   plugins: [fiberTimerCompatibility(fiberThreeAdapter), react(), tailwindcss()],
-  optimizeDeps: { rolldownOptions: { plugins: [fiberTimerCompatibility(fiberThreeAdapter)] } },
+  optimizeDeps: {
+    include: ["@huggingface/transformers"],
+    rolldownOptions: { plugins: [fiberTimerCompatibility(fiberThreeAdapter)] },
+  },
   resolve: { alias: { "@": fileURLToPath(new URL("./apps/web/src", import.meta.url)) } },
   build: { outDir: "../../dist", emptyOutDir: true, sourcemap: true, chunkSizeWarningLimit: 1000 },
   preview: { port: 6100, strictPort: true },

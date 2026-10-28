@@ -14,10 +14,17 @@ export async function initializeHistory(
   await assertProjectWritable(tx.objectStore("preferences"), project.id);
   const metaStore = tx.objectStore("journalMeta"),
     existing = await metaStore.get(project.id);
-  if (existing) return existing;
+  if (existing) {
+    if (!existing.epoch) {
+      existing.epoch = crypto.randomUUID();
+      await metaStore.put(existing);
+    }
+    return existing;
+  }
   const base = { projectId: project.id, pageId, state: stateFromProject(project), at: 0 };
   const meta: HistoryMetadata = {
     version: 1,
+    epoch: crypto.randomUUID(),
     projectId: project.id,
     first: 0,
     next: 0,

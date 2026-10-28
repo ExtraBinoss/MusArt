@@ -1,0 +1,21 @@
+.guide-color-trigger[data-slot="button"] {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  padding: 5px;
+  border-radius: 7px;
+}
+.guide-color-trigger > span {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
+  background: var(--guide-swatch);
+  box-shadow:
+    inset 0 0 0 1px #ffffff24,
+    0 0 0 1px #00000024;
+}
+.guide-color-popover {
+  width: 244px;
+  padding: 12px;
+}

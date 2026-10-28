@@ -1,8 +1,8 @@
-import type { Project } from "@musart/core";
+import { isPublishedProject, type Project } from "@musart/core";
 const owned = new WeakSet<Project>();
 /** A private immutable snapshot prevents a caller changing paint while its hashes are pending. */
 export function snapshotProject(project: Project): Project {
-  if (owned.has(project)) return project;
+  if (isPublishedProject(project) || owned.has(project)) return project;
   const snapshot = structuredClone(project);
   const seen = new WeakSet<object>();
   function freeze(value: unknown): void {

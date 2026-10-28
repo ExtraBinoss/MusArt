@@ -2,6 +2,9 @@ import { registerFeatureTranslations } from "../../state/i18n/feature-resources"
 
 export const messages = {
   en: {
+    editorSettings: "Editor settings & snapping distance",
+    enableSnapping: "Enable snapping to elements",
+    disableSnapping: "Disable snapping to elements",
     addTechnoArtboard: "Add techno poster artboard",
     templateChanged: "The project changed while the template was loading. Please try again.",
     title: "Search MusArt",
@@ -68,6 +71,9 @@ export const messages = {
     arrows: "Arrow keys",
   },
   fr: {
+    editorSettings: "Réglages de l’éditeur et distance de magnétisme",
+    enableSnapping: "Activer le magnétisme des éléments",
+    disableSnapping: "Désactiver le magnétisme des éléments",
     addTechnoArtboard: "Ajouter une affiche techno",
     templateChanged: "Le projet a changé pendant le chargement du modèle. Réessayez.",
     title: "Rechercher dans MusArt",

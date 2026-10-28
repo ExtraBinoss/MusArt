@@ -3,6 +3,23 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { ScrollShadow } from "../../../../src/components/shared/scroll/ScrollShadow";
 afterEach(() => vi.unstubAllGlobals());
+test("surface colors can be explicit or inherited without overwriting viewport styles", () => {
+  const view = render(
+    <ScrollShadow surface="var(--popover)" style={{ height: 120 }}>
+      <div role="list" />
+    </ScrollShadow>,
+  );
+  const root = screen.getByRole("list").parentElement!;
+  expect(root.style.getPropertyValue("--scroll-shadow-surface")).toBe("var(--popover)");
+  expect(root.style.height).toBe("120px");
+  view.rerender(
+    <ScrollShadow style={{ height: 80 }}>
+      <div role="list" />
+    </ScrollShadow>,
+  );
+  expect(root.style.getPropertyValue("--scroll-shadow-surface")).toBe("");
+  expect(root.style.height).toBe("80px");
+});
 test("scroll boundaries update shadows imperatively, preserve the viewport, and clean observers/listeners", async () => {
   let resize!: ResizeObserverCallback;
   const disconnect = vi.fn(),

@@ -1,5 +1,6 @@
 import { expect, test, vi } from "vitest";
-import { EditorEngine, createLayer, createPage, createProject } from "@musart/core";
+import { EditorEngine, createLayer, createPage, createProject, createEffect } from "@musart/core";
+import { attachmentSelection } from "../../../src/state/selection/attachments";
 import { documentShortcut } from "../../../src/state/keybindings/document-actions";
 test("runs the same document commands without a UI bridge and keeps directional commits atomic", async () => {
   const layer = createLayer("rectangle"),
@@ -32,4 +33,25 @@ test("runs the same document commands without a UI bridge and keeps directional 
   expect(engine.getSnapshot().project.pages[0]!.layers).toHaveLength(2);
   await documentShortcut("action:deselect", context)!();
   expect(engine.getSnapshot().selection).toEqual([]);
+});
+test("delete captures an effect target before a task is deferred and never deletes its owner", async () => {
+  const effect = createEffect("dither"),
+    layer = createLayer("rectangle", { effects: [effect] }),
+    engine = new EditorEngine(createProject({ pages: [createPage({ layers: [layer] })] })),
+    page = engine.getSnapshot().project.pages[0]!,
+    port = attachmentSelection(engine),
+    context = { engine, save: vi.fn(async () => {}), setTool: vi.fn() };
+  port.select(page, { kind: "effect", pageId: page.id, layerId: layer.id, effectId: effect.id });
+  const stale = documentShortcut("action:delete", context)!;
+  port.clear();
+  await stale();
+  expect(engine.getSnapshot().project.pages[0]!.layers).toHaveLength(1);
+  expect(engine.getSnapshot().canUndo).toBe(false);
+  port.select(page, { kind: "effect", pageId: page.id, layerId: layer.id, effectId: effect.id });
+  await documentShortcut("action:delete", context)!();
+  expect(engine.getSnapshot().project.pages[0]!.layers).toHaveLength(1);
+  expect(engine.getSnapshot().project.pages[0]!.layers[0]!.effects).toHaveLength(0);
+  engine.undo();
+  expect(engine.getSnapshot().project.pages[0]!.layers[0]!.effects).toHaveLength(1);
+  expect(engine.getSnapshot().canUndo).toBe(false);
 });

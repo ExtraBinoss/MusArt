@@ -104,6 +104,33 @@ function assetWriteCount(spy: { mock: { contexts: unknown[] } }) {
   ).length;
 }
 describe("separate immutable originals and lightweight manifests", () => {
+  it.each(["__proto__", "prototype", "constructor"])(
+    "rejects the reserved original ID %s before writing",
+    async (id) => {
+      const db = store(),
+        asset = { ...assetProject().assets.original!, id },
+        project = createProject({ assets: Object.fromEntries([[id, asset]]) }),
+        writes = vi.spyOn(IDBObjectStore.prototype, "put");
+      await expect(db.save(project)).rejects.toThrow("Identifiant réservé");
+      expect(writes).not.toHaveBeenCalled();
+      expect(await db.list()).toEqual([]);
+    },
+  );
+  it("round-trips valid prototype-looking original and layer IDs as own properties", async () => {
+    const db = store();
+    const asset = { ...assetProject().assets.original!, id: "toString" };
+    const project = createProject({ assets: Object.fromEntries([[asset.id, asset]]) });
+    project.pages[0]!.layers.push(createLayer("image", { id: "valueOf", assetId: asset.id }));
+    await db.save(project);
+    const loaded = await db.load(project.id);
+    expect(Object.hasOwn(loaded.assets, asset.id)).toBe(true);
+    expect(Object.getPrototypeOf(loaded.assets)).toBe(Object.prototype);
+    expect(loaded.assets[asset.id]).toEqual(asset);
+    expect(loaded.pages[0]!.layers[0]!.assetId).toBe(asset.id);
+    expect(loaded).toEqual(project);
+    await db.saveCurrent(loaded);
+    expect(await db.load(project.id)).toEqual(project);
+  });
   it("writes original bytes once while repeated document saves only clone small manifests", async () => {
     const name = crypto.randomUUID();
     const db = store(name);
@@ -169,7 +196,7 @@ describe("separate immutable originals and lightweight manifests", () => {
     const loaded = await db.load(project.id);
     expect(loaded).toEqual(project);
     const connection = await openDB(name);
-    expect(connection.version).toBe(5);
+    expect(connection.version).toBe(6);
     expect(await connection.count("assets")).toBe(0);
     expect((await connection.get("projects", project.id)).storageVersion).toBeUndefined();
     await db.save(loaded);

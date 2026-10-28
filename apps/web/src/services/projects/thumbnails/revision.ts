@@ -1,4 +1,4 @@
-import type { Asset, Composition } from "@musart/core";
+import { isPublishedComposition, type Asset, type Composition } from "@musart/core";
 import { computeCanonicalHash } from "../../serialization/hashing/compute";
 import type { ThumbnailHashJob } from "../../serialization/hashing/protocol";
 const originals = new Map<string, { source: string; bytes: number; digest: Promise<string> }>();
@@ -7,7 +7,7 @@ async function digest(value: string): Promise<string> {
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
-function original(asset: Asset | undefined): Promise<string> {
+function original(asset: Pick<Asset, "id" | "dataUrl"> | undefined): Promise<string> {
   if (!asset) return Promise.resolve("missing");
   const cached = originals.get(asset.id);
   if (cached?.source === asset.dataUrl) {
@@ -45,17 +45,22 @@ export async function thumbnailRevision(
   assets: Record<string, Asset>,
   hash: (job: ThumbnailHashJob) => Promise<string> = computeCanonicalHash,
 ): Promise<string> {
+  const captured = isPublishedComposition(page) ? page : structuredClone(page);
   const ids = [
     ...new Set(
-      page.layers
+      captured.layers
         .flatMap((layer) => [layer.assetId, layer.mask?.assetId])
         .filter((id): id is string => !!id),
     ),
   ].sort();
+  const pendingSources = ids.map((id) => {
+    const asset = assets[id];
+    return [id, original(asset ? { id: asset.id, dataUrl: asset.dataUrl } : undefined)] as const;
+  });
   const sources = await Promise.all(
-    ids.map(async (id) => [id, await original(assets[id])] as const),
+    pendingSources.map(async ([id, digest]) => [id, await digest] as const),
   );
-  return hash({ kind: "thumbnail", page, sources });
+  return hash({ kind: "thumbnail", page: captured, sources });
 }
 export function clearThumbnailRevisionCache(): void {
   originals.clear();

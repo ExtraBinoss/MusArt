@@ -1,4 +1,5 @@
-import { EFFECT_CATALOG, createLayerGeometryIndex, type SessionSnapshot } from "@musart/core";
+import { EFFECT_CATALOG, type SessionSnapshot } from "@musart/core";
+import { layerSelection } from "../../layers/menu/selection";
 import { SEARCH_CATEGORIES, type SearchItem, type SearchTranslate } from "./model";
 
 import { createDocumentSearchItems } from "./document-items";
@@ -25,19 +26,12 @@ export function createSearchCommandItems(
   const page =
     snapshot.project.pages.find((item) => item.id === snapshot.pageId) ??
     snapshot.project.pages[0]!;
-  const geometry = createLayerGeometryIndex(page);
-  const selected = snapshot.selection
-    .map((id) => geometry.byId.get(id))
-    .filter((layer) => layer !== undefined);
-  const editable = selected.length > 0 && selected.every((layer) => !geometry.isLocked(layer.id));
+  const { selected, editable, hasGroup } = layerSelection(page, snapshot.selection);
   const disabled = {
     selection: selected.length ? undefined : t("search:noSelection"),
     editable: editable ? undefined : t("search:noSelection"),
     group: editable && selected.length > 1 ? undefined : t("search:groupSelection"),
-    ungroup:
-      editable && selected.some((layer) => layer.kind === "group")
-        ? undefined
-        : t("search:ungroupSelection"),
+    ungroup: editable && hasGroup ? undefined : t("search:ungroupSelection"),
     undo: snapshot.canUndo ? undefined : t("search:noUndo"),
     redo: snapshot.canRedo ? undefined : t("search:noRedo"),
   };

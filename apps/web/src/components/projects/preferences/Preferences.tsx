@@ -1,64 +1,163 @@
+import type { ReactNode } from "react";
 import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
-import { Laptop, Sun, Moon, Keyboard } from "lucide-react";
-import { applyTheme, themeAtom, type Theme } from "../../../state/session/editor";
+import { Laptop, Sun, Moon, Keyboard, SlidersHorizontal, Paintbrush, Magnet } from "lucide-react";
+import { applyTheme, themeAtom } from "../../../state/session/editor";
 import { changeLanguage } from "../../../state/i18n";
-import { Button } from "../../ui/button";
-import { ButtonGroup } from "../../ui/button-group";
-import { Label } from "../../ui/label";
+import { snappingAtom, DEFAULT_SNAPPING } from "../../../state/snapping/preferences";
+import { SegmentedTabs } from "../../shared/segmented/SegmentedTabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../ui/tabs";
+import { Switch } from "../../ui/switch";
 import { SelectField } from "../../shared/SelectField";
-import "../dashboard/messages";
-export function Preferences({ onShortcuts }: { onShortcuts?: () => void } = {}) {
+import { NumberInput } from "../../shared/NumberInput";
+import { ScrollShadow } from "../../shared/scroll/ScrollShadow";
+import { ShortcutSettings } from "../../search/keybindings/ShortcutSettings";
+import "./messages";
+import "./preferences.css";
+
+export type PreferencesSection = "general" | "appearance" | "shortcuts" | "editor";
+const sections = [
+  ["general", SlidersHorizontal],
+  ["appearance", Paintbrush],
+  ["shortcuts", Keyboard],
+  ["editor", Magnet],
+] as const;
+function Panel({ section, children }: { section: PreferencesSection; children: ReactNode }) {
+  const { t } = useTranslation();
+  return (
+    <TabsContent value={section} className="preferences-page">
+      <ScrollShadow className="preferences-page-scroll" surface="var(--popover)">
+        <div className="preferences-page-viewport">
+          <header>
+            <h3>{t(`preferences:${section}`)}</h3>
+            <p>{t(`preferences:${section}Description`)}</p>
+          </header>
+          {children}
+        </div>
+      </ScrollShadow>
+    </TabsContent>
+  );
+}
+export function Preferences({
+  initialSection = "general",
+  editorPreview,
+}: {
+  initialSection?: PreferencesSection;
+  editorPreview?: ReactNode;
+} = {}) {
   const { t, i18n } = useTranslation();
-  const [theme, setTheme] = useAtom(themeAtom);
+  const [theme, setTheme] = useAtom(themeAtom),
+    [snapping, setSnapping] = useAtom(snappingAtom);
   const modes = [
     ["system", Laptop],
     ["light", Sun],
     ["dark", Moon],
   ] as const;
   return (
-    <div className="preferences">
-      <Label>{t("theme")}</Label>
-      <ButtonGroup className="theme-options" aria-label={t("theme")}>
-        {modes.map(([mode, Icon]) => (
-          <Button
-            key={mode}
-            variant="outline"
-            aria-pressed={mode === theme}
-            onClick={() => {
-              setTheme(mode as Theme);
-              applyTheme(mode);
-            }}
-          >
-            <Icon size={16} />
-            {t(mode)}
-          </Button>
+    <Tabs
+      defaultValue={initialSection}
+      orientation="vertical"
+      className="preferences preferences-workspace"
+    >
+      <TabsList aria-label={t("preferences:categories")} className="preferences-navigation">
+        {sections.map(([section, Icon]) => (
+          <TabsTrigger key={section} value={section} className="preferences-category">
+            <span className={`preferences-category-icon category-${section}`}>
+              <Icon size={14} className="size-3.5" />
+            </span>
+            <span>{t(`preferences:${section}`)}</span>
+          </TabsTrigger>
         ))}
-      </ButtonGroup>
-      <Label htmlFor="language">{t("language")}</Label>
-      <SelectField
-        id="language"
-        label={t("language")}
-        value={i18n.language}
-        options={[
-          { value: "fr", label: t("french") },
-          { value: "en", label: t("english") },
-        ]}
-        onValueChange={(language) => {
-          void changeLanguage(language as "fr" | "en");
-        }}
-      />
-      <div className="shortcut-reference">
-        <Button
-          variant="outline"
-          className="preferences-shortcuts"
-          disabled={!onShortcuts}
-          onClick={onShortcuts}
-        >
-          <Keyboard size={16} />
-          <span>{t("dashboard:editShortcuts")}</span>
-        </Button>
+      </TabsList>
+      <div className="preferences-content">
+        <Panel section="general">
+          <div className="preferences-card">
+            <div className="preferences-setting-row">
+              <div>
+                <strong>{t("language")}</strong>
+                <p>{t("preferences:languageDescription")}</p>
+              </div>
+              <SelectField
+                id="preferences-language"
+                label={t("language")}
+                value={i18n.language}
+                options={[
+                  { value: "fr", label: t("french") },
+                  { value: "en", label: t("english") },
+                ]}
+                onValueChange={(language) => {
+                  void changeLanguage(language as "fr" | "en");
+                }}
+              />
+            </div>
+          </div>
+        </Panel>
+        <Panel section="appearance">
+          <div className="preferences-card">
+            <div className="preferences-setting-label">
+              <strong>{t("theme")}</strong>
+              <p>{t("preferences:themeDescription")}</p>
+            </div>
+            <SegmentedTabs
+              mode="choice"
+              value={theme}
+              size="compact"
+              className="preferences-theme-options"
+              label={t("theme")}
+              items={modes.map(([value, Icon]) => ({
+                value,
+                label: t(value),
+                icon: <Icon size={14} className="size-3.5" />,
+              }))}
+              onValueChange={(value) => {
+                const selected = modes.find(([mode]) => mode === value)?.[0];
+                if (selected) {
+                  setTheme(selected);
+                  applyTheme(selected);
+                }
+              }}
+            />
+          </div>
+        </Panel>
+        <Panel section="shortcuts">
+          <ShortcutSettings />
+        </Panel>
+        <Panel section="editor">
+          <div className="preferences-card">
+            <label className="preferences-setting-row">
+              <span>
+                <strong>{t("preferences:snapEnabled")}</strong>
+                <small className="preferences-setting-description">
+                  {t("preferences:snapDescription")}
+                </small>
+              </span>
+              <Switch
+                aria-label={t("preferences:snapEnabled")}
+                checked={snapping.enabled}
+                onCheckedChange={(enabled) => setSnapping({ enabled })}
+              />
+            </label>
+            <div className="preferences-setting-row">
+              <div>
+                <strong>{t("preferences:snapDistance")}</strong>
+                <p>{t("preferences:snapDistanceDescription")}</p>
+              </div>
+              <NumberInput
+                label={t("preferences:snapDistance")}
+                scrubLabel={<Magnet size={14} />}
+                value={snapping.threshold}
+                min={1}
+                max={24}
+                resetValue={DEFAULT_SNAPPING.threshold}
+                unit="px"
+                disabled={!snapping.enabled}
+                onCommit={(threshold) => setSnapping({ threshold })}
+              />
+            </div>
+          </div>
+          {editorPreview}
+        </Panel>
       </div>
-    </div>
+    </Tabs>
   );
 }

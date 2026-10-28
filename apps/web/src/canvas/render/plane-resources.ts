@@ -1,4 +1,4 @@
-import { GpuCompositor, type FontResolver } from "@musart/render";
+import { GpuCompositor, type FontResolver, type FrameTexture } from "@musart/render";
 import type { Asset, Composition } from "@musart/core";
 import {
   DataTexture,
@@ -14,12 +14,24 @@ import {
 } from "three/webgpu";
 import { texture, uv } from "three/tsl";
 import { previewScale } from "./preview-quality";
+import { syncArtboardBackdrops } from "../artboards/backdrop-presentation";
+import type {
+  CanonicalOrigin,
+  PresentationPublisher,
+  PresentationTicket,
+} from "../../state/session/canonical-presentation";
+
+interface PresentationInput {
+  origin: CanonicalOrigin;
+  canonical: boolean;
+}
 
 interface PreviewRequest {
   page: Composition;
   assets: Record<string, Asset>;
   revision: number;
   scale: number;
+  ticket?: PresentationTicket;
 }
 /** Owns one display plane and a latest-only queue. GPU allocation begins at activation. */
 export class PlaneResources {
@@ -55,9 +67,18 @@ export class PlaneResources {
   private onScale?: (scale: number) => void;
   private density = 1;
   private presentationId: string | null = null;
-  private current: { page: Composition; assets: Record<string, Asset> } | null = null;
+  private presentationProjectId: string | undefined;
+  private current: {
+    page: Composition;
+    assets: Record<string, Asset>;
+    presentation?: PresentationInput;
+  } | null = null;
   private deviceLost = false;
   private stopDeviceEvents: (() => void) | null = null;
+  private presenter: PresentationPublisher | undefined;
+  private preparedTicket: PresentationTicket | undefined;
+  private presentationScene: Scene | null = null;
+  private stopSceneEvents: (() => void) | null = null;
 
   constructor(
     private readonly renderer: WebGPURenderer,
@@ -74,6 +95,7 @@ export class PlaneResources {
     invalidate: () => void,
     onError?: (message: string) => void,
     onScale?: (scale: number) => void,
+    presenter?: PresentationPublisher,
   ): () => void {
     if (this.disposed) throw new Error("Aperçu GPU déjà libéré");
     this.users++;
@@ -82,7 +104,26 @@ export class PlaneResources {
     this.invalidate = invalidate;
     this.onError = onError;
     this.onScale = onScale;
+    this.presenter = presenter;
     this.stopDeviceEvents ??= this.observeDevice();
+    if (this.presentationScene !== scene) {
+      this.stopSceneEvents?.();
+      this.presentationScene = scene;
+      const callbacks: { onAfterRender: Scene["onAfterRender"] } = scene;
+      const previous = callbacks.onAfterRender;
+      const after: Scene["onAfterRender"] = (...args) => {
+        try {
+          previous.apply(scene, args);
+        } finally {
+          if ((args[0] as unknown) === this.renderer && this.renderer.getRenderTarget() === null)
+            this.present();
+        }
+      };
+      callbacks.onAfterRender = after;
+      this.stopSceneEvents = () => {
+        if (callbacks.onAfterRender === after) callbacks.onAfterRender = previous;
+      };
+    }
     this.compositor ??= this.fontResolver
       ? new GpuCompositor(this.renderer, { fontResolver: this.fontResolver })
       : new GpuCompositor(this.renderer);
@@ -108,34 +149,52 @@ export class PlaneResources {
       }
     };
   }
-  submit(page: Composition, assets: Record<string, Asset>) {
+  submit(page: Composition, assets: Record<string, Asset>, presentation?: PresentationInput) {
     if (this.disposed || this.deviceLost) return;
-    this.current = { page, assets };
+    this.current = { page, assets, ...(presentation ? { presentation } : {}) };
     if (this.latest) this.coalesced++;
     this.latest = {
       page,
       assets,
       revision: ++this.revision,
       scale: previewScale(page, this.density),
+      ...(presentation && this.presenter
+        ? { ticket: this.presenter.request(presentation.origin, presentation.canonical) }
+        : {}),
     };
     this.renderer.domElement.dataset.rendererReady = "false";
     this.renderer.domElement.dataset.sceneRevision = String(this.revision);
     delete this.renderer.domElement.dataset.renderError;
-    if (this.presentationId !== page.id) {
+    if (
+      this.presentationId !== page.id ||
+      this.presentationProjectId !== presentation?.origin.projectId
+    ) {
       this.presentationId = page.id;
+      this.presentationProjectId = presentation?.origin.projectId;
+      this.prepared = false;
+      this.preparedTicket = undefined;
       this.renderer.domElement.dataset.compositionPrepared = "false";
       this.renderer.domElement.dataset.presentationReady = "false";
-      this.mesh.scale.set(page.width, page.height, 1);
-      if (this.camera) {
-        Object.assign(this.camera, {
-          left: -page.width / 2,
-          right: page.width / 2,
-          top: page.height / 2,
-          bottom: -page.height / 2,
-        });
-        this.camera.updateProjectionMatrix();
-      }
+      // The stable destination backdrop stays visible until this canvas contains its own page.
+      this.renderer.domElement.style.visibility = "hidden";
+      syncArtboardBackdrops(this.renderer.domElement.closest(".editor-canvas"));
       this.mesh.visible = false;
+      this.compositor?.releasePresentation();
+    }
+    const retained =
+      this.users > 0 &&
+      this.compiled &&
+      this.compositor?.retainedFrame(page, assets, this.latest.scale);
+    if (retained) {
+      const request = this.latest;
+      this.latest = null;
+      if (this.scheduled) cancelAnimationFrame(this.scheduled);
+      this.scheduled = 0;
+      this.bindFrame(request, retained);
+      if (!this.users || this.disposed || this.deviceLost || request.revision !== this.revision)
+        return;
+      this.preparedFrame(request, retained);
+      return;
     }
     this.publish();
     this.schedule();
@@ -147,7 +206,7 @@ export class PlaneResources {
     const before = this.current ? previewScale(this.current.page, this.density) : 1;
     this.density = density;
     if (this.current && before !== previewScale(this.current.page, density))
-      this.submit(this.current.page, this.current.assets);
+      this.submit(this.current.page, this.current.assets, this.current.presentation);
   }
   private schedule() {
     if (
@@ -175,50 +234,79 @@ export class PlaneResources {
     try {
       const result = await this.compositor!.render(request.page, request.assets, {
         scale: request.scale,
+        canRender: () =>
+          Boolean(
+            this.users && !this.disposed && !this.deviceLost && request.revision === this.revision,
+          ),
       });
       if (!this.users || this.disposed || this.deviceLost || request.revision !== this.revision)
         return;
-      this.sample.value = result.texture;
-      this.mesh.scale.set(request.page.width, request.page.height, 1);
-      this.onScale?.(request.scale);
+      this.bindFrame(request, result);
       const camera = this.camera!;
-      camera.left = -request.page.width / 2;
-      camera.right = request.page.width / 2;
-      camera.top = request.page.height / 2;
-      camera.bottom = -request.page.height / 2;
-      camera.updateProjectionMatrix();
       if (!this.compiled) {
         await this.renderer.compileAsync(this.scene!, camera);
         this.compiled = true;
       }
       if (!this.users || this.disposed || this.deviceLost || request.revision !== this.revision)
         return;
-      this.completed++;
-      this.preparedRevision = request.revision;
-      this.renderer.domElement.dataset.renderCount = String(this.completed);
-      this.prepared = true;
-      this.renderer.domElement.dataset.compositionPrepared = "true";
-      this.mesh.visible = true;
-      this.renderer.domElement.dataset.pageId = request.page.id;
-      this.renderer.domElement.dataset.renderWidth = String(result.width);
-      this.renderer.domElement.dataset.renderHeight = String(result.height);
-      this.publish();
-      this.invalidate();
+      this.preparedFrame(request, result);
     } catch (error) {
       if (this.users && !this.disposed && !this.deviceLost && request.revision === this.revision)
         this.report(error);
     }
   }
-  /** Marks the prepared texture at its actual scheduled draw. Never starts an animation loop. */
+  private bindFrame(request: PreviewRequest, result: FrameTexture): void {
+    this.sample.value = result.texture;
+    this.mesh.scale.set(request.page.width, request.page.height, 1);
+    const camera = this.camera!;
+    camera.left = -request.page.width / 2;
+    camera.right = request.page.width / 2;
+    camera.top = request.page.height / 2;
+    camera.bottom = -request.page.height / 2;
+    camera.updateProjectionMatrix();
+    this.onScale?.(request.scale);
+  }
+  private preparedFrame(request: PreviewRequest, result: FrameTexture): void {
+    this.completed++;
+    this.preparedRevision = request.revision;
+    this.preparedTicket = request.ticket;
+    this.renderer.domElement.dataset.renderCount = String(this.completed);
+    this.prepared = true;
+    this.renderer.domElement.dataset.compositionPrepared = "true";
+    this.mesh.visible = true;
+    this.renderer.domElement.dataset.pageId = request.page.id;
+    if (this.presentationProjectId)
+      this.renderer.domElement.dataset.projectId = this.presentationProjectId;
+    else delete this.renderer.domElement.dataset.projectId;
+    this.renderer.domElement.dataset.renderWidth = String(result.width);
+    this.renderer.domElement.dataset.renderHeight = String(result.height);
+    this.publish();
+    this.invalidate();
+  }
+  /** Called after Three finishes the display scene's render pass, never before the draw. */
   present() {
-    if (this.deviceLost || this.disposed) return;
+    if (!this.users || this.deviceLost || this.disposed) return;
     this.frames++;
     const element = this.renderer.domElement;
     element.dataset.renderFrames = String(this.frames);
-    if (this.prepared && !this.latest && !this.active && element.dataset.rendererReady !== "true") {
+    if (
+      this.prepared &&
+      this.preparedRevision === this.revision &&
+      element.dataset.rendererReady !== "true"
+    ) {
       element.dataset.rendererReady = "true";
       element.dataset.presentationReady = "true";
+      element.dataset.displayInitialized = "true";
+      element.style.visibility = "visible";
+      syncArtboardBackdrops(element.closest(".editor-canvas"));
       element.dataset.renderedRevision = String(this.preparedRevision);
+      if (this.preparedTicket) {
+        this.presenter?.present(this.preparedTicket);
+        if (this.preparedTicket.canonical)
+          element.dataset.canonicalRevision = String(this.preparedTicket.revision);
+        if (this.preparedTicket.canonical)
+          element.dataset.canonicalPresentedAt = String(performance.now());
+      }
       this.publish();
     }
   }
@@ -245,6 +333,7 @@ export class PlaneResources {
   private report(error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     this.renderer.domElement.dataset.renderError = message;
+    this.presenter?.unavailable();
     this.onError?.(message);
   }
   private observeDevice(): () => void {
@@ -278,6 +367,10 @@ export class PlaneResources {
     this.disposed = true;
     this.stopDeviceEvents?.();
     this.stopDeviceEvents = null;
+    this.stopSceneEvents?.();
+    this.stopSceneEvents = null;
+    this.presenter = undefined;
+    this.preparedTicket = undefined;
     this.latest = null;
     this.current = null;
     if (this.scheduled) {
@@ -296,7 +389,9 @@ export class PlaneResources {
         this.geometry.dispose();
         this.placeholder.dispose();
         this.mesh.visible = false;
+        this.renderer.domElement.style.visibility = "hidden";
         this.renderer.domElement.dataset.rendererReady = "false";
+        syncArtboardBackdrops(this.renderer.domElement.closest(".editor-canvas"));
       }
     })();
     return this.disposal;

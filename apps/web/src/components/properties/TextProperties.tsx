@@ -47,6 +47,7 @@ export function TextProperties({
             identity={layer}
             label={t(key)}
             value={layer[key]}
+            resetValue={{ fontSize: 64, fontWeight: 600, lineHeight: 1.2, letterSpacing: 0 }[key]}
             min={min}
             max={max}
             step={step}

@@ -7,6 +7,7 @@ test("creates presets and custom documents with committed dimensions", async () 
   const d = setup(),
     create = vi.fn();
   d.mount(<NewProjectForm onCreate={create} />);
+  expect(screen.getByLabelText("Nom")).toHaveFocus();
   await choose("Catégorie du format", "Réseaux sociaux");
   await choose("Format", "Publication Instagram · 1080 × 1080");
   fireEvent.click(screen.getByRole("button", { name: "Créer" }));

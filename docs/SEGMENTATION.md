@@ -14,6 +14,21 @@ The first use downloads configuration, the processor, both ONNX weight files, an
 
 ## Cache and operation without remote network access
 
+The model manager reports the pinned model's real download bytes and percentage,
+then shows initialization separately from download completion. Its four required
+Hub files total **39,834,751 bytes**, according to the [pinned Hub metadata](https://huggingface.co/api/models/Xenova/slimsam-77-uniform/revision/5850ab45f587c112167512ffef949107115e26a0?blobs=true).
+This is the logical model size, not physical browser storage or the shared runtime.
+Progress callbacks are coalesced per known file, with no per-chunk UI message flood.
+
+Preparation stays inside the selection worker and never requests page navigation.
+The development configuration explicitly prebundles the lazy ML dependency, because
+[Vite can otherwise reload when it discovers a new dependency](https://vite.dev/guide/dep-pre-bundling).
+WASM uses one thread to keep fallback CPU demand bounded. Users can cancel preparation,
+inspect cached model data, reload it and remove its files. Deletion first releases
+the local worker and uses the same origin lock as model loading; other model IDs
+and the shared ORT runtime cache are preserved. Cache failures remain real errors.
+The model controls and project data have independent lifecycles.
+
 Transformers.js 4.3.1 enables `useBrowserCache` and `useWasmCache` by default when Cache API is available. The second setting caches **both the WASM binary and its `.mjs` JavaScript factory**, in addition to the weights. This is necessary to start a new worker without contacting a CDN. See the [official environment settings API](https://huggingface.co/docs/transformers.js/api/env).
 
 The real verification observed these six entries in `transformers-cache`:

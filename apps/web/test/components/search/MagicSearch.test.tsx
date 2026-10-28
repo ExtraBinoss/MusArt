@@ -202,3 +202,18 @@ test("the closed spotlight never scores document rows during selection updates",
   expect(score).toHaveBeenCalled();
   score.mockRestore();
 });
+
+test("closed selection updates never build or normalize the document catalog", async () => {
+  const { SearchCatalog } = await import("../../../src/components/search/catalog/cache"),
+    search = await import("../../../src/components/search/catalog/search"),
+    read = vi.spyOn(SearchCatalog.prototype, "read"),
+    prepare = vi.spyOn(search, "prepareSearchItems");
+  const d = fixture();
+  act(() => d.engine.select([d.rectangle.id]));
+  act(() => d.engine.select([d.text.id]));
+  expect(read).not.toHaveBeenCalled();
+  expect(prepare).not.toHaveBeenCalled();
+  await d.open();
+  expect(read).toHaveBeenCalled();
+  expect(prepare).toHaveBeenCalled();
+});

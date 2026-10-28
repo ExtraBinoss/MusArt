@@ -1,0 +1,242 @@
+.preferences-dialog.preferences-shell[data-slot="dialog-content"] {
+  width: min(780px, calc(100vw - 32px));
+  max-width: 780px;
+  height: min(620px, calc(100dvh - 32px));
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  border-radius: 14px;
+}
+.preferences-shell > [data-slot="dialog-header"] {
+  padding: 20px 44px 18px 22px;
+  border-bottom: 1px solid var(--border);
+  gap: 5px;
+}
+.preferences-shell [data-slot="dialog-title"] {
+  font-size: 15px;
+}
+.preferences-shell [data-slot="dialog-description"] {
+  font-size: 11px;
+}
+.preferences.preferences-workspace {
+  flex: 1;
+  flex-direction: row;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  gap: 0;
+}
+.preferences-workspace > .preferences-navigation[data-slot="tabs-list"] {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  flex-shrink: 0;
+  width: 176px;
+  height: 100%;
+  padding: 14px 9px;
+  gap: 4px;
+  border-radius: 0;
+  border-right: 1px solid var(--border);
+  background: color-mix(in srgb, var(--foreground) 3%, transparent);
+}
+.preferences-navigation > .preferences-category[data-slot="tabs-trigger"] {
+  justify-content: flex-start;
+  flex: none;
+  width: 100%;
+  height: 36px;
+  padding: 0 9px;
+  gap: 8px;
+  font-size: 11px;
+  border: 0;
+  border-radius: 7px;
+  box-shadow: none;
+}
+.preferences-navigation > .preferences-category[data-state="active"] {
+  background: color-mix(in srgb, var(--foreground) 9%, transparent);
+  color: var(--foreground);
+  box-shadow: none;
+}
+.preferences-category-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 23px;
+  height: 23px;
+  border-radius: 6px;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px #ffffff20;
+}
+.category-general {
+  background: #7b8290;
+}
+.category-appearance {
+  background: #bd71c7;
+}
+.category-shortcuts {
+  background: #dc8c3f;
+}
+.category-editor {
+  background: #4b9a84;
+}
+.preferences-content {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+.preferences-page {
+  height: 100%;
+  margin: 0;
+  min-height: 0;
+}
+.preferences-page-scroll {
+  height: 100%;
+  min-height: 0;
+}
+.preferences-page-viewport {
+  height: 100%;
+  overflow-y: auto;
+  padding: 22px;
+}
+.preferences-page header {
+  margin-bottom: 20px;
+}
+.preferences-page h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.preferences-page p {
+  margin: 4px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+.preferences-setting-description {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+.preferences-card {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--card) 65%, transparent);
+}
+.preferences-card strong {
+  font-size: 11px;
+  font-weight: 500;
+}
+.preferences-setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+.preferences-setting-row > div:first-child,
+.preferences-setting-row > span:first-child {
+  flex: 1;
+  min-width: 0;
+}
+.preferences-setting-row + .preferences-setting-row {
+  border-top: 1px solid var(--border);
+  margin-top: 14px;
+  padding-top: 14px;
+}
+.preferences-setting-row > [data-slot="select-trigger"] {
+  flex: none;
+  width: 122px;
+}
+.preferences-setting-row > .number-field {
+  flex: none;
+  width: 132px;
+}
+.preferences-setting-label {
+  margin-bottom: 14px;
+}
+.preferences-page .binding-toolbar {
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.preferences-page .binding-toolbar input {
+  min-width: 130px;
+  height: 30px;
+}
+.preferences-page .binding-toolbar > button {
+  height: 30px;
+  font-size: 10px;
+}
+.preferences-page .binding-list {
+  max-height: none;
+}
+.preferences-page .binding-row {
+  grid-template-columns: 15px minmax(85px, 1fr) auto 21px 21px;
+  gap: 6px;
+}
+.preferences-page .binding-command {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}
+.preferences-page .binding-capture {
+  min-width: 78px;
+  font-size: 10px;
+}
+.preferences-page .binding-gestures dl > div {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+@media (max-width: 580px) {
+  .preferences-workspace > .preferences-navigation[data-slot="tabs-list"] {
+    width: 112px;
+    padding: 10px 5px;
+  }
+  .preferences-navigation > .preferences-category[data-slot="tabs-trigger"] {
+    padding: 0 5px;
+    gap: 6px;
+    font-size: 10px;
+  }
+  .preferences-category-icon {
+    width: 21px;
+    height: 21px;
+  }
+  .preferences-page-viewport {
+    padding: 16px 12px;
+  }
+  .preferences-setting-row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .preferences-setting-row > div:first-child,
+  .preferences-setting-row > span:first-child {
+    flex-basis: 100%;
+  }
+  .preferences-card {
+    padding: 11px;
+  }
+  .preferences-theme-options .segmented-tab > svg {
+    display: none;
+  }
+  .preferences-page .binding-row {
+    grid-template-columns: minmax(0, 1fr) 21px 21px;
+  }
+  .preferences-page .binding-row > svg {
+    display: none;
+  }
+  .preferences-page .binding-command {
+    grid-column: 1 / -1;
+  }
+  .preferences-page .binding-capture {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .preferences-page .binding-capture [data-slot="kbd-group"] {
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+}

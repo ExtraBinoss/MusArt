@@ -14,6 +14,20 @@ export function legacyThumbnailBytes(thumbnail?: string): number {
 }
 export function manifestBytes(record: StoredProject): number {
   const { bytes: _cache, thumbnail: _legacy, ...payload } = record;
+  const pageBytes = record.bytes?.pagePayloads;
+  if (
+    pageBytes &&
+    pageBytes.length === record.project.pages.length &&
+    pageBytes.every((bytes) => Number.isSafeInteger(bytes) && bytes >= 2)
+  ) {
+    // Metadata may change inside an IDB transaction; page bodies remain the same immutable DTOs.
+    const { pages: _pages, ...project } = record.project;
+    const total =
+      logicalBytes({ ...payload, project: { ...project, pages: [] } }) +
+      pageBytes.reduce((sum, bytes) => sum + bytes, 0) +
+      Math.max(0, pageBytes.length - 1);
+    if (Number.isSafeInteger(total)) return total;
+  }
   return logicalBytes(payload);
 }
 export function projectSummary(record: StoredProject): ProjectSummary {

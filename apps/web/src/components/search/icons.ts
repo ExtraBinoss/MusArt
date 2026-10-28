@@ -20,6 +20,8 @@ import {
   Plus,
   Wallpaper,
   Redo2,
+  Magnet,
+  Move,
 } from "lucide-react";
 import type { SearchItem } from "./catalog/model";
 
@@ -48,6 +50,9 @@ const actions = {
   addPage: Plus,
   addTechnoArtboard: Wallpaper,
   redo: Redo2,
+  editorSettings: Settings2,
+  enableSnapping: Magnet,
+  disableSnapping: Move,
 };
 export function getSearchIcon(item: Pick<SearchItem, "target" | "category">) {
   return item.target.kind === "action" && item.target.action in actions

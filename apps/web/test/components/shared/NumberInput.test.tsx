@@ -227,3 +227,107 @@ test("immutable target rebinding reuses the input and cancels old pointer/key/ty
   expect(commit).not.toHaveBeenCalled();
   expect(cancel).toHaveBeenCalled();
 });
+
+test("double-clicking the label resets once, cancels a scrub and owns its short pulse cleanup", () => {
+  vi.useFakeTimers();
+  try {
+    const commit = vi.fn(),
+      cancel = vi.fn(),
+      preview = vi.fn();
+    const view = render(
+      <NumberInput
+        label="Size"
+        value={40}
+        resetValue={64}
+        onCommit={commit}
+        onCancel={cancel}
+        onPreview={preview}
+      />,
+    );
+    const handle = screen.getByRole("button", { name: "Ajuster Size" }),
+      input = screen.getByLabelText("Size"),
+      field = input.parentElement!;
+    fireEvent.pointerDown(handle, { button: 0, clientX: 0, pointerId: 1 });
+    fireEvent.pointerMove(handle, { clientX: 40, pointerId: 1 });
+    expect(preview).toHaveBeenCalled();
+    fireEvent.doubleClick(handle);
+    expect(cancel).toHaveBeenCalled();
+    expect(commit).toHaveBeenCalledExactlyOnceWith(64);
+    expect(input).toHaveValue("64");
+    expect(field).not.toHaveAttribute("data-dragging");
+    expect(field).toHaveAttribute("data-resetting");
+    fireEvent.pointerUp(handle, { pointerId: 1 });
+    fireEvent.blur(input);
+    fireEvent.doubleClick(handle);
+    expect(commit).toHaveBeenCalledOnce();
+    vi.advanceTimersByTime(360);
+    expect(field).not.toHaveAttribute("data-resetting");
+    expect(vi.getTimerCount()).toBe(0);
+    fireEvent.doubleClick(handle);
+    expect(vi.getTimerCount()).toBe(1);
+    view.unmount();
+    expect(vi.getTimerCount()).toBe(0);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("reset is lazy, bounded and resolves a mixed selection even when its first value equals the default", () => {
+  const commit = vi.fn(),
+    resolve = vi.fn(() => 200);
+  const view = render(
+    <NumberInput
+      label="Bounded"
+      value={100}
+      mixed
+      min={1}
+      max={100}
+      resetValue={resolve}
+      onCommit={commit}
+    />,
+  );
+  expect(resolve).not.toHaveBeenCalled();
+  fireEvent.doubleClick(screen.getByRole("button", { name: "Ajuster Bounded" }));
+  expect(resolve).toHaveBeenCalledOnce();
+  expect(commit).toHaveBeenCalledExactlyOnceWith(100);
+  view.rerender(
+    <NumberInput
+      label="Bounded"
+      value={100}
+      min={1}
+      max={100}
+      resetValue={100}
+      onCommit={commit}
+    />,
+  );
+  fireEvent.doubleClick(screen.getByRole("button", { name: "Ajuster Bounded" }));
+  expect(commit).toHaveBeenCalledOnce();
+  view.rerender(<NumberInput label="Bounded" value={100} resetValue={NaN} onCommit={commit} />);
+  fireEvent.change(screen.getByLabelText("Bounded"), { target: { value: "40" } });
+  fireEvent.doubleClick(screen.getByRole("button", { name: "Ajuster Bounded" }));
+  expect(screen.getByLabelText("Bounded")).toHaveValue("100");
+  fireEvent.blur(screen.getByLabelText("Bounded"));
+  expect(commit).toHaveBeenCalledOnce();
+});
+
+test("reset respects disabled and reduced-motion preferences without React animation commits", () => {
+  const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+  Object.defineProperty(media, "matches", { value: true });
+  vi.spyOn(window, "matchMedia").mockReturnValue(media);
+  const commit = vi.fn(),
+    renders = vi.fn();
+  const view = render(
+    <Profiler id="reset" onRender={renders}>
+      <NumberInput label="Reduced" value={30} onCommit={commit} />
+    </Profiler>,
+  );
+  const baseline = renders.mock.calls.length,
+    handle = screen.getByRole("button", { name: "Ajuster Reduced" });
+  fireEvent.doubleClick(handle);
+  expect(commit).toHaveBeenCalledExactlyOnceWith(0);
+  expect(screen.getByLabelText("Reduced").parentElement).not.toHaveAttribute("data-resetting");
+  expect(renders).toHaveBeenCalledTimes(baseline);
+  view.rerender(<NumberInput label="Reduced" value={30} disabled onCommit={commit} />);
+  fireEvent.doubleClick(screen.getByRole("button", { name: "Ajuster Reduced" }));
+  expect(commit).toHaveBeenCalledOnce();
+});

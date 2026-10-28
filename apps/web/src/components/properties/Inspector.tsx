@@ -1,5 +1,16 @@
 import { useRef, useState } from "react";
-import { Palette, LockKeyhole, LockKeyholeOpen } from "lucide-react";
+import {
+  Palette,
+  LockKeyhole,
+  LockKeyholeOpen,
+  MoveHorizontal,
+  MoveVertical,
+  ArrowLeftRight,
+  ArrowUpDown,
+  RotateCw,
+  Radius,
+  Pencil,
+} from "lucide-react";
 import { type Composition, type EnginePort, type Layer } from "@musart/core";
 import { useTranslation } from "react-i18next";
 import { useSetAtom } from "jotai";
@@ -21,7 +32,7 @@ import { Input } from "../ui/input";
 interface Props {
   engine: EnginePort;
   page: Composition;
-  selected: Layer[];
+  selected: readonly Layer[];
   run: (action: () => void) => void;
 }
 export function Inspector({ engine, page, selected, run }: Props) {
@@ -72,12 +83,39 @@ export function Inspector({ engine, page, selected, run }: Props) {
     if (!layer) return null;
     const makePatch = (value: number) =>
       key === "width" || key === "height" ? dimensionPatch(key, value) : { [key]: value };
+    const Icon = {
+      x: MoveHorizontal,
+      y: MoveVertical,
+      width: ArrowLeftRight,
+      height: ArrowUpDown,
+      rotation: RotateCw,
+      radius: Radius,
+      strokeWidth: Pencil,
+    }[key];
     return (
       <NumberInput
         key={key}
         identity={layer}
         label={label}
+        scrubLabel={
+          <span className="position-field-label">
+            <Icon size={13} aria-hidden />
+            <span>{label}</span>
+          </span>
+        }
         value={layer[key]}
+        resetValue={() =>
+          key === "width" || key === "height"
+            ? (asset?.[key] ??
+              (layer.kind === "group"
+                ? layer[key]
+                : key === "width"
+                  ? 280
+                  : layer.kind === "text"
+                    ? 100
+                    : 220))
+            : 0
+        }
         min={min}
         max={max}
         unit={unit}
@@ -197,6 +235,7 @@ export function Inspector({ engine, page, selected, run }: Props) {
                         identity={layer}
                         label={t("imageScale")}
                         value={(layer.width / asset.width) * 100}
+                        resetValue={100}
                         min={0.1}
                         max={10000}
                         unit="%"
@@ -278,6 +317,7 @@ export function Inspector({ engine, page, selected, run }: Props) {
                       identity={page}
                       label={t(key)}
                       value={page[key]}
+                      resetValue={1080}
                       min={1}
                       max={16384}
                       unit="px"

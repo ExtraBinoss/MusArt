@@ -4,7 +4,7 @@ import type { StoredProject } from "../../apps/web/src/services/projects/databas
 
 async function savedState(page: Page) {
   return page.evaluate(async () => {
-    const request = indexedDB.open("musart-studio", 5);
+    const request = indexedDB.open("musart-studio", 6);
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);

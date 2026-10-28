@@ -27,9 +27,9 @@ function fixture() {
     dropEffect: "",
   };
   const order = () =>
-    Array.from(group.querySelectorAll("[data-dock-command]")).map((item) =>
-      item.getAttribute("data-dock-command"),
-    );
+    Array.from(group.querySelectorAll<HTMLElement>("[data-dock-command]"))
+      .sort((a, b) => Number(a.style.order) - Number(b.style.order))
+      .map((item) => item.getAttribute("data-dock-command"));
   return { ...d, run, group, row, transfer, order };
 }
 test("executes shared commands with disabled gates and persists only completed drags", () => {
@@ -38,9 +38,15 @@ test("executes shared commands with disabled gates and persists only completed d
   expect(d.run).toHaveBeenCalledExactlyOnceWith("action:save");
   expect(within(d.group).getByLabelText("delete")).toBeDisabled();
   const original = localStorage.getItem(DOCK_STORAGE_KEY);
+  const source = d.row("addPage"),
+    insert = vi.spyOn(d.group, "insertBefore"),
+    append = vi.spyOn(d.group, "appendChild");
   fireEvent.dragStart(d.row("addPage"), { dataTransfer: d.transfer });
   fireEvent.dragOver(d.row("save"), { dataTransfer: d.transfer });
   expect(d.order().slice(0, 2)).toEqual(["action:save", "action:addPage"]);
+  expect(d.row("addPage")).toBe(source);
+  expect(insert).not.toHaveBeenCalled();
+  expect(append).not.toHaveBeenCalled();
   expect(localStorage.getItem(DOCK_STORAGE_KEY)).toBe(original);
   fireEvent.keyDown(window, { key: "Escape" });
   expect(d.order().slice(0, 2)).toEqual(["action:addPage", "action:save"]);

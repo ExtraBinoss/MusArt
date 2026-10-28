@@ -52,26 +52,26 @@
   -webkit-font-smoothing: antialiased;
 }
 :root.dark {
-  --background: #202125;
-  --foreground: #e7e8ee;
-  --card: #25262b;
-  --popover: #292a30;
+  --background: #222222;
+  --foreground: #e8e8e8;
+  --card: #262626;
+  --popover: #2a2a2a;
   --primary: #e5e5e5;
   --primary-foreground: #171717;
   --action: #2563eb;
   --action-foreground: #ffffff;
-  --secondary: #34363e;
-  --muted: #303139;
-  --muted-foreground: #9295a2;
+  --secondary: #353535;
+  --muted: #303030;
+  --muted-foreground: #a0a0a0;
   --accent: #343434;
   --destructive: #ff6b72;
-  --border: #37383f;
-  --input: #3b3d46;
-  --workspace: #17181c;
-  --workspace-dots: #373940;
+  --border: #3b3b3b;
+  --input: #404040;
+  --workspace: #181818;
+  --workspace-dots: #383838;
   --selection-fill: #363636;
-  --field: #2b2d34;
-  --toolbar-foreground: #c4c7d0;
+  --field: #2d2d2d;
+  --toolbar-foreground: #c7c7c7;
 }
 * {
   box-sizing: border-box;
@@ -141,6 +141,11 @@ svg {
     0 8px 32px #0000000f,
     0 1px 3px #00000008,
     inset 0 1px 0 color-mix(in srgb, var(--card) 60%, transparent);
+}
+:root.dark .floating-panel {
+  background: var(--popover);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .floating-panel {

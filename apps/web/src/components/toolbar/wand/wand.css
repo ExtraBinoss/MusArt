@@ -1,0 +1,45 @@
+.wand-options-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 10px;
+}
+.wand-help {
+  width: 310px;
+  max-width: calc(100vw - 24px);
+  max-height: min(560px, calc(100dvh - 24px));
+  overflow-y: auto;
+  padding: 14px;
+}
+.wand-help h3 {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+.wand-help p {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+  margin: 8px 0;
+}
+.wand-help dl {
+  font-size: 11px;
+  margin: 12px 0;
+}
+.wand-help dl > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+}
+.wand-help dt {
+  min-width: 64px;
+}
+.wand-help dd {
+  margin: 0;
+}
+.wand-help .switch-row {
+  margin-top: 16px;
+  gap: 12px;
+}

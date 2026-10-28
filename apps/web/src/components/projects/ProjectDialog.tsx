@@ -24,12 +24,15 @@ export interface ProjectDialogProps {
   projectId?: string;
   onClose: () => void;
   onTask: TaskRunner;
-  initialView?: "projects" | "templates" | "newProject" | "settings";
+  initialView?: "projects" | "templates" | "newProject" | "settings" | "settingsEditor";
 }
 /** The same dashboard works before the first document and above an open project. */
 export function ProjectDialog(props: ProjectDialogProps) {
-  return props.initialView === "settings" ? (
-    <PreferencesDialog onClose={props.onClose} />
+  return props.initialView === "settings" || props.initialView === "settingsEditor" ? (
+    <PreferencesDialog
+      onClose={props.onClose}
+      initialSection={props.initialView === "settingsEditor" ? "editor" : "general"}
+    />
   ) : (
     <ProjectDashboard {...props} />
   );

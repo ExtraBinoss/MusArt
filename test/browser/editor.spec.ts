@@ -208,7 +208,7 @@ test("bulk import, pages, layers, history and portable/image exports through UI"
   await page.getByRole("button", { name: "Exporter l’image", exact: true }).click();
   expect((await download).suggestedFilename()).toMatch(/\.png$/);
 });
-test("magic wand worker creates an undoable image mask and export preserves its alpha", async ({
+test("magic wand accepts a selection before an explicit undoable mask and preserves export alpha", async ({
   page,
 }) => {
   await ready(page);
@@ -241,6 +241,9 @@ test("magic wand worker creates an undoable image mask and export preserves its 
   await page.getByRole("button", { name: "Baguette magique", exact: true }).click();
   const box = await page.getByTestId("artboard").boundingBox();
   await page.mouse.click(box!.x + 10, box!.y + 20);
+  await expect(page.getByTestId("pixel-selection-outline")).toBeVisible();
+  expect(await page.evaluate(() => window.musart!.snapshot().canUndo)).toBe(false);
+  await page.getByRole("button", { name: "Créer un masque", exact: true }).click();
   await expect
     .poll(() =>
       page.evaluate(() => window.musart!.snapshot().project.pages[0]!.layers[0]!.mask?.enabled),

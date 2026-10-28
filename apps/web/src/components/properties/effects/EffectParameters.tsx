@@ -97,9 +97,22 @@ export function EffectParameters({
             );
           return (
             <NumberInput
-              key={`${parameter.key}:${value}`}
+              key={parameter.key}
+              identity={effect}
               label={label}
               value={Number(value) * parameter.displayScale}
+              resetValue={() =>
+                Number(
+                  getEffectParameter(
+                    {
+                      id: effect.id,
+                      type: effect.type,
+                      ...getEffectDefinition(effect.type).defaults,
+                    },
+                    parameter,
+                  ),
+                ) * parameter.displayScale
+              }
               disabled={disabled}
               min={parameter.min * parameter.displayScale}
               max={parameter.max * parameter.displayScale}

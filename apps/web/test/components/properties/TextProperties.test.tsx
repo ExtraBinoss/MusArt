@@ -52,3 +52,25 @@ test.each([
   );
   expect(screen.getByRole("combobox", { name: "Police" })).toHaveTextContent(bundled);
 });
+
+test("typography reset labels use their actual defaults rather than numeric minima", () => {
+  const d = setup(),
+    patch = vi.fn();
+  d.mount(
+    <TextProperties
+      layer={{ ...d.text, fontSize: 40, fontWeight: 300, lineHeight: 2, letterSpacing: 3 }}
+      patch={patch}
+      preview={vi.fn()}
+      cancel={vi.fn()}
+    />,
+  );
+  for (const [label, change] of [
+    ["Corps", { fontSize: 64 }],
+    ["Graisse", { fontWeight: 600 }],
+    ["Interligne", { lineHeight: 1.2 }],
+    ["Approche", { letterSpacing: 0 }],
+  ] as const) {
+    fireEvent.doubleClick(screen.getByRole("button", { name: `Ajuster ${label}` }));
+    expect(patch).toHaveBeenLastCalledWith(change);
+  }
+});

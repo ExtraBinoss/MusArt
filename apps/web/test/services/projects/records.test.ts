@@ -1,6 +1,6 @@
 import { it, expect } from "vitest";
 import { Blob as NodeBlob } from "node:buffer";
-import { createProject, createPage } from "@musart/core";
+import { createProject, createPage, createLayer } from "@musart/core";
 import {
   thumbnailInfo,
   thumbnailBytes,
@@ -44,4 +44,52 @@ it("separates encoded binary thumbnails from lightweight card metadata and cache
     pages: [{ id: "page", thumbnailRevision: "hash", thumbnailBytes: 4 }],
   });
   expect(projectSummary({ id: "p", project }).pages[0]).not.toHaveProperty("thumbnailRevision");
+});
+
+it("accounts cached worker page sizes exactly through metadata and thumbnail changes", () => {
+  const project = createProject({
+    pages: [
+      createPage({
+        name: "Édition 🎨",
+        layers: [createLayer("text", { text: 'Quotes: " \\ \n \ud800 中文' })],
+      }),
+      createPage({ name: "Second" }),
+    ],
+  });
+  const record = {
+    id: project.id,
+    storageVersion: 2 as const,
+    project,
+    assetsRevision: "originals:1",
+    pageRevisions: { [project.pages[0]!.id]: "digest" },
+    thumbnailInfo: [] as ReturnType<typeof thumbnailInfo>[],
+    bytes: { manifest: 0, assets: 0, thumbnails: 0, pagePayloads: project.pages.map(logicalBytes) },
+  };
+  const exact = () => {
+    const { bytes: _bytes, ...payload } = record;
+    return logicalBytes(payload);
+  };
+  expect(manifestBytes(record)).toBe(exact());
+  record.project = { ...project, name: "Renamed 🧠" };
+  record.thumbnailInfo.push({
+    projectId: project.id,
+    pageId: project.pages[0]!.id,
+    revision: "digest",
+    width: 768,
+    height: 512,
+    updatedAt: project.updatedAt,
+    bytes: 1234,
+  });
+  record.assetsRevision = "originals:100";
+  expect(manifestBytes(record)).toBe(exact());
+  for (const pagePayloads of [
+    [1, 1],
+    [NaN, 20],
+    [],
+    [20],
+    [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
+  ]) {
+    record.bytes.pagePayloads = pagePayloads;
+    expect(manifestBytes(record)).toBe(exact());
+  }
 });

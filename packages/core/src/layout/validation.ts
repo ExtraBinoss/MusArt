@@ -5,6 +5,7 @@ import {
   assertBoolean,
   assertList,
   assertUniqueId,
+  assertColor,
 } from "../document/guards";
 export function validateInsets(value: unknown, width: number, height: number): void {
   assertRecord(value);
@@ -31,6 +32,7 @@ export function validateLayerLayout(layer: Record<string, unknown>, ids: Set<str
         0,
         guide.axis === "x" ? Number(layer.width) : Number(layer.height),
       );
+      if (guide.color !== undefined) assertColor(guide.color);
     }
   }
 }

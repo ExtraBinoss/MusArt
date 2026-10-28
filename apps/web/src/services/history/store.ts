@@ -27,11 +27,37 @@ import { appendInTransaction } from "./append";
 import { initializeHistory } from "./initialization";
 import { writeHistory } from "./transactions";
 import { assertProjectWritable } from "../projects/lifecycle";
+import {
+  appendOperationInTransaction,
+  assertHistoryControlOperation,
+  StaleHistoryOperationError,
+  type HistoryOperation,
+  type HistoryControlOperation,
+} from "./operations";
 export class HistoryStore {
   constructor(
     private readonly database: () => Promise<IDBPDatabase<StudioDatabase>>,
     private readonly fingerprint = fingerprintState,
   ) {}
+  databaseName = async (): Promise<string> => (await this.database()).name;
+  async appendOperation(
+    projectId: string,
+    event: ReplayEvent,
+    assets: Record<string, Asset>,
+    stamp: string,
+    elapsed: number,
+    concurrency: { expectedNext: number; current: ReplayState },
+    operation: HistoryOperation,
+  ) {
+    const fingerprint = await this.fingerprint(concurrency.current);
+    return writeHistory(await this.database(), (tx) =>
+      appendOperationInTransaction(
+        tx,
+        { projectId, event, assets, stamp, elapsed, concurrency, fingerprint },
+        operation,
+      ),
+    );
+  }
   async info(projectId: string) {
     return (await this.database()).get("journalMeta", projectId);
   }
@@ -90,7 +116,12 @@ export class HistoryStore {
     return historyUsage(await this.database(), projectId);
   }
   /** Reset atomically to the current project while preserving the user's retention preferences. */
-  async clear(project: Project, pageId: string): Promise<HistoryMetadata> {
+  async clear(
+    project: Project,
+    pageId: string,
+    operation?: HistoryControlOperation,
+  ): Promise<HistoryMetadata> {
+    if (operation) assertHistoryControlOperation(operation);
     validateProject(project);
     if (!project.pages.some((page) => page.id === pageId))
       throw new Error("History page is missing.");
@@ -99,6 +130,10 @@ export class HistoryStore {
     return writeHistory(await this.database(), async (tx) => {
       await assertProjectWritable(tx.objectStore("preferences"), project.id);
       const previous = await tx.objectStore("journalMeta").get(project.id);
+      if (operation) {
+        if (previous?.epoch === operation.id) return previous;
+        if (previous?.epoch !== operation.epoch) throw new StaleHistoryOperationError();
+      }
       await tx
         .objectStore("journalEvents")
         .delete(IDBKeyRange.bound([project.id, 0], [project.id, Number.MAX_SAFE_INTEGER]));
@@ -110,6 +145,8 @@ export class HistoryStore {
       const base = { projectId: project.id, pageId, state: current, at: 0 };
       const meta: HistoryMetadata = {
         version: 1,
+        epoch: operation?.id ?? crypto.randomUUID(),
+        ...(previous?.configurationId ? { configurationId: previous.configurationId } : {}),
         projectId: project.id,
         first: 0,
         next: 0,
@@ -209,7 +246,12 @@ export class HistoryStore {
       throw error;
     }
   }
-  async configure(projectId: string, options: { limit?: number; enabled?: boolean }) {
+  async configure(
+    projectId: string,
+    options: { limit?: number; enabled?: boolean },
+    operation?: HistoryControlOperation,
+  ) {
+    if (operation) assertHistoryControlOperation(operation);
     if (options.enabled !== undefined && typeof options.enabled !== "boolean")
       throw new TypeError("History enabled must be a boolean.");
     if (
@@ -226,8 +268,21 @@ export class HistoryStore {
       await assertProjectWritable(tx.objectStore("preferences"), projectId);
       const meta = await tx.objectStore("journalMeta").get(projectId);
       if (!meta) throw new Error("History is not initialized.");
+      if (operation) {
+        if (
+          meta.configurationId === operation.id &&
+          (meta.epoch === operation.epoch || meta.epoch === operation.id)
+        )
+          return;
+        if (meta.epoch !== operation.epoch || meta.configurationId !== operation.configurationId)
+          throw new StaleHistoryOperationError();
+      }
       if (options.limit !== undefined) meta.limit = options.limit;
-      if (options.enabled !== undefined) meta.enabled = options.enabled;
+      if (options.enabled !== undefined && options.enabled !== meta.enabled) {
+        meta.enabled = options.enabled;
+        meta.epoch = operation?.id ?? crypto.randomUUID();
+      }
+      meta.configurationId = operation?.id ?? crypto.randomUUID();
       await pruneHistory(tx, meta);
       await tx.objectStore("journalMeta").put(meta);
     });

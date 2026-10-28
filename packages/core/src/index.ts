@@ -26,7 +26,11 @@ export type { EngineOptions } from "./session/engine";
 export { EngineError } from "./errors";
 export type { EngineErrorCode } from "./errors";
 export { validateProject } from "./document/validation";
-export { isPublishedProject, isPublishedComposition } from "./document/published";
+export {
+  isPublishedProject,
+  isPublishedComposition,
+  isPublishedAssets,
+} from "./document/published";
 export { parseProject, serializeProject } from "./document/serialization";
 export {
   getAncestors,
@@ -42,6 +46,8 @@ export {
   transformPoint,
 } from "./layers/geometry";
 export type { Bounds, Matrix, Point } from "./layers/geometry";
+export { SnapIndex } from "./layout/snapping/engine";
+export type { SnapCue, SnapResult, SnapKind } from "./layout/snapping/model";
 
 export { EFFECT_CATALOG, getEffectDefinition } from "./effects/catalog";
 export type {

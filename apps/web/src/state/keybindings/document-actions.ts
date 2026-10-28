@@ -1,6 +1,7 @@
 import { getAncestors, getWorldMatrix, invertMatrix, type EnginePort } from "@musart/core";
 import type { Tool } from "../../canvas/EditorCanvas";
 import type { CommandId } from "./model";
+import { capturePresentationDelete } from "../selection/attachments";
 
 interface Context {
   engine: EnginePort;
@@ -25,6 +26,7 @@ export function documentShortcut(
   };
   const tool = tools[id];
   if (tool) return () => context.setTool(tool);
+  if (id === "action:delete") return capturePresentationDelete(engine);
   const selected =
     (type: "deleteLayers" | "duplicateLayers" | "groupLayers" | "ungroupLayers") => () => {
       const ids = engine.getSnapshot().selection;
@@ -34,7 +36,6 @@ export function documentShortcut(
     "action:save": context.save,
     "action:undo": engine.undo,
     "action:redo": engine.redo,
-    "action:delete": selected("deleteLayers"),
     "action:duplicate": selected("duplicateLayers"),
     "action:group": selected("groupLayers"),
     "action:ungroup": selected("ungroupLayers"),

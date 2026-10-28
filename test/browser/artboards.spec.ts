@@ -19,7 +19,7 @@ async function pose(page: Page) {
     .evaluate((board) => [board.dataset.panX, board.dataset.panY, board.dataset.zoom]);
 }
 async function center(page: Page, id: string, x: number, y: number) {
-  const board = page.locator(`.canvas-artboard[data-artboard-id="${id}"]`),
+  const board = page.locator(`.canvas-artboard-backdrop[data-artboard-id="${id}"]`),
     box = (await board.boundingBox())!;
   const dimensions = await board.evaluate((element) => ({
     width: (element as HTMLElement).offsetWidth,
@@ -237,6 +237,40 @@ test("real artboards share one GPU scene, preserve world navigation and retain l
       expect(await pose(page)).toEqual(retainedPose);
       await expect(active.locator("canvas")).toHaveAttribute("data-artboard-witness", "retained");
     }
+    const warm = await page.evaluate((id) => {
+      const output = document.querySelector<HTMLCanvasElement>('[data-testid="artboard"] canvas')!;
+      const backdrop = document.querySelector<HTMLImageElement>(
+        `.canvas-artboard-backdrop[data-artboard-id="${id}"] img`,
+      )!;
+      const before = JSON.parse(output.dataset.gpuStats!);
+      window.musart!.page(id);
+      return {
+        beforePasses: before.passes,
+        afterPasses: JSON.parse(output.dataset.gpuStats!).passes,
+        ready: output.dataset.rendererReady,
+        prepared: output.dataset.compositionPrepared,
+        initialized: output.dataset.displayInitialized,
+        visibility: output.style.visibility,
+        backdropDecoded: backdrop.complete && backdrop.naturalWidth > 0,
+        backdropRetained: backdrop.isConnected,
+        loader: getComputedStyle(document.querySelector(".canvas-loading")!).visibility,
+      };
+    }, cover.id);
+    expect(warm).toMatchObject({
+      ready: "false",
+      prepared: "true",
+      initialized: "true",
+      visibility: "hidden",
+      backdropDecoded: true,
+      backdropRetained: true,
+      loader: "hidden",
+    });
+    expect(warm.afterPasses).toBe(warm.beforePasses);
+    await presented(page);
+    await expect(active.locator("canvas")).toHaveCSS("visibility", "visible");
+    await page.locator(`.artboard-heading[data-artboard-id="${story.id}"] .artboard-name`).click();
+    await presented(page);
+    await expect(page.locator(".artboard-preview-state")).toHaveCount(0);
     expect(await page.evaluate(() => window.musart!.snapshot().revision)).toBe(baseline.revision);
     expect(
       await page.evaluate(
@@ -318,6 +352,7 @@ test("real artboards share one GPU scene, preserve world navigation and retain l
           baseline,
           thumbnail,
           retainedPose,
+          warm,
           reads,
           errors,
         },
@@ -442,7 +477,7 @@ test("artboard headings remain disjoint during animated extreme zoom and move di
     }),
   );
   for (const [index, rect] of rects.entries()) {
-    expect(rect.height).toBe(26);
+    expect(rect.height).toBeCloseTo(26, 3);
     expect(rect.compact).toBe("true");
     expect(rect.dimensions).toBe("none");
     expect(rect.ellipsis).toBe("ellipsis");

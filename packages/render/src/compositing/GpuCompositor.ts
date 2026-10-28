@@ -1,4 +1,11 @@
-import { createLayerGeometryIndex, type Asset, type Composition, type Layer } from "@musart/core";
+import {
+  createLayerGeometryIndex,
+  isPublishedComposition,
+  isPublishedAssets,
+  type Asset,
+  type Composition,
+  type Layer,
+} from "@musart/core";
 import type { RenderTarget, WebGPURenderer } from "three/webgpu";
 import { ColorPipeline } from "../color/ColorPipeline";
 import { GpuResourceCache } from "../cache/GpuResourceCache";
@@ -42,6 +49,13 @@ export class GpuCompositor {
   private frames = 0;
   private cacheHits = 0;
   private retainedRoot = "";
+  private readonly retainedInputs = new WeakMap<
+    LayerTargets,
+    {
+      page: WeakRef<Composition>;
+      assets: WeakRef<Record<string, Asset>>;
+    }
+  >();
 
   constructor(
     private readonly renderer: WebGPURenderer,
@@ -52,6 +66,34 @@ export class GpuCompositor {
       maxEdge: options.sourceMaxEdge,
     });
     this.texts = new TextSources(renderer, this.cache, { fontResolver: options.fontResolver });
+  }
+
+  /** Exact immutable-input hit inside the existing GPU LRU; no allocation, upload or readback. */
+  retainedFrame(
+    page: Composition,
+    assets: Record<string, Asset>,
+    scale: number,
+  ): FrameTexture | null {
+    if (this.disposed || !isPublishedComposition(page) || !isPublishedAssets(assets)) return null;
+    const key = `page:${page.id}:${scale}`,
+      entry = this.cache.get<LayerTargets>(key);
+    const input = entry && this.retainedInputs.get(entry);
+    if (
+      !entry?.signature ||
+      !entry.output ||
+      !input ||
+      input.page.deref() !== page ||
+      input.assets.deref() !== assets
+    )
+      return null;
+    this.retainedRoot = key;
+    this.cacheHits++;
+    return entry.output;
+  }
+
+  /** A hidden display no longer pins its previous artboard against the bounded LRU. */
+  releasePresentation(): void {
+    this.retainedRoot = "";
   }
 
   render(
@@ -117,6 +159,7 @@ export class GpuCompositor {
         this.cacheHits++;
         this.frames++;
         this.retainedRoot = rootKey;
+        this.rememberInput(entry, page, assets);
         return entry.output;
       }
       entry.signature = "";
@@ -142,12 +185,23 @@ export class GpuCompositor {
       };
       entry.signature = signature;
       this.retainedRoot = rootKey;
+      this.rememberInput(entry, page, assets);
       this.frames++;
       this.normal.retain(this.normalIds);
       return entry.output;
     });
     this.queue = job.catch(() => undefined);
     return job;
+  }
+
+  private rememberInput(
+    entry: LayerTargets,
+    page: Composition,
+    assets: Record<string, Asset>,
+  ): void {
+    if (isPublishedComposition(page) && isPublishedAssets(assets))
+      this.retainedInputs.set(entry, { page: new WeakRef(page), assets: new WeakRef(assets) });
+    else this.retainedInputs.delete(entry);
   }
 
   private entry(key: string): LayerTargets {

@@ -5,12 +5,14 @@ import {
   createPage,
   createProject,
   EditorEngine,
+  createLayerGeometryIndex,
   getWorldMatrix,
   transformPoint,
 } from "@musart/core";
 import { GuideOverlay } from "../../../src/canvas/guides/GuideOverlay";
 import { createStore } from "jotai";
 import { SceneController } from "../../../src/canvas/session/scene-controller";
+import { createPlaybackSource } from "../../../src/canvas/session/playback-source";
 import { createPreviewSource } from "../../../src/state/session/preview-source";
 import { previewAtom } from "../../../src/state/session/editor";
 const view = { x: 5, y: -3, zoom: 2 };
@@ -54,6 +56,34 @@ const pointer = (x: number, y: number, button = 0) => ({
   clientY: 17 + y * 2,
   button,
   pointerId: 1,
+});
+
+it("previews guide colors imperatively on the retained line and restores cancellation without a document edit", () => {
+  const d = fixture(),
+    store = createStore();
+  const controller = new SceneController(d.engine, createPreviewSource(store));
+  const { container, unmount } = render(
+    <GuideOverlay {...d} controller={controller} selected={[]} view={view} />,
+  );
+  const line = container.querySelector<HTMLElement>("[data-guide-id=page]")!;
+  const before = d.engine.getSnapshot();
+  act(() =>
+    store.set(previewAtom, {
+      target: "page",
+      patch: { guides: [{ ...d.page.guides[0]!, color: "#00aaff" }] },
+    }),
+  );
+  expect(d.engine.getSnapshot()).toBe(before);
+  expect(container.querySelector("[data-guide-id=page]")).toBe(line);
+  expect(line.style.getPropertyValue("--guide-color")).toBe("#00aaff");
+  act(() => store.set(previewAtom, null));
+  expect(line.style.getPropertyValue("--guide-color")).toBe("#ed66c2");
+  act(() => d.engine.execute({ type: "updateGuide", id: "page", patch: { color: "#aabbcc" } }));
+  expect(line.style.getPropertyValue("--guide-color")).toBe("#aabbcc");
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project).toBe(before.project);
+  expect(line.style.getPropertyValue("--guide-color")).toBe("#ed66c2");
+  unmount();
 });
 it("previews page guide drags without history then commits one rounded update or deletes outside bounds", () => {
   const d = fixture(),
@@ -226,3 +256,76 @@ it.each(["project", "page"] as const)(
     }
   },
 );
+
+it("Escape restores page guides and playback blocks both active and new guide gestures", () => {
+  const d = fixture(),
+    controller = new SceneController(d.engine, { read: () => null, subscribe: () => () => {} });
+  const { container, unmount } = render(
+    <GuideOverlay {...d} controller={controller} selected={[]} view={view} />,
+  );
+  const handle = container.querySelector<HTMLElement>("[data-guide-id=page]")!,
+    baseline = d.engine.getSnapshot();
+  vi.spyOn(handle, "hasPointerCapture").mockReturnValue(true);
+  const release = vi.spyOn(handle, "releasePointerCapture");
+  fireEvent.keyDown(window, { key: "a" });
+  fireEvent.pointerDown(handle, pointer(10, 0));
+  fireEvent.pointerMove(handle, pointer(20, 0));
+  fireEvent.keyDown(window, { key: "Escape" });
+  expect(handle).toHaveStyle({ left: "10px" });
+  expect(release).toHaveBeenCalled();
+  fireEvent.pointerUp(handle, pointer(20, 0));
+  fireEvent.pointerDown(handle, pointer(10, 0));
+  act(() => createPlaybackSource(d.engine).set({ page: d.page, assets: {} }));
+  fireEvent.pointerUp(handle, pointer(20, 0));
+  fireEvent.pointerDown(handle, pointer(10, 0));
+  fireEvent.pointerMove(handle, pointer(20, 0));
+  fireEvent.pointerUp(handle, pointer(20, 0));
+  expect(d.engine.getSnapshot()).toBe(baseline);
+  expect(d.commands).not.toHaveBeenCalled();
+  unmount();
+});
+
+it("collective selection keeps page guides editable without scanning ten thousand guide owners", () => {
+  const d = fixture();
+  let idReads = 0;
+  const layers = Array.from({ length: 10000 }, (_, index) => {
+    const layer = createLayer("rectangle", {
+      id: `many-${index}`,
+      ...(index === 0 ? { guides: [{ id: "retained-local", axis: "x", position: 4 }] } : {}),
+    });
+    Object.defineProperty(layer, "id", {
+      get: () => {
+        idReads++;
+        return `many-${index}`;
+      },
+    });
+    return Object.freeze(layer);
+  });
+  const page = createPage({ width: 100, height: 80, guides: d.page.guides, layers });
+  Object.freeze(page.layers);
+  Object.freeze(page);
+  d.engine.load(createProject({ pages: [page] }));
+  createLayerGeometryIndex(page);
+  idReads = 0;
+  const { container, rerender } = render(
+    <GuideOverlay
+      {...d}
+      page={page}
+      selected={Array.from({ length: 10000 }, (_, i) => `many-${i}`)}
+      view={view}
+    />,
+  );
+  expect(idReads).toBe(0);
+  expect(container.querySelectorAll(".layer-guides")).toHaveLength(0);
+  expect(page.layers[0]!.guides).toHaveLength(1);
+  const pageGuide = container.querySelector<HTMLElement>("[data-guide-id=page]")!;
+  fireEvent.pointerDown(pageGuide, pointer(10, 0));
+  fireEvent.pointerUp(pageGuide, pointer(20, 0));
+  expect(d.engine.getSnapshot().project.pages[0]!.guides[0]!.position).toBe(20);
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+  idReads = 0;
+  rerender(<GuideOverlay {...d} page={page} selected={["many-0"]} view={view} />);
+  expect(container.querySelectorAll(".layer-guides")).toHaveLength(1);
+  expect(idReads).toBeLessThan(20);
+});

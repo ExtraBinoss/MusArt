@@ -110,6 +110,23 @@ test("legacy adapters can show original images while vector/text layers retain h
   );
   expect(screen.getByRole("presentation")).toHaveAttribute("src", "data:image/png;base64,AAAA");
 });
+test("requests an inactive artboard preview explicitly without changing the active page", async () => {
+  const layer = createLayer("text"),
+    previewExport = vi.fn(async () => ({ blob: new Blob(["thumbnail"]), width: 96, height: 96 }));
+  render(
+    <LayerThumbnail
+      layer={layer}
+      pageId="other-artboard"
+      services={{ previewExport }}
+      previewKey="other"
+    />,
+  );
+  await waitFor(() => expect(previewExport).toHaveBeenCalledOnce());
+  expect(previewExport).toHaveBeenCalledWith(
+    { pageId: "other-artboard", selection: [layer.id], edge: 96 },
+    expect.any(AbortSignal),
+  );
+});
 test("StrictMode cancels its replayed idle job and unchanged visual keys retain the live URL", async () => {
   const layer = createLayer("rectangle"),
     previewExport = vi.fn(async () => ({ blob: new Blob(["thumb"]), width: 96, height: 96 }));
@@ -136,4 +153,59 @@ test("StrictMode cancels its replayed idle job and unchanged visual keys retain 
   expect(URL.revokeObjectURL).not.toHaveBeenCalled();
   view.unmount();
   expect(URL.revokeObjectURL).toHaveBeenCalledExactlyOnceWith("blob:thumb-1");
+});
+
+test("requests genuine page-scoped effect/mask variants and rejects a late foreign-page thumbnail", async () => {
+  const layer = createLayer("image", { id: "owner" });
+  const pending: ((value: { blob: Blob; width: number; height: number }) => void)[] = [];
+  const previewExport = vi.fn(
+    (..._args: Parameters<NonNullable<EditorServices["previewExport"]>>) =>
+      new Promise<{ blob: Blob; width: number; height: number }>((resolve) =>
+        pending.push(resolve),
+      ),
+  );
+  const view = render(
+    <LayerThumbnail
+      layer={layer}
+      pageId="second"
+      services={{ previewExport }}
+      previewKey="same"
+      variant={{ kind: "effect", effectId: "dither" }}
+    />,
+  );
+  await waitFor(() => expect(previewExport).toHaveBeenCalledOnce());
+  expect(previewExport.mock.calls[0]![0]).toEqual({
+    selection: [layer.id],
+    pageId: "second",
+    edge: 96,
+    variant: { kind: "effect", effectId: "dither" },
+  });
+  const signal = previewExport.mock.calls[0]![1];
+  view.rerender(
+    <LayerThumbnail
+      layer={layer}
+      pageId="third"
+      services={{ previewExport }}
+      previewKey="same"
+      variant={{ kind: "mask" }}
+    />,
+  );
+  expect(signal?.aborted).toBe(true);
+  await act(async () => pending[0]!({ blob: new Blob(["stale"]), width: 96, height: 96 }));
+  await waitFor(() => expect(previewExport).toHaveBeenCalledTimes(2));
+  expect(URL.createObjectURL).not.toHaveBeenCalled();
+  expect(previewExport.mock.calls[1]![0]).toEqual({
+    selection: [layer.id],
+    pageId: "third",
+    edge: 96,
+    variant: { kind: "mask" },
+  });
+  await act(async () => pending[1]!({ blob: new Blob(["current"]), width: 96, height: 96 }));
+  expect(screen.getByRole("presentation")).toHaveAttribute("src", "blob:thumb-1");
+  expect(view.container.querySelector("[data-thumbnail-variant]")).toHaveAttribute(
+    "data-thumbnail-variant",
+    "mask",
+  );
+  view.unmount();
+  expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:thumb-1");
 });

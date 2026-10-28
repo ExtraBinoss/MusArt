@@ -1,7 +1,8 @@
 interface Job {
-  run: () => void;
+  run: () => void | Promise<void>;
 }
 const pending = new Set<Job>();
+let running = false;
 let idle: number | undefined, timer: ReturnType<typeof setTimeout> | undefined;
 const inputPending = () =>
   (
@@ -25,10 +26,24 @@ function pump(deadline?: IdleDeadline) {
   const job = pending.values().next().value;
   if (job) {
     pending.delete(job);
+    running = true;
     try {
-      job.run();
-    } finally {
+      const result = job.run();
+      if (result)
+        void result
+          .catch(() => undefined)
+          .finally(() => {
+            running = false;
+            arm();
+          });
+      else {
+        running = false;
+        arm();
+      }
+    } catch (error) {
+      running = false;
       arm();
+      throw error;
     }
   } else stop();
 }
@@ -37,7 +52,7 @@ function arm() {
     stop();
     return;
   }
-  if (document.hidden || idle !== undefined || timer !== undefined) return;
+  if (document.hidden || running || idle !== undefined || timer !== undefined) return;
   if (typeof requestIdleCallback === "function" && typeof cancelIdleCallback === "function")
     idle = requestIdleCallback(pump);
   else timer = setTimeout(() => pump(), 16);
@@ -45,8 +60,8 @@ function arm() {
 function wake() {
   if (!document.hidden) arm();
 }
-/** One shared idle callback prepares one visible row; cancellation removes its work before platform calls. */
-export function scheduleLayerThumbnail(run: () => void): () => void {
+/** One shared request slot prevents visible rows from flooding the bounded GPU preview queue. */
+export function scheduleLayerThumbnail(run: () => void | Promise<void>): () => void {
   const job = { run };
   pending.add(job);
   if (pending.size === 1) document.addEventListener("visibilitychange", wake);

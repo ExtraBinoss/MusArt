@@ -36,10 +36,11 @@ export function LayerCompositing({
   return (
     <div className="layer-compositing" role="group" aria-label={t("layerControls:compositing")}>
       <NumberInput
-        key={selected.map((layer) => `${layer.id}:${layer.opacity}`).join()}
+        identity={selected}
         label={t("opacity")}
         scrubLabel={<Sun size={14} />}
         value={opacity * 100}
+        resetValue={100}
         mixed={mixedOpacity}
         min={0}
         max={100}

@@ -164,37 +164,51 @@ export async function measurePanPresentation(page: Page, mode: "wheel" | "hand")
     (token) => document.documentElement.dataset.panPresentationProbe === token,
     token,
   );
-  const session = await page.context().newCDPSession(page);
-  const tasks: Promise<unknown>[] = [];
-  const start = performance.now();
-  for (let index = 0; index < 60; index++) {
-    const wait = start + index * (1000 / 120) - performance.now();
-    if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
-    const offset = index < 30 ? index + 1 : 59 - index;
-    tasks.push(
-      session.send(
-        "Input.dispatchMouseEvent",
-        mode === "wheel"
-          ? {
-              type: "mouseWheel",
-              ...point,
-              deltaX: index < 30 ? 4 : -4,
-              deltaY: index < 30 ? 3 : -3,
-            }
-          : { type: "mouseMoved", x: point.x + offset * 4, y: point.y + offset * 3, buttons: 1 },
-      ),
-    );
-  }
-  await Promise.all(tasks);
+  const producer = await dispatchPanBurst(page, mode, point);
   await page.evaluate((token) => {
     document.documentElement.dataset.panPresentationDone = token;
   }, token);
   const result = await measured;
-  await session.detach();
   if (mode === "hand") {
     await page.mouse.up();
     await page.keyboard.up("Space");
   }
   await page.waitForTimeout(160);
-  return result;
+  return { ...result, producer };
+}
+
+/** The editor and retained-DOM control share this exact native CDP producer. */
+export async function dispatchPanBurst(
+  page: Page,
+  mode: "wheel" | "hand",
+  point: { x: number; y: number },
+) {
+  const session = await page.context().newCDPSession(page);
+  const tasks: Promise<unknown>[] = [];
+  const start = performance.now();
+  try {
+    for (let index = 0; index < 60; index++) {
+      const wait = start + index * (1000 / 120) - performance.now();
+      if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
+      const offset = index < 30 ? index + 1 : 59 - index;
+      // No timestamp is supplied: Chromium assigns its native input timestamp.
+      tasks.push(
+        session.send(
+          "Input.dispatchMouseEvent",
+          mode === "wheel"
+            ? {
+                type: "mouseWheel",
+                ...point,
+                deltaX: index < 30 ? 4 : -4,
+                deltaY: index < 30 ? 3 : -3,
+              }
+            : { type: "mouseMoved", x: point.x + offset * 4, y: point.y + offset * 3, buttons: 1 },
+        ),
+      );
+    }
+    await Promise.all(tasks);
+    return { requestedInputs: 60, requestedRateHz: 120, durationMs: performance.now() - start };
+  } finally {
+    await session.detach();
+  }
 }

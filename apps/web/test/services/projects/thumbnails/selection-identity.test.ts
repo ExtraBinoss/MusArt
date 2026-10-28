@@ -190,3 +190,35 @@ test("opaque asset getters never donate aliases and replacing a getter invalidat
   Object.defineProperty(first, "dataUrl", { get: secondGetter, configurable: true });
   expect(cache.read(page, { a: first }, ["image"])).not.toBe(original);
 });
+
+test("explicit mask inspection includes disabled mask originals and source graphs without changing normal layer identity", () => {
+  const source = createLayer("rectangle", { id: "mask-source", maskSource: true, fill: "#fff" });
+  const owner = createLayer("rectangle", {
+    id: "owner",
+    mask: { layerId: source.id, enabled: false, inverted: false },
+  });
+  const page = createPage({ layers: [source, owner] }),
+    cache = new SelectionPreviewIdentity();
+  const normal = cache.read(page, {}, [owner.id]),
+    inspected = cache.read(page, {}, [owner.id], { includeDisabledMasks: true });
+  const changed = { ...page, layers: [{ ...source, fill: "#000" }, owner] };
+  expect(cache.read(changed, {}, [owner.id])).toBe(normal);
+  expect(cache.read(changed, {}, [owner.id], { includeDisabledMasks: true })).not.toBe(inspected);
+  const asset = {
+    id: "asset",
+    name: "Mask",
+    width: 2,
+    height: 2,
+    mime: "image/png",
+    dataUrl: "one",
+  };
+  const assetPage = createPage({
+    layers: [{ ...owner, mask: { assetId: asset.id, enabled: false, inverted: false } }],
+  });
+  const initial = cache.read(assetPage, { asset }, [owner.id], { includeDisabledMasks: true });
+  expect(
+    cache.read(assetPage, { asset: { ...asset, dataUrl: "two" } }, [owner.id], {
+      includeDisabledMasks: true,
+    }),
+  ).not.toBe(initial);
+});

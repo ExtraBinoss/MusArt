@@ -1,0 +1,92 @@
+.snapping-playground {
+  margin-top: 16px;
+}
+.snapping-playground > button {
+  font-size: 11px;
+}
+.snapping-popover {
+  width: min(380px, calc(100vw - 24px));
+  max-height: min(340px, var(--radix-popover-content-available-height, 340px));
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.snapping-popover > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.snapping-popover strong {
+  font-size: 11px;
+  font-weight: 600;
+}
+.snapping-preview-scroll {
+  min-height: 0;
+}
+.snapping-sandbox {
+  max-height: min(280px, calc(var(--radix-popover-content-available-height, 340px) - 60px));
+  overflow-y: auto;
+}
+.snapping-sandbox > p {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+.snapping-sandbox > p {
+  margin: 12px 0;
+}
+.snapping-stage {
+  width: 100%;
+  aspect-ratio: 2;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  touch-action: none;
+  background: color-mix(in srgb, var(--foreground) 3%, var(--popover));
+}
+.snapping-stage svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.snapping-reference {
+  fill: color-mix(in srgb, var(--foreground) 12%, var(--popover));
+  stroke: var(--border);
+}
+.snapping-moving {
+  fill: color-mix(in srgb, var(--foreground) 18%, var(--popover));
+  stroke: var(--muted-foreground);
+}
+.snapping-stage [data-snap-drag] {
+  cursor: grab;
+  outline: none;
+}
+.snapping-stage [data-snap-drag]:active {
+  cursor: grabbing;
+}
+.snapping-stage [data-snap-drag]:focus-visible .snapping-moving {
+  stroke-width: 2;
+  stroke: var(--foreground);
+}
+.snapping-stage path {
+  fill: none;
+  stroke: var(--foreground);
+  stroke-width: 1.5;
+  pointer-events: none;
+}
+.snapping-stage line {
+  stroke: #ed66c2;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  visibility: hidden;
+  pointer-events: none;
+}
+.snapping-stage[data-snapped="true"] .snapping-moving {
+  stroke: #ed66c2;
+}
+.snapping-sandbox > button {
+  margin-top: 6px;
+  color: var(--muted-foreground);
+}

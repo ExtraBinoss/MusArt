@@ -93,6 +93,7 @@ export interface Guide {
   id: string;
   axis: "x" | "y";
   position: number;
+  color?: string;
 }
 export interface Composition {
   id: string;

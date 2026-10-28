@@ -39,57 +39,6 @@
   gap: 12px;
   padding: 18px 32px 0;
 }
-.dashboard-tabs[data-slot="tabs-list"] {
-  height: 38px;
-  padding: 4px;
-  gap: 2px;
-  border-radius: 11px;
-  background: color-mix(in srgb, var(--foreground) 5%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--foreground) 5%, transparent);
-}
-.dashboard-tabs .dashboard-tab[data-slot="tabs-trigger"] {
-  position: relative;
-  isolation: isolate;
-  min-width: 114px;
-  height: 30px;
-  border: 0;
-  padding: 0 14px;
-  border-radius: 8px;
-  gap: 7px;
-  color: var(--muted-foreground);
-  font-size: 12px;
-  font-weight: 500;
-  background: transparent;
-  box-shadow: none;
-}
-.dashboard-tabs .dashboard-tab[data-state="active"] {
-  color: var(--foreground);
-  background: transparent;
-  box-shadow: none;
-}
-.dashboard-tabs .dashboard-tab:hover {
-  background: color-mix(in srgb, var(--foreground) 4%, transparent);
-  color: var(--foreground);
-}
-.dashboard-tabs .dashboard-tab::after {
-  display: none;
-}
-.dashboard-tabs .dashboard-tab:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--foreground) 24%, transparent);
-  outline-offset: 1px;
-  box-shadow: none;
-}
-.dashboard-tab-indicator {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--card);
-  border-radius: inherit;
-  box-shadow:
-    0 1px 3px #00000012,
-    inset 0 0 0 1px color-mix(in srgb, var(--foreground) 7%, transparent);
-  pointer-events: none;
-}
 .dashboard-header-line {
   display: flex;
   align-items: center;

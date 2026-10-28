@@ -85,3 +85,37 @@ it("bounds digest retention, invalidates replaced originals and retries failed d
     /^[a-f0-9]{64}$/,
   );
 });
+
+it("captures mutable paint and original values before any original digest await", async () => {
+  const asset: Asset = {
+      id: "captured",
+      name: "Original",
+      mime: "image/png",
+      width: 1,
+      height: 1,
+      dataUrl: "original",
+    },
+    page = createPage({ layers: [createLayer("image", { assetId: asset.id, x: 1 })] });
+  const expected = await thumbnailRevision(page, { [asset.id]: asset });
+  clearThumbnailRevisionCache();
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const digest = crypto.subtle.digest.bind(crypto.subtle);
+  vi.spyOn(crypto.subtle, "digest").mockImplementation(async (algorithm, bytes) => {
+    if (new TextDecoder().decode(bytes as ArrayBuffer) === "original") await gate;
+    return digest(algorithm, bytes);
+  });
+  let reads = 0;
+  Object.defineProperty(asset, "dataUrl", {
+    configurable: true,
+    enumerable: true,
+    get: () => (++reads === 1 ? "original" : "changed"),
+  });
+  const pending = thumbnailRevision(page, { [asset.id]: asset });
+  page.layers[0]!.x = 999;
+  release();
+  expect(await pending).toBe(expected);
+  expect(reads).toBe(1);
+});

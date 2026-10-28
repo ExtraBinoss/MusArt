@@ -12,7 +12,7 @@ function fixture() {
   const root = createRef<HTMLDivElement>();
   root.current = document.createElement("div");
   root.current.innerHTML =
-    '<div class="canvas-artboard-inactive" data-artboard-id="a"></div><div class="canvas-artboard-inactive" data-artboard-id="b"></div>';
+    '<div class="canvas-artboard-backdrop" data-artboard-id="a"></div><div class="canvas-artboard-backdrop" data-artboard-id="b"></div>';
   let notify: (id: string) => void = () => {};
   const stop = vi.fn(),
     services = {
@@ -157,4 +157,44 @@ it("releases a late lease after unmount and ignores late failure after disposal"
     reject(new Error("gone"));
     await Promise.resolve();
   });
+});
+
+it("retains available artwork while a changed visibility batch loads or fails, then releases only after replacement", async () => {
+  vi.stubGlobal("IntersectionObserver", undefined);
+  const d = fixture(),
+    first = d.lease(),
+    next = d.lease("blob:replacement");
+  let reject!: (error: Error) => void;
+  d.services.loadProjectThumbnails
+    .mockResolvedValueOnce(first)
+    .mockImplementationOnce(
+      () =>
+        new Promise((_resolve, fail) => {
+          reject = fail;
+        }),
+    )
+    .mockResolvedValueOnce(next);
+  const view = renderHook(({ ids }) => useArtboardPreviews(d.root, "project", ids, d.services), {
+    initialProps: { ids: ["a"] },
+  });
+  try {
+    await waitFor(() => expect(view.result.current.items).toBe(first.items));
+    view.rerender({ ids: ["a", "b"] });
+    expect(view.result.current.items).toBe(first.items);
+    expect(first.release).not.toHaveBeenCalled();
+    await act(async () => {
+      reject(new Error("preview store unavailable"));
+      await Promise.resolve();
+    });
+    expect(view.result.current.failed).toBe(true);
+    expect(view.result.current.items).toBe(first.items);
+    expect(first.release).not.toHaveBeenCalled();
+    act(() => view.result.current.retry());
+    await waitFor(() => expect(view.result.current.items).toBe(next.items));
+    expect(view.result.current.failed).toBe(false);
+    expect(first.release).toHaveBeenCalledOnce();
+  } finally {
+    view.unmount();
+  }
+  expect(next.release).toHaveBeenCalledOnce();
 });

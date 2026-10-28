@@ -1,4 +1,4 @@
-import { useEffect, useState, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import type { EditorServices, ProjectThumbnailLease } from "../../state/contracts";
 
 export type ArtboardServices = Pick<
@@ -16,10 +16,13 @@ export function useArtboardPreviews(
   const pageKey = JSON.stringify(pageIds);
   const [visible, setVisible] = useState<string[]>([]),
     [revision, setRevision] = useState(0);
+  const visibility = useRef<{ projectId: string; ids: Set<string> }>({ projectId, ids: new Set() });
+  const [failure, setFailure] = useState<string | null>(null);
   const [resource, setResource] = useState<{
-    key: string;
-    lease: ProjectThumbnailLease | null;
-    failed: boolean;
+    projectId: string;
+    services: ArtboardServices;
+    lease: ProjectThumbnailLease;
+    retained: () => boolean;
     release: () => void;
   } | null>(null);
   useEffect(() => {
@@ -27,9 +30,18 @@ export function useArtboardPreviews(
     if (!element) return;
     const ids = JSON.parse(pageKey) as string[];
     if (typeof IntersectionObserver === "undefined") return;
-    const seen = new Set<string>();
+    // Artboard activation changes neither these stable backdrops nor their requested IDs.
+    // Keep still-visible boards when adding/removing a page rebuilds the observer.
+    const seen = new Set(
+      visibility.current.projectId === projectId
+        ? [...visibility.current.ids].filter((id) => ids.includes(id))
+        : [],
+    );
+    visibility.current = { projectId, ids: seen };
+    let active = true;
     const observer = new IntersectionObserver(
       (entries) => {
+        if (!active) return;
         for (const entry of entries) {
           const id = (entry.target as HTMLElement).dataset.artboardId!;
           if (entry.isIntersecting) seen.add(id);
@@ -42,17 +54,21 @@ export function useArtboardPreviews(
       },
       { root: element, rootMargin: "200px" },
     );
-    for (const node of element.querySelectorAll<HTMLElement>(".canvas-artboard-inactive"))
+    for (const node of element.querySelectorAll<HTMLElement>(".canvas-artboard-backdrop"))
       observer.observe(node);
-    return () => observer.disconnect();
-  }, [root, pageKey]);
+    return () => {
+      active = false;
+      observer.disconnect();
+    };
+  }, [root, pageKey, projectId]);
   const visibleKey = JSON.stringify(
     (typeof IntersectionObserver === "undefined" ? pageIds : visible).filter((id) =>
       pageIds.includes(id),
     ),
   );
   const requestKey = JSON.stringify([projectId, visibleKey, !!services]);
-  useEffect(() => () => resource?.release(), [resource, requestKey]);
+  // A new visibility batch must not revoke the artwork still shown by the previous batch.
+  useEffect(() => () => resource?.release(), [resource, projectId, services]);
   useEffect(() => {
     const ids = JSON.parse(visibleKey) as string[];
     if (!services || !ids.length) return;
@@ -61,10 +77,12 @@ export function useArtboardPreviews(
       (lease) => {
         if (active) {
           let retained = true;
+          setFailure(null);
           setResource({
-            key: requestKey,
+            projectId,
+            services,
             lease,
-            failed: false,
+            retained: () => retained,
             release: () => {
               if (retained) {
                 retained = false;
@@ -75,13 +93,17 @@ export function useArtboardPreviews(
         } else lease.release();
       },
       () => {
-        if (active) setResource({ key: requestKey, lease: null, failed: true, release: () => {} });
+        if (active) setFailure(requestKey);
       },
     );
     return () => {
       active = false;
     };
   }, [services, projectId, visibleKey, revision, requestKey]);
+  useEffect(() => {
+    const ids = new Set(JSON.parse(visibleKey) as string[]);
+    if (!resource?.lease.items.some((item) => ids.has(item.pageId))) resource?.release();
+  }, [resource, visibleKey]);
   useEffect(() => {
     if (!services) return;
     let timer: ReturnType<typeof setTimeout> | null = null;
@@ -97,9 +119,18 @@ export function useArtboardPreviews(
       if (timer !== null) clearTimeout(timer);
     };
   }, [services, projectId]);
+  const items = useMemo(() => {
+    if (resource?.projectId !== projectId || resource.services !== services || !resource.retained())
+      return [];
+    const ids = new Set(JSON.parse(visibleKey) as string[]),
+      rows = resource.lease.items;
+    return rows.every((item) => ids.has(item.pageId))
+      ? rows
+      : rows.filter((item) => ids.has(item.pageId));
+  }, [resource, projectId, services, visibleKey]);
   return {
-    items: resource?.key === requestKey ? (resource.lease?.items ?? []) : [],
-    failed: !services || (resource?.key === requestKey && resource.failed),
+    items,
+    failed: !services || failure === requestKey,
     retry: () => setRevision((value) => value + 1),
   };
 }

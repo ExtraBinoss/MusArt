@@ -19,7 +19,7 @@ declare global {
   }
 }
 const count = 100000;
-const schema = 5;
+const schema = 6;
 function fixture() {
   const original = {
     id: "original",

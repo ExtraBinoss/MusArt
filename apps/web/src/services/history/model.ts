@@ -27,6 +27,8 @@ export interface HistoryMetadata {
   lastAt: number;
   lastStamp: string;
   lastFingerprint?: string;
+  epoch?: string;
+  configurationId?: string;
   bytes?: HistoryBytes;
   eventBytesWritten?: number;
   eventBytesPruned?: number;
@@ -42,6 +44,7 @@ export interface StoredHistoryEvent {
   sequence: number;
   event: ReplayEvent;
   cumulativeBytes?: number;
+  operationId?: string;
 }
 export interface StoredHistoryAsset {
   projectId: string;

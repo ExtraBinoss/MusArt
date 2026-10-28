@@ -1,5 +1,9 @@
-import { expect, test, vi } from "vitest";
+import { beforeAll, expect, test, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import type { ReactNode } from "react";
+import { createInstance } from "i18next";
+import { I18nextProvider } from "react-i18next";
+import { translations } from "../../../src/state/i18n/catalogs";
 import {
   Command,
   CommandDialog,
@@ -11,6 +15,18 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "../../../src/components/ui/command";
+const english = createInstance();
+beforeAll(async () => {
+  await english.init({
+    resources: translations,
+    lng: "en",
+    fallbackLng: "en",
+    initAsync: false,
+  });
+});
+function Locale({ children }: { children: ReactNode }) {
+  return <I18nextProvider i18n={english}>{children}</I18nextProvider>;
+}
 test("provides shadcn/cmdk keyboard filtering, disabled items, groups and shortcuts", async () => {
   const choose = vi.fn();
   render(
@@ -30,6 +46,7 @@ test("provides shadcn/cmdk keyboard filtering, disabled items, groups and shortc
         </CommandGroup>
       </CommandList>
     </Command>,
+    { wrapper: Locale },
   );
   expect(screen.getByRole("combobox")).toHaveAttribute("aria-expanded", "true");
   expect(screen.getByRole("option", { name: "Delete" })).toHaveAttribute("aria-disabled", "true");
@@ -52,10 +69,11 @@ test("labels the CommandDialog portal correctly and supports controlled closing"
         <CommandItem>Rectangle</CommandItem>
       </CommandList>
     </CommandDialog>,
+    { wrapper: Locale },
   );
   expect(screen.getByRole("dialog")).toHaveAccessibleName("Find anything");
   expect(screen.getByRole("dialog")).toHaveAccessibleDescription("Tools and layers");
-  fireEvent.click(screen.getByRole("button", { name: "Fermer" }));
+  fireEvent.click(screen.getByRole("button", { name: "Close" }));
   await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
   d.unmount();
   render(
@@ -65,6 +83,8 @@ test("labels the CommandDialog portal correctly and supports controlled closing"
         <CommandEmpty>None</CommandEmpty>
       </CommandList>
     </CommandDialog>,
+    { wrapper: Locale },
   );
   expect(screen.getByRole("dialog")).toHaveAccessibleName("Command Palette");
+  expect(screen.queryByRole("button", { name: "Close" })).not.toBeInTheDocument();
 });

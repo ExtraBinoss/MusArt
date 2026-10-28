@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Circle, Pause, History, Download, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import type { AnimationSession, AnimationState } from "../../services/animation/session";
-import type { HistoryPage } from "../../services/history/model";
+import { DEFAULT_HISTORY_LIMIT, type HistoryPage } from "../../services/history/model";
 import { Button } from "../ui/button";
 import { NumberInput } from "../shared/NumberInput";
 import styles from "./AnimatePanel.module.css";
@@ -100,35 +100,39 @@ export function HistoryPanel({
   }
   return (
     <div className={styles.history}>
-      <div className={styles.historyHeading}>
+      <div className={styles.historyHeading} title={t("automaticHint")}>
         <History size={14} />
         <strong>{t("history")}</strong>
         <span>{state.events.toLocaleString()}</span>
       </div>
-      <p className={styles.hint}>{t("automaticHint")}</p>
-      <NumberInput
-        label={t("retention")}
-        value={state.limit}
-        decimalScale={0}
-        min={10}
-        max={100000}
-        step={100}
-        unit={t("entriesUnit")}
-        disabled={!state.ready || busy}
-        onCommit={(limit) => {
-          void session.configure({ limit });
-        }}
-      />
-      <Button
-        variant="outline"
-        disabled={!state.ready || busy}
-        onClick={() => {
-          void (state.recording ? session.stop() : session.start());
-        }}
-      >
-        {state.recording ? <Pause size={14} /> : <Circle size={14} />}
-        {t(state.recording ? "pauseRecording" : "resumeRecording")}
-      </Button>
+      <div className={styles.recordingControls}>
+        <NumberInput
+          label={t("retention")}
+          value={state.limit}
+          resetValue={DEFAULT_HISTORY_LIMIT}
+          decimalScale={0}
+          min={10}
+          max={100000}
+          step={100}
+          unit={t("entriesUnit")}
+          disabled={!state.ready || busy}
+          onCommit={(limit) => {
+            void session.configure({ limit });
+          }}
+        />
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={t(state.recording ? "pauseRecording" : "resumeRecording")}
+          title={t(state.recording ? "pauseRecording" : "resumeRecording")}
+          disabled={!state.ready || busy}
+          onClick={() => {
+            void (state.recording ? session.stop() : session.start());
+          }}
+        >
+          {state.recording ? <Pause size={14} /> : <Circle size={14} />}
+        </Button>
+      </div>
       <div className={styles.historyActions}>
         <Button disabled={!state.events || busy || !state.ready} onClick={onPrepare}>
           <History size={14} />
@@ -143,11 +147,17 @@ export function HistoryPanel({
         >
           <Download size={14} />
         </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={t("clearHistory", { ns: "translation" })}
+          title={t("clearHistory", { ns: "translation" })}
+          disabled={!state.ready || busy || !state.events}
+          onClick={onClear}
+        >
+          <Trash2 size={13} />
+        </Button>
       </div>
-      <Button variant="ghost" disabled={!state.ready || busy || !state.events} onClick={onClear}>
-        <Trash2 size={13} />
-        {t("clearHistory", { ns: "translation" })}
-      </Button>
       <ol className={styles.historyList} aria-label={t("history")} aria-busy={loading}>
         {page?.entries.map(({ event, sequence }) => (
           <li key={sequence}>

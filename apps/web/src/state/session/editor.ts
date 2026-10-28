@@ -3,10 +3,13 @@ import { atom, useAtomValue } from "jotai";
 import type { EnginePort } from "@musart/core";
 import type { PreviewValue } from "./preview-source";
 import type { Tool } from "../../canvas/EditorCanvas";
+import type { SelectionMode } from "../../services/selection/wand/model";
 
 export const toolAtom = atom<Tool>("pointer");
 export const previewAtom = atom<PreviewValue | null>(null);
 export const toleranceAtom = atom(32);
+export const selectionModeAtom = atom<SelectionMode>("new");
+export const selectionContiguousAtom = atom(true);
 export type Theme = "system" | "light" | "dark";
 export function readTheme(): Theme {
   try {

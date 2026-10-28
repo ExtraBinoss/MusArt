@@ -12,6 +12,8 @@ import { IconButton } from "../shared/IconButton";
 import { layerSelection } from "./menu/selection";
 import { layerActions } from "./menu/actions";
 import "./messages";
+import { attachmentSelection } from "../../state/selection/attachments";
+import { useAttachmentSelection } from "../../state/selection/use-attachment-selection";
 export function LayerMenu({
   engine,
   page,
@@ -24,6 +26,7 @@ export function LayerMenu({
   run: (action: () => void) => void;
 }) {
   const { t } = useTranslation();
+  const attachment = useAttachmentSelection(engine);
   const state = layerSelection(page, selection),
     actions = layerActions(engine, page, run);
   return (
@@ -34,12 +37,15 @@ export function LayerMenu({
         </IconButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem disabled={!state.editable} onSelect={actions.duplicate}>
+        <DropdownMenuItem
+          disabled={!state.editable || Boolean(attachment)}
+          onSelect={actions.duplicate}
+        >
           <Copy size={14} />
           {t("duplicateLayer")}
         </DropdownMenuItem>
         <DropdownMenuItem
-          disabled={!state.editable || selection.length < 2}
+          disabled={!state.editable || selection.length < 2 || Boolean(attachment)}
           onSelect={actions.mask}
         >
           <ScanLine size={14} />
@@ -47,12 +53,14 @@ export function LayerMenu({
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          disabled={!state.editable}
+          disabled={attachment ? !attachmentSelection(engine).editable() : !state.editable}
           variant="destructive"
           onSelect={actions.remove}
         >
           <Trash2 size={14} />
-          {t("layerControls:deleteSelection", { count: selection.length })}
+          {attachment
+            ? t(attachment.kind === "effect" ? "removeEffect" : "removeMask")
+            : t("layerControls:deleteSelection", { count: selection.length })}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

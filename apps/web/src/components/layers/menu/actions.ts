@@ -6,6 +6,7 @@ import {
   type Command,
 } from "@musart/core";
 import { layerSelection } from "./selection";
+import { capturePresentationDelete } from "../../../state/selection/attachments";
 /** Menu operations always re-read the active selection and reject a stale page before execution. */
 export function layerActions(
   engine: EnginePort,
@@ -36,7 +37,15 @@ export function layerActions(
     group: () => execute((ids) => [{ type: "groupLayers", ids }]),
     ungroup: () => execute((ids) => [{ type: "ungroupLayers", ids }]),
     duplicate: () => execute((ids) => [{ type: "duplicateLayers", ids }]),
-    remove: () => execute((ids) => [{ type: "deleteLayers", ids }]),
+    remove: () => {
+      const snapshot = engine.getSnapshot();
+      if (
+        snapshot.project.pages.find((item) => item.id === snapshot.pageId) !== page ||
+        !layerSelection(page, snapshot.selection).editable
+      )
+        return;
+      run(capturePresentationDelete(engine));
+    },
     mask: () => execute((ids) => [{ type: "createMaskFromSelection", ids }]),
     effect: (type: EffectType) =>
       execute((ids) => {

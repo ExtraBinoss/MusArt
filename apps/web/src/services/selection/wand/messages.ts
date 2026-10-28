@@ -1,0 +1,73 @@
+import { registerFeatureTranslations } from "../../../state/i18n/feature-resources";
+export const messages = {
+  en: {
+    title: "Pixel selection",
+    mode: "Selection mode",
+    new: "New",
+    add: "Add",
+    subtract: "Subtract",
+    intersect: "Intersect",
+    maskName: "Selection mask",
+    contiguous: "Contiguous",
+    createMask: "Create mask",
+    replaceMask: "Replace mask",
+    invert: "Invert selection",
+    deselect: "Deselect",
+    hint: "Click, then drag right or left to adjust tolerance. Shift adds; Alt subtracts.",
+    coverage: "White reveals; black hides. Creating a mask keeps the original image.",
+    selected: "{{count}} selected pixels",
+    simplified: "Detailed selection; simplified outline",
+    tolerance: "Tolerance {{value}}",
+    erase: "Erase area",
+    keep: "Keep area",
+    eraseKey: "Delete",
+    eraseHint: "Remove the selected area with an editable mask.",
+    keepHint: "Keep the selected area and mask everything outside it.",
+    selectionReady:
+      "Choose Erase to remove this area or Keep to hide the rest. Your original image stays editable.",
+    working: "Selecting…",
+    helpTitle: "Using the magic wand",
+    helpChoose:
+      "Select an area, then erase it or keep it with an editable mask. Original pixels stay intact.",
+    helpOutline:
+      "The moving dashed line marks the selected area. Very detailed outlines use a simpler preview; the mask retains the exact selection.",
+    adjacent: "Adjacent pixels only",
+    adjacentHint: "Match a connected region. Turn this off to match the color across the image.",
+  },
+  fr: {
+    title: "Sélection de pixels",
+    mode: "Mode de sélection",
+    new: "Nouvelle",
+    add: "Ajouter",
+    subtract: "Soustraire",
+    intersect: "Intersection",
+    maskName: "Masque de sélection",
+    contiguous: "Contiguë",
+    createMask: "Créer un masque",
+    replaceMask: "Remplacer le masque",
+    invert: "Inverser la sélection",
+    deselect: "Désélectionner",
+    hint: "Cliquez puis glissez à droite ou à gauche pour régler la tolérance. Maj ajoute ; Alt soustrait.",
+    coverage: "Le blanc révèle, le noir masque. Créer un masque conserve l’image originale.",
+    selected: "{{count}} pixels sélectionnés",
+    simplified: "Sélection détaillée ; contour simplifié",
+    tolerance: "Tolérance {{value}}",
+    erase: "Effacer la zone",
+    keep: "Garder la zone",
+    eraseKey: "Suppr",
+    eraseHint: "Retirer la zone sélectionnée avec un masque éditable.",
+    keepHint: "Garder la zone sélectionnée et masquer tout ce qui l’entoure.",
+    selectionReady:
+      "Effacer retire cette zone ; Garder masque le reste. Votre image originale reste éditable.",
+    working: "Sélection…",
+    helpTitle: "Utiliser la baguette magique",
+    helpChoose:
+      "Sélectionnez une zone, puis effacez-la ou gardez-la avec un masque éditable. Les pixels originaux restent intacts.",
+    helpOutline:
+      "Les pointillés indiquent la zone sélectionnée. Les contours très détaillés utilisent un aperçu allégé ; le masque conserve la sélection exacte.",
+    adjacent: "Pixels voisins uniquement",
+    adjacentHint:
+      "Sélectionner une région connectée. Désactivez cette option pour chercher la couleur dans toute l’image.",
+  },
+};
+registerFeatureTranslations("pixelSelection", messages);

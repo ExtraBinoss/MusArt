@@ -419,3 +419,24 @@ it("runtime autosave rejects another session's newer project instead of replacin
     await other.close();
   }
 });
+
+it("retries a failed autosave explicitly without requiring another document edit", async () => {
+  const store = new ProjectStore(crypto.randomUUID()),
+    project = createProject({ name: "Initial" });
+  await store.save(project);
+  const onError = vi.fn(),
+    runtime = await createRuntime(onError, { store, selection: selection(), autosaveDelay: 10000 });
+  try {
+    vi.spyOn(store, "saveCurrent").mockRejectedValueOnce(new Error("Temporary quota failure"));
+    runtime.engine.execute({ type: "renameProject", name: "Retry this state" });
+    await expect(runtime.flush()).rejects.toThrow("Temporary quota failure");
+    expect(onError).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "Temporary quota failure" }),
+    );
+    await runtime.services.saveProject();
+    expect((await store.load(project.id)).name).toBe("Retry this state");
+    await expect(runtime.flush()).resolves.toBeUndefined();
+  } finally {
+    await runtime.dispose();
+  }
+});

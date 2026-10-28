@@ -39,7 +39,7 @@ function ToolbarContents(surface: SearchSurface) {
   const bindings = useKeybindings();
   return (
     <nav className="toolbar floating-panel" aria-label={t("selection")}>
-      <ScrollShadow className="toolbar-scroll">
+      <ScrollShadow className="toolbar-scroll" surface="var(--popover)">
         <div className="toolbar-contents" data-dock-scroll>
           {tools.map(([id, Icon, shortcut]) => (
             <IconButton

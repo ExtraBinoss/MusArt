@@ -1,6 +1,6 @@
 import {
   createLayerGeometryIndex,
-  getWorldMatrix,
+  SnapIndex,
   invertMatrix,
   transformPoint,
   type Command,
@@ -50,34 +50,19 @@ export function movePatches(
   threshold: number,
 ): LayerPatch[] {
   let target = to;
-  const first = layers[0];
-  if (first && snapEnabled && first.parentId === null) {
-    const candidatesX = [
-      0,
-      page.width / 2,
-      page.width,
-      ...page.guides.filter((guide) => guide.axis === "x").map((guide) => guide.position),
-    ];
-    const candidatesY = [
-      0,
-      page.height / 2,
-      page.height,
-      ...page.guides.filter((guide) => guide.axis === "y").map((guide) => guide.position),
-    ];
-    const nearest = (value: number, values: number[]) =>
-      values.reduce(
-        (best, candidate) =>
-          Math.abs(candidate - value) < Math.abs(best - value) ? candidate : best,
-        value + threshold,
+  if (snapEnabled && layers.length) {
+    const snapping = new SnapIndex(
+      page,
+      layers.map((layer) => layer.id),
+    );
+    const bounds = snapping.movingBounds;
+    if (bounds) {
+      const { delta } = snapping.snap(
+        { ...bounds, x: bounds.x + to.x - from.x, y: bounds.y + to.y - from.y },
+        threshold,
       );
-    const x = first.x + to.x - from.x;
-    const y = first.y + to.y - from.y;
-    const nx = nearest(x, candidatesX);
-    const ny = nearest(y, candidatesY);
-    target = {
-      x: Math.abs(nx - x) < threshold ? to.x + nx - x : to.x,
-      y: Math.abs(ny - y) < threshold ? to.y + ny - y : to.y,
-    };
+      target = { x: to.x + delta.x, y: to.y + delta.y };
+    }
   }
   const index = createLayerGeometryIndex(page),
     inverses = new Map<string, ReturnType<typeof invertMatrix>>();
@@ -105,7 +90,7 @@ export function resizePatch(
   keepAspect: boolean,
 ): LayerPatch {
   if (handle === "rotate") {
-    const matrix = getWorldMatrix(page, layer.id);
+    const matrix = createLayerGeometryIndex(page).worldMatrix(layer.id);
     const center = transformPoint(matrix, { x: layer.width / 2, y: layer.height / 2 });
     const angle =
       ((Math.atan2(to.y - center.y, to.x - center.x) -
@@ -118,7 +103,7 @@ export function resizePatch(
       patch: { rotation: keepAspect ? Math.round(rotation / 15) * 15 : rotation },
     };
   }
-  const inverse = invertMatrix(getWorldMatrix(page, layer.id));
+  const inverse = invertMatrix(createLayerGeometryIndex(page).worldMatrix(layer.id));
   const a = transformPoint(inverse, from);
   const b = transformPoint(inverse, to);
   const west = handle.includes("w");

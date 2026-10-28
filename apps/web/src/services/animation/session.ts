@@ -1,7 +1,15 @@
-import { observeReplay, stateFromProject, type EnginePort } from "@musart/core";
+import {
+  observeReplay,
+  observeReplayTransitions,
+  stateFromProject,
+  type EnginePort,
+} from "@musart/core";
 import type { HistoryStore } from "../history/store";
-import { DEFAULT_HISTORY_LIMIT } from "../history/model";
+import { DEFAULT_HISTORY_LIMIT, type HistoryMetadata } from "../history/model";
 import { PaintYield } from "./paint-yield";
+import { getCanonicalPresentation } from "../../state/session/canonical-presentation";
+import { JournalClient } from "./journal/client";
+import { JournalQueueFullError } from "./journal/protocol";
 
 export interface AnimationState {
   ready: boolean;
@@ -27,11 +35,14 @@ export class AnimationSession {
   private stopObserver: (() => void) | null = null;
   private expectedNext = new Map<string, number>();
   private queue: Promise<void> = Promise.resolve();
-  private readonly paintYield = new PaintYield();
+  private readonly paintYield: PaintYield;
   private drains = 0;
   private store: HistoryStore | null = null;
+  private journal: JournalClient | null = null;
   private onError: (error: unknown) => void = () => {};
-  constructor(private readonly engine: EnginePort) {}
+  constructor(private readonly engine: EnginePort) {
+    this.paintYield = new PaintYield(getCanonicalPresentation(engine));
+  }
   read = () => this.state;
   subscribe = (listener: () => void) => {
     this.listeners.add(listener);
@@ -44,9 +55,20 @@ export class AnimationSession {
     for (const listener of this.listeners) listener();
   }
   private enqueue(task: () => Promise<void>, propagate = false) {
+    if (this.journal && this.state.pending >= 128) {
+      const error = new JournalQueueFullError();
+      this.journal.recover(this.engine.getSnapshot().project.id);
+      this.publish({ error: true });
+      this.onError(error);
+      const rejected = Promise.reject(error);
+      void rejected.catch(() => {});
+      return rejected;
+    }
+    const snapshot = this.engine.getSnapshot();
+    const origin = { projectId: snapshot.project.id, revision: snapshot.revision };
     this.publish({ pending: this.state.pending + 1 });
     const operation = this.queue.then(async () => {
-      if (!this.drains) await this.paintYield.wait();
+      if (!this.drains) await this.paintYield.wait(origin);
       await task();
     });
     this.queue = operation
@@ -61,6 +83,10 @@ export class AnimationSession {
     if (this.stopObserver) return;
     this.store = store;
     this.onError = onError;
+    if (typeof Worker !== "undefined") {
+      this.attachWorker(store);
+      return;
+    }
     const known = new Set<string>();
     const previousAt = new Map<string, number>();
     const recovery = new Set<string>();
@@ -128,13 +154,45 @@ export class AnimationSession {
       },
     });
   }
+  private updateMetadata(meta: HistoryMetadata, initial = false): void {
+    if (this.engine.getSnapshot().project.id !== meta.projectId) return;
+    this.publish({
+      ready: true,
+      recording: meta.enabled,
+      events: meta.count,
+      limit: meta.limit,
+      error: this.journal?.isRecovering(meta.projectId) ?? false,
+      ...(!initial ? { version: this.state.version + 1 } : {}),
+    });
+  }
+  private attachWorker(store: HistoryStore): void {
+    const journal = new JournalClient(store, this.engine);
+    this.journal = journal;
+    const initial = this.engine.getSnapshot();
+    void this.enqueue(async () => this.updateMetadata(await journal.ensure(initial), true));
+    this.stopObserver = observeReplayTransitions(this.engine, {
+      now: () => performance.now(),
+      checkpointInterval: 250,
+      commandMode: "summary",
+      onTransition: (transition) => {
+        const commit = journal.prepareCommit(transition);
+        void this.enqueue(async () => this.updateMetadata(await commit()));
+      },
+    });
+  }
   configure = (options: { limit?: number; enabled?: boolean }) => {
+    // Reject admission before an optimistic recording toggle can change presentation state.
+    if (this.journal && this.state.pending >= 128) return this.enqueue(async () => {});
     const snapshot = this.engine.getSnapshot(),
       previousRecording = this.state.recording;
     if (options.enabled !== undefined) this.publish({ recording: options.enabled });
     return this.enqueue(async () => {
       try {
         if (!this.store) throw new Error("History is not attached.");
+        if (this.journal) {
+          this.updateMetadata(await this.journal.configure(snapshot, options));
+          return;
+        }
         await this.store.configure(snapshot.project.id, options);
         const meta = options.enabled
           ? await this.store.ensure(snapshot.project, snapshot.pageId)
@@ -161,6 +219,10 @@ export class AnimationSession {
     const snapshot = this.engine.getSnapshot();
     return this.enqueue(async () => {
       if (!this.store) throw new Error("History is not attached.");
+      if (this.journal) {
+        this.updateMetadata(await this.journal.clear(snapshot));
+        return;
+      }
       const meta = await this.store.clear(snapshot.project, snapshot.pageId);
       this.expectedNext.set(snapshot.project.id, meta.next);
       if (this.engine.getSnapshot().project.id === snapshot.project.id)
@@ -179,9 +241,12 @@ export class AnimationSession {
   flush = async () => {
     this.drains++;
     this.paintYield.release();
+    const release = this.journal?.drain();
     try {
       await this.queue;
+      await this.journal?.flush();
     } finally {
+      release?.();
       this.drains--;
     }
   };
@@ -198,7 +263,13 @@ export class AnimationSession {
   dispose = async () => {
     this.stopObserver?.();
     this.stopObserver = null;
-    await this.flush();
+    try {
+      await this.flush();
+    } finally {
+      const journal = this.journal;
+      this.journal = null;
+      await journal?.dispose();
+    }
   };
 }
 const sessions = new WeakMap<EnginePort, AnimationSession>();

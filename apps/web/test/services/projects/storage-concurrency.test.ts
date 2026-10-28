@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { createLayer, createPage, createProject } from "@musart/core";
+import { createLayer, createPage, createProject, EditorEngine } from "@musart/core";
 import { clearThumbnailRevisionCache } from "../../../src/services/projects/thumbnails/revision";
 import { ThumbnailPipeline } from "../../../src/services/projects/thumbnails/queue";
 import { ThumbnailRenderer } from "../../../src/services/projects/thumbnails/renderer";
@@ -46,6 +46,57 @@ function hashGate() {
   });
   return { started, release };
 }
+it("rejects a load completed after close without readopting its editor baseline", async () => {
+  const d = fixture(false);
+  await d.first.save(d.base);
+  let closing: Promise<void> | undefined;
+  const native = IDBObjectStore.prototype.get,
+    get = vi.spyOn(IDBObjectStore.prototype, "get").mockImplementation(function (
+      this: IDBObjectStore,
+      ...args: Parameters<IDBObjectStore["get"]>
+    ) {
+      const request = native.apply(this, args);
+      if (this.name === "projects")
+        request.addEventListener(
+          "success",
+          () => {
+            closing ??= d.first.close();
+          },
+          { once: true },
+        );
+      return request;
+    });
+  await expect(d.first.load(d.base.id)).rejects.toMatchObject({ name: "AbortError" });
+  await closing;
+  get.mockRestore();
+  await expect(d.first.saveCurrent(d.base)).rejects.toBeInstanceOf(StaleProjectWriteError);
+});
+it("does not readopt a committed rename header after its store generation closes", async () => {
+  const d = fixture(false);
+  await d.first.save(d.base);
+  let closing: Promise<void> | undefined;
+  const native = IDBObjectStore.prototype.put,
+    put = vi.spyOn(IDBObjectStore.prototype, "put").mockImplementation(function (
+      this: IDBObjectStore,
+      ...args: Parameters<IDBObjectStore["put"]>
+    ) {
+      const request = native.apply(this, args);
+      if (this.name === "projects")
+        request.addEventListener(
+          "success",
+          () => {
+            closing ??= d.first.close();
+          },
+          { once: true },
+        );
+      return request;
+    });
+  await expect(d.first.rename(d.base.id, "Committed before close")).resolves.toBeUndefined();
+  await closing;
+  put.mockRestore();
+  await expect(d.first.saveCurrent(d.base)).rejects.toBeInstanceOf(StaleProjectWriteError);
+  expect((await d.first.load(d.base.id)).name).toBe("Committed before close");
+});
 it.each(["save", "thumbnail"])(
   "closing during original preparation cannot recreate a hash worker (%s)",
   async (operation) => {
@@ -148,6 +199,33 @@ it("snapshots a mutable caller before the hash await rather than persisting mixe
   gate.release();
   await saving;
   expect(await d.first.load(before.id)).toEqual(before);
+});
+
+it("persists the captured certified publication when the engine advances during hashing", async () => {
+  const d = fixture(false),
+    engine = new EditorEngine({
+      ...d.base,
+      pages: [{ ...d.base.pages[0]!, background: "#112233" }],
+    }),
+    before = engine.getSnapshot().project,
+    gate = hashGate();
+  const saving = d.first.save(before);
+  await gate.started;
+  engine.execute({ type: "updatePage", patch: { width: before.pages[0]!.width + 100 } });
+  gate.release();
+  await saving;
+  expect(await d.first.load(before.id)).toEqual(before);
+  expect(engine.getSnapshot().project.pages[0]!.width).toBe(before.pages[0]!.width + 100);
+});
+
+it("still validates an external frozen project before opening any storage write", async () => {
+  const d = fixture(false),
+    external = Object.freeze({
+      ...d.base,
+      pages: [Object.freeze({ ...d.base.pages[0]!, width: -1 })],
+    });
+  await expect(d.first.save(external)).rejects.toThrow();
+  expect(await d.first.list()).toEqual([]);
 });
 it("renames advance the same revision and cannot be overwritten by a previously hashing save", async () => {
   const d = fixture(true);

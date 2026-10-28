@@ -1,13 +1,16 @@
 import { expect, test, vi } from "vitest";
-import { createLayer, createPage, createProject } from "@musart/core";
+import { createLayer, createPage, createProject, createEffect } from "@musart/core";
 import { setup } from "../../support/ui";
 import {
   createSearchActions,
   executeSearchItem,
+  captureSearchItem,
   type SearchActions,
 } from "../../../src/components/search/actions";
 import type { SearchItem } from "../../../src/components/search/catalog/model";
 import { createViewportActions } from "../../../src/canvas/session/viewport-actions";
+import { snappingPreferences, SNAPPING_STORAGE_KEY } from "../../../src/state/snapping/preferences";
+import { attachmentSelection } from "../../../src/state/selection/attachments";
 
 function context() {
   const d = setup();
@@ -34,6 +37,34 @@ const item = (target: SearchItem["target"]): SearchItem => ({
   label: "test",
   terms: "",
   target,
+});
+test("search deletion preserves the captured attachment while a dialog/task closes", async () => {
+  const d = context(),
+    effect = createEffect("dither");
+  d.engine.execute({ type: "updateLayers", ids: [d.rectangle.id], patch: { effects: [effect] } });
+  d.engine.load(d.engine.getSnapshot().project);
+  const page = d.engine.getSnapshot().project.pages[0]!,
+    port = attachmentSelection(d.engine);
+  port.select(page, {
+    kind: "effect",
+    pageId: page.id,
+    layerId: d.rectangle.id,
+    effectId: effect.id,
+  });
+  const queued = captureSearchItem(item({ kind: "action", action: "delete" }), d.context);
+  port.clear();
+  await queued();
+  expect(d.engine.getSnapshot().project.pages[0]!.layers).toHaveLength(3);
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+  port.select(page, {
+    kind: "effect",
+    pageId: page.id,
+    layerId: d.rectangle.id,
+    effectId: effect.id,
+  });
+  d.actions.delete();
+  expect(d.engine.getSnapshot().project.pages[0]!.layers).toHaveLength(3);
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.effects).toHaveLength(0);
 });
 test("routes tools, dialogs, imports, saving, theme/language and viewport requests through shared ports", async () => {
   const { context: ctx, actions, services, engine } = context();
@@ -148,6 +179,28 @@ test("commits document actions with genuine undo/redo and current selection", ()
     height: d.page.height,
     background: d.page.background,
   });
+});
+test("search snapping actions persist editor preferences without touching document history", () => {
+  const d = context();
+  const original = snappingPreferences.read(),
+    before = d.engine.getSnapshot();
+  try {
+    snappingPreferences.update({ threshold: 11 });
+    d.actions.disableSnapping();
+    expect(snappingPreferences.read()).toEqual({ enabled: false, threshold: 11 });
+    d.actions.enableSnapping();
+    expect(snappingPreferences.read()).toEqual({ enabled: true, threshold: 11 });
+    expect(JSON.parse(localStorage.getItem(SNAPPING_STORAGE_KEY)!)).toEqual({
+      version: 1,
+      enabled: true,
+      threshold: 11,
+    });
+    expect(d.engine.getSnapshot()).toBe(before);
+    d.actions.editorSettings();
+    expect(d.context.onProjects).toHaveBeenCalledExactlyOnceWith("settingsEditor");
+  } finally {
+    snappingPreferences.update(original);
+  }
 });
 test("selects pages and layers across pages without adding history, and reports stale results", async () => {
   const d = context();

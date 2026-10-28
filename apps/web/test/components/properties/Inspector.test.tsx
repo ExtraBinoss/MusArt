@@ -43,6 +43,21 @@ function renderInspector(selection: "shape" | "text" | "image" | "multiple" | "n
   data.mount(<Live />);
   return data;
 }
+test("label resets use geometry defaults, keep numeric DOM stable and create one undo entry", () => {
+  const data = renderInspector(),
+    input = screen.getByLabelText("X");
+  const before = data.engine.getSnapshot();
+  fireEvent.doubleClick(screen.getByRole("button", { name: "Ajuster X" }));
+  expect(data.engine.getSnapshot().project.pages[0]!.layers[0]!.x).toBe(0);
+  expect(screen.getByLabelText("X")).toBe(input);
+  const reset = data.engine.getSnapshot();
+  fireEvent.doubleClick(screen.getByRole("button", { name: "Ajuster X" }));
+  expect(data.engine.getSnapshot()).toBe(reset);
+  act(() => data.engine.undo());
+  expect(data.engine.getSnapshot().project).toEqual(before.project);
+  fireEvent.doubleClick(screen.getByRole("button", { name: "Ajuster Largeur" }));
+  expect(data.engine.getSnapshot().project.pages[0]!.layers[0]!.width).toBe(280);
+});
 test("StrictMode color rebinding remains bounded across hexadecimal, hue, alpha and saturation commits", () => {
   const data = setup(),
     errors = vi.spyOn(console, "error");
@@ -152,8 +167,8 @@ test("edits document dimensions, background and guides without selecting a layer
     height: 1200,
     background: "#111111",
   });
-  fireEvent.click(screen.getByRole("button", { name: "Ajouter un repère vertical" }));
-  fireEvent.click(screen.getByRole("button", { name: "Ajouter un repère horizontal" }));
+  fireEvent.click(screen.getByRole("button", { name: "Ajouter vertical" }));
+  fireEvent.click(screen.getByRole("button", { name: "Ajouter horizontal" }));
   expect(data.engine.getSnapshot().project.pages[0]!.guides).toHaveLength(2);
   fireEvent.click(screen.getByRole("button", { name: "Effacer les repères" }));
   expect(data.engine.getSnapshot().project.pages[0]!.guides).toHaveLength(0);

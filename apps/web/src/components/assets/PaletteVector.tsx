@@ -1,9 +1,10 @@
 // Copied from ResumI (MIT); see docs/legal/resumi-MIT.txt.
 import type { VectorArtwork } from "@musart/assets";
 
-export function PaletteVector({ item }: { item: VectorArtwork }) {
+export function PaletteVector({ item, className }: { item: VectorArtwork; className?: string }) {
   return (
     <svg
+      className={className}
       viewBox={item.viewBox}
       data-preserve-paint={item.parts?.length ? true : undefined}
       aria-hidden

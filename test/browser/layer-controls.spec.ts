@@ -1,7 +1,103 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 import { createEffect, createLayer, createPage, createProject } from "@musart/core";
 import { inspectImage } from "./support/image-probe";
 import { installReadbackProbe } from "./support/readback-probe";
+
+async function expectSquareActions(buttons: Locator, edge: number, padding: number) {
+  const count = await buttons.count();
+  expect(count).toBeGreaterThan(0);
+  await expect
+    .poll(() =>
+      buttons.evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const box = node.getBoundingClientRect(),
+            style = getComputedStyle(node);
+          return [
+            Math.round(box.width),
+            Math.round(box.height),
+            ...[style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft].map(
+              Number.parseFloat,
+            ),
+          ];
+        }),
+      ),
+    )
+    .toEqual(Array.from({ length: count }, () => [edge, edge, padding, padding, padding, padding]));
+}
+
+test("layer actions have symmetrical square hit areas and dither opacity keeps its Sun scrub label", async ({
+  page,
+}) => {
+  await installReadbackProbe(page);
+  await page.addInitScript(() => localStorage.setItem("musart.language", "fr"));
+  await page.goto("/?automation=1");
+  await page.waitForFunction(() => Boolean(window.musart));
+  await page.evaluate(
+    (project) => {
+      window.musart!.load(project);
+      window.musart!.select(["spacing-layer"]);
+    },
+    createProject({
+      pages: [
+        createPage({
+          width: 400,
+          height: 400,
+          layers: [
+            createLayer("rectangle", {
+              id: "spacing-layer",
+              name: "Dither target",
+              width: 180,
+              height: 180,
+              effects: [createEffect("dither")],
+            }),
+          ],
+        }),
+      ],
+    }),
+  );
+  const layers = page.getByRole("region", { name: "Calques", exact: true }),
+    row = layers.locator('[data-layer-id="spacing-layer"]'),
+    footer = layers.getByRole("group", { name: "Actions des calques", exact: true });
+  await expect(
+    footer.getByRole("group", { name: "Ajouter des effets et corrections", exact: true }),
+  ).toBeVisible();
+  await expect(
+    footer.getByRole("group", { name: "Actions de la sélection", exact: true }),
+  ).toBeVisible();
+  await expectSquareActions(footer.locator(".icon-button"), 30, 7);
+  await row.hover();
+  await expectSquareActions(row.locator(".layer-actions .icon-button"), 28, 6);
+  await expectSquareActions(row.locator(".attachment-thumbnail-card"), 30, 3);
+  await row.locator('[data-attachment-target="effect"]').click();
+  const popover = page.getByRole("dialog", { name: "Effets · Dither target", exact: true });
+  await expect(
+    popover.getByRole("button", { name: "Ajuster Opacité", exact: true }).locator("svg.lucide-sun"),
+  ).toHaveAttribute("aria-hidden", "true");
+  await expectSquareActions(popover.locator(".attachment-actions .icon-button"), 30, 7);
+  const revision = await page.evaluate(() => window.musart!.snapshot().revision),
+    opacity = popover.getByRole("textbox", { name: "Opacité", exact: true });
+  await opacity.fill("37");
+  await opacity.press("Enter");
+  expect(
+    await page.evaluate(
+      () => window.musart!.snapshot().project.pages[0]!.layers[0]!.effects[0]!.opacity,
+    ),
+  ).toBe(0.37);
+  expect(await page.evaluate(() => window.musart!.snapshot().revision)).toBe(revision + 1);
+  await page.screenshot({ path: "artifacts/screenshots/layer-action-spacing.png" });
+  await page.evaluate(() => window.musart!.undo());
+  expect(
+    await page.evaluate(
+      () => window.musart!.snapshot().project.pages[0]!.layers[0]!.effects[0]!.opacity ?? 1,
+    ),
+  ).toBe(1);
+  expect(await page.evaluate(() => window.musart!.snapshot().canUndo)).toBe(false);
+  expect(await page.evaluate(() => window.__musartVideoReadbacks)).toMatchObject({
+    gpu: 0,
+    webgl: 0,
+    canvas: 0,
+  });
+});
 
 test("layer compositing, nested FX/mask children and context grouping preserve canonical undo", async ({
   page,

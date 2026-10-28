@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { ShortcutsDialog } from "../../search/ShortcutsDialog";
 import { useTranslation } from "react-i18next";
 import {
   Dialog,
@@ -8,31 +6,37 @@ import {
   DialogTitle,
   DialogDescription,
 } from "../../ui/dialog";
-import { Preferences } from "./Preferences";
+import { Preferences, type PreferencesSection } from "./Preferences";
+import { SnappingPlayground } from "./SnappingPlayground";
 import "../dashboard/messages";
-export function PreferencesDialog({ onClose }: { onClose: () => void }) {
+export function PreferencesDialog({
+  onClose,
+  initialSection,
+}: {
+  onClose: () => void;
+  initialSection?: PreferencesSection;
+}) {
   const { t } = useTranslation();
-  const [shortcuts, setShortcuts] = useState(false);
   return (
     <Dialog
       open
       onOpenChange={(open) => {
-        if (!open && !shortcuts) onClose();
+        if (!open) onClose();
       }}
     >
       <DialogContent
         closeLabel={t("close")}
-        onInteractOutside={(event) => {
-          if (shortcuts) event.preventDefault();
+        onEscapeKeyDown={(event) => {
+          if (document.activeElement?.getAttribute("data-recording") === "true")
+            event.preventDefault();
         }}
-        className="floating-panel preferences-dialog"
+        className="floating-panel preferences-dialog preferences-shell"
       >
         <DialogHeader>
           <DialogTitle>{t("settings")}</DialogTitle>
           <DialogDescription>{t("dashboard:preferencesHint")}</DialogDescription>
         </DialogHeader>
-        <Preferences onShortcuts={() => setShortcuts(true)} />
-        {shortcuts && <ShortcutsDialog onClose={() => setShortcuts(false)} />}
+        <Preferences initialSection={initialSection} editorPreview={<SnappingPlayground />} />
       </DialogContent>
     </Dialog>
   );

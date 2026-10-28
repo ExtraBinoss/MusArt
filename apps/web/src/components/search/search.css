@@ -19,6 +19,17 @@
   background: transparent;
   border-radius: inherit;
 }
+.magic-search-surface {
+  min-width: 0;
+  transform-origin: top center;
+}
+.magic-search-item-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  gap: 11px;
+}
 .magic-search-dialog[data-state] {
   animation: none;
 }

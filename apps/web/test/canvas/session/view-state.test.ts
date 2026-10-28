@@ -47,4 +47,8 @@ test("selection-only snapshots reuse immutable geometry without serializing all 
   expect(selected.project).toBe(first.project);
   expect(serialize).not.toHaveBeenCalled();
   expect(view.read()).toBe(selected);
+  engine.execute({ type: "updateLayers", ids: [layers[0]!.id], patch: { x: 12 } });
+  serialize.mockClear();
+  expect(view.read()).not.toBe(selected);
+  expect(serialize).not.toHaveBeenCalled();
 });

@@ -3,6 +3,23 @@ import { act, screen, fireEvent, waitFor, within } from "@testing-library/react"
 import { ProjectDialog } from "../../../src/components/projects/ProjectDialog";
 import { setup } from "../../support/ui";
 import { projectSummary } from "../../support/projects";
+test("new-project creation focuses its name so one Escape dismisses the dashboard", async () => {
+  const d = setup(),
+    close = vi.fn();
+  d.mount(
+    <ProjectDialog
+      initialView="newProject"
+      services={d.services}
+      onClose={close}
+      onTask={d.onTask}
+    />,
+  );
+  const name = screen.getByLabelText("Nom");
+  expect(name).toHaveFocus();
+  expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+  fireEvent.keyDown(name, { key: "Escape" });
+  await waitFor(() => expect(close).toHaveBeenCalledOnce());
+});
 test("shares a clean two-tab dashboard between welcome and open-project states", async () => {
   const d = setup(),
     close = vi.fn();
@@ -130,10 +147,25 @@ test("preferences requested by search open in a separate dialog rather than a da
     />,
   );
   expect(screen.getByRole("dialog", { name: "Préférences" })).toBeVisible();
-  expect(screen.queryByRole("tab")).not.toBeInTheDocument();
+  expect(screen.getByRole("tab", { name: "Général" })).toHaveAttribute("aria-selected", "true");
+  expect(screen.queryByRole("tab", { name: "Projets" })).not.toBeInTheDocument();
   expect(d.services.listProjectPage).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: "Fermer" }));
   expect(close).toHaveBeenCalled();
+});
+test("the search editor route opens snapping preferences directly without loading the project gallery", () => {
+  const d = setup();
+  d.mount(
+    <ProjectDialog
+      initialView="settingsEditor"
+      services={d.services}
+      onClose={vi.fn()}
+      onTask={d.onTask}
+    />,
+  );
+  expect(screen.getByRole("tab", { name: "Éditeur" })).toHaveAttribute("aria-selected", "true");
+  expect(screen.getByRole("switch", { name: "Accrocher aux éléments" })).toBeVisible();
+  expect(d.services.listProjectPage).not.toHaveBeenCalled();
 });
 
 test("one shared import/open gate disables tabs and card mutations until the real operation finishes", async () => {
@@ -202,9 +234,10 @@ test("dashboard settings are an accessory that returns to the same two-tab works
   await screen.findByText("Aucun projet enregistré.");
   fireEvent.click(screen.getByRole("button", { name: "Préférences" }));
   const settings = screen.getByRole("dialog", { name: "Préférences" });
-  expect(
-    within(settings).getByRole("button", { name: "Personnaliser les raccourcis" }),
-  ).toBeVisible();
+  const shortcuts = within(settings).getByRole("tab", { name: "Raccourcis" });
+  expect(shortcuts).toBeVisible();
+  fireEvent.mouseDown(shortcuts, { button: 0 });
+  expect(within(settings).getByPlaceholderText("Rechercher un raccourci…")).toBeVisible();
   fireEvent.click(within(settings).getByRole("button", { name: "Fermer" }));
   expect(screen.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeVisible();
   expect(screen.getAllByRole("tab")).toHaveLength(2);

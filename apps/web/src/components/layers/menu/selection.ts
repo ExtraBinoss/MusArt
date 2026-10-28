@@ -1,6 +1,27 @@
 import { createLayerGeometryIndex, type Composition } from "@musart/core";
+type SelectionState = ReturnType<typeof analyzeSelection>;
+const cached = new WeakMap<Composition, WeakMap<readonly string[], SelectionState>>();
 /** Immutable documents share the geometry index; all selection predicates are linear in selected rows. */
 export function layerSelection(page: Composition, selection: readonly string[]) {
+  let selections = cached.get(page);
+  if (selections && Object.isFrozen(selection)) {
+    const previous = selections.get(selection);
+    if (previous) return previous;
+  }
+  if (
+    !selections &&
+    Object.isFrozen(page) &&
+    Object.isFrozen(page.layers) &&
+    page.layers.every((layer) => Object.isFrozen(layer) && Object.isFrozen(layer.effects))
+  ) {
+    selections = new WeakMap();
+    cached.set(page, selections);
+  }
+  const result = analyzeSelection(page, selection);
+  if (selections && Object.isFrozen(selection)) selections.set(selection, result);
+  return result;
+}
+function analyzeSelection(page: Composition, selection: readonly string[]) {
   const ids = new Set(selection),
     index = createLayerGeometryIndex(page);
   const selected = selection.map((id) => index.byId.get(id)).filter((layer) => layer !== undefined);
@@ -21,9 +42,10 @@ export function layerSelection(page: Composition, selection: readonly string[]) 
   const roots = selected.filter((layer) => !hasSelectedAncestor(layer.id));
   const editable = selected.length > 0 && selected.every((layer) => !index.isLocked(layer.id));
   const ungroup = roots.length > 0 && roots.every((layer) => layer.kind === "group");
-  return {
-    selected,
-    roots,
+  return Object.freeze({
+    selected: Object.freeze(selected),
+    roots: Object.freeze(roots),
+    hasGroup: selected.some((layer) => layer.kind === "group"),
     editable,
     ungroup,
     canGroup:
@@ -38,5 +60,5 @@ export function layerSelection(page: Composition, selection: readonly string[]) 
           layer.opacity === 1 &&
           layer.blendMode === "normal",
       ),
-  };
+  });
 }

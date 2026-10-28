@@ -1,6 +1,7 @@
 import type { SamModel, SamProcessor, Tensor } from "@huggingface/transformers";
-const MODEL = "Xenova/slimsam-77-uniform";
-const REVISION = "5850ab45f587c112167512ffef949107115e26a0";
+import { MODEL_ID as MODEL, MODEL_REVISION as REVISION } from "./model/manifest";
+import { withModelCacheLock } from "./model/cache";
+import type { ModelDownloadEvent } from "./model/contract";
 interface Inputs {
   pixel_values: Tensor;
   original_sizes: [number, number][];
@@ -19,8 +20,8 @@ let cached:
       embeddings: Awaited<ReturnType<SamModel["get_image_embeddings"]>>;
     }
   | undefined;
-export function prepareSam(): Promise<Loaded> {
-  loading ??= (async () => {
+export function prepareSam(onProgress?: (event: ModelDownloadEvent) => void): Promise<Loaded> {
+  loading ??= withModelCacheLock(async () => {
     const {
       SamModel: Model,
       AutoProcessor,
@@ -28,26 +29,37 @@ export function prepareSam(): Promise<Loaded> {
       env,
     } = await import("@huggingface/transformers");
     env.allowLocalModels = false;
-    const processor = (await AutoProcessor.from_pretrained(MODEL, {
+    if (env.backends?.onnx?.wasm) env.backends.onnx.wasm.numThreads = 1;
+    const options = {
       revision: REVISION,
+      ...(onProgress
+        ? {
+            progress_callback: (info: import("@huggingface/transformers").ProgressInfo) => {
+              if (info.status === "progress" || info.status === "done") onProgress(info);
+            },
+          }
+        : {}),
+    };
+    const processor = (await AutoProcessor.from_pretrained(MODEL, {
+      ...options,
     })) as SamProcessor;
     let model: SamModel;
     try {
       model = (await Model.from_pretrained(MODEL, {
-        revision: REVISION,
+        ...options,
         device: "gpu" in navigator ? "webgpu" : "wasm",
         dtype: "fp32",
       })) as SamModel;
     } catch (error) {
       if (!("gpu" in navigator)) throw error;
       model = (await Model.from_pretrained(MODEL, {
-        revision: REVISION,
+        ...options,
         device: "wasm",
         dtype: "fp32",
       })) as SamModel;
     }
     return { model, processor, RawImage };
-  })().catch((error) => {
+  }).catch((error) => {
     loading = undefined;
     throw error;
   });
@@ -69,10 +81,15 @@ export function bestMask(masks: Tensor, scores: Tensor, width: number, height: n
   }
   return output;
 }
-export async function segmentObject(url: string, x: number, y: number) {
+export async function segmentObject(
+  url: string,
+  x: number,
+  y: number,
+  onProgress?: (event: ModelDownloadEvent) => void,
+) {
   if (!Number.isFinite(x) || !Number.isFinite(y))
     throw new Error("Position de sélection invalide.");
-  const { model, processor, RawImage } = await prepareSam();
+  const { model, processor, RawImage } = await prepareSam(onProgress);
   if (cached?.url !== url) {
     const image = await RawImage.read(url);
     const inputs = (await processor(image)) as Inputs;

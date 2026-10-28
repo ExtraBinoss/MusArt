@@ -1,5 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createEffect, createLayer, createPage, type Asset } from "@musart/core";
+import {
+  createEffect,
+  createLayer,
+  createPage,
+  createProject,
+  EditorEngine,
+  type Asset,
+} from "@musart/core";
 import { InstancedMesh, Mesh, RenderTarget, type Scene } from "three/webgpu";
 import { GpuCompositor } from "../../src/compositing/GpuCompositor";
 import { clearSourceCache } from "../../src/surface/sources";
@@ -24,6 +31,52 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 describe("retained GPU document graph", () => {
+  it("reuses exact certified frames across artboards without draws and rejects mutable, foreign or overwritten inputs", async () => {
+    const { renderer } = makeGpuRenderer(),
+      graph = new GpuCompositor(renderer);
+    const engine = new EditorEngine(
+      createProject({
+        pages: [createPage({ width: 64, height: 64 }), createPage({ width: 80, height: 60 })],
+      }),
+    );
+    const project = engine.getSnapshot().project,
+      a = project.pages[0]!,
+      b = project.pages[1]!;
+    expect(graph.retainedFrame(a, project.assets, 1)).toBeNull();
+    const first = await graph.render(a, project.assets);
+    graph.releasePresentation();
+    await graph.render(b, project.assets);
+    const passes = graph.stats().passes;
+    expect(graph.retainedFrame(a, project.assets, 1)).toBe(first);
+    expect(graph.stats().passes).toBe(passes);
+    expect(graph.retainedFrame(a, project.assets, 2)).toBeNull();
+    expect(graph.retainedFrame(a, Object.freeze({}), 1)).toBeNull();
+    expect(graph.retainedFrame(Object.freeze(structuredClone(a)), project.assets, 1)).toBeNull();
+    engine.execute({ type: "updatePage", patch: { background: "#ff0000" } });
+    const changed = engine.getSnapshot().project;
+    await graph.render(changed.pages[0]!, changed.assets);
+    expect(graph.retainedFrame(a, project.assets, 1)).toBeNull();
+    expect(graph.retainedFrame(changed.pages[0]!, changed.assets, 1)).not.toBeNull();
+    await graph.dispose();
+    expect(graph.retainedFrame(changed.pages[0]!, changed.assets, 1)).toBeNull();
+  });
+  it("evicts inactive cached frames within the same GPU budget instead of retaining an extra texture pool", async () => {
+    const { renderer } = makeGpuRenderer(),
+      graph = new GpuCompositor(renderer, { maxBytes: 150000 });
+    const project = new EditorEngine(
+      createProject({
+        pages: [createPage({ width: 100, height: 100 }), createPage({ width: 100, height: 100 })],
+      }),
+    ).getSnapshot().project;
+    await graph.render(project.pages[0]!, project.assets);
+    graph.releasePresentation();
+    await graph.render(project.pages[1]!, project.assets);
+    expect(graph.stats().cacheBytes).toBeLessThanOrEqual(150000);
+    expect(graph.retainedFrame(project.pages[0]!, project.assets, 1)).toBeNull();
+    expect(graph.retainedFrame(project.pages[1]!, project.assets, 1)).not.toBeNull();
+    await graph.dispose();
+    expect(graph.stats().targets).toBe(0);
+  });
   it("keeps fifty images with ordered effects on GPU and performs no CPU pixel transfer", async () => {
     const { renderer, fake } = makeGpuRenderer();
     const graph = new GpuCompositor(renderer);

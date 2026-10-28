@@ -76,3 +76,52 @@ test("native pending input defers preparation until its next idle slot", () => {
   expect(task).toHaveBeenCalledOnce();
   stop();
 });
+
+test("awaits the owned request before admitting another row, preventing preview-capacity eviction", async () => {
+  vi.useFakeTimers();
+  vi.stubGlobal("requestIdleCallback", undefined);
+  let resolve!: () => void;
+  const first = vi.fn(
+    () =>
+      new Promise<void>((done) => {
+        resolve = done;
+      }),
+  );
+  const rest = Array.from({ length: 40 }, () => vi.fn());
+  const stops = [
+    scheduleLayerThumbnail(first),
+    ...rest.map((task) => scheduleLayerThumbnail(task)),
+  ];
+  await vi.advanceTimersByTimeAsync(16);
+  expect(first).toHaveBeenCalledOnce();
+  await vi.advanceTimersByTimeAsync(1000);
+  expect(rest.every((task) => !task.mock.calls.length)).toBe(true);
+  resolve();
+  await vi.advanceTimersByTimeAsync(16);
+  expect(rest[0]).toHaveBeenCalledOnce();
+  expect(rest[1]).not.toHaveBeenCalled();
+  for (const stop of stops) stop();
+});
+test("a rejected owned request releases admission and canceled pending rows never run", async () => {
+  vi.useFakeTimers();
+  vi.stubGlobal("requestIdleCallback", undefined);
+  let reject!: (error: Error) => void;
+  const a = scheduleLayerThumbnail(
+    () =>
+      new Promise<void>((_resolve, fail) => {
+        reject = fail;
+      }),
+  );
+  const next = vi.fn(),
+    skipped = vi.fn(),
+    b = scheduleLayerThumbnail(next),
+    c = scheduleLayerThumbnail(skipped);
+  await vi.advanceTimersByTimeAsync(16);
+  c();
+  reject(Error("real preview failure"));
+  await vi.advanceTimersByTimeAsync(16);
+  expect(next).toHaveBeenCalledOnce();
+  expect(skipped).not.toHaveBeenCalled();
+  a();
+  b();
+});

@@ -115,7 +115,12 @@ export class SelectionPreviewIdentity {
   }
 
   /** Match selected export dependencies: subtrees, processing ancestors and complete enabled masks. */
-  read(page: Composition, assets: Record<string, Asset>, ids: readonly string[]): string {
+  read(
+    page: Composition,
+    assets: Record<string, Asset>,
+    ids: readonly string[],
+    options: { includeDisabledMasks?: boolean } = {},
+  ): string {
     const geometry = createLayerGeometryIndex(page);
     let order = this.order.get(page);
     if (!order) {
@@ -149,7 +154,11 @@ export class SelectionPreviewIdentity {
         layer = geometry.get(id);
       if (!included.has(id)) {
         included.add(id);
-        if (layer.mask?.enabled && layer.mask.layerId) {
+        if (
+          layer.mask &&
+          (layer.mask.enabled || options.includeDisabledMasks) &&
+          layer.mask.layerId
+        ) {
           path(layer.mask.layerId);
           pending.push({ id: layer.mask.layerId, subtree: true });
         }
@@ -171,7 +180,9 @@ export class SelectionPreviewIdentity {
           this.paint(layer),
           this.asset(layer.assetId ? assets[layer.assetId] : undefined),
           this.asset(
-            layer.mask?.enabled && layer.mask.assetId ? assets[layer.mask.assetId] : undefined,
+            layer.mask && (layer.mask.enabled || options.includeDisabledMasks) && layer.mask.assetId
+              ? assets[layer.mask.assetId]
+              : undefined,
           ),
         ];
       }),

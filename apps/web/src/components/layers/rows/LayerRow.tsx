@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useRef, useState } from "react";
 import { motion } from "motion/react";
 import {
   ChevronDown,
@@ -21,17 +21,19 @@ import type { EditorServices } from "../../../state/contracts";
 import type { useLayerDrag } from "../drag/use-layer-drag";
 import type { LayerDropPosition } from "../drop-target";
 import { Input } from "../../ui/input";
-import { Button } from "../../ui/button";
 import { IconButton } from "../../shared/IconButton";
 import { LayerThumbnail } from "./LayerThumbnail";
-import { EffectPopover } from "../attachments/EffectPopover";
-import { MaskPopover } from "../attachments/MaskPopover";
+import { AttachmentCards } from "../attachments/AttachmentCards";
+import { attachmentSelection, type AttachmentTarget } from "../../../state/selection/attachments";
+import { DropCue } from "../drag/DropCue";
+import { activateLayerPage } from "../tree/activation";
 export const LayerRow = memo(function LayerRow({
   engine,
   page,
   layer,
   assets,
   selected,
+  attachmentTarget = null,
   depth,
   expanded,
   moving,
@@ -51,6 +53,7 @@ export const LayerRow = memo(function LayerRow({
   layer: Layer;
   assets: Project["assets"];
   selected: boolean;
+  attachmentTarget?: AttachmentTarget | null;
   depth: number;
   expanded: boolean;
   moving: boolean;
@@ -66,7 +69,8 @@ export const LayerRow = memo(function LayerRow({
   drag: ReturnType<typeof useLayerDrag>["handlers"];
 }) {
   const { t } = useTranslation();
-  const [editing, setEditing] = useState(false);
+  const node = useRef<HTMLDivElement>(null);
+  const [editing, setEditing] = useState<Composition | null>(null);
   const parentLocked = !!layer.parentId && createLayerGeometryIndex(page).isLocked(layer.parentId);
   const locked = layer.locked || parentLocked;
   const expandable = layer.kind === "group" || !!layer.effects.length || !!layer.mask;
@@ -78,10 +82,12 @@ export const LayerRow = memo(function LayerRow({
     );
   }
   function select(additive: boolean) {
-    if (!canonical()) return;
+    attachmentSelection(engine).clear();
+    const samePage = engine.getSnapshot().pageId === page.id;
+    if (!activateLayerPage(engine, page)) return;
     const selection = engine.getSnapshot().selection;
     engine.select(
-      additive
+      additive && samePage
         ? selection.includes(layer.id)
           ? selection.filter((id) => id !== layer.id)
           : [...selection, layer.id]
@@ -89,8 +95,9 @@ export const LayerRow = memo(function LayerRow({
     );
   }
   function rename(name: string) {
-    setEditing(false);
-    if (name.trim() && name.trim() !== layer.name)
+    const valid = editing === page;
+    setEditing(null);
+    if (valid && name.trim() && name.trim() !== layer.name)
       run(() => {
         if (canonical())
           engine.execute({ type: "updateLayers", ids: [layer.id], patch: { name: name.trim() } });
@@ -98,20 +105,23 @@ export const LayerRow = memo(function LayerRow({
   }
   return (
     <motion.div
+      ref={node}
       layout={!reduced && moving ? "position" : false}
       transition={{ type: "spring", stiffness: 430, damping: 34, mass: 0.65 }}
       role="treeitem"
       aria-level={depth + 1}
-      aria-selected={selected}
+      aria-selected={selected && !attachmentTarget}
       aria-expanded={expandable ? expanded : undefined}
       tabIndex={0}
       draggable={!locked}
       data-layer-id={layer.id}
       data-dragging={dragging || undefined}
-      className={`layer-row ${selected ? "selected" : ""} ${!layer.visible ? "is-hidden" : ""} ${drop ? `drop-${drop}` : ""}`}
+      className={`layer-row ${selected && !attachmentTarget ? "selected" : ""} ${!layer.visible ? "is-hidden" : ""} ${drop ? `drop-${drop}` : ""}`}
       style={{ position: "absolute", left: 0, right: 0, top, paddingLeft: 12 + depth * 16 }}
       onClick={(event) => select(event.shiftKey || event.metaKey || event.ctrlKey)}
-      onContextMenu={() => {
+      onContextMenu={(event) => {
+        if ((event.target as Element).closest("[data-attachment-target]")) return;
+        attachmentSelection(engine).clear();
         if (!engine.getSnapshot().selection.includes(layer.id)) select(false);
       }}
       onKeyDown={(event) => {
@@ -120,15 +130,21 @@ export const LayerRow = memo(function LayerRow({
           event.preventDefault();
           select(event.shiftKey || event.metaKey || event.ctrlKey);
         }
-        if (event.key === "F2" && !locked) setEditing(true);
+        if (event.key === "F2" && !locked && activateLayerPage(engine, page)) setEditing(page);
       }}
       onDoubleClick={() => {
-        if (!locked) setEditing(true);
+        if (!locked && activateLayerPage(engine, page)) setEditing(page);
       }}
-      onDragStartCapture={(event) => drag.start(event, layer)}
-      onDragOver={(event) => drag.over(event, layer)}
+      onDragStartCapture={(event) => {
+        if ((event.target as Element).closest("[data-attachment-target]")) {
+          event.preventDefault();
+          return;
+        }
+        drag.start(event, layer, page);
+      }}
+      onDragOver={(event) => drag.over(event, layer, page)}
       onDragEndCapture={onDragEnd}
-      onDrop={(event) => drag.drop(event, layer)}
+      onDrop={(event) => drag.drop(event, layer, page)}
     >
       {expandable && (
         <button
@@ -148,8 +164,9 @@ export const LayerRow = memo(function LayerRow({
         asset={layer.assetId ? assets[layer.assetId] : undefined}
         services={services}
         previewKey={previewKey}
+        pageId={page.id}
       />
-      {editing ? (
+      {editing === page ? (
         <Input
           autoFocus
           className="layer-name-input"
@@ -160,7 +177,7 @@ export const LayerRow = memo(function LayerRow({
           onKeyDown={(event) => {
             event.stopPropagation();
             if (event.key === "Enter") rename(event.currentTarget.value);
-            if (event.key === "Escape") setEditing(false);
+            if (event.key === "Escape") setEditing(null);
           }}
         />
       ) : (
@@ -171,45 +188,22 @@ export const LayerRow = memo(function LayerRow({
           <ScanLine size={12} />
         </span>
       )}
-      <div
-        className="layer-badges"
-        onClick={(event) => event.stopPropagation()}
-        onDoubleClick={(event) => event.stopPropagation()}
-      >
-        {layer.effects.length > 0 && (
-          <EffectPopover engine={engine} page={page} layer={layer} run={run}>
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              className="layer-attachment-avatar effect-avatar"
-              aria-label={`${t("effects")} · ${layer.name}`}
-            >
-              fx
-            </Button>
-          </EffectPopover>
-        )}
-        {layer.mask && (
-          <MaskPopover engine={engine} page={page} layer={layer} run={run}>
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              className="layer-attachment-avatar mask-avatar"
-              aria-label={`${t("mask")} · ${layer.name}`}
-            >
-              <ScanLine size={12} />
-            </Button>
-          </MaskPopover>
-        )}
-      </div>
-      {drop && (
-        <span className="drop-label">
-          {t(
-            { before: "dropBefore", after: "dropAfter", inside: "dropInside", mask: "dropMask" }[
-              drop
-            ],
-          )}
-        </span>
+      {(layer.effects.length > 0 || layer.mask) && (
+        <AttachmentCards
+          engine={engine}
+          page={page}
+          layer={layer}
+          assets={assets}
+          services={services}
+          previewKey={previewKey}
+          target={attachmentTarget}
+          onExpand={() => {
+            if (!expanded) onToggle(layer.id, layer.kind === "group");
+          }}
+          run={run}
+        />
       )}
+      {drop && <DropCue anchor={node} position={drop} />}
       <div
         className="layer-actions"
         onClick={(event) => event.stopPropagation()}
@@ -218,7 +212,8 @@ export const LayerRow = memo(function LayerRow({
         <IconButton
           disabled={parentLocked}
           label={`${t(layer.locked ? "unlock" : "lock")} · ${layer.name}`}
-          onClick={() =>
+          onClick={() => {
+            if (!activateLayerPage(engine, page)) return;
             run(() => {
               if (canonical())
                 engine.execute({
@@ -226,15 +221,16 @@ export const LayerRow = memo(function LayerRow({
                   ids: [layer.id],
                   patch: { locked: !layer.locked },
                 });
-            })
-          }
+            });
+          }}
         >
           {layer.locked ? <LockKeyhole size={12} /> : <LockKeyholeOpen size={12} />}
         </IconButton>
         <IconButton
           disabled={parentLocked}
           label={`${t(layer.visible ? "visible" : "hidden")} · ${layer.name}`}
-          onClick={() =>
+          onClick={() => {
+            if (!activateLayerPage(engine, page)) return;
             run(() => {
               if (canonical())
                 engine.execute({
@@ -242,8 +238,8 @@ export const LayerRow = memo(function LayerRow({
                   ids: [layer.id],
                   patch: { visible: !layer.visible },
                 });
-            })
-          }
+            });
+          }}
         >
           {layer.visible ? <Eye size={13} /> : <EyeOff size={13} />}
         </IconButton>

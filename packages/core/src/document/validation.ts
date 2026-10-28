@@ -193,6 +193,7 @@ export function validateProject(value: unknown): asserts value is Project {
       assertUniqueId(guide.id, ids);
       ensure(guide.axis === "x" || guide.axis === "y", "INVALID_DOCUMENT", "Axe invalide");
       assertNumber(guide.position, -1_000_000, 1_000_000);
+      if (guide.color !== undefined) assertColor(guide.color);
     }
   }
   if (value.replay !== undefined) validateReplaySpec(value.replay);

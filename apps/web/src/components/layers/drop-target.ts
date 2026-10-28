@@ -6,8 +6,24 @@ export function getDropPosition(
   clientY: number,
   bounds: { top: number; height: number },
   altKey: boolean,
+  pointer?: {
+    clientX: number;
+    thumbnail?: { left: number; top: number; width: number; height: number };
+  },
 ): LayerDropPosition {
   if (altKey) return "mask";
+  const thumbnail = pointer?.thumbnail;
+  if (
+    pointer &&
+    thumbnail &&
+    thumbnail.width > 0 &&
+    thumbnail.height > 0 &&
+    pointer.clientX >= thumbnail.left - 3 &&
+    pointer.clientX <= thumbnail.left + thumbnail.width + 3 &&
+    clientY >= Math.max(bounds.top + 4, thumbnail.top) &&
+    clientY <= Math.min(bounds.top + bounds.height - 4, thumbnail.top + thumbnail.height)
+  )
+    return "mask";
   const fraction = bounds.height ? (clientY - bounds.top) / bounds.height : 0.5;
   if (layer.kind === "group" && fraction > 0.25 && fraction < 0.75) return "inside";
   return fraction < 0.5 ? "before" : "after";

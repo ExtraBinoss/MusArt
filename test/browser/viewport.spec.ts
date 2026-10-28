@@ -25,7 +25,24 @@ test("viewport travel stays bounded and measurement badges remain readable at ev
       window.musart!.select(["guide-witness"]);
     },
     createProject({
-      pages: [createPage({ width: 640, height: 480, background: "#f2eee7", layers: [layer] })],
+      pages: [
+        createPage({
+          width: 640,
+          height: 480,
+          background: "#f2eee7",
+          layers: [
+            layer,
+            createLayer("rectangle", {
+              id: "alignment-reference",
+              x: 63,
+              y: 266,
+              width: 200,
+              height: 40,
+              fill: "#737378",
+            }),
+          ],
+        }),
+      ],
     }),
   );
   const canvas = page.getByTestId("editor-canvas"),
@@ -75,7 +92,14 @@ test("viewport travel stays bounded and measurement badges remain readable at ev
         await zoomViewport(page, zoom);
       }
       const badges = page.locator(".measurement-label-background");
-      await expect(badges).toHaveCount(4);
+      await expect(badges).toHaveCount(0);
+      const bounds = (await artboard.boundingBox())!,
+        start = { x: bounds.x + 163 * zoom, y: bounds.y + 143 * zoom };
+      await page.mouse.move(start.x, start.y);
+      await page.mouse.down();
+      await page.mouse.move(start.x + 2, start.y);
+      await expect(page.locator('[data-snap-target="alignment-reference"]')).toHaveCount(1);
+      await expect(badges).toHaveCount(1);
       for (const badge of await badges.all())
         expect((await badge.boundingBox())!.height).toBeCloseTo(19, 2);
       const label = page.locator(".canvas-measurement-label text").filter({ hasText: /^63$/ });
@@ -92,6 +116,10 @@ test("viewport travel stays bounded and measurement badges remain readable at ev
       expect(typography.fill).toBe(typography.color);
       expect(typography.stroke).toBe("none");
       expect(typography.weight).toBe("600");
+      await page.keyboard.press("Escape");
+      await page.mouse.up();
+      await expect(badges).toHaveCount(0);
+      expect(await page.evaluate(() => window.musart!.snapshot().canUndo)).toBe(false);
     }
     await reset.click();
     await expect(artboard).toHaveAttribute("data-view-moving", "false");
@@ -149,7 +177,7 @@ test("smooth wheel zoom preserves its anchor without React frame commits and can
           }[] = [],
           start = performance.now();
         const sample = () => {
-          const board = document.querySelector<HTMLElement>(".canvas-artboard")!,
+          const board = document.querySelector<HTMLElement>('[data-testid="artboard"]')!,
             root = document.querySelector<HTMLElement>(".editor-canvas")!;
           frames.push({
             time: performance.now() - start,
@@ -229,7 +257,7 @@ test("smooth wheel zoom preserves its anchor without React frame commits and can
   await page.mouse.wheel(0, -40);
   await page.keyboard.up("Control");
   await page.waitForFunction(
-    () => Number(document.querySelector<HTMLElement>(".canvas-artboard")!.dataset.zoom) > 1,
+    () => Number(document.querySelector<HTMLElement>('[data-testid="artboard"]')!.dataset.zoom) > 1,
   );
   expect(await artboard.getAttribute("data-view-moving")).toBe("false");
   const final = await page.evaluate(() => ({

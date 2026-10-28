@@ -1,6 +1,11 @@
 import { floodMask } from "./pixel-selection";
 import type { SelectionRequest, SelectionResponse } from "./selection";
-export async function processSelection(request: SelectionRequest): Promise<SelectionResponse> {
+import type { ModelDownloadEvent } from "./model/contract";
+import { modelProgressSink } from "./model/progress";
+export async function processSelection(
+  request: SelectionRequest,
+  onProgress?: (event: ModelDownloadEvent) => void,
+): Promise<SelectionResponse> {
   try {
     if (request.type === "wand")
       return {
@@ -20,16 +25,25 @@ export async function processSelection(request: SelectionRequest): Promise<Selec
       };
     const { prepareSam, segmentObject } = await import("./sam");
     if (request.type === "prepare") {
-      await prepareSam();
+      await prepareSam(onProgress);
       return { id: request.id, result: null };
     }
-    return { id: request.id, result: await segmentObject(request.dataUrl, request.x, request.y) };
+    return {
+      id: request.id,
+      result: onProgress
+        ? await segmentObject(request.dataUrl, request.x, request.y, onProgress)
+        : await segmentObject(request.dataUrl, request.x, request.y),
+    };
   } catch (error) {
     return { id: request.id, error: error instanceof Error ? error.message : String(error) };
   }
 }
 export async function handleSelection(event: MessageEvent<SelectionRequest>) {
-  const response = await processSelection(event.data);
+  const sink = modelProgressSink((progress) =>
+    globalThis.postMessage({ id: event.data.id, progress } satisfies SelectionResponse),
+  );
+  const response = await processSelection(event.data, sink.note);
+  sink.flush();
   globalThis.postMessage(
     response,
     "result" in response && response.result ? [response.result.data.buffer as ArrayBuffer] : [],

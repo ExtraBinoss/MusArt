@@ -1,5 +1,7 @@
 export const interfaceV2 = {
   fr: {
+    alignmentHorizontal: "Alignement horizontal",
+    alignmentVertical: "Alignement vertical",
     preset: {
       square: "Carré social",
       portrait: "Portrait",
@@ -24,7 +26,7 @@ export const interfaceV2 = {
     presetCategory_screen: "Écran",
 
     adjustValue: "Ajuster {{label}}",
-    adjustHint: "Glissez horizontalement · Maj pour accélérer · Cliquez pour saisir",
+    adjustHint: "Glissez pour ajuster · Double-cliquez pour réinitialiser",
     keyboardNudgeHint: "Flèches : déplacer · Maj : pas de 10 · Suppr : supprimer",
     projectActions: "Actions du projet",
     panelMode: "Mode du panneau",
@@ -126,6 +128,8 @@ export const interfaceV2 = {
     },
   },
   en: {
+    alignmentHorizontal: "Horizontal alignment",
+    alignmentVertical: "Vertical alignment",
     preset: {
       square: "Social square",
       portrait: "Portrait",
@@ -150,7 +154,7 @@ export const interfaceV2 = {
     presetCategory_screen: "Screen",
 
     adjustValue: "Adjust {{label}}",
-    adjustHint: "Drag horizontally · Shift for larger steps · Click to type",
+    adjustHint: "Drag to adjust · Double-click to reset",
     keyboardNudgeHint: "Arrows: move · Shift: steps of 10 · Delete: remove",
     projectActions: "Project actions",
     panelMode: "Panel mode",

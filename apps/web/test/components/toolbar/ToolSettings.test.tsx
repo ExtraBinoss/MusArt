@@ -1,7 +1,12 @@
 import { expect, test, vi } from "vitest";
 import { act, screen, fireEvent, waitFor } from "@testing-library/react";
 import { ToolSettings } from "../../../src/components/toolbar/ToolSettings";
-import { toolAtom, toleranceAtom } from "../../../src/state/session/editor";
+import {
+  toolAtom,
+  toleranceAtom,
+  selectionModeAtom,
+  selectionContiguousAtom,
+} from "../../../src/state/session/editor";
 import { setup } from "../../support/ui";
 test("offers wand tolerance only in wand mode and prepares local segmentation on demand", async () => {
   const { mount, services, onTask, store } = setup();
@@ -23,4 +28,16 @@ test("shows pending download and allows retry after failure", async () => {
   mount(<ToolSettings services={services} onTask={onTask} />);
   fireEvent.click(screen.getByRole("button"));
   await screen.findByRole("button", { name: "Préparer le modèle local" });
+});
+test("keeps mode controls inside help and changes connected matching without editing the document", () => {
+  const { mount, services, onTask, store, engine } = setup();
+  store.set(toolAtom, "wand");
+  mount(<ToolSettings services={services} onTask={onTask} />);
+  expect(screen.queryByRole("combobox")).toBeNull();
+  expect(screen.queryByRole("switch")).toBeNull();
+  expect(store.get(selectionModeAtom)).toBe("new");
+  fireEvent.click(screen.getByRole("button", { name: "Utiliser la baguette magique" }));
+  fireEvent.click(screen.getByRole("switch", { name: "Pixels voisins uniquement" }));
+  expect(store.get(selectionContiguousAtom)).toBe(false);
+  expect(engine.getSnapshot().canUndo).toBe(false);
 });

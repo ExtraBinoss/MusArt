@@ -1,22 +1,13 @@
 import type { IDBPDatabase } from "idb";
 import {
   openStudioDatabase,
-  type AssetMetadata,
   type StudioDatabase,
   type StoredThumbnail,
   type ThumbnailInfo,
-  type StoredProject,
 } from "./database";
 import { thumbnailRevisions } from "./thumbnails/revisions";
 import { thumbnailRevision } from "./thumbnails/revision";
-import { logicalBytes } from "./logical-bytes";
-import {
-  legacyThumbnailBytes,
-  manifestBytes,
-  projectSummary,
-  thumbnailBytes,
-  thumbnailInfo,
-} from "./records";
+import { manifestBytes, projectSummary } from "./records";
 import { projectUsage, estimateOriginStorage } from "./usage";
 import { appendInTransaction } from "../history/append";
 import { initializeHistory } from "../history/initialization";
@@ -26,6 +17,10 @@ import { HISTORY_WRITE_STORES } from "../history/stores";
 import type { HistoryWrite } from "../history/transactions";
 import { HistoryStore } from "../history/store";
 import { snapshotProject } from "./writes/snapshot";
+import { PersistenceClient } from "./persistence/client";
+import { validateThumbnail } from "./persistence/thumbnail";
+import { prepareProjectWrite, withFullOriginals } from "./persistence/prepare";
+import { ThumbnailDigestMemo } from "./thumbnails/digest-memo";
 import {
   readProjectWriteRevision,
   assertProjectWriteRevision,
@@ -35,6 +30,7 @@ import {
 import { isProjectDeleted, retireProject } from "./lifecycle";
 import {
   validateProject,
+  isPublishedProject,
   EditorEngine,
   diffReplayState,
   stateFromProject,
@@ -60,6 +56,9 @@ export class ProjectStore {
       this.observedWrites.delete(this.observedWrites.keys().next().value!);
   }
   private hasher: CanonicalHasher | undefined;
+  private persistence: PersistenceClient | undefined;
+  private readonly digestMemo = new ThumbnailDigestMemo();
+  private readonly pagePayloads = new WeakMap<Composition, number>();
   private generation = 0;
   private assertGeneration(generation: number) {
     if (generation !== this.generation)
@@ -69,11 +68,16 @@ export class ProjectStore {
     this.assertGeneration(generation);
     return (this.hasher ??= new CanonicalHasher()).hash(job, {
       isCurrent: () => generation === this.generation,
+      ...(job.kind === "thumbnail"
+        ? { onPageBytes: (bytes: number) => this.pagePayloads.set(job.page, bytes) }
+        : {}),
     });
   };
   thumbnailRevision = (page: Composition, assets: Record<string, Asset>) => {
     const generation = this.generation;
-    return thumbnailRevision(page, assets, (job) => this.hash(job, generation));
+    return this.digestMemo.get(page, assets, () =>
+      thumbnailRevision(page, assets, (job) => this.hash(job, generation)),
+    );
   };
   readonly history = new HistoryStore(
     () => this.db(),
@@ -94,138 +98,60 @@ export class ProjectStore {
   ) {
     const generation = this.generation;
     const project = snapshotProject(input);
-    validateProject(project);
+    if (!isPublishedProject(project)) validateProject(project);
+    this.digestMemo.certify(project);
+    const basis = this.activeAssets;
     const db = await this.db();
     const reading = db.transaction("preferences");
     const currentRevision = await readProjectWriteRevision(reading.store, project.id);
     await reading.done;
     const expectedRevision = options.expectedRevision ?? currentRevision;
     if (expectedRevision !== currentRevision) throw new StaleProjectWriteError(project.id);
-    const pageRevisions = await thumbnailRevisions(project.pages, project.assets, (job) =>
-      this.hash(job, generation),
+    const pageRevisions = await thumbnailRevisions(
+      project.pages,
+      project.assets,
+      (job) => this.hash(job, generation),
+      (page) => {
+        this.assertGeneration(generation);
+        return this.thumbnailRevision(page, project.assets);
+      },
     );
     this.assertGeneration(generation);
-    const tx = db.transaction(["projects", "assets", "preferences", "thumbnails"], "readwrite");
-    const done = tx.done;
-    const projectStore = tx.objectStore("projects");
-    const assetStore = tx.objectStore("assets");
-    const urls = new Map<string, string>();
-    let revision = "",
-      writeRevision = "";
+    const prepared = prepareProjectWrite(
+      project,
+      pageRevisions,
+      project.pages.map((page) => this.pagePayloads.get(page)),
+      { ...options, expectedRevision },
+      thumbnail,
+      basis,
+    );
+    const persistence = (this.persistence ??= new PersistenceClient(this.name, () => this.db()));
+    let result;
     try {
-      await assertProjectWriteRevision(tx.objectStore("preferences"), project.id, expectedRevision);
-      const previous = await projectStore.get(project.id);
-      if (options.requireAbsent && previous) throw new StaleProjectWriteError(project.id);
-      const persisted =
-        previous?.storageVersion === 2 &&
-        typeof previous.assetsRevision === "string" &&
-        this.activeAssets?.projectId === project.id &&
-        this.activeAssets.revision === previous.assetsRevision
-          ? this.activeAssets.urls
-          : new Map(
-              (await assetStore.index("by-project").getAll(project.id)).map((asset) => [
-                asset.assetId,
-                asset.dataUrl,
-              ]),
-            );
-      let assetsBytes =
-        (previous?.storageVersion === 2 ? previous.bytes?.assets : undefined) ??
-        [...persisted].reduce(
-          (sum, [assetId, dataUrl]) =>
-            sum + logicalBytes({ projectId: project.id, assetId, dataUrl }),
-          0,
-        );
-      const metadata: Record<string, AssetMetadata> = {};
-      let changed = false;
-      for (const asset of Object.values(project.assets)) {
-        const { dataUrl, ...description } = asset;
-        metadata[asset.id] = description;
-        urls.set(asset.id, dataUrl);
-        if (persisted.get(asset.id) !== dataUrl) {
-          assetsBytes +=
-            logicalBytes({ projectId: project.id, assetId: asset.id, dataUrl }) -
-            (persisted.has(asset.id)
-              ? logicalBytes({
-                  projectId: project.id,
-                  assetId: asset.id,
-                  dataUrl: persisted.get(asset.id),
-                })
-              : 0);
-          await assetStore.put({ projectId: project.id, assetId: asset.id, dataUrl });
-          changed = true;
-        }
-      }
-      for (const assetId of persisted.keys()) {
-        if (!urls.has(assetId)) {
-          assetsBytes -= logicalBytes({
-            projectId: project.id,
-            assetId,
-            dataUrl: persisted.get(assetId),
-          });
-          await assetStore.delete([project.id, assetId]);
-          changed = true;
-        }
-      }
-      revision = previous?.storageVersion === 2 ? (previous.assetsRevision ?? "") : "";
-      if (changed || !revision) {
-        const sequence = Number(
-          (await tx.objectStore("preferences").get("asset-revision-sequence")) ?? "0",
-        );
-        if (!Number.isSafeInteger(sequence) || sequence < 0 || sequence >= Number.MAX_SAFE_INTEGER)
-          throw new Error("Compteur des ressources locales invalide.");
-        revision = `assets:${sequence + 1}`;
-        await tx.objectStore("preferences").put(String(sequence + 1), "asset-revision-sequence");
-      }
-      const preview = thumbnail ?? previous?.thumbnail;
-      let storedThumbnails = previous ? previous.thumbnailInfo : [];
-      let thumbnailsBytes = previous ? previous.bytes?.thumbnails : 0;
-      if (storedThumbnails === undefined || thumbnailsBytes === undefined) {
-        const records = await tx.objectStore("thumbnails").index("by-project").getAll(project.id);
-        storedThumbnails = records.map(thumbnailInfo);
-        thumbnailsBytes = records.reduce(
-          (sum, record) => sum + thumbnailBytes(record),
-          legacyThumbnailBytes(previous?.thumbnail),
-        );
-      }
-      for (const info of storedThumbnails) {
-        if (!Object.hasOwn(pageRevisions, info.pageId)) {
-          const old = await tx.objectStore("thumbnails").get([project.id, info.pageId]);
-          if (old) thumbnailsBytes -= thumbnailBytes(old);
-          await tx.objectStore("thumbnails").delete([project.id, info.pageId]);
-        }
-      }
-      thumbnailsBytes += legacyThumbnailBytes(preview) - legacyThumbnailBytes(previous?.thumbnail);
-      const record: StoredProject = {
-        id: project.id,
-        storageVersion: 2,
-        assetsRevision: revision,
-        project: { ...project, assets: metadata },
-        pageRevisions,
-        thumbnailInfo: storedThumbnails.filter((info) => Object.hasOwn(pageRevisions, info.pageId)),
-        ...(preview ? { thumbnail: preview } : {}),
-      };
-      record.bytes = {
-        manifest: manifestBytes(record),
-        assets: assetsBytes,
-        thumbnails: thumbnailsBytes,
-      };
-      await projectStore.put(record);
-      writeRevision = await renewProjectWriteRevision(tx.objectStore("preferences"), project.id);
-      if (options.remember !== false)
-        await tx.objectStore("preferences").put(project.id, "last-project");
-      await done;
+      result = await persistence.save(prepared.frame);
     } catch (error) {
-      try {
-        tx.abort();
-      } catch {
-        /* A failing IndexedDB request may already have aborted it. */
-      }
-      await done.catch(() => undefined);
-      throw error;
+      if (
+        !error ||
+        typeof error !== "object" ||
+        !("code" in error) ||
+        error.code !== "ASSET_BASIS_MISMATCH"
+      )
+        throw error;
+      // This transaction wrote nothing. Keep the same captured document revision;
+      // a concurrent writer still fails CAS when the complete originals are retried.
+      this.assertGeneration(generation);
+      result = await persistence.save(withFullOriginals(prepared.frame, project));
     }
-    // Publishing the comparison cache before commit would hide writes after a failed transaction.
-    this.activeAssets = { projectId: project.id, revision, urls };
-    this.observeWrite(project.id, writeRevision);
+    // Closing drains already-admitted writes, but their results cannot repopulate
+    // caches or loaded baselines belonging to a closed/reopened generation.
+    if (generation === this.generation) {
+      this.activeAssets = {
+        projectId: project.id,
+        revision: result.assetsRevision,
+        urls: prepared.urls,
+      };
+      this.observeWrite(project.id, result.writeRevision);
+    }
   }
   /** Editor writes retain their loaded baseline; unknown existing projects must be reopened. */
   saveCurrent(project: Project): Promise<void> {
@@ -239,6 +165,7 @@ export class ProjectStore {
     id: string,
     options: { observe?: boolean; remember?: boolean } = {},
   ): Promise<Project> {
+    const generation = this.generation;
     const db = await this.db();
     const stores = ["projects", "assets", "preferences"] as const;
     const tx = options.remember
@@ -253,7 +180,12 @@ export class ProjectStore {
       for (const [assetId, metadata] of Object.entries(record.project.assets)) {
         const original = await tx.objectStore("assets").get([id, assetId]);
         if (!original) throw new Error(`Ressource locale manquante : ${metadata.name}.`);
-        assets[assetId] = { ...metadata, dataUrl: original.dataUrl };
+        Object.defineProperty(assets, assetId, {
+          value: { ...metadata, dataUrl: original.dataUrl },
+          enumerable: true,
+          writable: true,
+          configurable: true,
+        });
       }
       project = { ...record.project, assets };
     } else project = record.project;
@@ -261,6 +193,7 @@ export class ProjectStore {
     if (project.id !== id) throw new Error("Identité du projet local incohérente.");
     if (tx.mode === "readwrite") await tx.objectStore("preferences").put(id, "last-project");
     await tx.done;
+    this.assertGeneration(generation);
     this.activeAssets =
       record.storageVersion === 2 && typeof record.assetsRevision === "string"
         ? {
@@ -372,7 +305,7 @@ export class ProjectStore {
         await tx.objectStore("projects").put(record);
         const writeRevision = await renewProjectWriteRevision(tx.objectStore("preferences"), id);
         await done;
-        this.observeWrite(id, writeRevision);
+        if (generation === this.generation) this.observeWrite(id, writeRevision);
         return;
       } catch (error) {
         try {
@@ -392,73 +325,18 @@ export class ProjectStore {
   }
   estimateOriginStorage = estimateOriginStorage;
   async thumbnailInfo(projectId: string): Promise<ThumbnailInfo[]> {
-    return (await (await this.db()).get("projects", projectId))?.thumbnailInfo ?? [];
+    const persistence = (this.persistence ??= new PersistenceClient(this.name, () => this.db()));
+    return persistence.info(projectId);
   }
   async thumbnails(projectId: string, pageIds?: readonly string[]): Promise<StoredThumbnail[]> {
-    const tx = (await this.db()).transaction(["projects", "thumbnails"]);
-    const project = await tx.objectStore("projects").get(projectId);
-    if (!project) {
-      await tx.done;
-      return [];
-    }
-    const records = pageIds
-      ? await Promise.all(
-          [...new Set(pageIds)].map((pageId) =>
-            tx.objectStore("thumbnails").get([projectId, pageId]),
-          ),
-        )
-      : await tx.objectStore("thumbnails").index("by-project").getAll(projectId);
-    await tx.done;
-    return records.filter(
-      (record): record is StoredThumbnail =>
-        record !== undefined && record.revision === project.pageRevisions?.[record.pageId],
-    );
+    const persistence = (this.persistence ??= new PersistenceClient(this.name, () => this.db()));
+    return persistence.thumbnails(projectId, pageIds);
   }
   async saveThumbnail(thumbnail: StoredThumbnail): Promise<boolean> {
-    if (
-      !(thumbnail.blob instanceof Blob) ||
-      thumbnail.blob.size > 1024 * 1024 ||
-      thumbnail.width < 1 ||
-      thumbnail.height < 1 ||
-      thumbnail.width > 768 ||
-      thumbnail.height > 768 ||
-      !Number.isInteger(thumbnail.width) ||
-      !Number.isInteger(thumbnail.height)
-    )
-      throw new Error("Invalid thumbnail.");
-    const tx = (await this.db()).transaction(["projects", "thumbnails"], "readwrite"),
-      done = tx.done;
-    try {
-      const project = await tx.objectStore("projects").get(thumbnail.projectId);
-      if (!project || project.pageRevisions?.[thumbnail.pageId] !== thumbnail.revision) {
-        await done;
-        return false;
-      }
-      const previous = await tx
-        .objectStore("thumbnails")
-        .get([thumbnail.projectId, thumbnail.pageId]);
-      await tx.objectStore("thumbnails").put(thumbnail);
-      project.thumbnailInfo = [
-        ...(project.thumbnailInfo ?? []).filter((info) => info.pageId !== thumbnail.pageId),
-        thumbnailInfo(thumbnail),
-      ];
-      if (project.bytes) {
-        project.bytes.thumbnails +=
-          thumbnailBytes(thumbnail) - (previous ? thumbnailBytes(previous) : 0);
-        project.bytes.manifest = manifestBytes(project);
-      }
-      await tx.objectStore("projects").put(project);
-      await done;
-      return true;
-    } catch (error) {
-      try {
-        tx.abort();
-      } catch {
-        /* Native transaction may already be aborted. */
-      }
-      await done.catch(() => undefined);
-      throw error;
-    }
+    const captured = { ...thumbnail };
+    validateThumbnail(captured);
+    const persistence = (this.persistence ??= new PersistenceClient(this.name, () => this.db()));
+    return persistence.thumbnail(captured);
   }
   async last() {
     return (await this.db()).get("preferences", "last-project");
@@ -514,8 +392,12 @@ export class ProjectStore {
   }
   async close() {
     this.generation++;
+    this.digestMemo.reset();
+    const persistence = this.persistence;
+    this.persistence = undefined;
     this.hasher?.dispose();
     this.hasher = undefined;
+    await persistence?.dispose();
     if (this.connection) {
       (await this.connection).close();
       this.connection = undefined;

@@ -12,6 +12,7 @@ export interface AppendHistoryOptions {
   elapsed?: number;
   concurrency?: { expectedNext: number; current: ReplayState };
   fingerprint?: string;
+  operationId?: string;
 }
 /** Caller owns the transaction and precomputes cryptographic hashes before acquiring its locks. */
 export async function appendInTransaction(tx: HistoryWrite, options: AppendHistoryOptions) {
@@ -32,6 +33,7 @@ export async function appendInTransaction(tx: HistoryWrite, options: AppendHisto
   const record = {
     projectId,
     sequence: meta.next,
+    ...(options.operationId ? { operationId: options.operationId } : {}),
     event: {
       ...event,
       projectId,

@@ -1,11 +1,21 @@
-import { afterEach, expect, it, vi } from "vitest";
+import { beforeEach, afterEach, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { createPage, createProject, EditorEngine } from "@musart/core";
 import { Rulers } from "../../../src/canvas/guides/Rulers";
 import { SceneController } from "../../../src/canvas/session/scene-controller";
+import { createPlaybackSource } from "../../../src/canvas/session/playback-source";
 import type { PreviewValue } from "../../../src/state/session/preview-source";
+import {
+  DEFAULT_GUIDE_COLOR,
+  GUIDE_COLOR_KEY,
+  guideColors,
+} from "../../../src/state/guides/colors";
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
-afterEach(() => vi.unstubAllGlobals());
+beforeEach(() => localStorage.setItem(GUIDE_COLOR_KEY, DEFAULT_GUIDE_COLOR));
+afterEach(() => {
+  vi.unstubAllGlobals();
+  localStorage.removeItem(GUIDE_COLOR_KEY);
+});
 const view = { x: 5, y: -3, zoom: 2 },
   pointer = (x: number, y: number, button = 0) => ({
     clientX: 15 + x * 2,
@@ -32,6 +42,24 @@ function fixture(rulers = true) {
   vi.stubGlobal("cancelAnimationFrame", cancel);
   return { page, engine, viewport: { current: viewport }, commands, cancel };
 }
+it("captures the last chosen guide color for a ruler gesture and its undoable guide", () => {
+  guideColors.remember("#00aaff");
+  const d = fixture(),
+    { container } = render(<Rulers {...d} view={view} />);
+  const handle = screen.getByLabelText("horizontal");
+  fireEvent.pointerDown(handle, pointer(10, 0));
+  fireEvent.pointerMove(handle, pointer(20, 30));
+  expect(
+    container
+      .querySelector<HTMLElement>(".ruler-guide-preview")!
+      .style.getPropertyValue("--guide-color"),
+  ).toBe("#00aaff");
+  guideColors.remember("#ff6600");
+  fireEvent.pointerUp(handle, pointer(20, 30));
+  expect(d.engine.getSnapshot().project.pages[0]!.guides[0]!.color).toBe("#00aaff");
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project.pages[0]!.guides).toEqual([]);
+});
 it("adds one horizontal or vertical world guide after the drag, retaining subpixel precision", () => {
   const d = fixture(),
     { container, unmount } = render(<Rulers {...d} view={view} />);
@@ -50,14 +78,14 @@ it("adds one horizontal or vertical world guide after the drag, retaining subpix
   fireEvent.pointerUp(horizontal, pointer(30, 20.125));
   expect(d.commands).toHaveBeenCalledExactlyOnceWith({
     type: "addGuide",
-    guide: { id: expect.any(String), axis: "y", position: 20.13 },
+    guide: { id: expect.any(String), axis: "y", position: 20.13, color: DEFAULT_GUIDE_COLOR },
   });
   expect(release).toHaveBeenCalled();
   fireEvent.pointerDown(vertical, pointer(0, 0));
   fireEvent.pointerUp(vertical, pointer(25, 20));
   expect(d.commands).toHaveBeenLastCalledWith({
     type: "addGuide",
-    guide: { id: expect.any(String), axis: "x", position: 25 },
+    guide: { id: expect.any(String), axis: "x", position: 25, color: DEFAULT_GUIDE_COLOR },
   });
   expect(container.querySelector(".ruler-guide-preview")).toBeNull();
   unmount();
@@ -106,7 +134,7 @@ it("uses current imperative page dimensions for ruler origin and guide bounds du
   fireEvent.pointerUp(vertical, event);
   expect(d.commands).toHaveBeenCalledExactlyOnceWith({
     type: "addGuide",
-    guide: { id: expect.any(String), axis: "x", position: 150 },
+    guide: { id: expect.any(String), axis: "x", position: 150, color: DEFAULT_GUIDE_COLOR },
   });
   unmount();
   expect(listeners.size).toBe(0);
@@ -150,4 +178,28 @@ it("one completed ruler drag adds one guide with one undo entry", () => {
   act(() => d.engine.undo());
   expect(d.engine.getSnapshot().project.pages[0]!.guides).toHaveLength(0);
   expect(d.engine.getSnapshot().canUndo).toBe(false);
+});
+
+it("Escape cancels the captured ruler gesture and playback rejects starting another", () => {
+  const d = fixture(),
+    controller = new SceneController(d.engine, { read: () => null, subscribe: () => () => {} });
+  const { container, unmount } = render(<Rulers {...d} controller={controller} view={view} />);
+  const handle = screen.getByLabelText("horizontal"),
+    baseline = d.engine.getSnapshot();
+  vi.spyOn(handle, "hasPointerCapture").mockReturnValue(true);
+  const release = vi.spyOn(handle, "releasePointerCapture");
+  fireEvent.keyDown(window, { key: "a" });
+  fireEvent.pointerDown(handle, pointer(10, 0));
+  fireEvent.pointerMove(handle, pointer(20, 30));
+  fireEvent.keyDown(window, { key: "Escape" });
+  expect(container.querySelector(".ruler-guide-preview")).toBeNull();
+  expect(release).toHaveBeenCalled();
+  fireEvent.pointerUp(handle, pointer(20, 30));
+  act(() => createPlaybackSource(d.engine).set({ page: d.page, assets: {} }));
+  fireEvent.pointerDown(handle, pointer(10, 0));
+  fireEvent.pointerMove(handle, pointer(20, 30));
+  fireEvent.pointerUp(handle, pointer(20, 30));
+  expect(d.engine.getSnapshot()).toBe(baseline);
+  expect(d.commands).not.toHaveBeenCalled();
+  unmount();
 });

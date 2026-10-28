@@ -13,6 +13,8 @@ export interface ProjectBytes {
   manifest: number;
   assets: number;
   thumbnails: number;
+  /** Internal exact JSON page sizes, computed alongside pixel hashes off the UI thread. */
+  pagePayloads?: number[];
 }
 import type { StoredThumbnail, ThumbnailInfo } from "./thumbnails/model";
 export type { StoredThumbnail, ThumbnailInfo } from "./thumbnails/model";
@@ -50,7 +52,11 @@ export interface StudioDatabase extends DBSchema {
   journalEvents: {
     key: [string, number];
     value: StoredHistoryEvent;
-    indexes: { "by-project": string; "by-checkpoint": [string, string, number] };
+    indexes: {
+      "by-project": string;
+      "by-checkpoint": [string, string, number];
+      "by-operation": [string, string];
+    };
   };
   journalAssets: {
     key: [string, string];
@@ -62,7 +68,7 @@ export interface StudioDatabase extends DBSchema {
 
 /** One versioned connection schema; history records never enter project manifests. */
 export function openStudioDatabase(name: string) {
-  const opening = openDB<StudioDatabase>(name, 5, {
+  const opening = openDB<StudioDatabase>(name, 6, {
     upgrade(db, previousVersion, _newVersion, transaction) {
       if (previousVersion < 1) {
         db.createObjectStore("projects", { keyPath: "id" });
@@ -94,6 +100,10 @@ export function openStudioDatabase(name: string) {
         thumbnails.createIndex("by-project", "projectId");
         transaction.objectStore("projects").createIndex("by-updated", ["project.updatedAt", "id"]);
       }
+      if (previousVersion < 6)
+        transaction
+          .objectStore("journalEvents")
+          .createIndex("by-operation", ["projectId", "operationId"], { unique: true });
     },
     blocking() {
       void opening.then((db) => db.close());

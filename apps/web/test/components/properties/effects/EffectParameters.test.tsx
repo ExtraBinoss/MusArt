@@ -64,13 +64,19 @@ test("legacy numeric and boolean parameters retain normalized document values an
     change = vi.fn(),
     cancel = vi.fn();
   const view = d.mount(
-    <EffectParameters effect={createEffect("dither")} onChange={change} onCancel={cancel} />,
+    <EffectParameters
+      effect={createEffect("dither", { amount: 0.6 })}
+      onChange={change}
+      onCancel={cancel}
+    />,
   );
   const amount = screen.getByLabelText("Intensité");
   fireEvent.change(amount, { target: { value: "25" } });
   expect(change).toHaveBeenCalledWith({ amount: 0.25 }, true);
   fireEvent.keyDown(amount, { key: "Escape" });
   expect(cancel).toHaveBeenCalled();
+  fireEvent.doubleClick(screen.getByRole("button", { name: "Ajuster Intensité" }));
+  expect(change).toHaveBeenLastCalledWith({ amount: 1 }, false);
   fireEvent.click(screen.getByRole("switch", { name: "Couleur" }));
   expect(change).toHaveBeenLastCalledWith({ color: true }, false);
   view.rerender(<EffectParameters effect={createEffect("dither")} disabled onChange={change} />);

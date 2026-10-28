@@ -11,6 +11,7 @@
 }
 .inspector {
   height: 100%;
+  container: inspector / inline-size;
 }
 .inspector-title {
   height: 46px;
@@ -197,8 +198,6 @@
 }
 .effect-heading > [data-slot="switch"] {
   margin-left: auto;
-  transform: scale(0.7);
-  transform-origin: right center;
 }
 .effect-heading .icon-button {
   width: 20px;
@@ -235,10 +234,6 @@
   align-items: center;
   font-size: 11px;
   gap: 15px;
-}
-.switch-row [data-slot="switch"] {
-  transform: scale(0.8);
-  transform-origin: right center;
 }
 .muted-description {
   font-size: 11px;
@@ -290,14 +285,39 @@
   max-height: min(360px, 60vh);
 }
 .alignment-tools {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
   margin-top: 9px;
 }
+.alignment-tools [data-slot="button-group"] {
+  width: 100%;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--field);
+}
 .alignment-tools .icon-button {
-  width: 29px;
+  flex: 1;
+  min-width: 0;
+  width: auto;
   height: 28px;
+}
+.position-field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.position-field-label > svg {
+  display: none;
+}
+@container inspector (max-width: 310px) {
+  .position-field-label > svg {
+    display: block;
+  }
+  .position-field-label > span {
+    display: none;
+  }
 }
 .spacing-section > div + div {
   margin-top: 14px;

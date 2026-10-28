@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { createLayer, createPage, createProject } from "@musart/core";
 import { installReadbackProbe } from "./support/readback-probe";
+import { installNativeDragProbe, assertNativeMove } from "./support/native-drag";
 
 async function ready(page: Page) {
   await page.addInitScript(() => {
@@ -16,7 +17,11 @@ async function ready(page: Page) {
 async function layerOrder(page: Page) {
   return page
     .locator('[role="tree"] [data-layer-id]')
-    .evaluateAll((rows) => rows.map((row) => row.getAttribute("data-layer-id")));
+    .evaluateAll((rows) =>
+      rows
+        .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top)
+        .map((row) => row.getAttribute("data-layer-id")),
+    );
 }
 async function snapshotOrder(page: Page) {
   return page.evaluate(() =>
@@ -67,7 +72,9 @@ test("compact header and dock expose real commands, persist pins and support key
     .toEqual(expected);
   const pinnedPage = page.locator('[data-dock-command="action:addPage"]');
   const pinnedRecenter = page.locator('[data-dock-command="action:recenter"]');
-  await pinnedPage.dragTo(pinnedRecenter);
+  await installNativeDragProbe(page, "application/x-musart-dock-command");
+  await pinnedPage.dragTo(pinnedRecenter, { targetPosition: { x: 16, y: 3 } });
+  await assertNativeMove(page, "action:addPage");
   await expect
     .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("musart.dock.commands")!)))
     .toEqual(["action:addPage", "action:recenter"]);
@@ -111,6 +118,7 @@ test("native layer drag projects its order before one document commit and Escape
     await page.mouse.move(target.x + 100, target.y + 2, { steps: 12 });
     await page.mouse.move(target.x + 101, target.y + 2);
   }
+  await installNativeDragProbe(page, "application/x-musart-layer");
   await hoverDrag();
   await expect.poll(() => layerOrder(page)).toEqual(["a", "c", "b"]);
   expect(await snapshotOrder(page)).toEqual(["a", "b", "c"]);
@@ -125,6 +133,7 @@ test("native layer drag projects its order before one document commit and Escape
   await expect.poll(() => layerOrder(page)).toEqual(["a", "c", "b"]);
   await page.mouse.up();
   await expect.poll(() => snapshotOrder(page)).toEqual(["b", "c", "a"]);
+  await assertNativeMove(page, "a");
   await page.keyboard.press("Control+z");
   await expect.poll(() => snapshotOrder(page)).toEqual(["a", "b", "c"]);
   expect(await page.evaluate(() => window.musart!.snapshot().canUndo)).toBe(false);
@@ -243,7 +252,7 @@ test("a short viewport scrolls all twelve pinned commands with bounded menus and
       .locator(".toolbar .tool-button")
       .first()
       .evaluate((element) => element.getBoundingClientRect().height),
-  ).toBe(35);
+  ).toBe(33);
   await viewport.hover();
   await page.mouse.wheel(0, 4000);
   await expect.poll(() => viewport.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);

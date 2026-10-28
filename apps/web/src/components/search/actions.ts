@@ -3,9 +3,11 @@ import type { Tool } from "../../canvas/EditorCanvas";
 import { createViewportActions } from "../../canvas/session/viewport-actions";
 import type { EditorServices } from "../../state/contracts";
 import type { Theme } from "../../state/session/editor";
+import { snappingPreferences } from "../../state/snapping/preferences";
 import type { SearchAction, SearchItem, SearchTranslate } from "./catalog/model";
+import { capturePresentationDelete, attachmentSelection } from "../../state/selection/attachments";
 
-export type ProjectView = "projects" | "newProject" | "settings";
+export type ProjectView = "projects" | "newProject" | "settings" | "settingsEditor";
 export type PanelMode = "design" | "animate";
 export interface SearchActions {
   engine: EnginePort;
@@ -83,11 +85,14 @@ export function createSearchActions(context: SearchActions) {
     undo: engine.undo,
     redo: engine.redo,
     duplicate: () => selectedCommand("duplicateLayers"),
-    delete: () => selectedCommand("deleteLayers"),
+    delete: () => capturePresentationDelete(engine)(),
     group: () => selectedCommand("groupLayers"),
     ungroup: () => selectedCommand("ungroupLayers"),
     selectAll: () => engine.select(selection(engine).page.layers.map((layer) => layer.id)),
-    deselect: () => engine.select([]),
+    deselect: () => {
+      attachmentSelection(engine).clear();
+      engine.select([]);
+    },
     toggleVisibility: () => {
       const { selected } = selection(engine);
       engine.execute({
@@ -124,6 +129,13 @@ export function createSearchActions(context: SearchActions) {
     design: () => context.onPanelMode("design"),
     animate: () => context.onPanelMode("animate"),
     settings: () => context.onProjects("settings"),
+    editorSettings: () => context.onProjects("settingsEditor"),
+    enableSnapping: () => {
+      snappingPreferences.update({ enabled: true });
+    },
+    disableSnapping: () => {
+      snappingPreferences.update({ enabled: false });
+    },
     themeLight: () => context.setTheme("light"),
     themeDark: () => context.setTheme("dark"),
     themeSystem: () => context.setTheme("system"),
@@ -137,6 +149,7 @@ export function executeSearchItem(item: SearchItem, context: SearchActions): voi
   if (target.kind === "action") return createSearchActions(context)[target.action]();
   if (target.kind === "page") return context.engine.setPage(target.pageId);
   if (target.kind === "layer") {
+    attachmentSelection(context.engine).clear();
     context.engine.setPage(target.pageId);
     context.engine.select([target.layerId]);
     return;
@@ -152,4 +165,13 @@ export function executeSearchItem(item: SearchItem, context: SearchActions): voi
       patch: { effects: [...layer.effects, createEffect(target.effect)] },
     })),
   );
+}
+/** Preserve a destructive UI target while a dialog closes or a task adapter defers execution. */
+export function captureSearchItem(
+  item: SearchItem,
+  context: SearchActions,
+): () => void | Promise<void> {
+  return item.target.kind === "action" && item.target.action === "delete"
+    ? capturePresentationDelete(context.engine)
+    : () => executeSearchItem(item, context);
 }

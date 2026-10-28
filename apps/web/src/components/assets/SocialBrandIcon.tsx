@@ -15,7 +15,7 @@ export function SocialBrandIcon({
   if (!artwork) return null;
   return (
     <span className={className} style={{ display: "inline-flex", width: size, height: size }}>
-      <PaletteVector item={artwork} />
+      <PaletteVector item={artwork} className="size-full" />
     </span>
   );
 }

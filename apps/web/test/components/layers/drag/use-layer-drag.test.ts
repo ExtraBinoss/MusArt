@@ -47,13 +47,41 @@ test("projects on hover and only commits one semantic command on drop", () => {
   d.engine.undo();
   expect(d.engine.getSnapshot().project.pages[0]!.layers).toEqual(d.page.layers);
 });
+test("dropping a colored rectangle onto a target thumbnail creates one editable alpha mask", () => {
+  const d = fixture(),
+    row = document.createElement("div"),
+    thumbnail = document.createElement("span"),
+    execute = vi.spyOn(d.engine, "execute");
+  thumbnail.dataset.thumbnailLayerId = d.text.id;
+  row.append(thumbnail);
+  vi.spyOn(row, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 200, 40));
+  vi.spyOn(thumbnail, "getBoundingClientRect").mockReturnValue(new DOMRect(30, 8, 24, 24));
+  const event = { ...d.event, clientX: 42, clientY: 20, currentTarget: row };
+  act(() => d.result.current.start(event, d.rectangle));
+  act(() => d.result.current.over(event, d.text));
+  expect(d.result.current.target).toEqual({ id: d.text.id, position: "mask" });
+  expect(d.transfer.dropEffect).toBe("move");
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+  act(() => d.result.current.drop(event, d.text));
+  expect(execute).toHaveBeenCalledExactlyOnceWith({
+    type: "attachLayerMask",
+    sourceId: d.rectangle.id,
+    targetId: d.text.id,
+  });
+  expect(
+    d.engine.getSnapshot().project.pages[0]!.layers.find((layer) => layer.id === d.text.id)?.mask,
+  ).toMatchObject({ layerId: d.rectangle.id, mode: "alpha", enabled: true });
+  d.engine.undo();
+  expect(d.engine.getSnapshot().project.pages[0]!.layers).toEqual(d.page.layers);
+});
 test("Escape, invalid targets, dragend and concurrent document changes restore visual order and reject late drops", () => {
   const d = fixture();
   const execute = vi.spyOn(d.engine, "execute");
   act(() => d.result.current.over(d.event, d.text));
   act(() => d.result.current.start(d.event, d.rectangle));
   act(() => d.result.current.over(d.event, d.rectangle));
-  expect(d.transfer.dropEffect).toBe("none");
+  expect(d.transfer.dropEffect).toBe("move");
+  expect(d.event.preventDefault).toHaveBeenCalled();
   act(() => d.result.current.over(d.event, d.text));
   fireEvent.keyDown(window, { key: "Escape" });
   expect(d.result.current.layers).toBe(d.page.layers);
@@ -137,6 +165,27 @@ test("a deferred task rechecks the drag origin immediately before executing its 
   act(() => pending!());
   expect(execute).not.toHaveBeenCalled();
   expect(d.engine.getSnapshot()).toBe(untouched);
+});
+test("starts on an inactive artboard and rejects cross-artboard targets without losing the native source", () => {
+  const d = fixture(),
+    other = createPage({ layers: [createLayer("rectangle"), createLayer("text")] });
+  act(() => d.engine.execute({ type: "addPage", page: other }));
+  const first = d.engine.getSnapshot().project.pages[0]!,
+    second = d.engine.getSnapshot().project.pages[1]!;
+  act(() => d.engine.setPage(first.id));
+  d.rerender({ current: first });
+  act(() => d.result.current.start(d.event, second.layers[0]!, second));
+  expect(d.engine.getSnapshot().pageId).toBe(second.id);
+  expect(d.result.current.dragging).toBe(second.layers[0]!.id);
+  act(() => d.result.current.over(d.event, second.layers[1]!, second));
+  expect(d.result.current.target?.id).toBe(second.layers[1]!.id);
+  act(() => d.result.current.over(d.event, first.layers[0]!, first));
+  expect(d.transfer.dropEffect).toBe("none");
+  expect(d.result.current.target).toBeNull();
+  expect(d.result.current.dragging).toBe(second.layers[0]!.id);
+  const before = d.engine.getSnapshot();
+  act(() => d.result.current.drop(d.event, first.layers[0]!, first));
+  expect(d.engine.getSnapshot()).toBe(before);
 });
 
 test("returning a layer to its original insertion creates no undo entry or replay commit", () => {

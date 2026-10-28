@@ -1,6 +1,7 @@
 import { expect, test, vi } from "vitest";
 import { act, screen, fireEvent, createEvent, within } from "@testing-library/react";
-import { createLayer } from "@musart/core";
+import { createLayer, createPage, createEffect } from "@musart/core";
+import { attachmentSelection } from "../../../src/state/selection/attachments";
 import { LayersPanel, layerDepth, flattenLayers } from "../../../src/components/layers/LayersPanel";
 import { useEngine } from "../../../src/state/session/editor";
 import { setup } from "../../support/ui";
@@ -11,7 +12,7 @@ function renderLayers() {
     return (
       <LayersPanel
         engine={data.engine}
-        page={s.project.pages[0]!}
+        page={s.project.pages.find((page) => page.id === s.pageId)!}
         project={s.project}
         selection={s.selection}
         run={data.run}
@@ -21,6 +22,57 @@ function renderLayers() {
   data.mount(<Live />);
   return data;
 }
+test.each(["footer", "context"] as const)(
+  "%s deletes the selected effect rather than its owner",
+  async (surface) => {
+    const d = renderLayers(),
+      effect = createEffect("dither");
+    act(() => {
+      d.engine.execute({
+        type: "updateLayers",
+        ids: [d.rectangle.id],
+        patch: { effects: [effect] },
+      });
+      d.engine.load(d.engine.getSnapshot().project);
+    });
+    const page = d.engine.getSnapshot().project.pages[0]!;
+    act(() => {
+      attachmentSelection(d.engine).select(page, {
+        kind: "effect",
+        pageId: page.id,
+        layerId: d.rectangle.id,
+        effectId: effect.id,
+      });
+    });
+    expect(screen.getByRole("textbox", { name: "Opacité" })).toBeDisabled();
+    if (surface === "context") {
+      fireEvent.contextMenu(document.querySelector(`[data-attachment-effect-id="${effect.id}"]`)!);
+      fireEvent.click(await screen.findByRole("menuitem", { name: "Retirer l’effet" }));
+    } else fireEvent.click(screen.getByRole("button", { name: "Retirer l’effet" }));
+    expect(d.engine.getSnapshot().project.pages[0]!.layers).toHaveLength(3);
+    expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.effects).toHaveLength(0);
+    act(() => d.engine.undo());
+    expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.effects[0]!.id).toBe(effect.id);
+    expect(d.engine.getSnapshot().canUndo).toBe(false);
+  },
+);
+test("keeps footer creation and selection actions distinct, square-sized and accessibly named", () => {
+  const d = renderLayers(),
+    footer = screen.getByRole("group", { name: "Actions des calques" }),
+    create = within(footer).getByRole("group", { name: "Ajouter des effets et corrections" }),
+    selected = within(footer).getByRole("group", { name: "Actions de la sélection" });
+  expect(within(create).getAllByRole("button")).toHaveLength(2);
+  expect(within(selected).getAllByRole("button")).toHaveLength(2);
+  for (const button of within(footer).getAllByRole("button")) {
+    expect(button).toHaveAttribute("data-size", "icon-sm");
+    expect(button).toBeDisabled();
+  }
+  fireEvent.click(screen.getByText(d.rectangle.name));
+  for (const button of within(footer).getAllByRole("button")) expect(button).toBeEnabled();
+  expect(
+    within(selected).getByRole("button", { name: "Supprimer la sélection (1)" }),
+  ).toBeEnabled();
+});
 test("selects rows without eye and lock actions altering selection; renames accessibly", () => {
   const { engine, rectangle, text } = renderLayers();
   const row = screen.getByText(rectangle.name).closest("[role=treeitem]")!;
@@ -207,9 +259,60 @@ test("mounts only the visible window and overscan for a ten-thousand-layer docum
   );
   const tree = screen.getByRole("tree");
   expect(tree.querySelectorAll("[data-layer-id]").length).toBeLessThan(25);
-  expect(tree.querySelector("[data-total-rows]")).toHaveAttribute("data-total-rows", "10000");
+  expect(tree.querySelector("[data-total-rows]")).toHaveAttribute("data-total-rows", "10001");
   expect(screen.getByText("Layer 9999")).toBeInTheDocument();
   fireEvent.scroll(tree, { target: { scrollTop: 36000 } });
   expect(screen.queryByText("Layer 9999")).toBeNull();
+  expect(tree.querySelectorAll("[data-layer-id]").length).toBeLessThan(25);
+});
+test("all artboards share one tree, independently collapse and activate their real layers", () => {
+  const d = renderLayers(),
+    other = createPage({ name: "Story", layers: [createLayer("text", { name: "Story title" })] });
+  act(() => d.engine.execute({ type: "addPage", page: other }));
+  const canonical = d.engine.getSnapshot().project,
+    first = canonical.pages[0]!,
+    second = canonical.pages[1]!;
+  expect(screen.getByText(d.rectangle.name)).toBeInTheDocument();
+  expect(screen.getByText("Story title")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: `Replier ${first.name}` }));
+  expect(screen.queryByText(d.rectangle.name)).toBeNull();
+  expect(screen.getByText("Story title")).toBeInTheDocument();
+  act(() => d.engine.setPage(first.id));
+  fireEvent.click(screen.getByText("Story title"));
+  expect(d.engine.getSnapshot()).toMatchObject({
+    pageId: second.id,
+    selection: [second.layers[0]!.id],
+  });
+  expect(d.engine.getSnapshot().project).toBe(canonical);
+  fireEvent.click(screen.getByRole("treeitem", { name: `${first.name} · 3 calques` }));
+  expect(d.engine.getSnapshot()).toMatchObject({ pageId: first.id, selection: [] });
+  fireEvent.click(screen.getByRole("button", { name: `Déplier ${first.name}` }));
+  expect(screen.getByText(d.rectangle.name)).toBeInTheDocument();
+  expect(screen.getAllByRole("tree")).toHaveLength(1);
+});
+test("page activation and addition preserve the virtual viewport node, native scroll and mounted rows", () => {
+  const d = renderLayers(),
+    layers = Array.from({ length: 20 }, (_, at) =>
+      createLayer("rectangle", { name: `Stack ${at}` }),
+    );
+  act(() => {
+    d.engine.execute({ type: "addLayers", layers });
+    d.engine.execute({ type: "addPage", page: createPage({ name: "Other" }) });
+  });
+  const tree = screen.getByRole("tree") as HTMLElement;
+  fireEvent.scroll(tree, { target: { scrollTop: 360 } });
+  const retained = tree.querySelector("[data-layer-id]");
+  const before = tree.querySelector("[data-total-rows]")!.getAttribute("data-total-rows");
+  act(() => d.engine.setPage(d.engine.getSnapshot().project.pages[0]!.id));
+  expect(screen.getByRole("tree")).toBe(tree);
+  expect(tree.scrollTop).toBe(360);
+  expect(retained?.isConnected).toBe(true);
+  act(() => d.engine.execute({ type: "addPage", page: createPage({ name: "Third" }) }));
+  expect(screen.getByRole("tree")).toBe(tree);
+  expect(tree.scrollTop).toBe(360);
+  expect(retained?.isConnected).toBe(true);
+  expect(Number(tree.querySelector("[data-total-rows]")!.getAttribute("data-total-rows"))).toBe(
+    Number(before) + 2,
+  );
   expect(tree.querySelectorAll("[data-layer-id]").length).toBeLessThan(25);
 });

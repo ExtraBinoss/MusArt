@@ -253,6 +253,24 @@ export const ACTIONS: readonly ActionDefinition[] = [
     terms: "settings preferences paramètres préférences",
   },
   {
+    action: "editorSettings",
+    category: "preferences",
+    label: "search:editorSettings",
+    terms: "editor settings snapping threshold éditeur magnétisme aimant seuil préférences",
+  },
+  {
+    action: "enableSnapping",
+    category: "preferences",
+    label: "search:enableSnapping",
+    terms: "snap elements magnet enable alignment activer magnétisme calques alignement aimant",
+  },
+  {
+    action: "disableSnapping",
+    category: "preferences",
+    label: "search:disableSnapping",
+    terms: "snap elements magnet disable alignment désactiver magnétisme libre aimant",
+  },
+  {
     action: "themeLight",
     category: "preferences",
     label: "search:themeLight",

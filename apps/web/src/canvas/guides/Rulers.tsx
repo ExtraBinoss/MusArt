@@ -1,4 +1,12 @@
-import { useEffect, useRef, useState, type PointerEvent, type RefObject } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+  type RefObject,
+  type CSSProperties,
+} from "react";
+import { guideColors } from "../../state/guides/colors";
 import { useTranslation } from "react-i18next";
 import { createId, type Composition, type EnginePort } from "@musart/core";
 import { clientToPage, type View } from "../viewport/view";
@@ -40,12 +48,15 @@ export function Rulers({
 }) {
   const { t } = useTranslation("guides");
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const [draft, setDraft] = useState<{ axis: "x" | "y"; position: number } | null>(null);
+  const [draft, setDraft] = useState<{ axis: "x" | "y"; position: number; color: string } | null>(
+    null,
+  );
   const active = useRef<{
     axis: "x" | "y";
     origin: GestureOrigin;
     handle: SVGSVGElement;
     pointerId: number;
+    color: string;
   } | null>(null);
   const rulers = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -63,11 +74,19 @@ export function Rulers({
       )
         clear();
     };
+    const key = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || !active.current) return;
+      event.preventDefault();
+      event.stopPropagation();
+      clear();
+    };
+    window.addEventListener("keydown", key, true);
     const stopEngine = engine.subscribe(changed),
       stopScene = controller?.subscribe(changed);
     return () => {
       stopEngine();
       stopScene?.();
+      window.removeEventListener("keydown", key, true);
       clear();
     };
   }, [engine, controller]);
@@ -133,10 +152,14 @@ export function Rulers({
       viewSource?.read() ?? view,
       controller?.read().page ?? page,
     );
-    setDraft({ axis: active.current.axis, position: point[active.current.axis] });
+    setDraft({
+      axis: active.current.axis,
+      position: point[active.current.axis],
+      color: active.current.color,
+    });
   }
   function begin(event: PointerEvent<SVGSVGElement>, axis: "x" | "y") {
-    if (event.button !== 0) return;
+    if (event.button !== 0 || controller?.read().playback) return;
     event.preventDefault();
     event.stopPropagation();
     active.current = {
@@ -144,6 +167,7 @@ export function Rulers({
       origin: captureGestureOrigin(engine),
       handle: event.currentTarget,
       pointerId: event.pointerId,
+      color: guideColors.read(),
     };
     event.currentTarget.setPointerCapture(event.pointerId);
     move(event);
@@ -167,7 +191,7 @@ export function Rulers({
       )
         engine.execute({
           type: "addGuide",
-          guide: { id: createId(), axis: current.axis, position },
+          guide: { id: createId(), axis: current.axis, position, color: current.color },
         });
     }
     setDraft(null);
@@ -199,9 +223,12 @@ export function Rulers({
         <div
           className={`ruler-guide-preview guide-${draft.axis}`}
           style={
-            draft.axis === "x"
-              ? { left: originX + draft.position * view.zoom }
-              : { top: originY + draft.position * view.zoom }
+            {
+              "--guide-color": draft.color,
+              ...(draft.axis === "x"
+                ? { left: originX + draft.position * view.zoom }
+                : { top: originY + draft.position * view.zoom }),
+            } as CSSProperties & { "--guide-color": string }
           }
         >
           <span>{Math.round(draft.position)} px</span>

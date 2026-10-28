@@ -32,6 +32,7 @@ const gpu = vi.hoisted(() => ({
   invalidate: vi.fn(),
   render: vi.fn(),
   compositorDispose: vi.fn(),
+  compositorConstruct: vi.fn(),
   frame: null as (() => void) | null,
   state: {} as Record<string, unknown>,
 }));
@@ -44,8 +45,13 @@ vi.mock("@react-three/fiber", () => ({
 }));
 vi.mock("@musart/render", () => ({
   GpuCompositor: class {
+    constructor() {
+      gpu.compositorConstruct();
+    }
     render = gpu.render;
     dispose = gpu.compositorDispose;
+    retainedFrame = () => null;
+    releasePresentation = () => {};
     stats = () => ({ passes: 1, readbacks: 0, targets: 2, uploads: 1, cacheBytes: 100 });
   },
 }));
@@ -67,6 +73,10 @@ vi.mock("three/webgpu", async (importOriginal) => {
 function canvas() {
   return document.createElement("canvas");
 }
+function drawn() {
+  const scene = gpu.state.scene as Scene;
+  Reflect.apply(scene.onAfterRender, scene, [gpu.state.gl, scene, gpu.state.camera, null]);
+}
 function page(width = 300, height = 200) {
   return createPage({ width, height });
 }
@@ -82,6 +92,7 @@ beforeEach(() => {
   gpu.compile.mockReset().mockResolvedValue(undefined);
   gpu.invalidate.mockClear();
   gpu.compositorDispose.mockReset().mockResolvedValue(undefined);
+  gpu.compositorConstruct.mockReset();
   gpu.render.mockReset().mockImplementation(async (page: Composition) => ({
     texture: new Texture(),
     width: page.width,
@@ -95,7 +106,12 @@ beforeEach(() => {
     invalidate: gpu.invalidate,
     setDpr: vi.fn(),
     clock: new FiberTimerClock(),
-    gl: { domElement: canvas(), backend: {}, compileAsync: gpu.compile },
+    gl: {
+      domElement: canvas(),
+      backend: {},
+      compileAsync: gpu.compile,
+      getRenderTarget: vi.fn(() => null),
+    },
     scene: new Scene(),
     camera: new OrthographicCamera(),
   };
@@ -147,7 +163,7 @@ describe("R3F direct WebGPU scene lifetime", () => {
     const input = source(original);
     const { unmount } = render(<EditorScene controller={input.controller} />);
     await waitFor(() => expect(gpu.invalidate).toHaveBeenCalled());
-    act(() => gpu.frame?.());
+    act(drawn);
     const props = vi.mocked(Canvas).mock.calls[0]![0];
     expect(props.frameloop).toBe("demand");
     expect(props.shadows).toEqual({ enabled: false, type: PCFShadowMap });
@@ -166,7 +182,7 @@ describe("R3F direct WebGPU scene lifetime", () => {
     await waitFor(() =>
       expect(JSON.parse(renderer.domElement.dataset.gpuStats!).completed).toBe(2),
     );
-    act(() => gpu.frame?.());
+    act(drawn);
     const camera = gpu.state.camera as OrthographicCamera;
     expect([camera.left, camera.right, camera.top, camera.bottom]).toEqual([-300, 300, 250, -250]);
     expect(gpu.compile).toHaveBeenCalledOnce();
@@ -236,5 +252,32 @@ describe("R3F direct WebGPU scene lifetime", () => {
     } finally {
       await changeLanguage("fr");
     }
+  });
+  it("retains the actual drawing density in Fiber's resize props without a React state update", async () => {
+    const input = source(page(192, 140));
+    render(<EditorScene controller={input.controller} zoom={4} />);
+    const retained = vi.mocked(Canvas).mock.calls[0]![0].dpr;
+    expect(retained).toEqual([1, 1]);
+    await waitFor(() => expect(gpu.state.setDpr).toHaveBeenLastCalledWith(4));
+    expect(retained).toEqual([4, 4]);
+    if (!Array.isArray(retained)) throw new Error("Expected retained density bounds");
+    // This is the same retained last.dpr configuration used by Fiber on viewport resize.
+    const resizeRatio = Math.max(retained[0], Math.min(retained[1], 1));
+    expect(192 * resizeRatio).toBe(768);
+    expect(vi.mocked(Canvas)).toHaveBeenCalledOnce();
+    expect(gpu.frame).toBeNull();
+  });
+  it("releases a presentation lease and resources if activation throws before effect cleanup exists", async () => {
+    const input = source(),
+      onError = vi.fn();
+    gpu.compositorConstruct.mockImplementationOnce(() => {
+      throw new Error("Constructor failed");
+    });
+    render(<EditorScene controller={input.controller} onError={onError} />);
+    await waitFor(() =>
+      expect(onError).toHaveBeenCalledWith(expect.stringContaining("Constructor failed")),
+    );
+    expect(input.controller.presentation.read().available).toBe(false);
+    expect(screen.getByRole("alert")).toBeInTheDocument();
   });
 });

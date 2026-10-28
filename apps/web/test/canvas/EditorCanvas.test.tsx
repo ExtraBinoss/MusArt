@@ -18,6 +18,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createLayer, createPage, createProject, EditorEngine, type Layer } from "@musart/core";
 import { EditorCanvas } from "../../src/canvas/EditorCanvas";
 import { createViewportActions } from "../../src/canvas/session/viewport-actions";
+import { canvasPoint as point, pointerDrag } from "../support/canvas-pointer";
 const renderer = vi.hoisted(() => ({
   render: vi.fn(),
   controller: null as SceneController | null,
@@ -54,7 +55,8 @@ vi.mock("../../src/canvas/render/EditorScene", () => ({
     );
   },
 }));
-vi.mock("react-i18next", () => ({
+vi.mock("react-i18next", async (original) => ({
+  ...(await original<typeof import("react-i18next")>()),
   useTranslation: () => ({
     t: (key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? key,
   }),
@@ -65,19 +67,6 @@ function setup(layers: Layer[] = [rectangle()]) {
   const page = createPage({ width: 200, height: 160, layers });
   const engine = new EditorEngine(createProject({ pages: [page] }));
   return { page, engine };
-}
-function point(x: number, y: number) {
-  return { clientX: 400 + x, clientY: 320 + y, pointerId: 1, button: 0 };
-}
-function pointerDrag(
-  element: HTMLElement,
-  from: ReturnType<typeof point>,
-  to: ReturnType<typeof point>,
-  extra = {},
-) {
-  fireEvent.pointerDown(element, { ...from, ...extra });
-  fireEvent.pointerMove(element, { ...to, ...extra });
-  fireEvent.pointerUp(element, { ...to, ...extra });
 }
 async function ready() {
   await waitFor(() => expect(screen.getByTestId("scene-source")).toBeInTheDocument());
@@ -100,7 +89,12 @@ it("releases the transient frame before publishing a canonical move and keeps on
   });
   render(<EditorCanvas engine={engine} tool="pointer" />);
   await ready();
+  const input = document.createElement("input");
+  document.body.append(input);
+  input.focus();
   pointerDrag(canvas(), point(40, 40), point(70, 80), { altKey: true });
+  expect(canvas()).toHaveFocus();
+  input.remove();
   expect(frames.length).toBeGreaterThan(0);
   expect(frames.every(Boolean)).toBe(true);
   expect(engine.getSnapshot().project.pages[0]!.layers[0]).toMatchObject({ x: 50, y: 60 });
@@ -194,7 +188,7 @@ describe("canvas input and renderer integration", () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
     const scene = screen.getByTestId("scene-source");
-    expect(document.querySelectorAll(".canvas-artboard")).toHaveLength(2);
+    expect(document.querySelectorAll(".canvas-artboard-backdrop")).toHaveLength(2);
     fireEvent.wheel(canvas(), { deltaX: 40, deltaY: 20 });
     const pose = [artboard().dataset.panX, artboard().dataset.panY, artboard().dataset.zoom];
     fireEvent.pointerDown(canvas(), { clientX: 584, clientY: 350, pointerId: 1, button: 0 });
@@ -429,7 +423,7 @@ describe("canvas input and renderer integration", () => {
     const prompt = vi.fn();
     const error = vi.fn();
     const { rerender } = render(
-      <EditorCanvas engine={engine} tool="wand" onImagePoint={prompt} onError={error} />,
+      <EditorCanvas engine={engine} tool="segment" onImagePoint={prompt} onError={error} />,
     );
     await ready();
     fireEvent.pointerDown(canvas(), point(40, 40));

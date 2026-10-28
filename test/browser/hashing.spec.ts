@@ -11,7 +11,16 @@ interface HashProbe {
   history: number;
   thumbnail: number;
   originals: boolean;
+  hashParts: number;
+  hashPostMax: number;
   errors: string[];
+  journalWorkers: number;
+  journalCommits: number;
+  journalParts: number;
+  journalOriginalChunks: number;
+  journalHeaderBytes: number;
+  journalPostMax: number;
+  journalHeaderOnly: boolean;
 }
 declare global {
   interface Window {
@@ -34,14 +43,40 @@ test("native module-worker hashing preserves canonical history without original 
       history: 0,
       thumbnail: 0,
       originals: false,
+      hashParts: 0,
+      hashPostMax: 0,
       errors: [],
+      journalWorkers: 0,
+      journalCommits: 0,
+      journalParts: 0,
+      journalOriginalChunks: 0,
+      journalHeaderBytes: 0,
+      journalPostMax: 0,
+      journalHeaderOnly: true,
     };
     window.__hashProbe = stats;
     class ObservedWorker extends NativeWorker {
       private readonly hashing: boolean;
+      private readonly journal: boolean;
+      private action = "";
       constructor(url: string | URL, options?: WorkerOptions) {
         super(url, options);
         this.hashing = String(url).includes("hash.worker");
+        this.journal = String(url).includes("journal.worker");
+        if (this.journal) {
+          stats.journalWorkers++;
+          this.addEventListener("message", (event: MessageEvent) => {
+            stats.journalHeaderBytes = Math.max(
+              stats.journalHeaderBytes,
+              JSON.stringify(event.data).length,
+            );
+            stats.journalHeaderOnly &&=
+              !event.data?.result?.state &&
+              !event.data?.result?.assets &&
+              !event.data?.result?.meta?.pages;
+          });
+          this.addEventListener("error", (event) => stats.errors.push(event.message));
+        }
         if (this.hashing) {
           stats.workers++;
           this.addEventListener("message", () => {
@@ -54,6 +89,26 @@ test("native module-worker hashing preserves canonical history without original 
         message: unknown,
         options?: Transferable[] | StructuredSerializeOptions,
       ) {
+        if (this.journal && message && typeof message === "object" && "type" in message) {
+          const request = message as {
+            type: string;
+            action?: { kind: string };
+            part?: { type: string; path?: (string | number)[] };
+          };
+          if (request.type === "begin") {
+            this.action = request.action!.kind;
+            if (this.action === "commit") stats.journalCommits++;
+          }
+          if (request.type === "part") {
+            stats.journalParts++;
+            if (
+              request.part?.type === "string" &&
+              request.part.path?.at(-1) === "dataUrl" &&
+              this.action === "commit"
+            )
+              stats.journalOriginalChunks++;
+          }
+        }
         if (this.hashing && message && typeof message === "object" && "job" in message) {
           const job = message.job as {
             kind: "history" | "thumbnail";
@@ -71,8 +126,25 @@ test("native module-worker hashing preserves canonical history without original 
               ),
             );
         }
+        if (this.hashing && message && typeof message === "object" && "type" in message) {
+          const request = message as { type: string; part?: { path?: (string | number)[] } };
+          if (request.type === "begin-hash") {
+            stats.active++;
+            stats.peak = Math.max(stats.peak, stats.active);
+            stats.thumbnail++;
+          }
+          if (request.type === "hash-part") {
+            stats.hashParts++;
+            stats.originals ||= request.part?.path?.at(-1) === "dataUrl";
+          }
+        }
+        const before = performance.now();
         if (Array.isArray(options)) super.postMessage(message, options);
         else super.postMessage(message, options);
+        if (this.journal)
+          stats.journalPostMax = Math.max(stats.journalPostMax, performance.now() - before);
+        if (this.hashing)
+          stats.hashPostMax = Math.max(stats.hashPostMax, performance.now() - before);
       }
     }
     window.Worker = ObservedWorker;
@@ -111,8 +183,18 @@ test("native module-worker hashing preserves canonical history without original 
   }, project.id);
   expect(actual.fingerprint).toBe(expected);
   expect(actual.stats.workers).toBe(1);
-  expect(actual.stats.history).toBeGreaterThanOrEqual(2);
+  // Journal SHA/diff now execute inside their own durable worker, never this thumbnail hasher.
+  expect(actual.stats.history).toBe(0);
+  expect(actual.stats.journalWorkers).toBe(1);
+  expect(actual.stats.journalCommits).toBeGreaterThanOrEqual(1);
+  expect(actual.stats.journalParts).toBeGreaterThan(0);
+  expect(actual.stats.journalOriginalChunks).toBe(0);
+  expect(actual.stats.journalHeaderOnly).toBe(true);
+  expect(actual.stats.journalHeaderBytes).toBeLessThan(4096);
+  expect(actual.stats.journalPostMax).toBeLessThan(5);
   expect(actual.stats.thumbnail).toBeGreaterThanOrEqual(1);
+  expect(actual.stats.hashParts).toBeGreaterThan(0);
+  expect(actual.stats.hashPostMax).toBeLessThan(5);
   expect(actual.stats.peak).toBeLessThanOrEqual(8);
   expect(actual.stats.active).toBe(0);
   expect(actual.stats.originals).toBe(false);

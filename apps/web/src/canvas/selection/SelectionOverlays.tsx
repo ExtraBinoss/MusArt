@@ -42,16 +42,11 @@ function CollectiveFrame({
       if (!element) return;
       if (previous !== current.page) {
         const index = createLayerGeometryIndex(current.page);
-        left = top = Infinity;
-        right = bottom = -Infinity;
-        for (const layer of selected)
-          if (index.byId.has(layer.id)) {
-            const box = index.worldBounds(layer.id);
-            left = Math.min(left, box.x);
-            top = Math.min(top, box.y);
-            right = Math.max(right, box.x + box.width);
-            bottom = Math.max(bottom, box.y + box.height);
-          }
+        const bounds = index.collectiveBounds(selected.map((layer) => layer.id));
+        left = bounds?.x ?? Infinity;
+        top = bounds?.y ?? Infinity;
+        right = bounds ? bounds.x + bounds.width : -Infinity;
+        bottom = bounds ? bounds.y + bounds.height : -Infinity;
       }
       previous = current.page;
       previousZoom = scale;

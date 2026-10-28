@@ -29,3 +29,13 @@ test("propagates hashing failures and stops admitting work without an unhandled 
   ).rejects.toThrow("digest failed");
   expect(hash).toHaveBeenCalledTimes(2);
 });
+
+test("uses the shared page resolver with two slots without recomputing its cached digest", async () => {
+  const pages = [createPage(), createPage(), createPage()],
+    hash = vi.fn();
+  const resolve = vi.fn(async (page: (typeof pages)[number]) => page.id);
+  const result = await thumbnailRevisions(pages, {}, hash, resolve);
+  expect(result).toEqual(Object.fromEntries(pages.map((page) => [page.id, page.id])));
+  expect(hash).not.toHaveBeenCalled();
+  expect(resolve).toHaveBeenCalledTimes(3);
+});

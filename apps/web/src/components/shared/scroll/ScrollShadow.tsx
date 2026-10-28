@@ -6,10 +6,13 @@ export function ScrollShadow({
   children,
   className,
   style,
+  surface,
 }: {
   children: ReactElement;
   className?: string;
   style?: CSSProperties;
+  /** CSS color or theme token. An omitted value inherits --scroll-shadow-surface. */
+  surface?: string;
 }) {
   const root = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
@@ -43,7 +46,11 @@ export function ScrollShadow({
     };
   }, [children.type, children.key]);
   return (
-    <div className={cn("scroll-shadow", className)} ref={root} style={style}>
+    <div
+      className={cn("scroll-shadow", className)}
+      ref={root}
+      style={surface ? ({ ...style, "--scroll-shadow-surface": surface } as CSSProperties) : style}
+    >
       {children}
     </div>
   );

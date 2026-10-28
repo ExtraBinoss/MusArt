@@ -7,24 +7,30 @@
 .canvas-artboard-inactive:focus-visible {
   outline: 2px solid var(--ring);
 }
-.canvas-artboard-inactive > img {
+.canvas-artboard-backdrop {
+  background-image:
+    linear-gradient(
+      var(--artboard-background, transparent),
+      var(--artboard-background, transparent)
+    ),
+    repeating-conic-gradient(
+      color-mix(in srgb, var(--workspace) 92%, var(--foreground)) 0% 25%,
+      color-mix(in srgb, var(--workspace) 97%, var(--foreground)) 0% 50%
+    );
+  background-size: 16px 16px;
+}
+.canvas-artboard-editor {
+  background: transparent;
+}
+.canvas-artboard-backdrop > img {
   width: 100%;
   height: 100%;
   display: block;
   object-fit: fill;
   pointer-events: none;
 }
-.artboard-preview-state {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 8px;
-  color: var(--muted-foreground);
-  font-size: 11px;
-  pointer-events: none;
+.canvas-artboard-backdrop[data-backdrop-active="true"][data-gpu-covered="true"] > img {
+  visibility: hidden;
 }
 .artboard-heading {
   position: absolute;

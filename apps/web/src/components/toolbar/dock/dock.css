@@ -1,5 +1,5 @@
 .toolbar-scroll {
-  width: 43px;
+  width: 33px;
   max-height: calc(100dvh - 170px);
 }
 .toolbar-contents {
@@ -7,7 +7,7 @@
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  width: 43px;
+  width: 33px;
   max-height: inherit;
   overflow-y: auto;
   overflow-x: hidden;
@@ -127,8 +127,8 @@
   }
 }
 .toolbar .toolbar-contents .icon-button {
-  width: 35px;
-  height: 35px;
+  width: 33px;
+  height: 33px;
   flex-shrink: 0;
 }
 .dock-customizer-pinned {

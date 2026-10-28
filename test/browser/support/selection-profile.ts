@@ -133,6 +133,13 @@ export async function storageReload(page: Page, expectedProject: string, expecte
     await window.musart!.save();
     return performance.now() - start;
   });
+  // Benchmark URLs intentionally rebuild fixtures. A persistence measurement must
+  // reopen the saved document through the normal runtime restoration path.
+  await page.evaluate(() => {
+    const url = new URL(location.href);
+    url.searchParams.delete("benchmark");
+    history.replaceState(history.state, "", url);
+  });
   await page.addInitScript(() => {
     const reads: { store: string; start: number; end?: number }[] = [];
     Object.defineProperty(window, "__musartStorageReads", { value: reads, configurable: true });
@@ -157,17 +164,9 @@ export async function storageReload(page: Page, expectedProject: string, expecte
   });
   await page.reload({ waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => Boolean(window.musart), undefined, { timeout: 120000 });
-  const loaded = await page.evaluate(() => {
-    const snapshot = window.musart!.snapshot();
-    return {
-      documentMs: performance.now(),
-      id: snapshot.project.id,
-      layers: snapshot.project.pages[0]!.layers.length,
-      reads: window.__musartStorageReads ?? [],
-    };
-  });
-  if (loaded.id !== expectedProject || loaded.layers !== expectedLayers)
-    throw new Error("IndexedDB reload did not restore the actual measured project.");
+  // A full automation snapshot clones the document. Verify after both measured
+  // boundaries so the observer cannot itself delay document or useful-frame readiness.
+  const documentMs = await page.evaluate(() => performance.now());
   await page.waitForFunction(
     () => {
       const data = document.querySelector<HTMLCanvasElement>(
@@ -179,7 +178,23 @@ export async function storageReload(page: Page, expectedProject: string, expecte
     { timeout: 180000 },
   );
   const usefulFrameMs = await page.evaluate(() => performance.now());
-  return { saveMs, ...loaded, usefulFrameMs };
+  const loaded = await page.evaluate((documentMs) => {
+    const started = performance.now(),
+      snapshot = window.musart!.snapshot();
+    return {
+      id: snapshot.project.id,
+      layers: snapshot.project.pages[0]!.layers.length,
+      assets: Object.keys(snapshot.project.assets).length,
+      reads: (window.__musartStorageReads ?? []).filter((read) => read.start <= documentMs),
+      verificationMs: performance.now() - started,
+    };
+  }, documentMs);
+  if (loaded.id !== expectedProject || loaded.layers !== expectedLayers)
+    throw new Error("IndexedDB reload did not restore the actual measured project.");
+  const originals = loaded.reads.filter((read) => read.store === "assets");
+  if (originals.length !== loaded.assets || originals.some((read) => read.end === undefined))
+    throw new Error("IndexedDB reload did not read the saved original assets.");
+  return { saveMs, documentMs, usefulFrameMs, ...loaded };
 }
 
 /** Exercises the real select-all shortcut, collective frame and one committed 10k move/undo. */

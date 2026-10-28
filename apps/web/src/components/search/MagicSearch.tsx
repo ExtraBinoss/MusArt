@@ -12,6 +12,7 @@ import {
 import { useSetAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 import { Ellipsis } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import type { EnginePort } from "@musart/core";
 import type { EditorServices } from "../../state/contracts";
 import { themeAtom, toolAtom, useEngine } from "../../state/session/editor";
@@ -39,7 +40,7 @@ import {
   type SearchItem,
 } from "./catalog/model";
 import { searchItems } from "./catalog/search";
-import { executeSearchItem, type PanelMode, type ProjectView, type SearchActions } from "./actions";
+import { captureSearchItem, type PanelMode, type ProjectView, type SearchActions } from "./actions";
 import { modifierLabel } from "./shortcuts";
 import { ShortcutsDialog } from "./ShortcutsDialog";
 import { useSearchShortcuts } from "./use-search-shortcuts";
@@ -70,6 +71,7 @@ export interface SearchSurface {
   commands: readonly SearchItem[];
   run: (id: string) => void;
 }
+const CLOSED_ITEMS: SearchItem[] = [];
 export function MagicSearch({
   engine,
   services,
@@ -81,6 +83,7 @@ export function MagicSearch({
   children,
 }: MagicSearchProps) {
   const { t, i18n } = useTranslation();
+  const reducedMotion = useReducedMotion();
   const bindings = useKeybindings();
   const catalog = useMemo(() => new SearchCatalog(), []),
     timing = useMemo(() => browserSearchTiming(), []);
@@ -128,12 +131,18 @@ export function MagicSearch({
   }, [setOpen]);
   const openShortcuts = useCallback(() => setHelp(true), []);
   useSearchShortcuts(toggle, openShortcuts);
-  // Prepare while closed; opening never enumerates or translates the project catalogue.
-  const items = useMemo(
-    () => catalog.read(snapshot, t, bindings, i18n.resolvedLanguage ?? i18n.language),
+  // Closed updates change dock availability only. Document indexing belongs to an actual opening.
+  const commands = useMemo(
+    () => catalog.commandsFor(snapshot, t, bindings, i18n.resolvedLanguage ?? i18n.language),
     [catalog, snapshot, t, bindings, i18n.resolvedLanguage, i18n.language],
   );
-  const commands = catalog.commands;
+  const items = useMemo(
+    () =>
+      open
+        ? catalog.read(snapshot, t, bindings, i18n.resolvedLanguage ?? i18n.language)
+        : CLOSED_ITEMS,
+    [open, catalog, snapshot, t, bindings, i18n.resolvedLanguage, i18n.language],
+  );
   const recordOpen = useCallback(
     (milliseconds: number) => {
       const dialog = dialogRef.current;
@@ -177,6 +186,7 @@ export function MagicSearch({
   function choose(item: SearchItem) {
     if (item.disabled) return;
     const origin = captureGestureOrigin(engine);
+    const execute = captureSearchItem(item, actions);
     pending.current = () => {
       if (
         !scope.current.alive ||
@@ -184,7 +194,7 @@ export function MagicSearch({
         !isGestureOriginCurrent(engine, origin)
       )
         throw new Error(t("keybindings:stale"));
-      return executeSearchItem(item, actions);
+      return execute();
     };
     setOpen(false);
   }
@@ -192,6 +202,7 @@ export function MagicSearch({
     const item = commands.find((item) => item.id === id);
     if (!item) return false;
     const origin = captureGestureOrigin(engine);
+    const execute = captureSearchItem(item, actions);
     if (!item.disabled)
       void onTask(() => {
         if (
@@ -200,7 +211,7 @@ export function MagicSearch({
           !isGestureOriginCurrent(engine, origin)
         )
           throw new Error(t("keybindings:stale"));
-        return executeSearchItem(item, actions);
+        return execute();
       });
     return true;
   }
@@ -235,7 +246,7 @@ export function MagicSearch({
     if (!group.length) return null;
     return (
       <CommandGroup key={value} heading={t(`search:${value}`)}>
-        {group.map((item) => {
+        {group.map((item, index) => {
           const Icon = getSearchIcon(item);
           return (
             <CommandItem
@@ -245,18 +256,28 @@ export function MagicSearch({
               aria-description={item.disabled}
               onSelect={() => choose(item)}
             >
-              <Icon size={16} strokeWidth={1.6} />
-              <span className="magic-search-item-copy">
-                <span>{item.label}</span>
-                {(item.disabled || item.detail) && <small>{item.disabled || item.detail}</small>}
-              </span>
-              {item.shortcut && (
-                <KbdGroup>
-                  {item.shortcut.map((key) => (
-                    <Kbd key={key}>{key === "Mod" ? modifierLabel() : key}</Kbd>
-                  ))}
-                </KbdGroup>
-              )}
+              <motion.span
+                className="magic-search-item-content"
+                initial={reducedMotion ? false : { opacity: 0, y: 3, filter: "blur(3px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                transition={{
+                  duration: reducedMotion ? 0 : 0.13,
+                  delay: reducedMotion ? 0 : Math.min(index, 7) * 0.008,
+                }}
+              >
+                <Icon size={16} strokeWidth={1.6} />
+                <span className="magic-search-item-copy">
+                  <span>{item.label}</span>
+                  {(item.disabled || item.detail) && <small>{item.disabled || item.detail}</small>}
+                </span>
+                {item.shortcut && (
+                  <KbdGroup>
+                    {item.shortcut.map((key) => (
+                      <Kbd key={key}>{key === "Mod" ? modifierLabel() : key}</Kbd>
+                    ))}
+                  </KbdGroup>
+                )}
+              </motion.span>
             </CommandItem>
           );
         })}
@@ -302,67 +323,74 @@ export function MagicSearch({
               });
           }}
         >
-          <DialogHeader className="sr-only">
-            <DialogTitle>{t("search:title")}</DialogTitle>
-            <DialogDescription>{t("search:description")}</DialogDescription>
-          </DialogHeader>
-          <Command
-            shouldFilter={false}
-            loop
-            value={activeItem?.id ?? ""}
-            onValueChange={setActiveId}
-            className="magic-search-command"
-            label={t("search:title")}
+          <motion.div
+            className="magic-search-surface"
+            initial={reducedMotion ? false : { opacity: 0, y: 6, scale: 0.985 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: reducedMotion ? 0 : 0.16, ease: [0.2, 0.8, 0.2, 1] }}
           >
-            <div className="magic-search-input-row">
-              <CommandInput
-                ref={searchInput}
-                value={query}
-                onValueChange={(value) => {
-                  setQuery(value);
-                  setActiveId("");
-                }}
-                placeholder={t("search:search")}
-              />
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={t("close")}
-                onClick={() => setOpen(false)}
-              >
-                <Kbd>Esc</Kbd>
-              </Button>
-            </div>
-            <div
-              className="magic-search-categories"
-              role="group"
-              aria-label={t("search:categories")}
+            <DialogHeader className="sr-only">
+              <DialogTitle>{t("search:title")}</DialogTitle>
+              <DialogDescription>{t("search:description")}</DialogDescription>
+            </DialogHeader>
+            <Command
+              shouldFilter={false}
+              loop
+              value={activeItem?.id ?? ""}
+              onValueChange={setActiveId}
+              className="magic-search-command"
+              label={t("search:title")}
             >
-              {categoryButton("all")}
-              {SEARCH_CATEGORIES.filter((value) => available.has(value)).map(categoryButton)}
-            </div>
-            <ScrollShadow>
-              <CommandList label={t("search:title")}>
-                <CommandEmpty>{t("search:empty")}</CommandEmpty>
-                {resultCategories.map(renderGroup)}
-              </CommandList>
-            </ScrollShadow>
-            <footer className="magic-search-footer">
-              <span aria-live="polite">
-                {results.limited
-                  ? t(results.browsing ? "search:browse" : "search:limited", {
-                      count: results.items.length,
-                    })
-                  : t("search:resultCount", { count: results.total })}
-              </span>
-              <span className="magic-search-key-hint">
-                <Kbd>↑↓</Kbd>
-                {t("search:navigate")}
-                <Kbd>↵</Kbd>
-                {t("search:choose")}
-              </span>
-            </footer>
-          </Command>
+              <div className="magic-search-input-row">
+                <CommandInput
+                  ref={searchInput}
+                  value={query}
+                  onValueChange={(value) => {
+                    setQuery(value);
+                    setActiveId("");
+                  }}
+                  placeholder={t("search:search")}
+                />
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={t("close")}
+                  onClick={() => setOpen(false)}
+                >
+                  <Kbd>Esc</Kbd>
+                </Button>
+              </div>
+              <div
+                className="magic-search-categories"
+                role="group"
+                aria-label={t("search:categories")}
+              >
+                {categoryButton("all")}
+                {SEARCH_CATEGORIES.filter((value) => available.has(value)).map(categoryButton)}
+              </div>
+              <ScrollShadow>
+                <CommandList label={t("search:title")}>
+                  <CommandEmpty>{t("search:empty")}</CommandEmpty>
+                  {resultCategories.map(renderGroup)}
+                </CommandList>
+              </ScrollShadow>
+              <footer className="magic-search-footer">
+                <span aria-live="polite">
+                  {results.limited
+                    ? t(results.browsing ? "search:browse" : "search:limited", {
+                        count: results.items.length,
+                      })
+                    : t("search:resultCount", { count: results.total })}
+                </span>
+                <span className="magic-search-key-hint">
+                  <Kbd>↑↓</Kbd>
+                  {t("search:navigate")}
+                  <Kbd>↵</Kbd>
+                  {t("search:choose")}
+                </span>
+              </footer>
+            </Command>
+          </motion.div>
         </DialogContent>
       </Dialog>
       {help && <ShortcutsDialog onClose={() => setHelp(false)} />}

@@ -30,6 +30,12 @@ test("FX avatars expose actual blend/opacity and parameters; previews cancel or 
   const d = fixture();
   fireEvent.click(screen.getByRole("button", { name: "FX" }));
   const amount = screen.getAllByLabelText("Intensité")[0]!;
+  const scrubs = screen.getAllByRole("button", { name: "Ajuster Opacité" });
+  expect(scrubs).toHaveLength(2);
+  for (const scrub of scrubs) {
+    expect(scrub.querySelector("svg.lucide-sun")).toHaveAttribute("aria-hidden", "true");
+    expect(scrub.textContent).toBe("");
+  }
   fireEvent.change(amount, { target: { value: "60" } });
   expect(d.store.get(previewAtom)).toMatchObject({
     target: "layers",

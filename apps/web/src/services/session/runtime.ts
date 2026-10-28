@@ -149,6 +149,7 @@ export async function createRuntime(
             await writes.dispose();
           }
         })();
+        services.pixelSelection?.dispose();
         fonts.dispose();
         selection.dispose();
         try {

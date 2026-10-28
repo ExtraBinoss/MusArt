@@ -168,7 +168,10 @@ test("spotlight hands off real file pickers and opens settings/new/export dialog
     page.getByRole("heading", { name: "Quel projet voulez-vous créer ?", exact: true }),
   ).toBeVisible();
   expect(await page.getByRole("dialog").count()).toBe(1);
+  const creation = page.getByRole("dialog", { name: "Tableau de bord MusArt", exact: true });
+  await expect(creation.getByRole("textbox", { name: "Nom", exact: true })).toBeFocused();
   await page.keyboard.press("Escape");
+  await expect(creation).toBeHidden();
   await choose(page, "png", /^Exporter/);
   await expect(
     page.getByRole("dialog", { name: "Exporter la composition", exact: true }),
