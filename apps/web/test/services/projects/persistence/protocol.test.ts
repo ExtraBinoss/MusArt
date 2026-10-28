@@ -3,8 +3,27 @@ import {
   persistenceResponse,
   persistenceFailure,
   PersistenceUncertainError,
+  persistenceResult,
 } from "../../../../src/services/projects/persistence/protocol";
 import { StaleProjectWriteError } from "../../../../src/services/projects/writes/revision";
+it("validates an explicit historical-read marker without accepting arbitrary stale status", () => {
+  const value = {
+    projectId: "p",
+    pageId: "a",
+    revision: "old",
+    width: 1,
+    height: 1,
+    updatedAt: "date",
+    blob: new Blob(["pixels"]),
+    stale: true,
+  };
+  expect(persistenceResult({ kind: "thumbnails", value: [value] })).toMatchObject({
+    value: [{ stale: true }],
+  });
+  expect(() =>
+    persistenceResult({ kind: "thumbnails", value: [{ ...value, stale: "yes" }] }),
+  ).toThrow("Malformed");
+});
 it("accepts only coherent small acknowledgments and preserves real domain failures", () => {
   const ack = {
     id: 1,

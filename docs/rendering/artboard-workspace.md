@@ -13,6 +13,15 @@ request. This retained image is a fallback, never an acknowledgement of the new 
 frame. Missing-page requests merge rather than replacing an all-page canonical job
 or its newer immutable document with an older lazy disk load.
 
+The workspace may opt into an existing historical thumbnail on its very first
+request. Such a lease remains explicitly stale (`data-preview-current=false` and
+`aria-busy=true`) until a genuine current revision is saved; the project gallery's
+default read remains current-only. Deleted pages are excluded even from historical
+reads. Visible artboard misses use the visible-input guard, bypassing hover quiet
+time while still waiting for held pointers/keys, native drag, live wheel and hidden
+documents. Subsequent real input reconciles stale modifier flags if browser chrome
+consumed a keyup without blurring the page; a genuinely held modifier still blocks.
+
 The composition cache can return an exact retained frame for an engine-certified immutable page and asset collection at the requested scale. This uses the existing GPU LRU and its memory budget, with weak input references and no second texture pool. An evicted, mutable, changed, foreign or differently scaled input is a miss. Warm activation binds that texture and requests one display draw; `rendererReady` and the canonical presentation ticket advance only after that matching draw. Cold activation hides stale canvas pixels while leaving the destination backdrop visible. The initial loader/reveal uses a separate once-presented marker, so changing pages cannot restart it. Superseded asynchronous preparation is checked before GPU submission, and a failed destination cannot acknowledge an older page's frame.
 
 A single contextual plus in the active artboard heading appears when its heading/artwork is hovered or a heading control receives keyboard focus. It remains keyboard-focusable while visually quiet; artboards do not create per-layer add controls. The plus and options button expose translated Radix tooltips. The workspace plus invokes the same add-page command as Magic Search. Double-clicking outside every artboard opens Quick Add at the pointer; artboard backgrounds and painted layers are excluded. Its items are a capability-filtered subset of the shared command catalogue and use the shared search index and mounted command port. File inputs are opened synchronously in the user gesture. New text and primitive frames fit within the active artboard and are centered there, each with one undo entry. Shapes hand focus to the existing searchable artwork library. Canonical changes, navigation and playback close stale Quick Add sessions.

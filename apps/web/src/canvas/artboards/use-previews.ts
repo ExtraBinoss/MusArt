@@ -86,7 +86,7 @@ export function useArtboardPreviews(
     const ids = JSON.parse(visibleKey) as string[];
     if (!services || !ids.length) return;
     let active = true;
-    void services.loadProjectThumbnails(projectId, ids).then(
+    void services.loadProjectThumbnails(projectId, ids, { allowStale: true }).then(
       (lease) => {
         if (active) {
           let retained = true;
@@ -121,7 +121,12 @@ export function useArtboardPreviews(
             return {
               projectId,
               services,
-              items: keep.length ? [...lease.items, ...keep] : lease.items,
+              items: keep.length
+                ? [
+                    ...lease.items,
+                    ...keep.map((item) => (item.stale ? item : { ...item, stale: true })),
+                  ]
+                : lease.items,
               owners,
               retired: [
                 ...new Set([

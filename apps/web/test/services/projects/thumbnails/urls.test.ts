@@ -12,6 +12,19 @@ beforeEach(() => {
   );
 });
 afterEach(() => vi.unstubAllGlobals());
+it("labels historical reads explicitly without changing the same blob's later current status", () => {
+  const cache = new ThumbnailUrls(),
+    value = record(),
+    old = cache.acquire([{ ...value, stale: true }]),
+    current = cache.acquire([value]);
+  expect(old.items[0]).toMatchObject({ stale: true, revision: value.revision });
+  expect(current.items[0]).not.toHaveProperty("stale");
+  expect(old.items[0]!.url).toBe(current.items[0]!.url);
+  expect(value).not.toHaveProperty("stale");
+  old.release();
+  current.release();
+  cache.dispose();
+});
 it("reuses versioned URLs and keeps active leases valid even if they exceed the inactive cache budget", () => {
   const cache = new ThumbnailUrls(1, 1),
     first = cache.acquire([record()]),

@@ -1,4 +1,5 @@
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
+import { Blob as NodeBlob } from "node:buffer";
 import { createProject } from "@musart/core";
 import {
   openStudioDatabase,
@@ -11,6 +12,7 @@ import {
 import { thumbnailInfo } from "../../../../src/services/projects/records";
 
 test("returns only current requested thumbnails, deduplicates IDs and exposes small headers", async () => {
+  vi.stubGlobal("Blob", NodeBlob);
   const db = await openStudioDatabase(`thumbnail-reads-${crypto.randomUUID()}`);
   const project = createProject(),
     pageId = project.pages[0]!.id;
@@ -39,6 +41,17 @@ test("returns only current requested thumbnails, deduplicates IDs and exposes sm
     expect(await readThumbnailInfo(db, project.id)).toEqual([info]);
     expect(await readThumbnails(db, project.id, [pageId, pageId, "missing"])).toHaveLength(1);
     expect(await readThumbnails(db, project.id)).toHaveLength(1);
+    const manifest = (await db.get("projects", project.id))!;
+    manifest.pageRevisions = { [pageId]: "new-paint" };
+    await db.put("projects", manifest);
+    expect(await readThumbnails(db, project.id, [pageId])).toEqual([]);
+    expect(await readThumbnails(db, project.id, [pageId, "old-page"], true)).toEqual([
+      { ...record, stale: true },
+    ]);
+    expect(await db.get("thumbnails", [project.id, pageId])).not.toHaveProperty("stale");
+    await expect(
+      readThumbnails(db, project.id, [pageId], "yes" as unknown as boolean),
+    ).rejects.toThrow("stale option");
     expect(await readThumbnails(db, project.id, [])).toEqual([]);
     await db.delete("projects", project.id);
     expect(await readThumbnails(db, project.id, [pageId])).toEqual([]);
@@ -54,5 +67,6 @@ test("returns only current requested thumbnails, deduplicates IDs and exposes sm
     await expect(readThumbnails(db, project.id)).rejects.toThrow();
   } finally {
     db.close();
+    vi.unstubAllGlobals();
   }
 });

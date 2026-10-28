@@ -1,4 +1,4 @@
-import type { StoredThumbnail, ThumbnailLease, ThumbnailView } from "./model";
+import type { StoredThumbnail, ThumbnailLease, ThumbnailView, ThumbnailRead } from "./model";
 interface Entry {
   record: StoredThumbnail;
   url: string;
@@ -15,7 +15,7 @@ export class ThumbnailUrls {
     private readonly maxEntries = 80,
     private readonly maxBytes = 32 * 1024 * 1024,
   ) {}
-  acquire(records: readonly StoredThumbnail[]): ThumbnailLease {
+  acquire(records: readonly ThumbnailRead[]): ThumbnailLease {
     if (this.closed) throw new Error("Thumbnail URL cache is closed.");
     const held: Entry[] = [],
       items: ThumbnailView[] = [];
@@ -35,6 +35,7 @@ export class ThumbnailUrls {
         url: entry.url,
         width: record.width,
         height: record.height,
+        ...(record.stale ? { stale: true } : {}),
       });
     }
     this.trim();

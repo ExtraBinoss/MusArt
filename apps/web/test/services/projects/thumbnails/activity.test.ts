@@ -1,6 +1,58 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { ThumbnailActivity } from "../../../../src/services/projects/thumbnails/activity";
 afterEach(() => vi.useRealTimers());
+it.each([
+  ["Alt", "altKey"],
+  ["Control", "ctrlKey"],
+  ["Meta", "metaKey"],
+  ["Shift", "shiftKey"],
+] as const)(
+  "reconciles a lost %s keyup from later genuine event flags while preserving held keys",
+  (key, flag) => {
+    vi.useFakeTimers();
+    const activity = new ThumbnailActivity();
+    try {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key, code: `${key}Left`, [flag]: true }));
+      vi.advanceTimersByTime(1000);
+      expect(activity.visibleBusy()).toBe(true);
+      window.dispatchEvent(new PointerEvent("pointermove", { [flag]: true }));
+      expect(activity.visibleBusy()).toBe(true);
+      // No blur or keyup: Chrome's own toolbar/menu consumed the release.
+      window.dispatchEvent(new PointerEvent("pointermove", { [flag]: false }));
+      expect(activity.visibleBusy()).toBe(false);
+      expect(activity.busy()).toBe(true);
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", code: "ArrowRight" }));
+      window.dispatchEvent(new PointerEvent("pointermove"));
+      expect(activity.visibleBusy()).toBe(true);
+      window.dispatchEvent(new KeyboardEvent("keyup", { key: "ArrowRight", code: "ArrowRight" }));
+      expect(activity.visibleBusy()).toBe(false);
+    } finally {
+      activity.dispose();
+    }
+  },
+);
+it("wheel and later keyboard modifier flags recover lost releases without weakening the wheel boundary", () => {
+  vi.useFakeTimers();
+  const activity = new ThumbnailActivity();
+  try {
+    window.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Alt", code: "AltRight", altKey: true }),
+    );
+    window.dispatchEvent(new WheelEvent("wheel", { altKey: false }));
+    expect(activity.visibleBusy()).toBe(true);
+    vi.advanceTimersByTime(100);
+    expect(activity.visibleBusy()).toBe(false);
+    window.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Control", code: "ControlLeft", ctrlKey: true }),
+    );
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "x", code: "KeyX", ctrlKey: false }));
+    expect(activity.visibleBusy()).toBe(true);
+    window.dispatchEvent(new KeyboardEvent("keyup", { key: "x", code: "KeyX" }));
+    expect(activity.visibleBusy()).toBe(false);
+  } finally {
+    activity.dispose();
+  }
+});
 it("releases a canceled native drag without clearing a newer drag or reviving disposed work", async () => {
   vi.useFakeTimers();
   const activity = new ThumbnailActivity(100),

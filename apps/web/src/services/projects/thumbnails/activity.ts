@@ -69,7 +69,24 @@ export class ThumbnailActivity implements ActivityPort {
   private notify = () => {
     for (const listener of this.listeners) listener();
   };
-  private quiet = () => {
+  private reconcileModifiers(event: Event) {
+    const input = event as MouseEvent | KeyboardEvent;
+    for (const [name, flag] of [
+      ["Alt", "altKey"],
+      ["Control", "ctrlKey"],
+      ["Meta", "metaKey"],
+      ["Shift", "shiftKey"],
+    ] as const) {
+      // Browser chrome can consume a modifier's keyup without blurring the page.
+      // A later real event's false flag is authoritative; undefined is unknown.
+      if (input[flag] !== false) continue;
+      this.keys.delete(name);
+      this.keys.delete(`${name}Left`);
+      this.keys.delete(`${name}Right`);
+    }
+  }
+  private quiet = (event?: Event) => {
+    if (event) this.reconcileModifiers(event);
     this.until = Date.now() + this.quietMs;
     clearTimeout(this.timer);
     this.timer = setTimeout(this.notify, this.quietMs);
@@ -77,18 +94,20 @@ export class ThumbnailActivity implements ActivityPort {
   };
   private keyDown = (event: Event) => {
     const key = event as KeyboardEvent;
+    this.reconcileModifiers(event);
     this.keys.add(key.code || key.key || "");
     this.quiet();
   };
   private keyUp = (event: Event) => {
     const key = event as KeyboardEvent;
     this.keys.delete(key.code || key.key || "");
+    this.reconcileModifiers(event);
     this.notify();
   };
   private dragStart = (event: Event) => {
     const generation = ++this.dragGeneration;
     this.dragging = true;
-    this.quiet();
+    this.quiet(event);
     // A canceled native drag has no later dragend. Read cancellation after the
     // source's bubbling handlers, without releasing a newer drag or disposed owner.
     queueMicrotask(() => {
@@ -97,24 +116,24 @@ export class ThumbnailActivity implements ActivityPort {
       this.notify();
     });
   };
-  private dragEnd = () => {
+  private dragEnd = (event: Event) => {
     this.dragGeneration++;
     this.dragging = false;
-    this.quiet();
+    this.quiet(event);
   };
-  private wheel = () => {
+  private wheel = (event: Event) => {
     this.wheelUntil = Date.now() + 100;
     clearTimeout(this.wheelTimer);
     this.wheelTimer = setTimeout(this.notify, 100);
-    this.quiet();
+    this.quiet(event);
   };
   private down = (event: Event) => {
     this.pointers.add((event as PointerEvent).pointerId ?? 0);
-    this.quiet();
+    this.quiet(event);
   };
   private up = (event: Event) => {
     this.pointers.delete((event as PointerEvent).pointerId ?? 0);
-    this.quiet();
+    this.quiet(event);
   };
   private blur = () => {
     this.dragGeneration++;

@@ -31,6 +31,9 @@ it("merges only current GPU thumbnails and preserves headers across a later docu
     await d.db.delete("projects", d.project.id);
     expect(await persistThumbnail(d.db, record)).toBe(false);
     expect(() => validateThumbnail({ ...record, width: 0 })).toThrow("Invalid thumbnail");
+    expect(() => validateThumbnail({ ...record, stale: true } as typeof record)).toThrow(
+      "Invalid thumbnail",
+    );
   } finally {
     d.db.close();
   }

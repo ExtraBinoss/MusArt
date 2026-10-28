@@ -10,6 +10,52 @@ vi.mock("react-i18next", () => ({
   }),
 }));
 afterEach(() => vi.unstubAllGlobals());
+it("a first activation can show historical artwork as stale while the genuine replacement is pending", async () => {
+  vi.stubGlobal("IntersectionObserver", undefined);
+  const a = createPage({ name: "First" }),
+    b = createPage({ name: "Second" }),
+    engine = new EditorEngine(createProject({ pages: [a, b] })),
+    root = createRef<HTMLDivElement>();
+  root.current = document.createElement("div");
+  const release = vi.fn(),
+    services = {
+      loadProjectThumbnails: vi.fn(async () => ({
+        items: [
+          {
+            pageId: b.id,
+            revision: "historical",
+            url: "blob:old",
+            width: 100,
+            height: 80,
+            stale: true,
+          },
+        ],
+        release,
+      })),
+      subscribeProjectThumbnails: vi.fn(() => vi.fn()),
+    },
+    props = {
+      engine,
+      workspace: arrangeArtboards([a, b]),
+      activeId: b.id,
+      projectId: engine.getSnapshot().project.id,
+      view: { x: 0, y: 0, zoom: 0.5 },
+      viewport: root,
+      services,
+    };
+  const view = render(<InactiveArtboards {...props} />);
+  await waitFor(() => expect(screen.getByAltText("Second")).toHaveAttribute("src", "blob:old"));
+  const image = screen.getByAltText("Second"),
+    board = image.parentElement!;
+  expect(board).toHaveAttribute("data-preview-current", "false");
+  expect(board).toHaveAttribute("aria-busy", "true");
+  view.rerender(<InactiveArtboards {...props} activeId={a.id} />);
+  expect(screen.getByAltText("Second")).toBe(image);
+  expect(board).toHaveAttribute("data-preview-available", "true");
+  expect(board).toHaveAttribute("data-backdrop-active", "false");
+  view.unmount();
+  expect(release).toHaveBeenCalledOnce();
+});
 it("uses real leased images, keyboard activation and a truthful failure state without retry loops", async () => {
   vi.stubGlobal("IntersectionObserver", undefined);
   const a = createPage({ name: "Cover" }),
@@ -92,10 +138,11 @@ it("keeps decoded backdrop nodes and their leases across activation instead of r
     expect(image.parentElement).toBe(parent);
     expect(parent).toHaveAttribute("data-backdrop-active", "true");
     expect(parent).not.toHaveClass("canvas-artboard-inactive");
-    expect(services.loadProjectThumbnails).toHaveBeenCalledExactlyOnceWith(props.projectId, [
-      a.id,
-      b.id,
-    ]);
+    expect(services.loadProjectThumbnails).toHaveBeenCalledExactlyOnceWith(
+      props.projectId,
+      [a.id, b.id],
+      { allowStale: true },
+    );
     expect(release).not.toHaveBeenCalled();
     expect(screen.getByRole("button", { name: "activate Cover" })).toBeInTheDocument();
   } finally {

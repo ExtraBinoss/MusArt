@@ -4,6 +4,7 @@ import { manifestBytes, thumbnailBytes, thumbnailInfo } from "../records";
 export function validateThumbnail(thumbnail: StoredThumbnail): void {
   if (
     !(thumbnail.blob instanceof Blob) ||
+    Object.hasOwn(thumbnail, "stale") ||
     thumbnail.blob.size > 1024 * 1024 ||
     !Number.isInteger(thumbnail.width) ||
     !Number.isInteger(thumbnail.height) ||

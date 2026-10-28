@@ -33,6 +33,7 @@ export interface ProjectThumbnailView {
   url: string;
   width: number;
   height: number;
+  stale?: boolean;
 }
 export interface ProjectThumbnailLease {
   items: ProjectThumbnailView[];
@@ -119,6 +120,7 @@ export interface EditorServices {
     this: void,
     id: string,
     pageIds?: readonly string[],
+    options?: { allowStale?: boolean },
   ): Promise<ProjectThumbnailLease>;
   subscribeProjectThumbnails(this: void, listener: (projectId: string) => void): () => void;
   flushThumbnails(this: void): Promise<void>;

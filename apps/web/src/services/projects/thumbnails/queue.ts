@@ -10,6 +10,8 @@ interface Request {
   id: string;
   project?: Project;
   pageIds?: readonly string[];
+  visible?: Set<string>;
+  repair?: Set<string>;
   token: number;
 }
 interface Options {
@@ -49,23 +51,42 @@ export class ThumbnailPipeline {
       (foreground) => Boolean(this.running || (!foreground && this.pending.size)),
       () => this.arm(),
     );
-    this.stopActivity = this.activity.subscribe(() => {
-      if (this.activity.busy()) this.cancelStart();
-      else this.arm();
-    });
+    this.stopActivity = this.activity.subscribe(() => this.arm());
   }
   schedule(project: Project): void {
-    this.enqueue({ id: project.id, project });
+    const previous =
+        this.pending.get(project.id) ??
+        (this.generating?.id === project.id ? this.generating : null),
+      pages = new Set(project.pages.map((page) => page.id));
+    this.enqueue({
+      id: project.id,
+      project,
+      visible: new Set([...(previous?.visible ?? [])].filter((id) => pages.has(id))),
+      repair: new Set([...(previous?.repair ?? [])].filter((id) => pages.has(id))),
+    });
   }
-  request(projectId: string, pageIds?: readonly string[]): void {
+  request(
+    projectId: string,
+    pageIds?: readonly string[],
+    options: { visible?: boolean; repair?: boolean } = {},
+  ): void {
     const queued = this.pending.get(projectId),
       active =
         this.generating?.id === projectId && this.current(this.generating) ? this.generating : null,
       previous = queued ?? active;
     // A visible-card miss must not replace the latest all-page canonical snapshot
     // with an older disk load, or cancel another requested page midway through rendering.
-    if (previous && (!previous.pageIds || pageIds?.every((id) => previous.pageIds!.includes(id))))
+    if (previous && (!previous.pageIds || pageIds?.every((id) => previous.pageIds!.includes(id)))) {
+      for (const id of pageIds ?? []) {
+        if (options.visible) (previous.visible ??= new Set()).add(id);
+        if (options.repair) (previous.repair ??= new Set()).add(id);
+      }
+      // The in-flight loop may already have passed this missing page. Retain one
+      // same-token repair pass without superseding the current canonical snapshot.
+      if (active === previous && options.repair) this.pending.set(projectId, previous);
+      this.arm();
       return;
+    }
     this.enqueue({
       id: projectId,
       pageIds: previous
@@ -73,6 +94,8 @@ export class ThumbnailPipeline {
           ? [...new Set([...previous.pageIds, ...pageIds])]
           : undefined
         : pageIds,
+      visible: new Set([...(previous?.visible ?? []), ...(options.visible ? (pageIds ?? []) : [])]),
+      repair: new Set([...(previous?.repair ?? []), ...(options.repair ? (pageIds ?? []) : [])]),
     });
   }
   private enqueue(request: Omit<Request, "token">): void {
@@ -92,13 +115,19 @@ export class ThumbnailPipeline {
       this.idle = undefined;
     }
   }
+  private busy(visible = false) {
+    return visible ? (this.activity.visibleBusy?.() ?? this.activity.busy()) : this.activity.busy();
+  }
+  private next() {
+    return [...this.pending.values()].find((request) => !this.busy(!!request.visible?.size));
+  }
   private arm() {
     this.cancelStart();
+    const next = this.next();
     if (
       this.disposed ||
       this.running ||
-      !this.pending.size ||
-      this.activity.busy() ||
+      !next ||
       this.previews.isActive() ||
       this.previews.hasPriority()
     )
@@ -106,21 +135,21 @@ export class ThumbnailPipeline {
     this.timer = setTimeout(
       () => {
         this.timer = undefined;
-        if (this.activity.busy()) return;
         const start = (deadline?: IdleDeadline) => {
           this.idle = undefined;
-          if (this.disposed || this.activity.busy()) return;
-          if (!this.waiters.size && !hasThumbnailBudget(deadline)) {
+          const current = this.next();
+          if (this.disposed || !current) return;
+          if (!current.visible?.size && !this.waiters.size && !hasThumbnailBudget(deadline)) {
             this.arm();
             return;
           }
           void this.pump();
         };
-        if (typeof globalThis.requestIdleCallback === "function")
+        if (!next.visible?.size && typeof globalThis.requestIdleCallback === "function")
           this.idle = requestIdleCallback(start, { timeout: 1500 });
         else start();
       },
-      this.waiters.size ? 0 : (this.options.delay ?? 600),
+      this.waiters.size || next.visible?.size ? 0 : (this.options.delay ?? 600),
     );
   }
   private current(request: Request) {
@@ -129,15 +158,30 @@ export class ThumbnailPipeline {
   private async generate(request: Request) {
     const project = request.project ?? (await this.store.load(request.id, { observe: false }));
     if (!this.current(request)) return;
+    const live = new Set(project.pages.map((page) => page.id));
+    for (const ids of [request.visible, request.repair])
+      for (const id of ids ?? []) if (!live.has(id)) ids!.delete(id);
     const existing = await this.store.thumbnailInfo(project.id);
-    for (const page of project.pages) {
+    const pages = request.visible?.size
+      ? [
+          ...project.pages.filter((page) => request.visible!.has(page.id)),
+          ...project.pages.filter((page) => !request.visible!.has(page.id)),
+        ]
+      : project.pages;
+    for (const page of pages) {
       if (request.pageIds && !request.pageIds.includes(page.id)) continue;
       const revision = await (this.store.thumbnailRevision
         ? this.store.thumbnailRevision(page, project.assets)
         : thumbnailRevision(page, project.assets));
       if (!this.current(request)) return;
-      if (existing.some((item) => item.pageId === page.id && item.revision === revision)) continue;
-      if (this.activity.busy() || this.previews.hasPriority()) {
+      if (
+        !request.repair?.has(page.id) &&
+        existing.some((item) => item.pageId === page.id && item.revision === revision)
+      ) {
+        request.visible?.delete(page.id);
+        continue;
+      }
+      if (this.busy(request.visible?.has(page.id)) || this.previews.hasPriority()) {
         this.pending.set(request.id, request);
         return;
       }
@@ -146,7 +190,7 @@ export class ThumbnailPipeline {
         result = await this.renderer.render(
           page,
           project.assets,
-          () => this.current(request) && !this.activity.busy(),
+          () => this.current(request) && !this.busy(request.visible?.has(page.id)),
         );
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {
@@ -168,19 +212,19 @@ export class ThumbnailPipeline {
         this.urls.invalidate(project.id, page.id, revision);
         for (const listener of this.listeners) listener(project.id);
       }
+      request.visible?.delete(page.id);
+      request.repair?.delete(page.id);
     }
+    if (this.pending.get(request.id) === request && !request.repair?.size)
+      this.pending.delete(request.id);
   }
   private pump(): Promise<void> {
     if (this.running) return this.running;
     this.cancelStart();
     this.running = (async () => {
-      while (
-        this.pending.size &&
-        !this.disposed &&
-        !this.activity.busy() &&
-        !this.previews.hasPriority()
-      ) {
-        const request = this.pending.values().next().value!;
+      while (this.pending.size && !this.disposed && !this.previews.hasPriority()) {
+        const request = this.next();
+        if (!request) break;
         this.pending.delete(request.id);
         this.generating = request;
         try {
@@ -206,8 +250,7 @@ export class ThumbnailPipeline {
     if (!this.pending.size && !this.running) return Promise.resolve();
     const result = new Promise<void>((resolve) => this.waiters.add(resolve));
     this.cancelStart();
-    if (!this.activity.busy() && !this.previews.isActive() && !this.previews.hasPriority())
-      void this.pump();
+    if (this.next() && !this.previews.isActive() && !this.previews.hasPriority()) void this.pump();
     return result;
   }
   subscribe = (listener: (projectId: string) => void) => {
@@ -224,10 +267,19 @@ export class ThumbnailPipeline {
   ) {
     return this.previews.preview(key, page, assets, options);
   }
-  async acquire(projectId: string, pageIds?: readonly string[]): Promise<ThumbnailLease> {
-    const records = await this.store.thumbnails(projectId, pageIds);
-    if (pageIds?.some((id) => !records.some((record) => record.pageId === id)))
-      this.request(projectId, pageIds);
+  async acquire(
+    projectId: string,
+    pageIds?: readonly string[],
+    options: { allowStale?: boolean } = {},
+  ): Promise<ThumbnailLease> {
+    const records = await (options.allowStale
+      ? this.store.thumbnails(projectId, pageIds, true)
+      : this.store.thumbnails(projectId, pageIds));
+    const missing = pageIds?.filter(
+      (id) => !records.some((record) => record.pageId === id && !record.stale),
+    );
+    if (missing?.length)
+      this.request(projectId, missing, { visible: options.allowStale, repair: true });
     return this.urls.acquire(records);
   }
   remove(projectId: string): void {

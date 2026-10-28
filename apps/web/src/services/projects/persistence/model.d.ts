@@ -1,5 +1,6 @@
 import type { Project } from "@musart/core";
 import type { AssetMetadata, StoredAsset, StoredThumbnail, ThumbnailInfo } from "../database";
+import type { ThumbnailRead } from "../thumbnails/model";
 import type { FragmentPart } from "../../serialization/fragments/model";
 export interface ProjectWriteFrame {
   document: Omit<Project, "assets">;
@@ -23,7 +24,7 @@ export type PersistenceResult =
   | { kind: "save"; value: ProjectWriteResult }
   | { kind: "thumbnail"; value: boolean }
   | { kind: "info"; value: ThumbnailInfo[] }
-  | { kind: "thumbnails"; value: StoredThumbnail[] };
+  | { kind: "thumbnails"; value: ThumbnailRead[] };
 export type PersistenceRequest =
   | { type: "begin"; id: number; database: string }
   | { type: "part"; id: number; part: FragmentPart }
@@ -36,6 +37,7 @@ export type PersistenceRequest =
       database: string;
       projectId: string;
       pageIds?: readonly string[];
+      allowStale?: boolean;
     };
 export type PersistenceResponse =
   | { id: number; result: PersistenceResult }

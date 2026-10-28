@@ -69,6 +69,22 @@ function thumbnail() {
     blob: new Blob(["pixels"], { type: "image/webp" }),
   };
 }
+it("historical previews are opt-in, bounded to live pages and never written back as current", async () => {
+  const d = await setup(),
+    first = await d.client.save(d.frame);
+  await d.client.thumbnail(thumbnail());
+  await d.client.save({
+    ...d.frame,
+    expectedRevision: first.writeRevision,
+    pageRevisions: { page: "new-paint" },
+  });
+  expect(await d.client.thumbnails("project", ["page"])).toEqual([]);
+  const historical = await d.client.thumbnails("project", ["page"], true);
+  expect(historical).toMatchObject([{ pageId: "page", revision: "pixel-revision", stale: true }]);
+  expect((await d.db.get("projects", "project"))!.pageRevisions).toEqual({ page: "new-paint" });
+  expect(await d.db.get("thumbnails", ["project", "page"])).not.toHaveProperty("stale");
+  await expect(d.client.thumbnail(historical[0]!)).rejects.toThrow("Invalid thumbnail");
+});
 it("persists through the real host, reuses one worker and returns only bounded thumbnail results", async () => {
   const d = await setup(),
     result = await d.client.save(d.frame);

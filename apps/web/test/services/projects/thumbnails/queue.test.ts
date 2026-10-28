@@ -6,6 +6,7 @@ import {
 } from "../../../../src/services/projects/thumbnails/queue";
 import { thumbnailRevision } from "../../../../src/services/projects/thumbnails/revision";
 import { fixture, record } from "./fixtures";
+import { ThumbnailActivity } from "../../../../src/services/projects/thumbnails/activity";
 beforeEach(() => {
   vi.useFakeTimers();
   let next = 0;
@@ -39,6 +40,49 @@ it("borrows the same renderer for current previews after canonical thumbnails an
 afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
+});
+it("historical artboard artwork remains explicitly stale while lost modifier state recovers and visible generation resumes", async () => {
+  const d = fixture(),
+    activity = new ThumbnailActivity(),
+    pipeline = new ThumbnailPipeline(d.store, { ...d, activity });
+  const old = record({ projectId: d.project.id, pageId: "two", revision: "old-paint" });
+  d.records.push(old);
+  vi.mocked(d.store.thumbnails).mockResolvedValueOnce([{ ...old, stale: true }]);
+  window.dispatchEvent(new KeyboardEvent("keydown", { key: "Alt", code: "AltLeft", altKey: true }));
+  pipeline.schedule(d.project);
+  const lease = await pipeline.acquire(d.project.id, ["two"], { allowStale: true });
+  expect(lease.items).toMatchObject([{ pageId: "two", revision: "old-paint", stale: true }]);
+  await vi.advanceTimersByTimeAsync(1000);
+  expect(d.render).not.toHaveBeenCalled();
+  window.dispatchEvent(new PointerEvent("pointermove", { altKey: false }));
+  await vi.advanceTimersByTimeAsync(0);
+  await vi.waitFor(() => expect(d.render).toHaveBeenCalledOnce(), { interval: 1, timeout: 500 });
+  expect(d.render.mock.calls.map(([page]) => page.id)).toEqual(["two"]);
+  expect(activity.busy()).toBe(true);
+  expect(activity.visibleBusy()).toBe(false);
+  expect(lease.items[0]!.stale).toBe(true);
+  await vi.advanceTimersByTimeAsync(1200);
+  await pipeline.flush();
+  expect(d.render.mock.calls.map(([page]) => page.id)).toEqual(["two", "page"]);
+  lease.release();
+  await pipeline.dispose();
+});
+it("repairs a missing blob even when a current header exists and rejects removed visible page IDs without retry loops", async () => {
+  const d = fixture(),
+    pipeline = new ThumbnailPipeline(d.store, d),
+    revision = await thumbnailRevision(d.project.pages[1]!, d.project.assets),
+    header = record({ pageId: "two", revision });
+  vi.mocked(d.store.thumbnailInfo).mockResolvedValue([{ ...header, bytes: header.blob.size }]);
+  const lease = await pipeline.acquire(d.project.id, ["two"]);
+  await pipeline.flush();
+  expect(d.render).toHaveBeenCalledOnce();
+  expect(d.render.mock.calls[0]![0].id).toBe("two");
+  lease.release();
+  const removed = await pipeline.acquire(d.project.id, ["deleted-page"], { allowStale: true });
+  await pipeline.flush();
+  expect(d.render).toHaveBeenCalledOnce();
+  removed.release();
+  await pipeline.dispose();
 });
 it("uses the store's owned hash port for background page revisions", async () => {
   const d = fixture();

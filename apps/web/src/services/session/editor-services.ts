@@ -108,8 +108,8 @@ export function createEditorServices(
     ...(dependencies.fonts ? { fonts: dependencies.fonts } : {}),
     listProjects: () => store.list(),
     listProjectPage: (options) => store.listPage(options),
-    loadProjectThumbnails: async (id, pageIds) =>
-      thumbnails ? thumbnails.acquire(id, pageIds) : { items: [], release: () => {} },
+    loadProjectThumbnails: async (id, pageIds, options) =>
+      thumbnails ? thumbnails.acquire(id, pageIds, options) : { items: [], release: () => {} },
     subscribeProjectThumbnails: (listener) => thumbnails?.subscribe(listener) ?? (() => {}),
     flushThumbnails: async () => {
       await switchReady();

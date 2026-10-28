@@ -1,5 +1,6 @@
 import type { IDBPDatabase } from "idb";
 import type { StudioDatabase, StoredThumbnail, ThumbnailInfo } from "../database";
+import type { ThumbnailRead } from "../thumbnails/model";
 import { fragmentValue } from "../../serialization/fragments/encode";
 import { yieldFragmentTask } from "../../serialization/fragments/task-yield";
 import { persistProjectWrite } from "./transaction";
@@ -26,7 +27,7 @@ type PersistenceAction =
   | { kind: "save"; frame: ProjectWriteFrame }
   | { kind: "thumbnail"; record: StoredThumbnail }
   | { kind: "info"; projectId: string }
-  | { kind: "thumbnails"; projectId: string; pageIds?: readonly string[] };
+  | { kind: "thumbnails"; projectId: string; pageIds?: readonly string[]; allowStale?: boolean };
 function checkedResult(
   result: PersistenceResult,
   action: PersistenceAction,
@@ -40,7 +41,11 @@ function checkedResult(
       result.value.some((item) => item.projectId !== projectId)) ||
     (result.kind === "thumbnails" &&
       pageIds !== undefined &&
-      result.value.some((item) => !pageIds.includes(item.pageId)))
+      result.value.some((item) => !pageIds.includes(item.pageId))) ||
+    (result.kind === "thumbnails" &&
+      action.kind === "thumbnails" &&
+      !action.allowStale &&
+      result.value.some((item) => item.stale))
   )
     throw Error("Mismatched project persistence response.");
   return result;
@@ -100,12 +105,21 @@ export class PersistenceClient {
       return result.value;
     }, false);
   }
-  thumbnails(projectId: string, pageIds?: readonly string[]): Promise<StoredThumbnail[]> {
+  thumbnails(
+    projectId: string,
+    pageIds?: readonly string[],
+    allowStale = false,
+  ): Promise<ThumbnailRead[]> {
     if (pageIds && (!Array.isArray(pageIds) || pageIds.length > 100))
       return Promise.reject(Error("Invalid thumbnail page selection."));
     const captured = pageIds ? [...pageIds] : undefined;
     return this.enqueue(async () => {
-      const result = await this.perform({ kind: "thumbnails", projectId, pageIds: captured });
+      const result = await this.perform({
+        kind: "thumbnails",
+        projectId,
+        pageIds: captured,
+        ...(allowStale ? { allowStale: true } : {}),
+      });
       if (
         result.kind !== "thumbnails" ||
         result.value.some(
@@ -159,7 +173,7 @@ export class PersistenceClient {
       else
         result = {
           kind: "thumbnails",
-          value: await readThumbnails(db, action.projectId, action.pageIds),
+          value: await readThumbnails(db, action.projectId, action.pageIds, action.allowStale),
         };
       return checkedResult(persistenceResult(result), action, projectId);
     }
@@ -246,6 +260,7 @@ export class PersistenceClient {
             database: this.name,
             projectId: action.projectId,
             ...(action.pageIds ? { pageIds: action.pageIds } : {}),
+            ...(action.allowStale ? { allowStale: true } : {}),
           });
       }
       timer = setTimeout(

@@ -94,6 +94,7 @@ export function InactiveArtboards({
         data-active="false"
         data-backdrop-active={active}
         data-preview-available={Boolean(image && !failed)}
+        data-preview-current={Boolean(image && !failed && !image.stale)}
         style={
           {
             ...artboardStyle(board, workspace, view),
@@ -104,7 +105,7 @@ export function InactiveArtboards({
         tabIndex={active ? undefined : 0}
         aria-hidden={active || undefined}
         aria-label={active ? undefined : t("activate", { name: board.name })}
-        aria-busy={!image && !previews.failed}
+        aria-busy={(!image || !!image.stale) && !previews.failed}
         onKeyDown={(event) => {
           if (!active && (event.key === "Enter" || event.key === " ")) {
             event.preventDefault();

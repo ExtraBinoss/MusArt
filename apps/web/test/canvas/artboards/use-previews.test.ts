@@ -66,7 +66,9 @@ it("leases only visible boards in one batch, coalesces invalidations and release
   visible(true, false);
   visible(true, false);
   await waitFor(() => expect(result.current.items).toBe(first.items));
-  expect(d.services.loadProjectThumbnails).toHaveBeenCalledExactlyOnceWith("project", ["a"]);
+  expect(d.services.loadProjectThumbnails).toHaveBeenCalledExactlyOnceWith("project", ["a"], {
+    allowStale: true,
+  });
   vi.useFakeTimers();
   act(() => {
     d.notify("other");

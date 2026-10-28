@@ -22,6 +22,7 @@ import { validateThumbnail } from "./persistence/thumbnail";
 import { prepareProjectWrite, withFullOriginals } from "./persistence/prepare";
 import { ThumbnailDigestMemo } from "./thumbnails/digest-memo";
 import { THUMBNAIL_RENDER_VERSION } from "./thumbnails/model";
+import type { ThumbnailRead } from "./thumbnails/model";
 import { refreshThumbnailSchema } from "./persistence/thumbnail-schema";
 import {
   readProjectWriteRevision,
@@ -357,9 +358,13 @@ export class ProjectStore {
     const persistence = (this.persistence ??= new PersistenceClient(this.name, () => this.db()));
     return persistence.info(projectId);
   }
-  async thumbnails(projectId: string, pageIds?: readonly string[]): Promise<StoredThumbnail[]> {
+  async thumbnails(
+    projectId: string,
+    pageIds?: readonly string[],
+    allowStale = false,
+  ): Promise<ThumbnailRead[]> {
     const persistence = (this.persistence ??= new PersistenceClient(this.name, () => this.db()));
-    return persistence.thumbnails(projectId, pageIds);
+    return persistence.thumbnails(projectId, pageIds, allowStale);
   }
   async saveThumbnail(thumbnail: StoredThumbnail): Promise<boolean> {
     const captured = { ...thumbnail };

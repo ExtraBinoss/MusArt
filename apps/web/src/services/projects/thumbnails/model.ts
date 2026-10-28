@@ -9,9 +9,15 @@ export interface StoredThumbnail {
   updatedAt: string;
 }
 export type ThumbnailInfo = Omit<StoredThumbnail, "blob"> & { bytes: number };
+/** Read-only status belongs to a lease, never to a persisted thumbnail record. */
+export type ThumbnailRead = StoredThumbnail & { stale?: boolean };
 export interface ThumbnailStore {
   thumbnailInfo(projectId: string): Promise<ThumbnailInfo[]>;
-  thumbnails(projectId: string, pageIds?: readonly string[]): Promise<StoredThumbnail[]>;
+  thumbnails(
+    projectId: string,
+    pageIds?: readonly string[],
+    allowStale?: boolean,
+  ): Promise<ThumbnailRead[]>;
   saveThumbnail(record: StoredThumbnail): Promise<boolean>;
   load(projectId: string, options?: { observe?: boolean }): Promise<Project>;
   thumbnailRevision?(page: Composition, assets: Record<string, Asset>): Promise<string>;
@@ -22,6 +28,7 @@ export interface ThumbnailView {
   url: string;
   width: number;
   height: number;
+  stale?: boolean;
 }
 export interface ThumbnailLease {
   items: ThumbnailView[];

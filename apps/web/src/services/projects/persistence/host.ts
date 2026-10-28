@@ -101,9 +101,14 @@ export function createPersistenceHost(
               }));
             else if (message.type === "thumbnails") {
               const ids = message.pageIds;
+              if (message.allowStale !== undefined && typeof message.allowStale !== "boolean")
+                throw Error("Invalid thumbnail stale option.");
+              const allowStale = message.allowStale;
               run(id, message.database, async (db) => ({
                 kind: "thumbnails",
-                value: await readThumbnails(db, projectId, ids),
+                value: await (allowStale
+                  ? readThumbnails(db, projectId, ids, true)
+                  : readThumbnails(db, projectId, ids)),
               }));
             }
             return;

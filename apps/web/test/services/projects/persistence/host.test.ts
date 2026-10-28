@@ -192,6 +192,16 @@ it("routes bounded thumbnail reads through the owned connection and preserves ea
   d.host.receive({ type: "thumbnails", id: 3, database: "studio", projectId: "project" });
   await vi.waitFor(() => expect(readThumbnails).toHaveBeenCalledTimes(2));
   expect(readThumbnails).toHaveBeenLastCalledWith(d.db, "project", undefined);
+  d.host.receive({
+    type: "thumbnails",
+    id: 4,
+    database: "studio",
+    projectId: "project",
+    pageIds,
+    allowStale: true,
+  });
+  await vi.waitFor(() => expect(readThumbnails).toHaveBeenCalledTimes(3));
+  expect(readThumbnails).toHaveBeenLastCalledWith(d.db, "project", pageIds, true);
   expect(d.open).toHaveBeenCalledOnce();
   expect(persistProjectWrite).not.toHaveBeenCalled();
 });
@@ -201,6 +211,18 @@ it("rejects invalid read identities before database access and can retry after a
   expect(d.post.mock.calls.at(-1)?.[0]).toMatchObject({
     id: 1,
     error: { message: "Invalid thumbnail project." },
+  });
+  expect(d.open).not.toHaveBeenCalled();
+  d.host.receive({
+    type: "thumbnails",
+    id: 4,
+    database: "studio",
+    projectId: "project",
+    allowStale: "yes",
+  });
+  expect(d.post.mock.calls.at(-1)?.[0]).toMatchObject({
+    id: 4,
+    error: { message: "Invalid thumbnail stale option." },
   });
   expect(d.open).not.toHaveBeenCalled();
   d.open.mockRejectedValueOnce(Error("database unavailable"));

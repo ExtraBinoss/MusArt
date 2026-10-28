@@ -18,6 +18,7 @@ function thumbnailHeader(value: unknown, blob: boolean): boolean {
     Number(item.height) >= 1 &&
     Number(item.height) <= 768 &&
     typeof item.updatedAt === "string" &&
+    (item.stale === undefined || typeof item.stale === "boolean") &&
     (blob
       ? item.blob instanceof Blob && item.blob.size <= 1024 * 1024
       : Number.isSafeInteger(item.bytes) &&
