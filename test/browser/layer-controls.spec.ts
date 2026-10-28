@@ -305,9 +305,10 @@ test("native blend previews change pixels for a multiselection, cancel exactly a
   try {
     const original = await hash(),
       before = await counters();
-    const blend = page
-      .locator(".layer-compositing")
-      .getByRole("combobox", { name: "Fusion", exact: true });
+    // Radix hides the trigger from the accessibility tree while its modal listbox is open.
+    const blend = page.locator(
+      '.layer-compositing [data-slot="select-trigger"][aria-label="Fusion"]',
+    );
     await blend.click();
     await expect(blend).toHaveAttribute("data-state", "open");
     await expect

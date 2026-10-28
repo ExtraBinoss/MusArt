@@ -51,8 +51,11 @@ test("sidebar preferences persist editor settings and edit real shortcuts withou
     await page.evaluate(() => JSON.parse(localStorage.getItem("musart.snapping.v1")!)),
   ).toMatchObject({ version: 1, enabled: true, threshold: 9.5 });
   await preferences.getByRole("button", { name: "Essayer le magnétisme", exact: true }).click();
-  await expect(preferences.getByTestId("snapping-playground")).toBeVisible();
+  const preview = page.getByRole("dialog", { name: "Aperçu de l’accrochage", exact: true });
+  await expect(preview.getByTestId("snapping-playground")).toBeVisible();
   await page.screenshot({ path: "artifacts/screenshots/preferences-editor-sidebar.png" });
+  await preview.getByRole("button", { name: "Fermer l’essai", exact: true }).click();
+  await expect(preview).not.toBeVisible();
   await preferences.getByRole("button", { name: "Fermer", exact: true }).click();
   await page
     .getByRole("dialog", { name: "Tableau de bord MusArt", exact: true })

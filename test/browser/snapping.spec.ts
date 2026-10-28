@@ -120,7 +120,7 @@ test("actual move/resize snapping uses screen tolerance, honest cues, persisted 
   await move(page, 86, 20);
   await expect(page.locator('[data-snap-axis="x"]')).toHaveCount(0);
   await page.mouse.up();
-  expect(await currentX(page)).toBe(76);
+  expect(await currentX(page)).toBeCloseTo(76, 6);
   await reset(page, 1);
   await move(page, 20, 20);
   await page.mouse.down();
@@ -129,14 +129,14 @@ test("actual move/resize snapping uses screen tolerance, honest cues, persisted 
   await expect(page.locator(".canvas-snap-line")).toHaveCount(0);
   await page.mouse.up();
   await page.keyboard.up("Alt");
-  expect(await currentX(page)).toBe(77);
+  expect(await currentX(page)).toBeCloseTo(77, 6);
   await searchAction(page, "désactiver magnétisme", "Désactiver le magnétisme");
   await reset(page, 1);
   await move(page, 20, 20);
   await page.mouse.down();
   await move(page, 87, 20);
   await page.mouse.up();
-  expect(await currentX(page)).toBe(77);
+  expect(await currentX(page)).toBeCloseTo(77, 6);
   await searchAction(page, "activer magnétisme", "^Activer le magnétisme");
   await reset(page, 1);
   await page.evaluate(() => window.musart!.select(["moving"]));

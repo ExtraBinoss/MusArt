@@ -303,7 +303,7 @@
   min-width: 0;
   height: 30px;
 }
-.layer-attachment-cards .attachment-thumbnail-card[data-slot="button"] {
+.layer-attachment-cards .attachment-thumbnail-card {
   position: relative;
   z-index: var(--card-order, 1);
   width: 30px;

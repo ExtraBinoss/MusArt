@@ -4,6 +4,11 @@ The user wants the current fixes finished and verified, then a quick continuatio
 a new conversation. **Do not add features.** Read `AGENTS.md` and the domain contracts.
 The release number is still `0.1.0`; no release has been declared.
 
+The private checkpoint is on `main`: `a49a856`, followed by the owner-bound mask
+removal fix `10916ef` and the final UI/native-test checkpoint (see `git log`). The
+user requested an immediate conversation handoff. The implementation is saved;
+the outstanding checks below must not be mistaken for a completed release.
+
 ## Current implementation
 
 - Real indexed snapping for moves and corner resize, nested groups and artboards;
@@ -39,12 +44,34 @@ The release number is still `0.1.0`; no release has been declared.
 - Two native wand scenarios passed before the final simpler toolbar/outline changes.
 - Failure archives preserve the original heading infinite-loop candidate and clipped
   guide popover; both source fixes were verified natively afterwards.
+- The full unit attempt (`artifacts/handoff-coverage.log`) ran 1,697 tests across
+  497 files: 1,696 passed, one mask-removal regression failed, and a separate audit
+  suite failed during bootstrap because its partial i18next mock omitted the plugin.
+  Both failures were corrected in `10916ef`; the affected suites passed all four
+  tests together (`artifacts/handoff-regression-rerun.log`). That failed full run
+  produced no coverage report and does not establish the coverage thresholds.
+- The final production candidate `artifacts/handoff-final-dist` passed seven native
+  cases: genuine inactive-artboard image/dither/mask thumbnails, three wand cases,
+  the short-window shortcut editor, actual model download/cache removal without
+  navigation, and persisted command-search/snapping-sandbox integration. Two further
+  failures were stale test assumptions: the sandbox now lives in a portal, and an
+  unsnapped browser coordinate differs by approximately 0.00000013 document pixels.
+  Their assertions were corrected without relaxing snapped-value or undo checks.
+- The preceding layer cohort passed nested FX/mask/group behavior and found a real
+  attachment-card CSS selector mismatch (24 pixels instead of the intended 30).
+  It also found stale native focus/Select locators; the follow-up preserves the
+  original hit-area and document assertions. These cases still require a rerun.
 
 ## Blocking verification to finish
 
 Check the newest `artifacts/handoff-*.log` files and active process before launching
-anything. Final source TypeScript passed. The final lint/coverage/browser cohort is
-still being completed; **do not claim 85% coverage or a full native pass yet.**
+anything. Final source TypeScript, both linters, source rules and the production
+build passed before the small final CSS/test follow-up. The final full coverage
+rerun (`artifacts/handoff-coverage-final.log`) was stopped after approximately two
+minutes for the user's immediate handoff; its owned systemd scope was terminated
+cleanly. It is incomplete, with no final coverage result. **Do not claim 85%
+coverage or a full native pass until a fresh run and the coverage-aware rules check
+succeed.**
 
 1. Resolve concrete final lint or mirrored-test failures; do not weaken gates.
 2. Full coverage, then `bun run check:coverage`, rules, versions, frozen install,
@@ -62,14 +89,23 @@ still being completed; **do not claim 85% coverage or a full native pass yet.**
 - Repository: `https://github.com/ExtraBinoss/MusArt` — verified **private**.
 - Development port: **6100**. The isolated production preview uses **4181** and
   `artifacts/stabilization-integrated.config.ts`.
-- Preview output: `artifacts/stabilization-integrated-dist`; old failed candidates
+- Preview output: `artifacts/handoff-final-dist` (source `10916ef`); old failed candidates
   have separate directories and matching source maps. Do not overwrite their traces.
+- An existing development server already listens on port 6100. It is not owned by
+  the final verification runner; do not stop it merely to launch another server.
+- Current native archive: `artifacts/handoff-native-layer-findings/`. Preserve the
+  newer `artifacts/stabilization-native.log`, fixed-name JSON report and browser
+  output before launching another cohort. `artifacts/run-native-serial.py` uses
+  `artifacts/stabilization-integrated.config.ts` with a single browser worker.
 - Run one heavy command at a time across all agents. One test worker, low priority,
   CPU/memory caps and no swap are essential: a previous unbounded overlap rebooted
   the user's workstation. Follow `docs/performance/protocol.md`.
 - Keep native timing separate from coverage/build/typecheck. Do not use Vitest's VM
   pools: the attempted VM pool lacked compatible crypto/cross-realm behavior.
 - All feature agents are frozen; ask them only to fix concrete validation failures.
+- No verification job remains running after the handoff. The existing development
+  server and the bounded production preview remain available; the latter intentionally
+  serves the `10916ef` candidate, before the final attachment-card CSS correction.
 
 Before answering the user, update this handoff with the final commit and measured
 status. Requested work is not a release merely because the source was checkpointed.

@@ -113,6 +113,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
+- Attachment thumbnail cards retain their intended 30-pixel hit area and padding when Radix replaces the button slot with a popover trigger. Native regressions now wait for restored focus before command search, inspect open modal Select triggers through their stable DOM identity, and resolve the snapping sandbox through its actual portal dialog.
 - Removing a mask from its explicit popover remains bound to its owner after navigating to the mask source; it cannot delete the currently selected source layer. Undo restores the exact mask and all layer IDs remain intact.
 - Effect and mask selection now has a typed presentation target. Footer, context-menu, keyboard and spotlight deletion remove that exact attachment in one undoable command; a stale or deferred target never falls back to deleting its owner. Collapsed layer rows retain at most two real effect-stage cards, the real mask card and an accessible remaining-count control.
 - Guide preset popovers use Radix's actual available height and collision padding, keeping their heading and scrollable cards inside short or constrained viewports.

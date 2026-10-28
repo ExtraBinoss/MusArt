@@ -51,12 +51,18 @@ test("collapsed attachment cards select real FX/masks and Delete, footer and Cmd
     .click();
   expect((await state()).project.pages[0]!.layers).toHaveLength(2);
   await page.evaluate(() => window.musart!.undo());
-  await row.locator('[data-attachment-target="mask"]').click();
+  const maskCard = row.locator('[data-attachment-target="mask"]');
+  await maskCard.click();
   await page.keyboard.press("Escape");
+  await expect(maskCard).toBeFocused();
   await page.keyboard.press("Control+k");
-  const search = page.locator("[data-magic-search]").getByRole("combobox");
+  const search = page.getByRole("combobox", { name: "Rechercher dans MusArt", exact: true });
+  await expect(search).toBeFocused();
   await search.fill("Supprimer");
-  await page.locator('[data-magic-search] [cmdk-item][data-value="action:delete"]').click();
+  await page
+    .getByRole("dialog", { name: "Rechercher dans MusArt", exact: true })
+    .locator('[cmdk-item][data-value="action:delete"]')
+    .click();
   await expect.poll(async () => (await state()).project.pages[0]!.layers[0]!.mask).toBeNull();
   expect((await state()).project.pages[0]!.layers).toHaveLength(2);
   await page.evaluate(() => window.musart!.undo());
