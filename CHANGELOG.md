@@ -6,6 +6,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
+- Replaced the keyboard guide with tables of default editing, tool, project and view shortcuts, canvas gestures, customization steps and instructions for sharing editable clipboard artwork with its original images.
+- Added prominent Open MusArt buttons at the top and bottom of the README and the hosted editor URL to the repository Website, with a creative-studio description and discoverable GitHub topics.
 - Reworked the README around creative capabilities, current limitations, hackathon origins and headless usage. Added a documentation index and separate stack/headless guides, removed obsolete handoff/status/task records, and clarified the public contribution workflow.
 - Added owner-only GitHub Pages publication after the quality gate, with pinned Actions, limited token permissions, owner review and contribution/security policies. Public asset paths and the web manifest now support the repository's `/MusArt/` hosting path. Targeted asset/font checks pass (25 tests), as do the hosted-path production build and a real Chromium smoke check of fonts, branding, template assets and a decoded PNG export.
 - Organized documentation into architecture, usage guides, rendering, performance, product direction and legal references. Replaced the original implementation plan with a concise product vision and repaired links throughout the repository.

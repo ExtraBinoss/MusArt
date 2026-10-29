@@ -6,11 +6,19 @@
 
 <p align="center">A browser-based creative studio for posters, graphics and visual experiments.</p>
 
+<p align="center">
+  <a href="https://extrabinoss.github.io/MusArt/">
+    <img src="https://img.shields.io/badge/Open_MusArt-155DFC?style=for-the-badge" alt="Open MusArt" />
+  </a>
+</p>
+
 MusArt brings images, typography, shapes and effects into one editable composition. Build with layers, try different treatments, and export your artwork or a timelapse of how you made it.
 
 Your projects save on your device. No account is required. MusArt is free and open source, built as an independent project for the [2026 Meta Global AI Developer Hackathon](https://dev.meta.ai/events/global-hackathon).
 
 [What you can make](#available-today) · [Get started](#get-started) · [Headless mode](#headless-mode) · [Documentation](docs/README.md)
+
+The hosted editor becomes available after the first successful GitHub Pages deployment.
 
 ## Available today
 
@@ -104,3 +112,9 @@ Read [Technical stack and design choices](docs/architecture/tech-stack.md) for t
 Start with the [documentation index](docs/README.md) for usage guides, headless automation and contributor references. Read [CONTRIBUTING.md](CONTRIBUTING.md) before making changes, follow development in the [changelog](CHANGELOG.md), and report vulnerabilities through the [security policy](SECURITY.md).
 
 MusArt's source code is available under the [MIT License](LICENSE). Fonts, models, artwork and other third-party material retain their own licenses; see [credits and provenance](docs/legal/provenance.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
+
+<p align="center">
+  <a href="https://extrabinoss.github.io/MusArt/">
+    <img src="https://img.shields.io/badge/Open_MusArt-155DFC?style=for-the-badge" alt="Open MusArt" />
+  </a>
+</p>

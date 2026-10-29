@@ -1,34 +1,110 @@
 # Keyboard shortcuts
 
-Open **Keyboard shortcuts** from preferences, search or the default `?` key. The editor lists the actual tools, project actions, effects and directional commands with their icons. Search by command, category or current shortcut. Click a binding and press its replacement; Escape cancels recording. Each row can remove its binding or restore its defaults, and **Reset all** restores the complete set.
+These tables list MusArt's **default shortcuts**. They cover familiar creative-editor actions and MusArt's own tools. Every command binding can be changed in **Preferences → Shortcuts**, including commands with no default key. The shortcut shown in the app always reflects your current settings.
 
-Overrides are validated and saved under the versioned `musart.keybindings.v1` local preference. Invalid keys, unknown commands and conflicting assignments cannot silently replace another command. Storage failures remain visible and leave the previous working configuration intact. Changes update keyboard dispatch, command search, dock/tooltips and project save keycaps together, including after a reload. The platform modifier is stored as `Mod` and displayed as Ctrl or ⌘. Pointer gestures such as Space-drag and trackpad navigation retain their separate navigation semantics.
+**Ctrl** below means **Ctrl on Windows/Linux** and **Cmd (⌘) on macOS**. **Alt** means **Option (⌥) on macOS**. Shortcuts act on the canvas; text fields, menus and dialogs keep their normal keyboard behavior. Save also works while editing a field.
 
-Editor shortcuts leave text fields, sliders and modal controls to their own editing behavior. Save remains available while editing; shortcut recording consumes its keys without executing document commands. Search can toggle its own dialog but cannot bypass another modal dashboard or confirmation. The first-launch dashboard disables document shortcuts until a real project has been chosen. A queued command verifies its originating engine, project, page and revision before execution.
+## Everyday editing
 
-**Copy selected items** (`Mod+C`) and **Paste items** (`Mod+V`) use this same command
-registry, binding editor, conflict validation and translated labels. The default
-keys use native browser clipboard events, so ordinary copying and pasting needs no
-clipboard permission. Alternate bindings and search/dock actions use the browser
-Clipboard API and report denied or unavailable access. Native text editing remains
-untouched in inputs, editable content and modal controls.
+| Action                | Default shortcut           | What it does                                                                                                                                         |
+| --------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Undo                  | `Ctrl+Z`                   | Undo the last document edit.                                                                                                                         |
+| Redo                  | `Ctrl+Shift+Z` or `Ctrl+Y` | Restore an undone edit.                                                                                                                              |
+| Copy selected items   | `Ctrl+C`                   | Copy editable layers, groups, effects, masks and their original images. See [sharing artwork](#copy-paste-and-share-artwork).                        |
+| Paste                 | `Ctrl+V`                   | Paste copied MusArt artwork, import clipboard images, or create a text layer from plain text.                                                        |
+| Select all            | `Ctrl+A`                   | Select all layers in the active artboard.                                                                                                            |
+| Duplicate             | `Ctrl+D`                   | Duplicate selected layers. With an active pixel selection, this clears the pixel selection instead.                                                  |
+| Deselect              | `Escape`                   | Clear the layer selection and return to the pointer tool.                                                                                            |
+| Delete                | `Delete` or `Backspace`    | Delete selected layers, or the selected effect/mask attachment. With an active pixel selection, hide the selected image area using an editable mask. |
+| Group                 | `Ctrl+G`                   | Group selected layers.                                                                                                                               |
+| Ungroup               | `Ctrl+Shift+G`             | Ungroup selected groups.                                                                                                                             |
+| Move selection        | `←` `→` `↑` `↓`            | Move unlocked selected items by 1 document pixel.                                                                                                    |
+| Move selection faster | `Shift` + arrow key        | Move unlocked selected items by 10 document pixels.                                                                                                  |
 
-Copies are versioned `musart.clipboard` JSON containing editable layers, selected
-subtrees, processing ancestors, complete mask dependencies and referenced original
-images. Pasting preserves their relative geometry, uses fresh coherent layer,
-effect, guide and asset IDs, and commits one atomic undo entry. The selection is
-centered at the last pointer position inside the active artboard, or the artboard
-center when there is no valid pointer position. A changed project, page or document
-revision rejects an asynchronous paste rather than writing into a replacement.
-**Copy composition as editable JSON** includes the full artboard properties and
-pastes as a new artboard; this is also a shareable clipboard document.
+For Photoshop users: check the MusArt defaults before relying on muscle memory. In particular, **`Ctrl+D` duplicates layers** unless a pixel selection is active, and **`Ctrl+S` saves to this browser**. Download an editable `.musart` backup through the project menu or Magic Search.
 
-General settings include **Include images when copying**, enabled by default.
-Disabling it writes only local original references and a content freshness
-fingerprint. Such copies require the same durable project and matching originals;
-missing or changed source bytes are a real error. Included images remain portable
-between projects and browser sessions. Fonts retain the existing portable document
-family references. Clipboard input is bounded to 16 Mi UTF-16 code units (32 MiB
-logical text), validated before any command, and excludes project history.
+## Tools
 
-The search catalogue prepares document records only when opened and reuses them across selection and binding changes. Empty search mounts at most two results per category. Its input receives focus immediately while Motion presents a 160 ms opening and 100 ms closing transition, with a fading backdrop and bounded result-item entrance motion. Exiting commands are inert until Radix releases the dialog. Reduced motion skips visual transitions. Keyboard opening returns focus to its original canvas/control when closed; an obsolete focus-scope cleanup cannot steal focus back to the left toolbar while search is open. Native browser verification records first-frame focus, visual motion and real focus restoration separately from the two-frame content-readiness bound.
+| Tool                | Default shortcut | Use                                                                                       |
+| ------------------- | ---------------- | ----------------------------------------------------------------------------------------- |
+| Pointer / selection | `V`              | Select, move and transform layers.                                                        |
+| Hand                | `H`              | Drag to pan the workspace.                                                                |
+| Text                | `T`              | Add editable text.                                                                        |
+| Shape library       | `U`              | Use the last chosen shape, icon or brand artwork. Open the tool's menu to choose another. |
+| Rectangle           | `R`              | Draw a rectangle.                                                                         |
+| Ellipse             | `O`              | Draw an ellipse.                                                                          |
+| Magic wand          | `W`              | Select connected colors in an image.                                                      |
+| Object selection    | `S`              | Select objects with the local AI model.                                                   |
+
+## Projects, files and view
+
+| Action             | Default shortcut     | What it does                                                                                          |
+| ------------------ | -------------------- | ----------------------------------------------------------------------------------------------------- |
+| New project        | `Ctrl+N`             | Open project creation.                                                                                |
+| Open project       | `Ctrl+O`             | Open a portable `.musart` project.                                                                    |
+| Import images      | `Ctrl+Shift+O`       | Choose images to add to the active artboard.                                                          |
+| Save               | `Ctrl+S`             | Save the project locally in this browser.                                                             |
+| Export image       | `Ctrl+Shift+E`       | Open image export for PNG, JPEG or WebP.                                                              |
+| Fit view           | `Ctrl+0`             | Fit the project's artboards into the workspace.                                                       |
+| Reset view / 100%  | `Ctrl+1`             | Restore the default view at 100% zoom.                                                                |
+| Zoom in            | `Ctrl++` or `Ctrl+=` | Increase canvas zoom.                                                                                 |
+| Zoom out           | `Ctrl+-`             | Decrease canvas zoom.                                                                                 |
+| Toggle rulers      | `Ctrl+R`             | Show or hide rulers.                                                                                  |
+| Magic Search       | `Ctrl+K`             | Find and run tools, effects, adjustments, project actions and settings, or jump to an artboard/layer. |
+| Keyboard shortcuts | `?`                  | Open the searchable shortcut editor.                                                                  |
+
+The zoom controls also offer **100%**, **Fit** and **Recenter**. Browser- or OS-reserved shortcuts can take priority; use Magic Search or assign another binding when needed.
+
+## Canvas gestures and pixel selections
+
+These gestures are separate from the editable command bindings.
+
+| Gesture or key                                 | Action                                                                                                          |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Mouse wheel / two-finger trackpad scroll       | Pan vertically and horizontally.                                                                                |
+| `Shift` + vertical wheel                       | Pan horizontally.                                                                                               |
+| `Ctrl` + wheel / trackpad scroll               | Zoom around the pointer.                                                                                        |
+| Hold `Space` and drag                          | Temporarily pan the workspace.                                                                                  |
+| `Shift`-click or `Ctrl`-click artwork          | Add an item to the layer selection, or remove it if already selected.                                           |
+| Right-button drag                              | Select unlocked artwork intersecting the selection rectangle. A stationary right-click preserves the selection. |
+| Hold `Shift` while drawing a shape             | Draw a square or circle.                                                                                        |
+| Hold `Shift` while resizing / rotating         | Constrain proportions / rotate in 15° steps.                                                                    |
+| Hold `Alt` while moving / resizing             | Temporarily bypass snapping.                                                                                    |
+| Magic wand: click, then drag left/right        | Select a color region and adjust its tolerance.                                                                 |
+| Magic wand: `Shift`-click                      | Add to the pixel selection.                                                                                     |
+| Magic wand: `Alt`-click                        | Subtract from the pixel selection.                                                                              |
+| Active pixel selection: `Ctrl+D`               | Clear the pixel selection.                                                                                      |
+| Active pixel selection: `Delete` / `Backspace` | Hide the selected region through a mask, preserving the original image.                                         |
+| `Escape` during a canvas gesture               | Cancel the gesture and restore its starting state.                                                              |
+
+See [pixel selections](selection.md), [snapping](snapping.md) and [layers](layers.md) for details.
+
+## Copy, paste and share artwork
+
+**`Ctrl+C` copies; `Ctrl+V` pastes.** MusArt copies editable artwork as text (JSON), with its layers, groups, effects, masks and original images. You can send that text to someone else and they can paste it into their own MusArt project.
+
+| What you want to do                         | Steps                                                                                                                                                                                                                                                |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reuse selected artwork                      | Select the layers, press `Ctrl+C`, then press `Ctrl+V` in the destination artboard or project.                                                                                                                                                       |
+| Send editable items to someone              | Keep **Preferences → General → Include images when copying** enabled (the default). Copy the items, paste the full copied text into a message or text file, and send it. The recipient copies that text and presses `Ctrl+V` on their MusArt canvas. |
+| Share a complete artboard                   | Open `Ctrl+K`, run **Copy composition as editable JSON**, and send the copied text. Pasting it creates a new artboard with its properties and contents. This command has no default shortcut; you can assign one.                                    |
+| Bring in a screenshot or image              | Copy the image in another app, then press `Ctrl+V` on the canvas. The browser must provide image data in the clipboard.                                                                                                                              |
+| Add plain text                              | Copy text, then press `Ctrl+V` on the canvas to create a text layer. Paste into a text field to edit that field instead.                                                                                                                             |
+| Send a whole project or a large composition | Download an editable `.musart` file from the project menu and send the file. The recipient opens it with `Ctrl+O`.                                                                                                                                   |
+
+Pasted items keep their relative layout and stay editable. MusArt centers them at the last pointer position inside the active artboard, or at the artboard center when there is no valid pointer position. Each paste creates one undo entry.
+
+Keep **Include images when copying** enabled for sharing between people, projects or browser sessions. Turning it off produces smaller copies that depend on unchanged originals in the same saved project. Custom fonts must be installed separately in the recipient's browser; see [font portability](fonts.md). Clipboard documents do not include edit history, and large copies may exceed the clipboard or messaging service's limits.
+
+Standard `Ctrl+C` / `Ctrl+V` use native clipboard events. Running clipboard actions through Magic Search, a pinned action or a custom binding uses the browser Clipboard API, which may require permission. Sharing is manual: send the copied text or a project file to your recipient.
+
+## Customize shortcuts
+
+1. Open **Preferences → Shortcuts**, press `?`, or find **Keyboard shortcuts** in `Ctrl+K`.
+2. Search by action, category or current shortcut.
+3. Click a binding and press the replacement keys. Press `Escape` to cancel recording.
+4. Remove a binding or restore its defaults on that row. **Reset all** restores every default.
+
+Changes are saved in this browser and update command search, tooltips and key hints. Conflicting assignments are reported so you can resolve them. Preferences are separate from project files.
+
+Effects, adjustments and actions such as **Copy composition as editable JSON**, **Download project**, **Add artboard**, **Recenter**, **Toggle visibility**, **Toggle lock**, **Design**, **Animate** and **Enable/Disable snapping** have no default binding. Run them through Magic Search, pin them to the dock or assign keys in preferences.
