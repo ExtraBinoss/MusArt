@@ -268,7 +268,15 @@
     {
       "task": "Final frozen install, typecheck, lint, format, full coverage/rules, production build, native GPU/storage tests, changelog and synchronized release",
       "owner": "root",
-      "status": "final-source-frozen-v7; native-performance-storage-typecheck-lint-build-full-coverage-pass; coverage-aware-rules-zero; final-format-and-release-pending"
+      "status": "complete; release-0.2.0; native-performance-storage-full-coverage-typecheck-lint-format-production-build-pass; coverage-aware-rules-zero; 216-runtime-files-identical-to-measured-v7",
+      "evidence": [
+        "docs/rendering/effects/verification.md",
+        "artifacts/final-native-v6-summary.json",
+        "artifacts/effects-final-cohorts/v7/SUMMARY.md",
+        "artifacts/final-v7-coverage.log",
+        "artifacts/final-v7-coverage-rules.log",
+        "artifacts/release-0.2.0-payload-comparison.json"
+      ]
     }
   ],
   "integrationAuditFollowups": [

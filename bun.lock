@@ -63,7 +63,7 @@
     },
     "apps/web": {
       "name": "@musart/web",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@musart/assets": "workspace:*",
         "@musart/core": "workspace:*",
@@ -72,15 +72,15 @@
     },
     "packages/assets": {
       "name": "@musart/assets",
-      "version": "0.1.0",
+      "version": "0.2.0",
     },
     "packages/core": {
       "name": "@musart/core",
-      "version": "0.1.0",
+      "version": "0.2.0",
     },
     "packages/render": {
       "name": "@musart/render",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@musart/assets": "workspace:*",
         "@musart/core": "workspace:*",

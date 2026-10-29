@@ -1,11 +1,10 @@
 # Effect library delivery and verification
 
 This is the review entry point for the eleven procedural effects and the shared
-rendering fixes. The delivery candidate is **frozen v7**, including the
-presentation-before-background barrier. Native rendering, affected regressions
-and the final matched performance/storage cohorts pass. Full coverage and its
-rules check also pass; release sign-off remains. Earlier measurements retain their original
-build attribution.
+rendering fixes. **Release 0.2.0** is byte-identical to frozen v7 at runtime,
+including the presentation-before-background barrier. Native rendering, affected
+regressions, matched performance/storage cohorts, full coverage and release gates
+pass. Earlier measurements retain their original build attribution.
 
 ## Review the effects
 
@@ -95,7 +94,7 @@ the isolated Poster150 regression are not matched before/after latency cohorts.
 The preserved failures remain part of the evidence, including the real device
 limit rejection; no thumbnail visibility region or acceptance bound was relaxed.
 
-## Final sign-off — pending
+## Final sign-off — 0.2.0
 
 ### Native regression evidence: v6
 
@@ -153,13 +152,16 @@ case also passes. Production pixel-read hooks remain zero. The
 memory, export, transaction and recovery evidence; its case runtimes are not
 startup speedup claims.
 
-| Gate                                                                               | Candidate status / result location                                                                                                                                                                                                                                                                                                                 |
-| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Native browser regression set                                                      | **Passed:** 162 unique v6 cases indexed in `artifacts/final-native-v6-summary.json`, followed by all six v7 affected cases in `artifacts/effects-final-cohorts/v7/affected-native.log`. Exact source-delta evidence above establishes the unchanged rendering domains.                                                                             |
-| Reproducible performance and storage load                                          | **Passed on v7:** fresh matched arrival cohorts, 50-image/100-effect library load and legacy 50-image GPU/storage load. Reports, commands, hashes and captures: `artifacts/effects-final-cohorts/v7/SUMMARY.md` and its provenance.                                                                                                                |
-| Full coverage and coverage-aware rules                                             | **Passed:** 559 files / 1,976 tests; statements 95.11%, branches 93.32%, functions 95.77%, lines 95.71%. Core: 99.71% / 98.27% / 100% / 99.89%. All executable sources remain included. `artifacts/final-v7-coverage.log`, `final-v7-coverage-summary.json` and `final-v7-coverage-rules.log` record the unchanged thresholds and zero violations. |
-| Frozen install, synchronized version, typecheck, lint, format and production build | Full v7 typecheck/lint and archived production build pass; logs include `artifacts/final-v7-typecheck.log` and `artifacts/final-v7-lint.log`. Final format, synchronized release, frozen-install/version recheck and release build remain pending.                                                                                                 |
+| Gate                                                                               | Candidate status / result location                                                                                                                                                                                                                                                                                                                                                       |
+| ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Native browser regression set                                                      | **Passed:** 162 unique v6 cases indexed in `artifacts/final-native-v6-summary.json`, followed by all six v7 affected cases in `artifacts/effects-final-cohorts/v7/affected-native.log`. Exact source-delta evidence above establishes the unchanged rendering domains.                                                                                                                   |
+| Reproducible performance and storage load                                          | **Passed on v7:** fresh matched arrival cohorts, 50-image/100-effect library load and legacy 50-image GPU/storage load. Reports, commands, hashes and captures: `artifacts/effects-final-cohorts/v7/SUMMARY.md` and its provenance.                                                                                                                                                      |
+| Full coverage and coverage-aware rules                                             | **Passed:** 559 files / 1,976 tests; statements 95.11%, branches 93.32%, functions 95.77%, lines 95.71%. Core: 99.71% / 98.27% / 100% / 99.89%. All executable sources remain included. `artifacts/final-v7-coverage.log`, `final-v7-coverage-summary.json` and `final-v7-coverage-rules.log` record the unchanged thresholds and zero violations.                                       |
+| Frozen install, synchronized version, typecheck, lint, format and production build | **Passed:** synchronized 0.2.0, refreshed workspace lockfile, frozen installation, full typecheck/lint, format and production build. Logs are under `artifacts/release-0.2.0-*.log` and `artifacts/final-v7-*.log`. The payload comparison proves all 216 runtime files identical to measured v7; both builds preserve maps, whose relative source paths reflect their output directory. |
 
-Update these statuses only from terminal results for the identified executable.
-Release version/date and the delivered feature/fix summary belong in
+The verified implementation milestone is commit e70e753. The final build has the
+same index SHA-256 recorded above;
+[payload equality](../../../artifacts/release-0.2.0-payload-comparison.json)
+ties the release to the measured executable without a substitute timing run.
+The release date and feature/fix summary are in
 [CHANGELOG.md](../../../CHANGELOG.md).

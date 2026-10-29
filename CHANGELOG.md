@@ -4,6 +4,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-29
+
 ### Added
 
 - **CRT:** adjustable aperture, round shadow-dot and slotted phosphor masks, scanlines, screen curvature, convergence, local glow and explicit-phase noise/flicker. Independent white-screen native calibration distinguishes true round dots, tall slots with complete row gaps and continuous aperture strips. Transparent screen clipping and partial effect intensity retain correct premultiplied edge colors.
@@ -237,6 +239,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Verification
 
+- Release 0.2.0 passes synchronized workspace/lockfile checks, frozen installation and the production build with full typechecking. All 216 runtime payload files are byte-identical to the measured final v7 build; both retain their matching source maps. The final coverage-aware rules and formatting checks pass.
 - Final effect-library coverage passes 1,976 tests across 559 files with every executable source included: statements 95.11%, branches 93.32%, functions 95.77% and lines 95.71%; core separately reaches 99.71%, 98.27%, 100% and 99.89%. The coverage-aware architecture check reports zero violations. Native evidence records 162 unique regression scenarios, then all six affected final delivery-barrier cases and the fresh GPU/storage cohorts, with exact source-delta attribution and retained failures in `docs/rendering/effects/verification.md`.
 - The eleven-effect photographic load passes with 50 image layers, 100 effects, five groups and ten masks: native previews and decoded exports, zero production pixel readbacks, zero major React commits during the held Ripple drag, bounded resources and exact SHA-256/effect-stack recovery. The 50 input files contain 43 distinct JPEGs derived from ten photographs; reproducible evidence and resource boundaries are documented in `docs/performance/effect-library-load.md`.
 
