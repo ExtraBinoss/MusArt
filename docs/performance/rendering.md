@@ -32,21 +32,26 @@ production code must not call pixel readback APIs into JavaScript.
 4. Match profile locations to that build's source maps. Keep the original failing
    report and repeat the same workload after changing the measured cause.
 
-`canonicalPresentedAt` is recorded from the display scene's `onAfterRender`, after
-Three submits its render pass. It is not a GPU completion fence or a physical-display
-timestamp. A later RAF witness is an upper bound with its own scheduling delay.
-The presentation barrier waits for the latest canonical ticket, then a frame/task
-boundary; previews and superseded requests cannot satisfy a newer commit. Hidden,
-headless and failed-renderer paths remain bounded, and explicit flush/disposal drains
-accepted journal entries without depending on a future frame.
+### Presentation boundary
 
-The journal worker owns replay diffing, fingerprints, logical accounting and its
-IndexedDB connection. It returns a small header rather than a delta or document.
-The shared metadata codec limits inline structure to 32 KiB and individual string
-pieces to 8,192 characters. Every nonempty array is deferred, including nested short
-arrays. The encoder receives an owned immutable DTO and can retain unchanged frozen
-leaves without manufacturing a path/tuple for every scalar. These limits bound the
-message payload; native clone time and operating-system pauses still need measurement.
+| Diagnostic                 | Interpretation                                                                                                                                              |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Submission timestamp       | `canonicalPresentedAt` is recorded from the display scene's `onAfterRender`, after Three submits its render pass.                                           |
+| Metric limitation          | It is not a GPU completion fence or a physical-display timestamp.                                                                                           |
+| RAF witness                | A later RAF witness is an upper bound with its own scheduling delay.                                                                                        |
+| Canonical barrier          | The presentation barrier waits for the latest canonical ticket, then a frame/task boundary; previews and superseded requests cannot satisfy a newer commit. |
+| Bounded fallback and drain | Hidden, headless and failed-renderer paths remain bounded, and explicit flush/disposal drains accepted journal entries without depending on a future frame. |
+
+### Worker transport
+
+| Diagnostic            | Interpretation                                                                                                                          |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Worker responsibility | The journal worker owns replay diffing, fingerprints, logical accounting and its IndexedDB connection.                                  |
+| Response              | It returns a small header rather than a delta or document.                                                                              |
+| Message limits        | The shared metadata codec limits inline structure to 32 KiB and individual string pieces to 8,192 characters.                           |
+| Array deferral        | Every nonempty array is deferred, including nested short arrays.                                                                        |
+| Immutable leaves      | The encoder receives an owned immutable DTO and can retain unchanged frozen leaves without manufacturing a path/tuple for every scalar. |
+| Measurement limit     | These limits bound the message payload; native clone time and operating-system pauses still need measurement.                           |
 
 Normal captures contain current asset descriptions and newly changed originals.
 Initialization and recovery can resolve the complete real source pool. Worker
@@ -92,12 +97,12 @@ test inspector; an application readback mock does not prove GPU correctness.
 Run the complete quality gates and the 50-image/effects and large-history cohorts
 before delivery, as required by `AGENTS.md`.
 
-`journal-responsiveness.spec.ts` records native input immediately after the real
-submission timestamp while journaling remains pending. Reports in
-`artifacts/journal-worker-response/` include real `postMessage` duration, header size,
-frame gaps, long tasks, native IndexedDB call/result timings and a screenshot. Set
-`MUSART_JOURNAL_REPORT` for another output directory so a failed baseline remains
-available. The journal fault cases deliberately lose one accepted acknowledgment
-or drop a metadata fragment; they verify exact-once recovery, atomic rejection and
-retirement of a partial worker. Their injection does not replace the real Worker or
-IndexedDB implementation.
+### Native journal evidence
+
+| Diagnostic         | Interpretation                                                                                                                                                                           |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Input boundary     | `journal-responsiveness.spec.ts` records native input immediately after the real submission timestamp while journaling remains pending.                                                  |
+| Report contents    | Reports in `artifacts/journal-worker-response/` include real `postMessage` duration, header size, frame gaps, long tasks, native IndexedDB call/result timings and a screenshot.         |
+| Report retention   | Set `MUSART_JOURNAL_REPORT` for another output directory so a failed baseline remains available.                                                                                         |
+| Fault injection    | The journal fault cases deliberately lose one accepted acknowledgment or drop a metadata fragment; they verify exact-once recovery, atomic rejection and retirement of a partial worker. |
+| Real platform APIs | Their injection does not replace the real Worker or IndexedDB implementation.                                                                                                            |

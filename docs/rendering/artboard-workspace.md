@@ -1,42 +1,120 @@
 # Shared artboard workspace
 
-Project pages are displayed together as artboards on a single world viewport. A deterministic two-column shelf layout uses a 128-unit gap and the maximum height of each row. Workspace bounds drive fit and bounded trackpad panning. Activating another page preserves the world pose; opening another project or changing artboard dimensions/count fits the updated workspace. The shared fit action remains available in command search, while the floating controls expose minus, exact 100% reset, plus and conditional recenter.
+## Workspace layout
 
-The active artboard keeps the same `EditorScene`, scene controller and R3F canvas. Page changes replace the composition through the existing imperative renderer subscription rather than mounting another GPU context. Every artboard, including the active one, retains its own stable backdrop element with a real persisted GPU-generated WebP thumbnail when available. The transparent editing host moves above the destination backdrop. Switching pages therefore does not remove its existing image or alter the visible-page lease batch. After the matching GPU frame has actually drawn, only that active thumbnail becomes hidden; its page background and checkerboard remain visible beneath transparent pixels. This prevents an old thumbnail from appearing as a ghost after moving or masking artwork. A layout-phase synchronization rejects foreign project/page presentations and restores the destination thumbnail while a new page is pending, without remounting it or using broad ancestor `:has()` rules.
+| Workspace feature              | Behavior                                                                                                                                              |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| World viewport                 | Project pages are displayed together as artboards on a single world viewport.                                                                         |
+| Placement                      | A deterministic two-column shelf layout uses a 128-unit gap and the maximum height of each row.                                                       |
+| Fit and panning                | Workspace bounds drive fit and bounded trackpad panning.                                                                                              |
+| Activation and project changes | Activating another page preserves the world pose; opening another project or changing artboard dimensions/count fits the updated workspace.           |
+| View controls                  | The shared fit action remains available in command search, while the floating controls expose minus, exact 100% reset, plus and conditional recenter. |
 
-One visibility observer batches backdrop page IDs with a 200-pixel preload margin. Adding or removing a page preserves still-visible IDs; queued callbacks from a disconnected observer are ignored. A changed visibility batch retains overlapping artwork until its replacement arrives, including when refresh fails. Project/service changes reject old leases; leaving the visible request or replacing a resource releases its URL ownership. The existing shared background thumbnail renderer remains separate from the one active editing renderer; adding artboards does not add rendering contexts. Missing previews show the actual page background with an accessible loading/failure description, without a visible preparation panel or spinner. Available previews are not a claim that the current canonical GPU frame has finished.
+### Active canvas and backdrops
 
-Refreshes merge per page: a missing or still-invalidated persisted revision does not
-erase that page's last available artwork while another page's new thumbnail arrives.
-Leases remain owned until their last displayed page is replaced or leaves the visible
-request. This retained image is a fallback, never an acknowledgement of the new GPU
-frame. Missing-page requests merge rather than replacing an all-page canonical job
-or its newer immutable document with an older lazy disk load.
+| Workspace feature      | Behavior                                                                                                                                                                                                    |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Retained scene         | The active artboard keeps the same `EditorScene`, scene controller and R3F canvas.                                                                                                                          |
+| Page changes           | Page changes replace the composition through the existing imperative renderer subscription rather than mounting another GPU context.                                                                        |
+| Stable backdrop        | Every artboard, including the active one, retains its own stable backdrop element with a real persisted GPU-generated WebP thumbnail when available.                                                        |
+| Editing host           | The transparent editing host moves above the destination backdrop.                                                                                                                                          |
+| Page-switch continuity | Switching pages therefore does not remove its existing image or alter the visible-page lease batch.                                                                                                         |
+| Matching-frame reveal  | After the matching GPU frame has actually drawn, only that active thumbnail becomes hidden; its page background and checkerboard remain visible beneath transparent pixels.                                 |
+| Ghost prevention       | This prevents an old thumbnail from appearing as a ghost after moving or masking artwork.                                                                                                                   |
+| Presentation guard     | A layout-phase synchronization rejects foreign project/page presentations and restores the destination thumbnail while a new page is pending, without remounting it or using broad ancestor `:has()` rules. |
 
-The workspace may opt into an existing historical thumbnail on its very first
-request. Such a lease remains explicitly stale (`data-preview-current=false` and
-`aria-busy=true`) until a genuine current revision is saved; the project gallery's
-default read remains current-only. Deleted pages are excluded even from historical
-reads. Visible artboard misses use the visible-input guard, bypassing hover quiet
-time while still waiting for held pointers/keys, native drag, live wheel and hidden
-documents. Subsequent real input reconciles stale modifier flags if browser chrome
-consumed a keyup without blurring the page; a genuinely held modifier still blocks.
+### Visibility and thumbnail leases
 
-The composition cache can return an exact retained frame for an engine-certified immutable page and asset collection at the requested scale. This uses the existing GPU LRU and its memory budget, with weak input references and no second texture pool. An evicted, mutable, changed, foreign or differently scaled input is a miss. Warm activation binds that texture and requests one display draw; `rendererReady` and the canonical presentation ticket advance only after that matching draw. Cold activation hides stale canvas pixels while leaving the destination backdrop visible. The initial loader/reveal uses a separate once-presented marker, so changing pages cannot restart it. Superseded asynchronous preparation is checked before GPU submission, and a failed destination cannot acknowledge an older page's frame.
+| Workspace feature        | Behavior                                                                                                                                                                                      |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Visibility batch         | One visibility observer batches backdrop page IDs with a 200-pixel preload margin.                                                                                                            |
+| Observer lifecycle       | Adding or removing a page preserves still-visible IDs; queued callbacks from a disconnected observer are ignored.                                                                             |
+| Refresh continuity       | A changed visibility batch retains overlapping artwork until its replacement arrives, including when refresh fails.                                                                           |
+| Lease ownership          | Project/service changes reject old leases; leaving the visible request or replacing a resource releases its URL ownership.                                                                    |
+| Renderer count           | The existing shared background thumbnail renderer remains separate from the one active editing renderer; adding artboards does not add rendering contexts.                                    |
+| Missing preview          | Missing previews show the actual page background with an accessible loading/failure description, without a visible preparation panel or spinner.                                              |
+| Readiness boundary       | Available previews are not a claim that the current canonical GPU frame has finished.                                                                                                         |
+| Per-page merge           | Refreshes merge per page: a missing or still-invalidated persisted revision does not erase that page's last available artwork while another page's new thumbnail arrives.                     |
+| Lease lifetime           | Leases remain owned until their last displayed page is replaced or leaves the visible request.                                                                                                |
+| Fallback boundary        | This retained image is a fallback, never an acknowledgement of the new GPU frame.                                                                                                             |
+| Missing-page requests    | Missing-page requests merge rather than replacing an all-page canonical job or its newer immutable document with an older lazy disk load.                                                     |
+| Historical first preview | The workspace may opt into an existing historical thumbnail on its very first request.                                                                                                        |
+| Stale status             | Such a lease remains explicitly stale (`data-preview-current=false` and `aria-busy=true`) until a genuine current revision is saved; the project gallery's default read remains current-only. |
+| Deleted pages            | Deleted pages are excluded even from historical reads.                                                                                                                                        |
+| Visible misses           | Visible artboard misses use the visible-input guard, bypassing hover quiet time while still waiting for held pointers/keys, native drag, live wheel and hidden documents.                     |
+| Modifier recovery        | Subsequent real input reconciles stale modifier flags if browser chrome consumed a keyup without blurring the page; a genuinely held modifier still blocks.                                   |
 
-A single contextual plus in the active artboard heading appears when its heading/artwork is hovered or a heading control receives keyboard focus. It remains keyboard-focusable while visually quiet; artboards do not create per-layer add controls. The plus and options button expose translated Radix tooltips. The workspace plus invokes the same add-page command as Magic Search. Double-clicking outside every artboard opens Quick Add at the pointer; artboard backgrounds and painted layers are excluded. Its items are a capability-filtered subset of the shared command catalogue and use the shared search index and mounted command port. File inputs are opened synchronously in the user gesture. New text and primitive frames fit within the active artboard and are centered there, each with one undo entry. Shapes hand focus to the existing searchable artwork library. Canonical changes, navigation and playback close stale Quick Add sessions.
+### Warm and cold activation
+
+| Workspace feature      | Behavior                                                                                                                                                       |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Exact cache input      | The composition cache can return an exact retained frame for an engine-certified immutable page and asset collection at the requested scale.                   |
+| Cache ownership        | This uses the existing GPU LRU and its memory budget, with weak input references and no second texture pool.                                                   |
+| Cache miss             | An evicted, mutable, changed, foreign or differently scaled input is a miss.                                                                                   |
+| Warm readiness         | Warm activation binds that texture and requests one display draw; `rendererReady` and the canonical presentation ticket advance only after that matching draw. |
+| Cold display           | Cold activation hides stale canvas pixels while leaving the destination backdrop visible.                                                                      |
+| Initial reveal         | The initial loader/reveal uses a separate once-presented marker, so changing pages cannot restart it.                                                          |
+| Superseded preparation | Superseded asynchronous preparation is checked before GPU submission, and a failed destination cannot acknowledge an older page's frame.                       |
+
+### Quick Add
+
+| Workspace feature      | Behavior                                                                                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Plus visibility        | A single contextual plus in the active artboard heading appears when its heading/artwork is hovered or a heading control receives keyboard focus. |
+| Keyboard access        | It remains keyboard-focusable while visually quiet; artboards do not create per-layer add controls.                                               |
+| Tooltips               | The plus and options button expose translated Radix tooltips.                                                                                     |
+| Shared add-page action | The workspace plus invokes the same add-page command as Magic Search.                                                                             |
+| Double-click target    | Double-clicking outside every artboard opens Quick Add at the pointer; artboard backgrounds and painted layers are excluded.                      |
+| Command catalog        | Its items are a capability-filtered subset of the shared command catalogue and use the shared search index and mounted command port.              |
+| File picker            | File inputs are opened synchronously in the user gesture.                                                                                         |
+| Text and primitives    | New text and primitive frames fit within the active artboard and are centered there, each with one undo entry.                                    |
+| Shape library          | Shapes hand focus to the existing searchable artwork library.                                                                                     |
+| Stale sessions         | Canonical changes, navigation and playback close stale Quick Add sessions.                                                                        |
 
 Tools, selection, ruler origins, dragged guides and file drops use a page-local view derived from the active artboard's center in the world layout. Artboard headings remain screen-sized while the artwork scales. Each heading exposes validated rename/delete commands; the final artboard cannot be deleted. File drops activate their destination artboard before entering the normal import service.
 
-The text tool shares the imperative drawing lifecycle with shapes. Press and drag to choose its page-local rectangle in either direction; Shift preserves a rectangular text frame. No layer enters the document until release, and that release creates one editable layer with one undo entry. A simple click creates the default 360 × 100 frame. Escape, pointer cancellation or an authoritative project/page change discards the transient draft.
+### Text drawing
 
-Dimensions sit at the right of the heading and move into the compact menu below a 220-pixel heading width. Long names use ellipsis. At extreme zoom-out, headings retain a 96-pixel minimum width and shift upward in 30-pixel increments until their screen-space rectangles no longer overlap; a fine stem links displaced labels to their artboards. The same deterministic placement function runs in the imperative viewport subscription on every motion frame. Canvas gestures and pending renames capture their originating immutable project reference, page ID and revision; an authoritative change cancels the draft instead of applying it to a replacement document.
+| Workspace feature | Behavior                                                                                                         |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Lifecycle         | The text tool shares the imperative drawing lifecycle with shapes.                                               |
+| Drag              | Press and drag to choose its page-local rectangle in either direction; Shift preserves a rectangular text frame. |
+| Commit            | No layer enters the document until release, and that release creates one editable layer with one undo entry.     |
+| Click default     | A simple click creates the default 360 × 100 frame.                                                              |
+| Cancellation      | Escape, pointer cancellation or an authoritative project/page change discards the transient draft.               |
 
-Panning updates `translate3d` poses imperatively, without rebuilding selection geometry, guide annotations, or the GPU composition. Wheel bursts publish a settled React view once after 100 ms of quiet; hand pans publish once on release. More than 64 selected layers use one exact collective world-bounds frame instead of thousands of DOM handles, while retaining the full selection and one atomic bulk movement command. Immutable geometry indices serve hit testing, root filtering and parent-space deltas; selection-only snapshots reuse geometry without serializing all layers.
+### Heading layout and stale edits
 
-Collective bounds aggregate unrotated root coordinates directly and use cached world geometry only for nested or rotated layers. This returns one frozen union without creating thousands of temporary layer boxes. Collective detail mode above 64 selections suppresses per-layer guide handles, while page/ruler guides remain visible and editable and every layer's guide metadata remains unchanged. Smaller selections resolve guide owners by their selected IDs rather than scanning the whole page.
+| Workspace feature  | Behavior                                                                                                                                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Compact dimensions | Dimensions sit at the right of the heading and move into the compact menu below a 220-pixel heading width.                                                                                                          |
+| Long names         | Long names use ellipsis.                                                                                                                                                                                            |
+| Extreme zoom-out   | At extreme zoom-out, headings retain a 96-pixel minimum width and shift upward in 30-pixel increments until their screen-space rectangles no longer overlap; a fine stem links displaced labels to their artboards. |
+| Placement updates  | The same deterministic placement function runs in the imperative viewport subscription on every motion frame.                                                                                                       |
+| Gesture origin     | Canvas gestures and pending renames capture their originating immutable project reference, page ID and revision; an authoritative change cancels the draft instead of applying it to a replacement document.        |
 
-Ruler ticks live in overscanned static SVG strips inside clipped HTML compositor layers. Pure pan translates two HTML strips; zoom, viewport resize or exhausted coverage refreshes their bounded tick pool. An unchanged zoom label keeps its existing text node: replacing it on each pan was observed to trigger shadcn/Tailwind `:has()` invalidation across the entire canvas subtree. Ruler-created and existing guides retain their originating immutable document/page/revision and release pointer capture on Escape or when that origin becomes stale. Historical playback rejects new guide edits and cancels active ones.
+### Pan and collective selection
+
+| Workspace feature      | Behavior                                                                                                                                                                               |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pan preview            | Panning updates `translate3d` poses imperatively, without rebuilding selection geometry, guide annotations, or the GPU composition.                                                    |
+| Settled publication    | Wheel bursts publish a settled React view once after 100 ms of quiet; hand pans publish once on release.                                                                               |
+| Large selection        | More than 64 selected layers use one exact collective world-bounds frame instead of thousands of DOM handles, while retaining the full selection and one atomic bulk movement command. |
+| Geometry reuse         | Immutable geometry indices serve hit testing, root filtering and parent-space deltas; selection-only snapshots reuse geometry without serializing all layers.                          |
+| Bounds computation     | Collective bounds aggregate unrotated root coordinates directly and use cached world geometry only for nested or rotated layers.                                                       |
+| Allocation             | This returns one frozen union without creating thousands of temporary layer boxes.                                                                                                     |
+| Guide detail threshold | Collective detail mode above 64 selections suppresses per-layer guide handles, while page/ruler guides remain visible and editable and every layer's guide metadata remains unchanged. |
+| Small selections       | Smaller selections resolve guide owners by their selected IDs rather than scanning the whole page.                                                                                     |
+
+### Rulers and guides
+
+| Workspace feature   | Behavior                                                                                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Retained strips     | Ruler ticks live in overscanned static SVG strips inside clipped HTML compositor layers.                                                                                       |
+| Pan and refresh     | Pure pan translates two HTML strips; zoom, viewport resize or exhausted coverage refreshes their bounded tick pool.                                                            |
+| Zoom-label identity | An unchanged zoom label keeps its existing text node: replacing it on each pan was observed to trigger shadcn/Tailwind `:has()` invalidation across the entire canvas subtree. |
+| Guide ownership     | Ruler-created and existing guides retain their originating immutable document/page/revision and release pointer capture on Escape or when that origin becomes stale.           |
+| Historical playback | Historical playback rejects new guide edits and cancels active ones.                                                                                                           |
 
 Historical playback can reference a page that no longer exists in the canonical project. Its geometry is presented in the current active artboard slot, preserving the document and avoiding an invalid lookup by the historical page ID. Ending playback restores the canonical geometry through the same presentation source.
 

@@ -6,6 +6,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
+- Reorganized seventeen dense guides, architecture/rendering references and performance reports into topic tables and shorter sections. Preserved the original contracts, commands, measurements, environment details and verification caveats.
 - Added `bun run check-ci` for automatic validation and GitHub Pages publication, retaining static checks, full Vitest coverage, coverage rules and the production build while removing Chromium/Playwright installation and execution from that workflow. `bun run check` still runs the complete gate including browser tests.
 - Replaced the keyboard guide with tables of default editing, tool, project and view shortcuts, canvas gestures, customization steps and instructions for sharing editable clipboard artwork with its original images.
 - Added prominent Open MusArt buttons at the top and bottom of the README and the hosted editor URL to the repository Website, with a creative-studio description and discoverable GitHub topics.

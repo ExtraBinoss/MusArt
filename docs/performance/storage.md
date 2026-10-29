@@ -17,33 +17,79 @@ Read [Protocol](protocol.md) before timing a cohort and [Durable project history
 
 The current database schema is **6**. Version-2 project records keep small asset metadata in the manifest and original data in a separate asset store. Loading one project restores its referenced originals; it must not scan its journal events. Runtime journal initialization may read its own small header, which is a different boundary from `ProjectStore.load`.
 
-Only validated, deeply frozen publications certified by the engine may bypass full save-input cloning and repeated validation. A shallowly or deeply frozen external object is not a certificate. External inputs are detached and frozen before an await. An engine mutation after capture must not change the earlier queued save's values. The certificate uses a private weak identity set; it is not serialized and does not retain projects.
+### Captured save inputs
+
+| Persistence topic      | Contract                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Engine certificate     | Only validated, deeply frozen publications certified by the engine may bypass full save-input cloning and repeated validation. |
+| External frozen inputs | A shallowly or deeply frozen external object is not a certificate.                                                             |
+| Detachment             | External inputs are detached and frozen before an await.                                                                       |
+| Queued-value stability | An engine mutation after capture must not change the earlier queued save's values.                                             |
+| Certificate lifetime   | The certificate uses a private weak identity set; it is not serialized and does not retain projects.                           |
 
 Writes remain compare-and-swap operations even when their input can be reused. A stale loaded session, a project retired during asynchronous preparation, or a closed store must fail explicitly. A rejected manifest save does not imply that a recovery journal has replaced the newer manifest. Do not resolve these failures by silently retrying an old snapshot as an unconditional replacement.
 
 ## Project persistence worker boundary
 
-[ProjectStore](../../apps/web/src/services/projects/storage.ts) captures the expected durable write revision before hashing. Its [persistence client](../../apps/web/src/services/projects/persistence/client.ts) owns one lazy worker, admits at most eight manifest/blob mutations and 128 lightweight read controls, and runs them through one FIFO. These limits are separate: mounting many artboards must not consume the eight-snapshot budget just to request thumbnail headers. The public save resolves only after a validated acknowledgment of the actual transaction.
+| Persistence topic      | Contract                                                                                                                                                                                                                   |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Revision capture       | [ProjectStore](../../apps/web/src/services/projects/storage.ts) captures the expected durable write revision before hashing.                                                                                               |
+| Worker admission       | Its [persistence client](../../apps/web/src/services/projects/persistence/client.ts) owns one lazy worker, admits at most eight manifest/blob mutations and 128 lightweight read controls, and runs them through one FIFO. |
+| Separate read budget   | These limits are separate: mounting many artboards must not consume the eight-snapshot budget just to request thumbnail headers.                                                                                           |
+| Durable acknowledgment | The public save resolves only after a validated acknowledgment of the actual transaction.                                                                                                                                  |
 
-The worker assembles the captured document from bounded fragments, then [writes the manifest, originals, counters and preference atomically](../../apps/web/src/services/projects/persistence/transaction.ts). Hash preparation and transport finish before that transaction opens. Inside the transaction, only IndexedDB requests are awaited. Original-asset comparison uses a checked durable basis; a basis mismatch aborts without writes and permits a full-original resend with the same captured document revision. It never adopts a newer revision to force an old snapshot through compare-and-swap.
+### Atomic transaction
 
-[Thumbnail writes](../../apps/web/src/services/projects/persistence/thumbnail.ts) and [thumbnail header/blob reads](../../apps/web/src/services/projects/persistence/reads.ts) use the same worker. This keeps full-manifest cloning out of the background preview path too. The write merges live headers and accounting under its transaction lock and rejects stale pixel revisions. Responses contain only small revision headers or requested thumbnail blobs, never a full document or original asset strings. Thumbnail metadata is captured before validation and queue admission; the Blob itself is immutable.
+| Persistence topic    | Contract                                                                                                                                                                                                       |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Assembly and writes  | The worker assembles the captured document from bounded fragments, then [writes the manifest, originals, counters and preference atomically](../../apps/web/src/services/projects/persistence/transaction.ts). |
+| Pre-transaction work | Hash preparation and transport finish before that transaction opens.                                                                                                                                           |
+| Transaction awaits   | Inside the transaction, only IndexedDB requests are awaited.                                                                                                                                                   |
+| Original comparison  | Original-asset comparison uses a checked durable basis; a basis mismatch aborts without writes and permits a full-original resend with the same captured document revision.                                    |
+| No forced overwrite  | It never adopts a newer revision to force an old snapshot through compare-and-swap.                                                                                                                            |
 
-The shared fragment assembly accepts at most **128 MiB of logical input**, counting UTF-16 strings and structural overhead. This is neither the compressed image-file size nor browser disk usage. A document permitted by the core may still exceed the worker transport budget, particularly with encoded original strings. Assembly then rejects before opening a write transaction; it must not silently switch to an unbounded main-thread save. A worker unavailable at startup uses the same extracted transaction directly, with its main-thread costs reported separately.
+### Thumbnail persistence
 
-A known transaction failure remains a real rejection. Losing the acknowledgment after the final request was sent instead produces `UNCERTAIN_PROJECT_WRITE`: the transaction may have committed, so reopen and inspect the durable project before deciding how to retry. The client does not automatically replay an uncertain save. Closing stops new admission, drains already accepted writes to their actual outcomes and releases the worker. Cleanup completion does not turn a rejected write into success. A closed generation cannot adopt later revision/asset caches; a load finishing in that generation rejects, while an already committed rename retains its durable result without restoring the closed cache.
+| Persistence topic       | Contract                                                                                                                                                                                            |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shared worker           | [Thumbnail writes](../../apps/web/src/services/projects/persistence/thumbnail.ts) and [thumbnail header/blob reads](../../apps/web/src/services/projects/persistence/reads.ts) use the same worker. |
+| Manifest clone boundary | This keeps full-manifest cloning out of the background preview path too.                                                                                                                            |
+| Atomic merge            | The write merges live headers and accounting under its transaction lock and rejects stale pixel revisions.                                                                                          |
+| Response payload        | Responses contain only small revision headers or requested thumbnail blobs, never a full document or original asset strings.                                                                        |
+| Captured metadata       | Thumbnail metadata is captured before validation and queue admission; the Blob itself is immutable.                                                                                                 |
 
-Stored manifests also name the thumbnail renderer schema. Loading an older schema
-awaits bounded worker hashing of a private snapshot of the actual stored document,
-before exposing mutable caller input. A metadata-only transaction compares the
-captured document write token, original-asset revision, page IDs and old schema,
-and checks deletion and store generation again before writing. It updates only
-thumbnail revisions, the renderer marker and manifest byte accounting. It never
-renews the document write token, edits the portable document, rewrites original
-assets or touches the journal. A concurrent opener that already computed the same
-schema/hashes is accepted; a foreign document or newer schema is not overwritten.
-After a successful current canonical save, the runtime schedules thumbnails again,
-so a background result rejected before autosave caught up cannot remain missing.
+### Transport capacity
+
+| Persistence topic     | Contract                                                                                                                      |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Logical input bound   | The shared fragment assembly accepts at most **128 MiB of logical input**, counting UTF-16 strings and structural overhead.   |
+| Size interpretation   | This is neither the compressed image-file size nor browser disk usage.                                                        |
+| Core versus transport | A document permitted by the core may still exceed the worker transport budget, particularly with encoded original strings.    |
+| Oversized input       | Assembly then rejects before opening a write transaction; it must not silently switch to an unbounded main-thread save.       |
+| No-Worker path        | A worker unavailable at startup uses the same extracted transaction directly, with its main-thread costs reported separately. |
+
+### Failures and close races
+
+| Persistence topic   | Contract                                                                                                                                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Known failure       | A known transaction failure remains a real rejection.                                                                                                                                                              |
+| Lost acknowledgment | Losing the acknowledgment after the final request was sent instead produces `UNCERTAIN_PROJECT_WRITE`: the transaction may have committed, so reopen and inspect the durable project before deciding how to retry. |
+| No uncertain replay | The client does not automatically replay an uncertain save.                                                                                                                                                        |
+| Close barrier       | Closing stops new admission, drains already accepted writes to their actual outcomes and releases the worker.                                                                                                      |
+| Visible failures    | Cleanup completion does not turn a rejected write into success.                                                                                                                                                    |
+| Closed generation   | A closed generation cannot adopt later revision/asset caches; a load finishing in that generation rejects, while an already committed rename retains its durable result without restoring the closed cache.        |
+
+### Thumbnail-schema upgrades
+
+| Persistence topic      | Contract                                                                                                                                                                                 |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stored schema          | Stored manifests also name the thumbnail renderer schema.                                                                                                                                |
+| Private hash snapshot  | Loading an older schema awaits bounded worker hashing of a private snapshot of the actual stored document, before exposing mutable caller input.                                         |
+| Compare-and-swap       | A metadata-only transaction compares the captured document write token, original-asset revision, page IDs and old schema, and checks deletion and store generation again before writing. |
+| Updated fields         | It updates only thumbnail revisions, the renderer marker and manifest byte accounting.                                                                                                   |
+| Excluded writes        | It never renews the document write token, edits the portable document, rewrites original assets or touches the journal.                                                                  |
+| Concurrent opener      | A concurrent opener that already computed the same schema/hashes is accepted; a foreign document or newer schema is not overwritten.                                                     |
+| Post-save rescheduling | After a successful current canonical save, the runtime schedules thumbnails again, so a background result rejected before autosave caught up cannot remain missing.                      |
 
 For focused verification, run the persistence mirrors together with `storage.test.ts`, `storage-concurrency.test.ts` and `storage-crud.test.ts` using the resource limits in [Protocol](protocol.md). Preserve real IndexedDB regressions for atomic rollback, tombstones, stale sessions, close races, mutable thumbnail callers, special asset IDs and lost acknowledgments. Mock worker transport tests establish message/lifetime behavior; frozen native input measurements are still required to establish the responsiveness improvement.
 
@@ -62,7 +108,16 @@ For focused verification, run the persistence mirrors together with `storage.tes
 
 Capture each boundary separately. A slow reload can contain little IndexedDB time but substantial document cloning, validation, source decoding or shader preparation. Likewise, a fast canonical canvas frame can be followed by a blocking journal response. Include a real input immediately after a large committed edit; do not flush that work away before every responsiveness measurement.
 
-Journal acknowledgments separate the operation's own next sequence from the current global header. Another writer may have advanced that header after the local operation succeeded. A repeated clear still acknowledges its own reset cursor; it does not adopt remote events as a local delta baseline. Metadata-only configuration persists no document state, so it cannot validate a failed or foreign mirror. The next stateful commit must reconcile that baseline with a checkpoint. Keep these distinctions when changing worker responses or retry code.
+### Journal acknowledgment semantics
+
+| Persistence topic           | Contract                                                                                                             |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Local and global cursors    | Journal acknowledgments separate the operation's own next sequence from the current global header.                   |
+| Concurrent writer           | Another writer may have advanced that header after the local operation succeeded.                                    |
+| Repeated clear              | A repeated clear still acknowledges its own reset cursor; it does not adopt remote events as a local delta baseline. |
+| Metadata-only configuration | Metadata-only configuration persists no document state, so it cannot validate a failed or foreign mirror.            |
+| Baseline reconciliation     | The next stateful commit must reconcile that baseline with a checkpoint.                                             |
+| Retry maintenance           | Keep these distinctions when changing worker responses or retry code.                                                |
 
 ## Reproducible native workloads
 
@@ -75,11 +130,29 @@ bunx playwright test test/browser/history-performance.spec.ts --config artifacts
 bunx playwright test test/browser/journal-responsiveness.spec.ts --config artifacts/performance.config.ts --workers=1
 ```
 
-[The selection helper](../../test/browser/support/selection-profile.ts) saves the project, removes the `benchmark` URL parameter and reloads through the normal runtime path while retaining automation. It records API readiness without a full document snapshot, then waits for the actual canonical renderer frame. Only after both boundaries does it clone a verification snapshot, check the project ID/layer count and assert one completed asset-store `get` per restored original. Reads are restricted to those started by the document-readiness cutoff; `verificationMs` reports the observer's separate cost. `?benchmark=50` intentionally constructs a fixture on startup; leaving it on the reload URL measures fixture reconstruction instead of persisted restoration.
+### Persisted-restoration boundary
 
-The historical local report `artifacts/selection-images-50-pre-real-idb.json` preserves that invalid persistence baseline and its explanation. Its former reload times must not be presented as IndexedDB restoration results. Earlier correctly restored reports also cloned their verification snapshot before recording document/useful-frame readiness; those bounds include observer work and are not directly comparable to the revised protocol. Selection/rendering samples have their own boundaries and are not automatically invalidated by a storage harness defect. Generate a fresh report after changing the harness or storage implementation rather than copying old values into release claims.
+| Persistence topic      | Contract                                                                                                                                                                                                 |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reload path            | [The selection helper](../../test/browser/support/selection-profile.ts) saves the project, removes the `benchmark` URL parameter and reloads through the normal runtime path while retaining automation. |
+| Readiness              | It records API readiness without a full document snapshot, then waits for the actual canonical renderer frame.                                                                                           |
+| Verification snapshot  | Only after both boundaries does it clone a verification snapshot, check the project ID/layer count and assert one completed asset-store `get` per restored original.                                     |
+| Read cutoff            | Reads are restricted to those started by the document-readiness cutoff; `verificationMs` reports the observer's separate cost.                                                                           |
+| Invalid fixture reload | `?benchmark=50` intentionally constructs a fixture on startup; leaving it on the reload URL measures fixture reconstruction instead of persisted restoration.                                            |
 
-The 100,000-entry journal fixture writes the current schema directly through native IndexedDB. It includes cumulative event-byte accounting and cached metadata, and checkpoint records omit duplicate deltas. This keeps migration/backfill work out of a current-format benchmark. Preserve its assertions for zero journal-event reads on cold document load, at most 100 entries per page, local checkpoint pruning, exact final replay state and accounting consistency.
+### Historical storage evidence
+
+| Persistence topic        | Contract                                                                                                                                                                                                                 |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Invalid baseline archive | The historical local report `artifacts/selection-images-50-pre-real-idb.json` preserves that invalid persistence baseline and its explanation.                                                                           |
+| Rejected claim           | Its former reload times must not be presented as IndexedDB restoration results.                                                                                                                                          |
+| Older observer cost      | Earlier correctly restored reports also cloned their verification snapshot before recording document/useful-frame readiness; those bounds include observer work and are not directly comparable to the revised protocol. |
+| Independent boundaries   | Selection/rendering samples have their own boundaries and are not automatically invalidated by a storage harness defect.                                                                                                 |
+| New reports              | Generate a fresh report after changing the harness or storage implementation rather than copying old values into release claims.                                                                                         |
+| Native fixture           | The 100,000-entry journal fixture writes the current schema directly through native IndexedDB.                                                                                                                           |
+| Current accounting       | It includes cumulative event-byte accounting and cached metadata, and checkpoint records omit duplicate deltas.                                                                                                          |
+| Migration boundary       | This keeps migration/backfill work out of a current-format benchmark.                                                                                                                                                    |
+| Required assertions      | Preserve its assertions for zero journal-event reads on cold document load, at most 100 entries per page, local checkpoint pruning, exact final replay state and accounting consistency.                                 |
 
 Reports are written under ignored `artifacts/selection-*.json` and `artifacts/performance-history.json`. Archive each report together with its CPU profile, exact executable/source maps, command and environment before another run overwrites the fixed filename.
 

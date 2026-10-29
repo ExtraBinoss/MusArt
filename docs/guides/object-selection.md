@@ -1,6 +1,12 @@
 # Local segmentation: contract and verification
 
-Segmentation runs in the selection worker. Images are not uploaded to a server. The encoder retains embeddings for one image; subsequent clicks reuse them and run only the decoder. The magic wand uses a deterministic connected flood fill independently of the model.
+## Processing ownership
+
+| Model topic        | Details                                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------------------------- |
+| Worker and privacy | Segmentation runs in the selection worker. Images are not uploaded to a server.                      |
+| Embedding reuse    | The encoder retains embeddings for one image; subsequent clicks reuse them and run only the decoder. |
+| Magic wand         | The magic wand uses a deterministic connected flood fill independently of the model.                 |
 
 ## Model and dependencies
 
@@ -10,24 +16,33 @@ Segmentation runs in the selection worker. Images are not uploaded to a server. 
 - Model license: Apache-2.0, stated in the [model card at the pinned revision](https://huggingface.co/Xenova/slimsam-77-uniform/resolve/5850ab45f587c112167512ffef949107115e26a0/README.md).
 - Runtime: `@huggingface/transformers@4.3.1`, pinned with its ONNX Runtime dependency in `bun.lock`; Transformers.js uses Apache-2.0 and ONNX Runtime uses MIT.
 
-The first use downloads configuration, the processor, both ONNX weight files, and the WASM runtime. The interface explicitly requests this preparation. WebGPU is attempted when available; initialization failure triggers a WASM retry. The client accepts one active request and rejects stale responses. Closing the session terminates the worker and releases its resources.
+| Model topic          | Details                                                                                             |
+| -------------------- | --------------------------------------------------------------------------------------------------- |
+| First-use resources  | The first use downloads configuration, the processor, both ONNX weight files, and the WASM runtime. |
+| Explicit preparation | The interface explicitly requests this preparation.                                                 |
+| Backend fallback     | WebGPU is attempted when available; initialization failure triggers a WASM retry.                   |
+| Request bounds       | The client accepts one active request and rejects stale responses.                                  |
+| Cleanup              | Closing the session terminates the worker and releases its resources.                               |
 
 ## Cache and operation without remote network access
 
-The model manager reports the pinned model's real download bytes and percentage,
-then shows initialization separately from download completion. Its four required
-Hub files total **39,834,751 bytes**, according to the [pinned Hub metadata](https://huggingface.co/api/models/Xenova/slimsam-77-uniform/revision/5850ab45f587c112167512ffef949107115e26a0?blobs=true).
-This is the logical model size, not physical browser storage or the shared runtime.
-Progress callbacks are coalesced per known file, with no per-chunk UI message flood.
+| Model topic       | Details                                                                                                                                                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Progress          | The model manager reports the pinned model's real download bytes and percentage, then shows initialization separately from download completion.                                                                           |
+| Pinned model size | Its four required Hub files total **39,834,751 bytes**, according to the [pinned Hub metadata](https://huggingface.co/api/models/Xenova/slimsam-77-uniform/revision/5850ab45f587c112167512ffef949107115e26a0?blobs=true). |
+| Size boundary     | This is the logical model size, not physical browser storage or the shared runtime.                                                                                                                                       |
+| UI updates        | Progress callbacks are coalesced per known file, with no per-chunk UI message flood.                                                                                                                                      |
 
-Preparation stays inside the selection worker and never requests page navigation.
-The development configuration explicitly prebundles the lazy ML dependency, because
-[Vite can otherwise reload when it discovers a new dependency](https://vite.dev/guide/dep-pre-bundling).
-WASM uses one thread to keep fallback CPU demand bounded. Users can cancel preparation,
-inspect cached model data, reload it and remove its files. Deletion first releases
-the local worker and uses the same origin lock as model loading; other model IDs
-and the shared ORT runtime cache are preserved. Cache failures remain real errors.
-The model controls and project data have independent lifecycles.
+### Preparation and model management
+
+| Model topic               | Details                                                                                                                                                                                      |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Worker lifecycle          | Preparation stays inside the selection worker and never requests page navigation.                                                                                                            |
+| Development reloads       | The development configuration explicitly prebundles the lazy ML dependency, because [Vite can otherwise reload when it discovers a new dependency](https://vite.dev/guide/dep-pre-bundling). |
+| WASM CPU bound            | WASM uses one thread to keep fallback CPU demand bounded.                                                                                                                                    |
+| Model controls            | Users can cancel preparation, inspect cached model data, reload it and remove its files.                                                                                                     |
+| Deletion                  | Deletion first releases the local worker and uses the same origin lock as model loading; other model IDs and the shared ORT runtime cache are preserved.                                     |
+| Failures and project data | Cache failures remain real errors. The model controls and project data have independent lifecycles.                                                                                          |
 
 Transformers.js 4.3.1 enables `useBrowserCache` and `useWasmCache` by default when Cache API is available. The second setting caches **both the WASM binary and its `.mjs` JavaScript factory**, in addition to the weights. This is necessary to start a new worker without contacting a CDN. See the [official environment settings API](https://huggingface.co/docs/transformers.js/api/env).
 
@@ -40,7 +55,15 @@ The real verification observed these six entries in `transformers-cache`:
 5. The pinned runtime's `ort-wasm-simd-threaded.asyncify.mjs`.
 6. The same runtime's `ort-wasm-simd-threaded.asyncify.wasm`.
 
-A new worker then ran both WASM sessions with **all HTTPS requests blocked**: it did not even attempt a remote request. The local server continued serving the application's worker module. This establishes model/runtime reuse after download; it does not establish initial application loading from an unreachable host. Cache API requires a secure context, supplied by HTTPS or localhost. Clearing or evicting this cache requires another download.
+### Offline verification boundary
+
+| Model topic           | Details                                                                                                                          |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Observed reuse        | A new worker then ran both WASM sessions with **all HTTPS requests blocked**: it did not even attempt a remote request.          |
+| Local module          | The local server continued serving the application's worker module.                                                              |
+| What this establishes | This establishes model/runtime reuse after download; it does not establish initial application loading from an unreachable host. |
+| Secure context        | Cache API requires a secure context, supplied by HTTPS or localhost.                                                             |
+| Eviction              | Clearing or evicting this cache requires another download.                                                                       |
 
 No additional locally hosted ORT files are required for this verified version. A preloaded standalone installation can host them and configure `env.backends.onnx.wasm.wasmPaths`, but the `.mjs` and `.wasm` paths must belong to the same pinned version; do not point to a "latest" CDN. The [official configuration guide](https://huggingface.co/docs/transformers.js/en/custom_usage) describes this option.
 
