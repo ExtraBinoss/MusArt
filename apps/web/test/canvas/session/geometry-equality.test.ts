@@ -25,6 +25,7 @@ test("ignores paint, original identity and equal deeply copied guides/insets", (
   b.project.pages[0]!.background = "#010203";
   b.project.pages[0]!.layers[0]!.fill = "#020304";
   b.project.pages[0]!.layers[0]!.opacity = 0.2;
+  b.project.pages[0]!.rulers = true;
   expect(sameCanvasGeometry(a, a)).toBe(true);
   expect(sameCanvasGeometry(a, b)).toBe(true);
 });
@@ -45,9 +46,6 @@ test("detects each geometry, metadata and overlay field without serialization", 
     },
     (b: typeof a) => {
       b.project.pages[1]!.name = "Other";
-    },
-    (b: typeof a) => {
-      b.project.pages[0]!.rulers = true;
     },
     (b: typeof a) => {
       b.project.pages[0]!.margins = { top: 1, right: 1, bottom: 1, left: 1 };

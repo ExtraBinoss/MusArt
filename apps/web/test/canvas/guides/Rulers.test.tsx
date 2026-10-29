@@ -2,6 +2,7 @@ import { beforeEach, afterEach, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { createPage, createProject, EditorEngine } from "@musart/core";
 import { Rulers } from "../../../src/canvas/guides/Rulers";
+import { RulerPresentation } from "../../../src/canvas/guides/ruler-presentation";
 import { SceneController } from "../../../src/canvas/session/scene-controller";
 import { createPlaybackSource } from "../../../src/canvas/session/playback-source";
 import type { PreviewValue } from "../../../src/state/session/preview-source";
@@ -42,6 +43,18 @@ function fixture(rulers = true) {
   vi.stubGlobal("cancelAnimationFrame", cancel);
   return { page, engine, viewport: { current: viewport }, commands, cancel };
 }
+it("retains tick presentations through equal camera objects and ruler-page metadata replacements", () => {
+  const d = fixture(),
+    { container, rerender } = render(<Rulers {...d} view={view} />);
+  const tick = container.querySelector("g[data-value]")!;
+  const update = vi.spyOn(tick, "setAttribute");
+  const paint = vi.spyOn(RulerPresentation.prototype, "paint");
+  rerender(<Rulers {...d} page={{ ...d.page }} view={{ ...view }} />);
+  expect(container.querySelector("g[data-value]")).toBe(tick);
+  expect(update).not.toHaveBeenCalled();
+  expect(paint).toHaveBeenCalledTimes(2);
+  paint.mockRestore();
+});
 it("captures the last chosen guide color for a ruler gesture and its undoable guide", () => {
   guideColors.remember("#00aaff");
   const d = fixture(),

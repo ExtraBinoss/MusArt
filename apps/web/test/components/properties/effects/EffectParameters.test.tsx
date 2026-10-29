@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { expect, test, vi } from "vitest";
-import { fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, screen } from "@testing-library/react";
 import {
   createEffect,
   getEffectDefinition,
@@ -13,6 +13,81 @@ import { EffectParameters } from "../../../../src/components/properties/effects/
 import { i18n } from "../../../../src/state/i18n";
 import { setup } from "../../../support/ui";
 import { choose } from "../../../support/select";
+import type { NumberInputProps } from "../../../../src/components/shared/NumberInput";
+
+const fields = vi.hoisted(() => ({ render: vi.fn() }));
+vi.mock("../../../../src/components/shared/NumberInput", async (original) => {
+  const actual = await original<typeof import("../../../../src/components/shared/NumberInput")>();
+  return {
+    ...actual,
+    NumberInput(props: NumberInputProps) {
+      fields.render(props.label);
+      return <actual.NumberInput {...props} />;
+    },
+  };
+});
+
+test("Receipt retains mounted numeric fields through measured window, focus and color-slot changes", () => {
+  let measure = () => {};
+  vi.spyOn(globalThis, "ResizeObserver").mockImplementation(
+    class {
+      constructor(private readonly callback: ResizeObserverCallback) {}
+      observe(element: Element) {
+        if (element.classList.contains("effect-parameter-list"))
+          measure = () => this.callback([], this);
+      }
+      unobserve() {}
+      disconnect() {}
+    },
+  );
+  const d = setup(),
+    effect = createEffect("receipt"),
+    change = vi.fn();
+  fields.render.mockClear();
+  const { container } = d.mount(
+    <div className="layer-attachment-viewport">
+      <EffectParameters effect={effect} deferOffscreen onChange={change} />
+    </div>,
+  );
+  expect(container.querySelectorAll(".effect-parameter-row")).toHaveLength(14);
+  const first = screen.getByRole("textbox", { name: "Intensité" });
+  const initialRenders = fields.render.mock.calls.length;
+  Object.defineProperty(container.querySelector(".layer-attachment-viewport")!, "clientHeight", {
+    value: 360,
+  });
+  act(measure);
+  expect(container.querySelectorAll(".effect-parameter-row")).toHaveLength(11);
+  expect(fields.render).toHaveBeenCalledTimes(initialRenders);
+  fireEvent.focus(first);
+  expect(fields.render).toHaveBeenCalledTimes(initialRenders);
+  const color = getEffectDefinition("receipt").parameters.find(
+    (parameter) => parameter.kind === "color",
+  )!;
+  fireEvent.click(screen.getByRole("button", { name: i18n.t(color.labelKey) }));
+  expect(fields.render.mock.calls.filter(([label]) => label === "Intensité")).toHaveLength(1);
+  expect(screen.getByRole("textbox", { name: "Intensité" })).toBe(first);
+});
+
+test("memoized fields rebind changed callbacks and translated labels", async () => {
+  const d = setup(),
+    effect = createEffect("dither"),
+    oldChange = vi.fn(),
+    change = vi.fn();
+  const view = d.mount(<EffectParameters effect={effect} onChange={oldChange} />);
+  view.rerender(<EffectParameters effect={effect} onChange={change} />);
+  const amount = screen.getByRole("textbox", { name: "Intensité" });
+  fireEvent.change(amount, { target: { value: "35" } });
+  fireEvent.blur(amount);
+  expect(change).toHaveBeenLastCalledWith({ amount: 0.35 }, false);
+  expect(oldChange).not.toHaveBeenCalled();
+  await act(async () => {
+    await i18n.changeLanguage("en");
+  });
+  expect(screen.getByRole("textbox", { name: "Amount" })).toBe(amount);
+  await act(async () => {
+    await i18n.changeLanguage("fr");
+  });
+});
 test("the icon resets every parameter and effect composition together, preserving enable state", () => {
   const d = setup(),
     change = vi.fn(),

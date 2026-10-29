@@ -1,13 +1,9 @@
-import { useEffect, useMemo, useRef } from "react";
-import { Trash2, Copy } from "lucide-react";
+import { memo, useDeferredValue, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { Composition, EnginePort, Layer, Project } from "@musart/core";
 import type { EditorServices } from "../../state/contracts";
-import { IconButton } from "../shared/IconButton";
 import { LayerMenu } from "./LayerMenu";
-import { AddEffect } from "./menu/AddEffect";
-import { layerActions } from "./menu/actions";
-import { layerSelection } from "./menu/selection";
+import { LayerFooter } from "./LayerFooter";
 import { LayerCompositing } from "./controls/LayerCompositing";
 import { flattenLayerTree } from "./tree/projection";
 import { LayerTree } from "./tree/LayerTree";
@@ -31,7 +27,7 @@ export function layerDepth(layer: Layer, layers: Layer[]): number {
   }
   return depth;
 }
-export function LayersPanel({
+export const LayersPanel = memo(function LayersPanel({
   engine,
   page,
   project,
@@ -62,8 +58,11 @@ export function LayersPanel({
     () => project.pages.reduce((sum, item) => sum + item.layers.length, 0),
     [project.pages],
   );
-  const state = layerSelection(page, selection),
-    actions = layerActions(engine, page, run);
+  const footerProps = useMemo(
+    () => ({ engine, page, selection, run, attachment, layerCount }),
+    [engine, page, selection, run, attachment, layerCount],
+  );
+  const deferredFooterProps = useDeferredValue(footerProps);
   return (
     <section ref={element} className="layers-panel" aria-label={t("layers")}>
       <div className="panel-heading">
@@ -74,10 +73,10 @@ export function LayersPanel({
         </div>
       </div>
       <LayerCompositing
-        key={`${project.id}:${page.id}:${selection.join()}`}
+        key={`${project.id}:${page.id}`}
         engine={engine}
         page={page}
-        selection={attachment ? EMPTY_SELECTION : selection}
+        selection={attachment || !selection.length ? EMPTY_SELECTION : selection}
         run={run}
       />
       <p className="sr-only" id="layer-drag-hint">
@@ -92,53 +91,7 @@ export function LayersPanel({
         services={services}
         attachment={attachment}
       />
-      <div className="layers-footer" role="group" aria-label={t("layerControls:actions")}>
-        <div
-          className="layer-create-actions"
-          role="group"
-          aria-label={t("layerControls:createActions")}
-        >
-          <AddEffect
-            engine={engine}
-            page={page}
-            selection={selection}
-            run={run}
-            category="effect"
-          />
-          <AddEffect
-            engine={engine}
-            page={page}
-            selection={selection}
-            run={run}
-            category="adjustment"
-          />
-        </div>
-        <span>{!selection.length && t("layerCount", { count: layerCount })}</span>
-        <div
-          className="layer-selection-actions"
-          role="group"
-          aria-label={t("layerControls:selectionActions")}
-        >
-          <IconButton
-            label={t("duplicateLayer")}
-            disabled={!state.editable || Boolean(attachment)}
-            onClick={actions.duplicate}
-          >
-            <Copy size={13} />
-          </IconButton>
-          <IconButton
-            label={
-              attachment
-                ? t(attachment.kind === "effect" ? "removeEffect" : "removeMask")
-                : t("layerControls:deleteSelection", { count: selection.length })
-            }
-            disabled={attachment ? !attachmentSelection(engine).editable() : !state.editable}
-            onClick={actions.remove}
-          >
-            <Trash2 size={13} />
-          </IconButton>
-        </div>
-      </div>
+      <LayerFooter {...deferredFooterProps} />
     </section>
   );
-}
+});

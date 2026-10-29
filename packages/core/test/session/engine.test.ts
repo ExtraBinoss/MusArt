@@ -108,6 +108,85 @@ describe("immutable document session", () => {
     engine.select([layer.id]);
     expect(listener).toHaveBeenCalledTimes(4);
   });
+  it("preserves unchanged selection references through metadata, effect and property commits and replay", () => {
+    const layer = createLayer("rectangle", {
+        id: "stable-selection",
+        effects: [createEffect("dither", { id: "stable-effect" })],
+      }),
+      { engine } = setup(createProject({ pages: [createPage({ layers: [layer] })] }));
+    engine.select([layer.id]);
+    const selection = engine.getSnapshot().selection,
+      listener = vi.fn(),
+      stop = engine.subscribe(listener);
+    const commands: Command[] = [
+      { type: "updatePage", patch: { rulers: true } },
+      {
+        type: "updateLayers",
+        ids: [layer.id],
+        patch: {
+          effects: [{ ...layer.effects[0]!, enabled: false }],
+        },
+      },
+      { type: "updateLayerPatches", patches: [{ id: layer.id, patch: { x: 120 } }] },
+      { type: "renameProject", name: "Stable presentation selection" },
+    ];
+    for (const command of commands) {
+      const before = engine.getSnapshot();
+      engine.execute(command);
+      const after = engine.getSnapshot();
+      expect(after.selection).toBe(selection);
+      expect(after.revision).toBe(before.revision + 1);
+      expect(Object.isFrozen(after.selection)).toBe(true);
+      engine.undo();
+      expect(engine.getSnapshot().project).toBe(before.project);
+      expect(engine.getSnapshot().selection).toBe(before.selection);
+      engine.redo();
+      expect(engine.getSnapshot().project).toBe(after.project);
+      expect(engine.getSnapshot().selection).toBe(after.selection);
+    }
+    expect(listener).toHaveBeenCalledTimes(commands.length * 3);
+    stop();
+    expect(engine.getSnapshot().project.pages[0]!.layers[0]).toMatchObject({
+      x: 120,
+      effects: [expect.objectContaining({ enabled: false })],
+    });
+  });
+  it("retains command-result selection changes and removes deleted IDs through undo and redo", () => {
+    const a = createLayer("rectangle", { id: "selection-a" }),
+      b = createLayer("rectangle", { id: "selection-b" }),
+      { engine, page } = setup(createProject({ pages: [createPage({ layers: [a, b] })] }));
+    engine.select([a.id, b.id]);
+    const original = engine.getSnapshot();
+    engine.execute({ type: "groupLayers", ids: [a.id, b.id] });
+    const grouped = engine.getSnapshot(),
+      groupId = grouped.selection[0]!;
+    expect(grouped.selection).not.toBe(original.selection);
+    expect(grouped.selection).toHaveLength(1);
+    expect(page().layers.find((layer) => layer.id === groupId)?.kind).toBe("group");
+    engine.execute({ type: "deleteLayers", ids: [groupId] });
+    const deleted = engine.getSnapshot();
+    expect(deleted.selection).toEqual([]);
+    expect(page().layers).toEqual([]);
+    expect(deleted.selection).not.toBe(grouped.selection);
+    engine.undo();
+    expect(engine.getSnapshot().project).toBe(grouped.project);
+    expect(engine.getSnapshot().selection).toBe(grouped.selection);
+    engine.undo();
+    expect(engine.getSnapshot().selection).toBe(original.selection);
+    engine.redo();
+    expect(engine.getSnapshot().selection).toBe(grouped.selection);
+    engine.redo();
+    expect(engine.getSnapshot().selection).toBe(deleted.selection);
+    engine.execute({ type: "addPage", page: createPage({ id: "selection-new-page" }) });
+    const added = engine.getSnapshot();
+    expect(added.selection).toEqual([]);
+    // An explicit command-result reset remains distinct even if the previous selection was empty.
+    expect(added.selection).not.toBe(deleted.selection);
+    engine.undo();
+    expect(engine.getSnapshot().selection).toBe(deleted.selection);
+    engine.redo();
+    expect(engine.getSnapshot().selection).toBe(added.selection);
+  });
   it("caps history at 100 states and discards redo after a new edit", () => {
     const { engine } = setup();
     for (let index = 0; index < 102; index += 1)

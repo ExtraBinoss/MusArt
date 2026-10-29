@@ -86,6 +86,11 @@ test("row expansion, keyboard rename, controls and native drag events remain ind
   fireEvent.click(screen.getByLabelText("Verrouiller le calque · Renamed"));
   expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.locked).toBe(true);
   fireEvent.dragStart(row);
+  expect(d.props.drag.start).not.toHaveBeenCalled();
+  act(() => d.engine.undo());
+  const draggablePage = d.engine.getSnapshot().project.pages[0]!;
+  view.rerender(<LayerRow {...d.props} page={draggablePage} layer={draggablePage.layers[0]!} />);
+  fireEvent.dragStart(row);
   fireEvent.dragOver(row);
   fireEvent.drop(row);
   fireEvent.dragEnd(row);
@@ -93,6 +98,44 @@ test("row expansion, keyboard rename, controls and native drag events remain ind
   expect(d.props.drag.over).toHaveBeenCalled();
   expect(d.props.drag.drop).toHaveBeenCalled();
   expect(d.props.onDragEnd).toHaveBeenCalled();
+});
+
+test("retained rows select, rename and drag through ruler metadata but reject later queued edits", () => {
+  const d = fixture();
+  let pending: (() => void) | undefined;
+  const run = (task: () => void) => {
+    pending = task;
+  };
+  const view = d.mount(<LayerRow {...d.props} run={run} />);
+  const row = screen.getByRole("treeitem");
+  fireEvent.keyDown(row, { key: "F2" });
+  const input = screen.getByRole("textbox");
+  fireEvent.change(input, { target: { value: "Metadata draft" } });
+  act(() => d.engine.execute({ type: "updatePage", patch: { rulers: true } }));
+  const metadata = d.engine.getSnapshot().project.pages[0]!;
+  view.rerender(<LayerRow {...d.props} page={metadata} run={run} />);
+  expect(screen.getByRole("textbox")).toBe(input);
+  expect(input).toHaveValue("Metadata draft");
+  expect(document.activeElement).toBe(input);
+  fireEvent.keyDown(input, { key: "Enter" });
+  pending!();
+  const renamed = d.engine.getSnapshot().project.pages[0]!;
+  expect(renamed.layers[0]!.name).toBe("Metadata draft");
+  view.rerender(<LayerRow {...d.props} page={renamed} layer={renamed.layers[0]!} run={run} />);
+  act(() => d.engine.execute({ type: "updatePage", patch: { rulers: false } }));
+  fireEvent.click(row);
+  expect(d.engine.getSnapshot().selection).toEqual([d.rectangle.id]);
+  fireEvent.dragStart(row);
+  expect(d.props.drag.start.mock.lastCall?.[2]).toBe(d.engine.getSnapshot().project.pages[0]);
+  fireEvent.click(screen.getByRole("button", { name: "Masquer le calque · Metadata draft" }));
+  act(() => d.engine.execute({ type: "updatePage", patch: { rulers: true } }));
+  const changed = d.engine.getSnapshot();
+  pending!();
+  expect(d.engine.getSnapshot()).toBe(changed);
+  act(() => d.engine.load(d.engine.getSnapshot().project));
+  const replacement = d.engine.getSnapshot();
+  fireEvent.click(row);
+  expect(d.engine.getSnapshot()).toBe(replacement);
 });
 
 test("an owned lock has a persistent readable badge and retains one-click undoable unlocking", () => {

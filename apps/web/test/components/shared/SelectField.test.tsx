@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { expect, test, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { SelectField } from "../../../src/components/shared/SelectField";
 import { choose } from "../../support/select";
 test("explicit selected labels update without a value portal and keep the empty placeholder", () => {
@@ -180,4 +180,74 @@ test("disabling an open field cancels its draft and blocks a late item selection
   view.rerender(<SelectField {...props} />);
   expect(screen.queryByRole("listbox")).toBeNull();
   expect(screen.getByRole("combobox")).toHaveAttribute("aria-expanded", "false");
+});
+test("changing owner retains the trigger, cancels only the old draft and drops its hidden options", async () => {
+  const oldChange = vi.fn(),
+    newChange = vi.fn(),
+    oldCancel = vi.fn(),
+    newCancel = vi.fn();
+  const preview = vi.fn(),
+    unselected = vi.fn();
+  function OtherLabel() {
+    unselected();
+    return <>Two</>;
+  }
+  const options = [
+    { value: "one", label: "One" },
+    { value: "two", label: <OtherLabel /> },
+  ];
+  const first = {},
+    second = {};
+  function Field({
+    identity,
+    change,
+    cancel,
+  }: {
+    identity: object;
+    change: (value: string) => void;
+    cancel: () => void;
+  }) {
+    return (
+      <>
+        <SelectField
+          identity={identity}
+          label="Owned mode"
+          value="one"
+          options={options}
+          onValueChange={change}
+          onPreview={preview}
+          onPreviewCancel={cancel}
+        />
+        <button>Selected layer</button>
+      </>
+    );
+  }
+  const view = render(<Field identity={first} change={oldChange} cancel={oldCancel} />);
+  const trigger = screen.getByRole("combobox", { name: "Owned mode" });
+  fireEvent.pointerDown(trigger, { button: 0, ctrlKey: false, pointerType: "mouse" });
+  const oldOption = await screen.findByRole("option", { name: "Two" });
+  fireEvent.pointerMove(oldOption, { pointerType: "mouse" });
+  expect(preview).toHaveBeenCalledWith("two");
+  unselected.mockClear();
+  view.rerender(<Field identity={second} change={newChange} cancel={newCancel} />);
+  expect(screen.getByRole("combobox")).toBe(trigger);
+  expect(screen.queryByRole("listbox")).toBeNull();
+  expect(trigger).toHaveAttribute("aria-expanded", "false");
+  expect(oldCancel).toHaveBeenCalledOnce();
+  expect(newCancel).not.toHaveBeenCalled();
+  expect(unselected).not.toHaveBeenCalled();
+  const row = screen.getByRole("button", { name: "Selected layer" });
+  act(() => row.focus());
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  expect(row).toHaveFocus();
+  fireEvent.pointerMove(oldOption, { pointerType: "mouse" });
+  fireEvent.click(oldOption);
+  fireEvent.keyDown(oldOption, { key: "Enter" });
+  expect(oldChange).not.toHaveBeenCalled();
+  expect(newChange).not.toHaveBeenCalled();
+  await choose("Owned mode", "Two");
+  expect(newChange).toHaveBeenCalledExactlyOnceWith("two");
+  expect(oldChange).not.toHaveBeenCalled();
 });

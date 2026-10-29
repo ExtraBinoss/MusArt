@@ -65,3 +65,30 @@ test("multiselection notice refuses an unlock deferred past a selection change",
   act(() => tasks[0]!());
   expect(d.engine.getSnapshot()).toBe(before);
 });
+
+test("an unchanged retained notice resolves ruler metadata when clicked and guards its queued action", () => {
+  const d = setup();
+  d.engine.execute({ type: "updateLayers", ids: [d.rectangle.id], patch: { locked: true } });
+  d.engine.select([d.rectangle.id]);
+  const page = d.engine.getSnapshot().project.pages[0]!;
+  const tasks: (() => void)[] = [];
+  d.mount(
+    <LockedLayerNotice
+      engine={d.engine}
+      page={page}
+      layers={[page.layers[0]!]}
+      run={(task) => tasks.push(task)}
+    />,
+  );
+  act(() => d.engine.execute({ type: "updatePage", patch: { rulers: true } }));
+  fireEvent.click(screen.getByRole("button", { name: "Déverrouiller" }));
+  act(() => d.engine.execute({ type: "updatePage", patch: { rulers: false } }));
+  const stale = d.engine.getSnapshot();
+  act(() => tasks.shift()!());
+  expect(d.engine.getSnapshot()).toBe(stale);
+  fireEvent.click(screen.getByRole("button", { name: "Déverrouiller" }));
+  act(() => tasks.shift()!());
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.locked).toBe(false);
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.locked).toBe(true);
+});

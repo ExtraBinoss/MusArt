@@ -5,6 +5,7 @@ export interface SelectOption {
   label: ReactNode;
   disabled?: boolean;
 }
+export type SelectFieldIdentity = object | string | number | symbol | null;
 /** Accessible Radix listbox, with optional imperative hover/focus drafts separate from selection. */
 export function SelectField({
   label,
@@ -16,6 +17,7 @@ export function SelectField({
   id,
   disabled,
   className,
+  identity,
 }: {
   label: string;
   value: string;
@@ -26,18 +28,42 @@ export function SelectField({
   id?: string;
   disabled?: boolean;
   className?: string;
+  identity?: SelectFieldIdentity;
 }) {
-  const session = useRef<{ open: boolean; last: string | null }>({ open: false, last: null });
+  const [owner, setOwner] = useState(() => ({ identity, token: {} }));
+  const current = useRef<object | null>(owner.token);
+  const session = useRef<{
+    owner: object;
+    open: boolean;
+    last: string | null;
+    cancel?: () => void;
+  }>({ owner: owner.token, open: false, last: null });
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
+  if (!Object.is(owner.identity, identity)) {
+    setOwner({ identity, token: {} });
+    setMounted(false);
+    setOpen(false);
+  }
   if (disabled && open) setOpen(false);
-  const cancel = useRef(onPreviewCancel);
   useLayoutEffect(() => {
-    cancel.current = onPreviewCancel;
-  }, [onPreviewCancel]);
+    current.current = owner.token;
+    const previous = session.current;
+    if (previous.owner !== owner.token) {
+      session.current = { owner: owner.token, open: false, last: null };
+      if (previous.open) previous.cancel?.();
+    }
+    return () => {
+      if (current.current === owner.token) current.current = null;
+    };
+  }, [owner.token]);
+  useLayoutEffect(() => {
+    if (session.current.owner === owner.token && session.current.open)
+      session.current.cancel = onPreviewCancel;
+  }, [owner.token, onPreviewCancel]);
   useEffect(
     () => () => {
-      if (session.current.open) cancel.current?.();
+      if (session.current.open) session.current.cancel?.();
     },
     [],
   );
@@ -45,13 +71,21 @@ export function SelectField({
     if (disabled && session.current.open) {
       session.current.open = false;
       session.current.last = null;
-      cancel.current?.();
+      session.current.cancel?.();
     }
   }, [disabled]);
+  function owned() {
+    return !disabled && current.current === owner.token;
+  }
+  function guardItem(event: { preventDefault(): void }) {
+    if (!owned() || session.current.owner !== owner.token || !session.current.open)
+      event.preventDefault();
+  }
   function preview(option: SelectOption) {
     if (
-      disabled ||
+      !owned() ||
       option.disabled ||
+      session.current.owner !== owner.token ||
       !session.current.open ||
       session.current.last === option.value
     )
@@ -65,19 +99,21 @@ export function SelectField({
       open={open && !disabled}
       disabled={disabled}
       onOpenChange={(open) => {
+        if (!owned()) return;
         setOpen(open && !disabled);
         if (open && !disabled) {
           setMounted(true);
           session.current.open = true;
           session.current.last = value;
+          session.current.cancel = onPreviewCancel;
         } else if (session.current.open) {
           session.current.open = false;
           session.current.last = null;
-          cancel.current?.();
+          session.current.cancel?.();
         }
       }}
       onValueChange={(next) => {
-        if (!disabled && options.some((option) => option.value === next && !option.disabled))
+        if (owned() && options.some((option) => option.value === next && !option.disabled))
           onValueChange(next);
       }}
     >
@@ -86,7 +122,7 @@ export function SelectField({
         aria-label={label}
         className={className}
         onFocus={() => {
-          if (!disabled) setMounted(true);
+          if (owned()) setMounted(true);
         }}
       >
         <span data-slot="select-value" style={{ pointerEvents: "none" }}>
@@ -94,7 +130,13 @@ export function SelectField({
         </span>
       </SelectTrigger>
       {mounted && (
-        <SelectContent position="popper" className="property-select-menu">
+        <SelectContent
+          position="popper"
+          className="property-select-menu"
+          onCloseAutoFocus={(event) => {
+            if (current.current !== owner.token) event.preventDefault();
+          }}
+        >
           {options.map((option) => (
             <SelectItem
               key={option.value}
@@ -102,6 +144,9 @@ export function SelectField({
               disabled={option.disabled}
               onPointerMove={() => preview(option)}
               onFocus={() => preview(option)}
+              onClick={guardItem}
+              onPointerUp={guardItem}
+              onKeyDown={guardItem}
             >
               {option.label}
             </SelectItem>

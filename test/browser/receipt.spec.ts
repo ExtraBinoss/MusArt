@@ -372,6 +372,9 @@ for (const forceWebGL of [false, true])
         '[data-layer-id="receipt-image"] [data-attachment-target="effect"]',
       );
       await trigger.click();
+      await page.locator(".layer-attachment-viewport").evaluate((node) => {
+        node.scrollTop = 450;
+      });
       const panel = page.getByRole("dialog", { name: "Effets · Thermal photograph", exact: true }),
         revision = await page.evaluate(() => window.musart!.snapshot().revision),
         margin = panel.getByRole("textbox", { name: "Marge horizontale", exact: true });

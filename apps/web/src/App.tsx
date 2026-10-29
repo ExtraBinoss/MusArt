@@ -1,13 +1,12 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useStore } from "jotai";
 import { useRenderMetrics } from "./state/session/render-metrics";
 import { createPortal } from "react-dom";
-import { X, AlertCircle, CheckCircle2, PenTool, Clapperboard } from "lucide-react";
+import { X, AlertCircle, CheckCircle2 } from "lucide-react";
 import { MusArtLogo } from "./components/branding/MusArtLogo";
 import { useTranslation } from "react-i18next";
-import { layerSelection } from "./components/layers/menu/selection";
 import type { AppProps } from "./state/contracts";
-import { toolAtom, toleranceAtom, useEngine, useTheme } from "./state/session/editor";
+import { toolAtom, toleranceAtom, useEngineValue, useTheme } from "./state/session/editor";
 import { useShortcuts } from "./state/session/shortcuts";
 import { formatUiError } from "./state/i18n/errors/format";
 import "./state/i18n";
@@ -16,15 +15,11 @@ import { TooltipProvider } from "./components/ui/tooltip";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "./components/ui/resizable";
 import { Button } from "./components/ui/button";
 import { Toolbar } from "./components/toolbar/Toolbar";
-import { Inspector } from "./components/properties/Inspector";
-import { LayersPanel } from "./components/layers/LayersPanel";
+import { EditorSidebar } from "./components/workspace/EditorSidebar";
 import { CanvasArea } from "./components/viewport/CanvasArea";
 import { ProjectDialog } from "./components/projects/ProjectDialog";
 import { ProjectPill } from "./components/projects/ProjectPill";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "./components/ui/tabs";
-import { AnimatePanel } from "./components/animation/AnimatePanel";
 import { freezeEffectPreviews } from "./state/session/effect-preview";
-import { ExportPopover } from "./components/export/ExportPopover";
 import { ToolSettings } from "./components/toolbar/ToolSettings";
 import type { PanelMode, ProjectView } from "./components/search/actions";
 import {
@@ -37,16 +32,10 @@ export function App({ engine, services, welcome = false }: AppProps) {
   const element = useRef<HTMLElement>(null);
   useRenderMetrics(element);
   useTheme();
-  const snapshot = useEngine(engine);
-  const page =
-    snapshot.project.pages.find((item) => item.id === snapshot.pageId) ??
-    snapshot.project.pages[0]!;
-  const selected = useMemo(
-    () => layerSelection(page, snapshot.selection).selected,
-    [page, snapshot.selection],
-  );
-  const [welcomeProject] = useState(() => (welcome ? snapshot.project.id : null));
-  const choosingProject = welcomeProject === snapshot.project.id;
+  const projectId = useEngineValue(engine, (snapshot) => snapshot.project.id);
+  const projectName = useEngineValue(engine, (snapshot) => snapshot.project.name);
+  const [welcomeProject] = useState(() => (welcome ? projectId : null));
+  const choosingProject = welcomeProject === projectId;
   const [projectMenu, setProjectMenu] = useState<ProjectView | null>(welcome ? "projects" : null);
   const [exportMenu, setExportMenu] = useState(false);
   const [panelMode, setPanelMode] = useState<PanelMode>("design");
@@ -92,10 +81,13 @@ export function App({ engine, services, welcome = false }: AppProps) {
     [onTask, services, store],
   );
   const onImport = useCallback(() => input.current?.click(), []);
-  const showExport = (open: boolean) => {
-    if (open) freezeEffectPreviews(engine);
-    setExportMenu(open);
-  };
+  const showExport = useCallback(
+    (open: boolean) => {
+      if (open) freezeEffectPreviews(engine);
+      setExportMenu(open);
+    },
+    [engine],
+  );
   useShortcuts(engine, services, onTask, !choosingProject);
   return (
     <FontLibraryProvider library={services.fonts ?? bundledFontLibrary}>
@@ -128,10 +120,10 @@ export function App({ engine, services, welcome = false }: AppProps) {
                       <MusArtLogo />
                     </Button>
                     <ProjectPill
-                      key={snapshot.project.id}
+                      key={projectId}
                       engine={engine}
                       services={services}
-                      name={snapshot.project.name}
+                      name={projectName}
                       onTask={onTask}
                     />
                   </div>
@@ -159,59 +151,16 @@ export function App({ engine, services, welcome = false }: AppProps) {
                   defaultSize="320px"
                   className="sidebar"
                 >
-                  <ResizablePanelGroup orientation="vertical" className="sidebar-panels">
-                    <ResizablePanel id="properties" defaultSize="63%" minSize="22%">
-                      <Tabs
-                        value={panelMode}
-                        onValueChange={(mode) => setPanelMode(mode as PanelMode)}
-                        className="inspector-tabs"
-                      >
-                        <div className="inspector-header">
-                          <TabsList aria-label={t("panelMode")} className="inspector-mode">
-                            <TabsTrigger value="design">
-                              <PenTool aria-hidden />
-                              {t("design")}
-                            </TabsTrigger>
-                            <TabsTrigger value="animate">
-                              <Clapperboard aria-hidden />
-                              {t("animate")}
-                            </TabsTrigger>
-                          </TabsList>
-                          <ExportPopover
-                            open={exportMenu}
-                            onOpenChange={showExport}
-                            page={page}
-                            pageCount={snapshot.project.pages.length}
-                            selection={snapshot.selection}
-                            revision={snapshot.revision}
-                            services={services}
-                            onTask={onTask}
-                          />
-                        </div>
-                        <TabsContent value="design">
-                          <Inspector engine={engine} page={page} selected={selected} run={run} />
-                        </TabsContent>
-                        <TabsContent value="animate">
-                          <AnimatePanel engine={engine} services={services} />
-                        </TabsContent>
-                      </Tabs>
-                    </ResizablePanel>
-                    <ResizableHandle
-                      aria-label={t("panelResize")}
-                      withHandle
-                      className="layers-resize"
-                    />
-                    <ResizablePanel id="layers" defaultSize="37%" minSize="20%">
-                      <LayersPanel
-                        services={services}
-                        engine={engine}
-                        page={page}
-                        project={snapshot.project}
-                        selection={snapshot.selection}
-                        run={run}
-                      />
-                    </ResizablePanel>
-                  </ResizablePanelGroup>
+                  <EditorSidebar
+                    engine={engine}
+                    services={services}
+                    run={run}
+                    onTask={onTask}
+                    panelMode={panelMode}
+                    onPanelMode={setPanelMode}
+                    exportOpen={exportMenu}
+                    onExportOpenChange={showExport}
+                  />
                 </ResizablePanel>
               </ResizablePanelGroup>
               <input
@@ -253,9 +202,7 @@ export function App({ engine, services, welcome = false }: AppProps) {
           {projectMenu && (
             <ProjectDialog
               services={services}
-              {...(choosingProject
-                ? { welcome: true }
-                : { projectName: snapshot.project.name, projectId: snapshot.project.id })}
+              {...(choosingProject ? { welcome: true } : { projectName, projectId })}
               initialView={projectMenu}
               onClose={() => {
                 if (engine.getSnapshot().project.id !== welcomeProject) setProjectMenu(null);

@@ -407,3 +407,81 @@ test("selecting a different layer reuses geometry and spacing input elements", (
   expect(screen.getAllByLabelText("Haut")[0]).toBe(top);
   expect(x).toHaveValue(String(d.image.x));
 });
+test("a retained Inspector cannot preview or commit into its previous selection", () => {
+  const d = setup();
+  d.engine.select([d.rectangle.id]);
+  const page = d.engine.getSnapshot().project.pages[0]!;
+  d.mount(<Inspector engine={d.engine} page={page} selected={[page.layers[0]!]} run={d.run} />);
+  const x = screen.getByLabelText("X");
+  fireEvent.change(x, { target: { value: "123" } });
+  expect(d.store.get(previewAtom)).toMatchObject({ target: "layer", layerId: d.rectangle.id });
+  act(() => d.engine.select([d.image.id]));
+  expect(d.store.get(previewAtom)).toBeNull();
+  const original = d.engine.getSnapshot();
+  fireEvent.change(x, { target: { value: "456" } });
+  expect(d.store.get(previewAtom)).toBeNull();
+  fireEvent.blur(x);
+  expect(d.engine.getSnapshot()).toBe(original);
+  expect(d.run).not.toHaveBeenCalled();
+});
+test("an Inspector task queued before selecting another layer rejects its stale target", () => {
+  const d = setup();
+  d.engine.select([d.rectangle.id]);
+  const page = d.engine.getSnapshot().project.pages[0]!;
+  let queued!: () => void;
+  d.run.mockImplementation((task) => {
+    queued = task;
+  });
+  d.mount(<Inspector engine={d.engine} page={page} selected={[page.layers[0]!]} run={d.run} />);
+  const x = screen.getByLabelText("X");
+  fireEvent.change(x, { target: { value: "123" } });
+  fireEvent.blur(x);
+  act(() => d.engine.select([d.image.id]));
+  const original = d.engine.getSnapshot();
+  act(queued);
+  expect(d.engine.getSnapshot()).toBe(original);
+});
+
+test("ruler-only metadata neither rebuilds Inspector controls nor invalidates a current preview", () => {
+  const d = setup();
+  d.engine.select([d.rectangle.id]);
+  const previousURL = location.href;
+  history.replaceState({}, "", "/?automation=1");
+  function Live() {
+    const snapshot = useEngine(d.engine),
+      page = snapshot.project.pages[0]!;
+    return (
+      <Inspector
+        engine={d.engine}
+        page={page}
+        assets={snapshot.project.assets}
+        selected={page.layers.filter((layer) => snapshot.selection.includes(layer.id))}
+        run={d.run}
+      />
+    );
+  }
+  const { unmount } = d.mount(<Live />);
+  try {
+    const region = screen.getByRole("region", { name: "Propriétés" });
+    const renders = region.getAttribute("data-react-renders");
+    const x = screen.getByLabelText("X");
+    fireEvent.change(x, { target: { value: "123" } });
+    act(() => d.engine.execute({ type: "updatePage", patch: { rulers: true } }));
+    expect(region).toHaveAttribute("data-react-renders", renders);
+    expect(screen.getByLabelText("X")).toBe(x);
+    expect(d.store.get(previewAtom)).toMatchObject({
+      target: "layer",
+      layerId: d.rectangle.id,
+      patch: { x: 123 },
+    });
+    fireEvent.blur(x);
+    expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.x).toBe(123);
+    expect(d.run).toHaveBeenCalledTimes(1);
+    act(() => d.engine.undo());
+    expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.x).toBe(d.rectangle.x);
+    expect(d.engine.getSnapshot().project.pages[0]!.rulers).toBe(true);
+  } finally {
+    unmount();
+    history.replaceState({}, "", previousURL);
+  }
+});

@@ -1,4 +1,4 @@
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { createEffect, createProject } from "@musart/core";
 import { EffectPopover } from "../../../../src/components/layers/attachments/EffectPopover";
@@ -204,4 +204,49 @@ test("real alpha composition previews cancel and commits restore the sparse defa
   expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.effects[0]).not.toHaveProperty(
     "composite",
   );
+});
+test("rapid Escape/reopen resets the FX viewport and draft while retaining the outer exit animation", async () => {
+  const computedStyle = window.getComputedStyle;
+  vi.spyOn(window, "getComputedStyle").mockImplementation((element, pseudo) => {
+    const style = computedStyle.call(window, element, pseudo);
+    if (element.matches(".layer-attachment-popover"))
+      Object.defineProperty(style, "animationName", {
+        configurable: true,
+        get: () => (element.getAttribute("data-state") === "closed" ? "fx-exit" : "fx-enter"),
+      });
+    return style;
+  });
+  const d = fixture();
+  const original = d.engine.getSnapshot().project;
+  const trigger = screen.getByRole("button", { name: "FX" });
+  fireEvent.click(trigger);
+  const popup = screen.getByRole("dialog");
+  const viewport = popup.querySelector<HTMLElement>(".layer-attachment-viewport")!;
+  const amount = screen.getAllByLabelText("Intensité")[0]!;
+  fireEvent.change(amount, { target: { value: "30" } });
+  expect(d.store.get(previewAtom)).not.toBeNull();
+  viewport.scrollTop = 600;
+  fireEvent.scroll(viewport);
+  fireEvent.keyDown(amount, { key: "Escape" });
+  expect(popup).toBeInTheDocument();
+  expect(popup).toHaveAttribute("data-state", "closed");
+  expect(popup).toHaveClass("data-[state=closed]:animate-out");
+  expect(viewport.scrollTop).toBe(600);
+  expect(d.store.get(previewAtom)).toBeNull();
+  fireEvent.click(trigger);
+  expect(screen.getByRole("dialog")).toBe(popup);
+  const reopened = popup.querySelector<HTMLElement>(".layer-attachment-viewport")!;
+  expect(reopened).not.toBe(viewport);
+  expect(viewport).not.toBeInTheDocument();
+  expect(reopened.scrollTop).toBe(0);
+  expect(screen.getAllByLabelText("Intensité")[0]).toHaveValue("100");
+  fireEvent.blur(amount);
+  expect(d.engine.getSnapshot().project).toBe(original);
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+  fireEvent.keyDown(popup, { key: "Escape" });
+  expect(popup).toHaveAttribute("data-state", "closed");
+  const end = new Event("animationend", { bubbles: true });
+  Object.defineProperty(end, "animationName", { value: "fx-exit" });
+  fireEvent(popup, end);
+  await waitFor(() => expect(popup).not.toBeInTheDocument());
 });

@@ -1,13 +1,14 @@
-import { expect, test } from "vitest";
-import { createRef } from "react";
+import { expect, test, vi } from "vitest";
+import { createRef, useLayoutEffect } from "react";
 import { act, fireEvent, screen, within } from "@testing-library/react";
-import { createEffect, createProject } from "@musart/core";
+import { createEffect, createLayer, createPage, createProject } from "@musart/core";
 import {
   LayerAttachments,
   type EffectDragSession,
 } from "../../../../src/components/layers/attachments/LayerAttachments";
 import { useEngine } from "../../../../src/state/session/editor";
 import { setup } from "../../../support/ui";
+import { attachmentSelection } from "../../../../src/state/selection/attachments";
 function fixture() {
   const d = setup(),
     first = createEffect("dither"),
@@ -114,4 +115,143 @@ test("effect drag reorders only on final drop, supports undo and rejects a chang
   expect(d.drag.current).toBeNull();
   act(() => d.engine.load(createProject()));
   expect(d.engine.getSnapshot().canUndo).toBe(false);
+});
+
+function inactiveFixture(retainStalePage = false) {
+  const d = setup(),
+    first = createEffect("dither"),
+    second = createEffect("contrast"),
+    owner = createLayer("rectangle", {
+      id: "inactive-owner",
+      effects: [first, second],
+      mask: { assetId: "asset1", enabled: true, inverted: false, mode: "alpha" },
+    }),
+    inactive = createPage({ id: "inactive-page", layers: [owner] });
+  d.engine.load({ ...d.project, pages: [d.page, inactive] });
+  d.engine.select([d.rectangle.id]);
+  const originalPage = d.engine.getSnapshot().project.pages[1]!,
+    drag = createRef<EffectDragSession | null>(),
+    commits = vi.fn();
+  function Live() {
+    const snapshot = useEngine(d.engine),
+      page = retainStalePage ? originalPage : snapshot.project.pages[1]!,
+      layer = page.layers[0]!;
+    useLayoutEffect(() => {
+      commits(snapshot);
+    });
+    return (
+      <>
+        <LayerAttachments
+          engine={d.engine}
+          page={page}
+          layer={layer}
+          effectId={first.id}
+          mask={false}
+          top={0}
+          depth={1}
+          run={d.run}
+          drag={drag}
+        />
+        <LayerAttachments
+          engine={d.engine}
+          page={page}
+          layer={layer}
+          mask
+          top={36}
+          depth={1}
+          run={d.run}
+          drag={drag}
+        />
+      </>
+    );
+  }
+  d.mount(<Live />);
+  const row = (kind: "effect" | "mask") =>
+    document.querySelector<HTMLElement>(
+      kind === "effect" ? `[data-effect-id="${first.id}"]` : `[data-mask-for="${owner.id}"]`,
+    )!;
+  return { ...d, owner, first, second, inactive, row, commits };
+}
+
+test.each(["effect", "mask"] as const)(
+  "%s eye activates an inactive page and batches exact selection with one undoable edit in bubbling",
+  (kind) => {
+    const d = inactiveFixture(),
+      before = d.engine.getSnapshot(),
+      button = within(d.row(kind)).getByLabelText(
+        kind === "effect" ? "Désactiver l’effet" : "Activer le masque",
+      );
+    const capture = vi.fn(() => ({
+      snapshot: d.engine.getSnapshot(),
+      target: attachmentSelection(d.engine).read(),
+    }));
+    button.addEventListener("click", capture, { capture: true });
+    d.commits.mockClear();
+    fireEvent.click(button);
+    // The row's capture phase must not publish a selection before the action's bubble handler.
+    expect(capture.mock.results[0]!.value).toEqual({ snapshot: before, target: null });
+    const after = d.engine.getSnapshot(),
+      layer = after.project.pages[1]!.layers[0]!;
+    expect(after.pageId).toBe(d.inactive.id);
+    expect(after.selection).toEqual([d.owner.id]);
+    expect(attachmentSelection(d.engine).read()?.kind).toBe(kind);
+    expect(kind === "effect" ? layer.effects[0]!.enabled : layer.mask?.enabled).toBe(false);
+    expect(after.revision).toBe(before.revision + 1);
+    expect(d.run).toHaveBeenCalledOnce();
+    expect(d.commits).toHaveBeenCalledOnce();
+    act(() => d.engine.undo());
+    expect(d.engine.getSnapshot().project).toBe(before.project);
+    expect(d.engine.getSnapshot().canUndo).toBe(false);
+    act(() => d.engine.redo());
+    expect(d.engine.getSnapshot().project).toBe(after.project);
+  },
+);
+
+test.each(["effect", "mask"] as const)(
+  "%s deletion captures its exact attachment even when another page and layer were selected",
+  (kind) => {
+    const d = inactiveFixture(),
+      before = d.engine.getSnapshot();
+    fireEvent.click(
+      within(d.row(kind)).getByLabelText(
+        kind === "effect" ? "Retirer l’effet" : "Retirer le masque",
+      ),
+    );
+    const after = d.engine.getSnapshot(),
+      layer = after.project.pages[1]!.layers[0]!;
+    expect(after.pageId).toBe(d.inactive.id);
+    expect(after.selection).toEqual([]);
+    expect(after.project.pages[0]!.layers).toEqual(before.project.pages[0]!.layers);
+    expect(after.project.pages[1]!.layers).toHaveLength(1);
+    expect(layer.effects.map((effect) => effect.id)).toEqual(
+      kind === "effect" ? [d.second.id] : [d.first.id, d.second.id],
+    );
+    expect(Boolean(layer.mask)).toBe(kind === "effect");
+    expect(after.revision).toBe(before.revision + 1);
+    expect(d.run).toHaveBeenCalledOnce();
+    act(() => d.engine.undo());
+    expect(d.engine.getSnapshot().project).toBe(before.project);
+    expect(d.engine.getSnapshot().canUndo).toBe(false);
+  },
+);
+
+test("stale effect and mask action handlers abort before any edit or deferred delete", () => {
+  const d = inactiveFixture(true);
+  act(() => d.engine.load(d.engine.getSnapshot().project));
+  const replacement = d.engine.getSnapshot();
+  for (const kind of ["effect", "mask"] as const) {
+    fireEvent.click(
+      within(d.row(kind)).getByLabelText(
+        kind === "effect" ? "Désactiver l’effet" : "Activer le masque",
+      ),
+    );
+    fireEvent.click(
+      within(d.row(kind)).getByLabelText(
+        kind === "effect" ? "Retirer l’effet" : "Retirer le masque",
+      ),
+    );
+    expect(d.engine.getSnapshot()).toBe(replacement);
+    expect(d.engine.getSnapshot().canUndo).toBe(false);
+  }
+  expect(d.run).not.toHaveBeenCalled();
 });

@@ -9,6 +9,8 @@ import {
   Redo2,
 } from "lucide-react";
 import { useAtom } from "jotai";
+import { memo } from "react";
+import type { EnginePort } from "@musart/core";
 import { useTranslation } from "react-i18next";
 import { toolAtom } from "../../state/session/editor";
 import { ScrollShadow } from "../shared/scroll/ScrollShadow";
@@ -35,25 +37,12 @@ function ToolbarContents(surface: SearchSurface) {
   const canUndo = !commands.find((item) => item.id === "action:undo")?.disabled;
   const canRedo = !commands.find((item) => item.id === "action:redo")?.disabled;
   const { t } = useTranslation();
-  const [tool, setTool] = useAtom(toolAtom);
   const bindings = useKeybindings();
   return (
     <nav className="toolbar floating-panel" aria-label={t("selection")}>
       <ScrollShadow className="toolbar-scroll" surface="var(--popover)">
         <div className="toolbar-contents" data-dock-scroll>
-          {tools.map(([id, Icon, shortcut]) => (
-            <IconButton
-              key={id}
-              label={t(id)}
-              shortcut={bindingLabel(shortcut, bindings)}
-              active={tool === id}
-              onClick={() => setTool(id)}
-              className="tool-button"
-            >
-              <Icon strokeWidth={1.65} />
-            </IconButton>
-          ))}
-          <ShapeToolSlot engine={engine} />
+          <StaticTools engine={engine} />
           <Separator />
           <IconButton
             label={t("import")}
@@ -86,3 +75,27 @@ function ToolbarContents(surface: SearchSurface) {
     </nav>
   );
 }
+
+/** Command availability never rebuilds tools; their own preferences and active atom stay live. */
+const StaticTools = memo(function StaticTools({ engine }: { engine: EnginePort }) {
+  const { t } = useTranslation();
+  const [tool, setTool] = useAtom(toolAtom);
+  const bindings = useKeybindings();
+  return (
+    <>
+      {tools.map(([id, Icon, shortcut]) => (
+        <IconButton
+          key={id}
+          label={t(id)}
+          shortcut={bindingLabel(shortcut, bindings)}
+          active={tool === id}
+          onClick={() => setTool(id)}
+          className="tool-button"
+        >
+          <Icon strokeWidth={1.65} />
+        </IconButton>
+      ))}
+      <ShapeToolSlot engine={engine} />
+    </>
+  );
+});

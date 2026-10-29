@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
   Palette,
   LockKeyhole,
@@ -16,6 +16,7 @@ import {
   type Composition,
   type EnginePort,
   type Layer,
+  type Project,
 } from "@musart/core";
 import { useTranslation } from "react-i18next";
 import { useSetAtom } from "jotai";
@@ -34,345 +35,394 @@ import { IconButton } from "../shared/IconButton";
 import { Switch } from "../ui/switch";
 import { Input } from "../ui/input";
 import { LockedLayerNotice } from "./locked/LockedLayerNotice";
+import { resolveInspectorPage, sameInspectorPage } from "./inspector-scope";
 
 interface Props {
   engine: EnginePort;
   page: Composition;
   selected: readonly Layer[];
   run: (action: () => void) => void;
+  assets?: Project["assets"];
 }
-export function Inspector({ engine, page, selected, run }: Props) {
-  const { t } = useTranslation();
-  const element = useRef<HTMLElement>(null);
-  useRenderMetrics(element);
-  const setPreview = useSetAtom(previewAtom);
-  const [aspectLocked, setAspectLocked] = useState(true);
-  const layer = selected.length === 1 ? selected[0] : undefined;
-  const geometry = createLayerGeometryIndex(page);
-  const locked = selected.some((item) => geometry.isLocked(item.id));
-  const displayLayer = layer && locked && !layer.locked ? { ...layer, locked: true } : layer;
-  const useLayerColor = layer && ["rectangle", "ellipse", "text", "vector"].includes(layer.kind);
-  function cancel() {
-    setPreview(null);
-  }
-  function patch(patch: Partial<Layer>) {
-    cancel();
-    if (locked) return;
-    run(() =>
-      engine.execute({ type: "updateLayers", ids: selected.map((item) => item.id), patch }),
-    );
-  }
-  function preview(patch: Partial<Layer>) {
-    if (locked) return cancel();
-    if (layer) setPreview({ target: "layer", layerId: layer.id, patch });
-  }
-  function fillPatch(fill: string): Partial<Layer> {
-    return layer?.kind === "vector" && layer.vector?.parts?.length
-      ? { fill, vector: { ...layer.vector, preserveColors: false } }
-      : { fill };
-  }
-  function pagePatch(patch: Partial<Composition>) {
-    cancel();
-    run(() => engine.execute({ type: "updatePage", patch }));
-  }
-  function pagePreview(patch: Partial<Composition>) {
-    setPreview({ target: "page", patch });
-  }
-  function dimensionPatch(key: "width" | "height", value: number): Partial<Layer> {
-    if (!layer || layer.kind !== "image" || !aspectLocked) return { [key]: value };
-    return key === "width"
-      ? { width: value, height: Math.max(1, (value * layer.height) / layer.width) }
-      : { height: value, width: Math.max(1, (value * layer.width) / layer.height) };
-  }
-  function field(
-    key: "x" | "y" | "width" | "height" | "rotation" | "radius" | "strokeWidth",
-    label: string,
-    min?: number,
-    max?: number,
-    unit = "px",
-  ) {
-    if (!layer) return null;
-    const makePatch = (value: number) =>
-      key === "width" || key === "height" ? dimensionPatch(key, value) : { [key]: value };
-    const Icon = {
-      x: MoveHorizontal,
-      y: MoveVertical,
-      width: ArrowLeftRight,
-      height: ArrowUpDown,
-      rotation: RotateCw,
-      radius: Radius,
-      strokeWidth: Pencil,
-    }[key];
+export const Inspector = memo(
+  function Inspector({ engine, page, selected, run, assets }: Props) {
+    const { t } = useTranslation();
+    const element = useRef<HTMLElement>(null);
+    useRenderMetrics(element);
+    const setPreview = useSetAtom(previewAtom);
+    const [aspectLocked, setAspectLocked] = useState(true);
+    const layer = selected.length === 1 ? selected[0] : undefined;
+    const geometry = createLayerGeometryIndex(page);
+    const locked = selected.some((item) => geometry.isLocked(item.id));
+    const displayLayer = layer && locked && !layer.locked ? { ...layer, locked: true } : layer;
+    const useLayerColor = layer && ["rectangle", "ellipse", "text", "vector"].includes(layer.kind);
+    const current = useCallback(() => {
+      const snapshot = engine.getSnapshot();
+      if (
+        !resolveInspectorPage(engine, page) ||
+        (assets && assets !== snapshot.project.assets) ||
+        snapshot.selection.length !== selected.length
+      )
+        return false;
+      const ids = new Set(snapshot.selection);
+      return selected.every((item) => ids.has(item.id));
+    }, [assets, engine, page, selected]);
+    useEffect(() => {
+      const changed = () => {
+        if (!current()) setPreview(null);
+      };
+      changed();
+      return engine.subscribe(changed);
+    }, [engine, current, setPreview]);
+    function runCurrent(action: () => void) {
+      if (current())
+        run(() => {
+          if (current()) action();
+        });
+    }
+    function cancel() {
+      setPreview(null);
+    }
+    function patch(patch: Partial<Layer>) {
+      cancel();
+      if (locked || !current()) return;
+      runCurrent(() =>
+        engine.execute({ type: "updateLayers", ids: selected.map((item) => item.id), patch }),
+      );
+    }
+    function preview(patch: Partial<Layer>) {
+      if (locked || !current()) return cancel();
+      if (layer) setPreview({ target: "layer", layerId: layer.id, patch });
+    }
+    function fillPatch(fill: string): Partial<Layer> {
+      return layer?.kind === "vector" && layer.vector?.parts?.length
+        ? { fill, vector: { ...layer.vector, preserveColors: false } }
+        : { fill };
+    }
+    function pagePatch(patch: Partial<Composition>) {
+      cancel();
+      runCurrent(() => engine.execute({ type: "updatePage", patch }));
+    }
+    function pagePreview(patch: Partial<Composition>) {
+      if (current()) setPreview({ target: "page", patch });
+      else cancel();
+    }
+    function dimensionPatch(key: "width" | "height", value: number): Partial<Layer> {
+      if (!layer || layer.kind !== "image" || !aspectLocked) return { [key]: value };
+      return key === "width"
+        ? { width: value, height: Math.max(1, (value * layer.height) / layer.width) }
+        : { height: value, width: Math.max(1, (value * layer.width) / layer.height) };
+    }
+    function field(
+      key: "x" | "y" | "width" | "height" | "rotation" | "radius" | "strokeWidth",
+      label: string,
+      min?: number,
+      max?: number,
+      unit = "px",
+    ) {
+      if (!layer) return null;
+      const makePatch = (value: number) =>
+        key === "width" || key === "height" ? dimensionPatch(key, value) : { [key]: value };
+      const Icon = {
+        x: MoveHorizontal,
+        y: MoveVertical,
+        width: ArrowLeftRight,
+        height: ArrowUpDown,
+        rotation: RotateCw,
+        radius: Radius,
+        strokeWidth: Pencil,
+      }[key];
+      return (
+        <NumberInput
+          key={key}
+          identity={layer}
+          label={label}
+          scrubLabel={
+            <span className="position-field-label">
+              <Icon size={13} aria-hidden />
+              <span>{label}</span>
+            </span>
+          }
+          value={layer[key]}
+          resetValue={() =>
+            key === "width" || key === "height"
+              ? (asset?.[key] ??
+                (layer.kind === "group"
+                  ? layer[key]
+                  : key === "width"
+                    ? 280
+                    : layer.kind === "text"
+                      ? 100
+                      : 220))
+              : 0
+          }
+          min={min}
+          max={max}
+          unit={unit}
+          disabled={locked}
+          onPreview={(value) => preview(makePatch(value))}
+          onCommit={(value) => patch(makePatch(value))}
+          onCancel={cancel}
+        />
+      );
+    }
+    const asset = layer?.assetId
+      ? (assets ?? engine.getSnapshot().project.assets)[layer.assetId]
+      : undefined;
     return (
-      <NumberInput
-        key={key}
-        identity={layer}
-        label={label}
-        scrubLabel={
-          <span className="position-field-label">
-            <Icon size={13} aria-hidden />
-            <span>{label}</span>
-          </span>
-        }
-        value={layer[key]}
-        resetValue={() =>
-          key === "width" || key === "height"
-            ? (asset?.[key] ??
-              (layer.kind === "group"
-                ? layer[key]
-                : key === "width"
-                  ? 280
-                  : layer.kind === "text"
-                    ? 100
-                    : 220))
-            : 0
-        }
-        min={min}
-        max={max}
-        unit={unit}
-        disabled={locked}
-        onPreview={(value) => preview(makePatch(value))}
-        onCommit={(value) => patch(makePatch(value))}
-        onCancel={cancel}
-      />
-    );
-  }
-  const asset = layer?.assetId ? engine.getSnapshot().project.assets[layer.assetId] : undefined;
-  return (
-    <ScrollShadow className="inspector-scroll">
-      <section
-        className="inspector scrollable-panel"
-        ref={element}
-        data-selected-layer-id={layer?.id}
-        aria-label={t("properties")}
-      >
-        <div className="inspector-title">
-          <span className="inspector-selection">
-            {selected.length > 1 ? t("multiSelection") : layer ? t(layer.kind) : t("composition")}
-          </span>
-        </div>
-        <LockedLayerNotice engine={engine} page={page} layers={selected} run={run} />
-        {selected.length > 1 ? (
-          <>
-            <fieldset className="locked-layer-controls" disabled={locked}>
-              <AlignmentPanel engine={engine} selected={selected} run={run} />
-            </fieldset>
-          </>
-        ) : (
-          <>
-            <section className="inspector-section color-section">
-              <div className="section-title">
-                <h3>
-                  <Palette size={13} />
-                  {t(useLayerColor ? "fill" : "background")}
-                </h3>
-                <SelectField
-                  label={t("colorMode")}
-                  value={page.colorSpace ?? "srgb"}
-                  className="color-mode-select"
-                  options={[
-                    { value: "srgb", label: "sRGB" },
-                    { value: "display-p3", label: "Display P3" },
-                    { value: "cmyk-proof", label: t("cmykProof") },
-                  ]}
-                  onValueChange={(colorSpace) =>
-                    pagePatch({ colorSpace: colorSpace as NonNullable<Composition["colorSpace"]> })
-                  }
-                />
-              </div>
-              {page.colorSpace && page.colorSpace !== "srgb" && (
-                <p className="muted-description color-mode-hint">
-                  {t(page.colorSpace === "cmyk-proof" ? "cmykProofHint" : "displayP3Hint")}
-                </p>
-              )}
-              {layer?.kind === "text" && (
-                <GradientControl
-                  layer={displayLayer!}
-                  patch={patch}
-                  preview={preview}
-                  cancel={cancel}
-                />
-              )}
-              {(layer?.kind !== "text" || !layer.fillGradient) && (
-                <ColorControl
-                  disabled={!!useLayerColor && locked}
-                  identity={useLayerColor ? layer.id : `page:${page.id}`}
-                  value={useLayerColor ? layer.fill : page.background}
-                  onPreview={(fill) => {
-                    if (useLayerColor) preview(fillPatch(fill));
-                    else pagePreview({ background: fill });
-                  }}
-                  onCommit={(fill) => {
-                    if (useLayerColor) patch(fillPatch(fill));
-                    else pagePatch({ background: fill });
-                  }}
-                  onCancel={cancel}
-                />
-              )}
-              {layer?.kind === "vector" && !!layer.vector?.parts?.length && (
-                <label
-                  className="switch-row original-vector-colors"
-                  title={t("originalColorsHint")}
-                >
-                  <span>{t("originalColors")}</span>
-                  <Switch
-                    aria-label={t("originalColors")}
-                    disabled={locked}
-                    checked={!!layer.vector.preserveColors}
-                    onCheckedChange={(preserveColors) => {
-                      if (layer.vector) patch({ vector: { ...layer.vector, preserveColors } });
-                    }}
+      <ScrollShadow className="inspector-scroll">
+        <section
+          className="inspector scrollable-panel"
+          ref={element}
+          data-selected-layer-id={layer?.id}
+          aria-label={t("properties")}
+        >
+          <div className="inspector-title">
+            <span className="inspector-selection">
+              {selected.length > 1 ? t("multiSelection") : layer ? t(layer.kind) : t("composition")}
+            </span>
+          </div>
+          <LockedLayerNotice engine={engine} page={page} layers={selected} run={runCurrent} />
+          {selected.length > 1 ? (
+            <>
+              <fieldset className="locked-layer-controls" disabled={locked}>
+                <AlignmentPanel engine={engine} selected={selected} run={runCurrent} />
+              </fieldset>
+            </>
+          ) : (
+            <>
+              <section className="inspector-section color-section">
+                <div className="section-title">
+                  <h3>
+                    <Palette size={13} />
+                    {t(useLayerColor ? "fill" : "background")}
+                  </h3>
+                  <SelectField
+                    label={t("colorMode")}
+                    value={page.colorSpace ?? "srgb"}
+                    className="color-mode-select"
+                    options={[
+                      { value: "srgb", label: "sRGB" },
+                      { value: "display-p3", label: "Display P3" },
+                      { value: "cmyk-proof", label: t("cmykProof") },
+                    ]}
+                    onValueChange={(colorSpace) =>
+                      pagePatch({
+                        colorSpace: colorSpace as NonNullable<Composition["colorSpace"]>,
+                      })
+                    }
                   />
-                </label>
-              )}
-            </section>
-            {layer ? (
-              <>
-                <section className="inspector-section">
-                  <div className="section-title">
-                    <h3>{t("position")}</h3>
-                    {layer.kind === "image" && (
-                      <IconButton
-                        label={t("lockAspect")}
-                        active={aspectLocked}
-                        disabled={locked}
-                        onClick={() => setAspectLocked((value) => !value)}
-                      >
-                        {aspectLocked ? <LockKeyhole size={13} /> : <LockKeyholeOpen size={13} />}
-                      </IconButton>
-                    )}
-                  </div>
-                  <div className="fields-grid">
-                    {field("x", "X")}
-                    {field("y", "Y")}
-                    {field("width", t("width"), 1, 32768)}
-                    {field("height", t("height"), 1, 32768)}
-                    {field("rotation", t("rotation"), -360, 360, "°")}
-                    {layer.kind === "rectangle" && field("radius", t("cornerRadius"), 0, 4096)}
-                  </div>
-                  {asset && (
-                    <div className="image-scale">
-                      <NumberInput
-                        identity={layer}
-                        label={t("imageScale")}
-                        disabled={locked}
-                        value={(layer.width / asset.width) * 100}
-                        resetValue={100}
-                        min={0.1}
-                        max={10000}
-                        unit="%"
-                        onPreview={(value) =>
-                          preview(dimensionPatch("width", (asset.width * value) / 100))
-                        }
-                        onCommit={(value) =>
-                          patch(dimensionPatch("width", (asset.width * value) / 100))
-                        }
-                        onCancel={cancel}
-                      />
-                      <span className="muted-description">
-                        {t("originalDimensions", { width: asset.width, height: asset.height })}
-                      </span>
-                    </div>
-                  )}
-                </section>
-                <fieldset className="locked-layer-controls" disabled={locked}>
-                  <AlignmentPanel engine={engine} selected={selected} run={run} />
-                </fieldset>
-                {layer.kind === "text" && (
-                  <TextProperties
+                </div>
+                {page.colorSpace && page.colorSpace !== "srgb" && (
+                  <p className="muted-description color-mode-hint">
+                    {t(page.colorSpace === "cmyk-proof" ? "cmykProofHint" : "displayP3Hint")}
+                  </p>
+                )}
+                {layer?.kind === "text" && (
+                  <GradientControl
                     layer={displayLayer!}
                     patch={patch}
                     preview={preview}
                     cancel={cancel}
                   />
                 )}
-                {["rectangle", "ellipse", "vector"].includes(layer.kind) && (
-                  <section className="inspector-section">
-                    <h3>{t("stroke")}</h3>
-                    <div className="fields-grid">
-                      {field("strokeWidth", t("stroke"), 0, 128)}
-                      <Input
-                        key={`${layer.id}:${layer.stroke}`}
-                        aria-label={t("strokeHex")}
-                        disabled={locked}
-                        defaultValue={layer.stroke}
-                        onChange={(event) => {
-                          if (/^#(?:[\da-f]{6}|[\da-f]{8})$/i.test(event.currentTarget.value))
-                            preview({ stroke: event.currentTarget.value });
-                          else cancel();
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") event.currentTarget.blur();
-                          if (event.key === "Escape") {
-                            event.preventDefault();
-                            event.currentTarget.value = layer.stroke;
-                            cancel();
-                            event.currentTarget.blur();
-                          }
-                        }}
-                        onBlur={(event) => {
-                          if (
-                            /^#(?:[\da-f]{6}|[\da-f]{8})$/i.test(event.currentTarget.value) &&
-                            event.currentTarget.value !== layer.stroke
-                          )
-                            patch({ stroke: event.currentTarget.value });
-                          else {
-                            event.currentTarget.value = layer.stroke;
-                            cancel();
-                          }
-                        }}
-                      />
-                    </div>
-                  </section>
+                {(layer?.kind !== "text" || !layer.fillGradient) && (
+                  <ColorControl
+                    disabled={!!useLayerColor && locked}
+                    identity={useLayerColor ? layer.id : `page:${page.id}`}
+                    value={useLayerColor ? layer.fill : page.background}
+                    onPreview={(fill) => {
+                      if (useLayerColor) preview(fillPatch(fill));
+                      else pagePreview({ background: fill });
+                    }}
+                    onCommit={(fill) => {
+                      if (useLayerColor) patch(fillPatch(fill));
+                      else pagePatch({ background: fill });
+                    }}
+                    onCancel={cancel}
+                  />
                 )}
-              </>
-            ) : (
-              <section className="inspector-section">
-                <div className="section-title">
-                  <h3>{t("composition")}</h3>
-                </div>
-                <Input
-                  key={`${page.id}:${page.name}`}
-                  aria-label={t("renamePage")}
-                  defaultValue={page.name}
-                  onBlur={(event) => {
-                    const name = event.target.value.trim();
-                    if (name && name !== page.name) pagePatch({ name });
-                  }}
-                />
-                <div className="fields-grid">
-                  {(["width", "height"] as const).map((key) => (
-                    <NumberInput
-                      key={key}
-                      identity={page}
-                      label={t(key)}
-                      value={page[key]}
-                      resetValue={1080}
-                      min={1}
-                      max={16384}
-                      unit="px"
-                      onPreview={(value) => pagePreview({ [key]: value })}
-                      onCommit={(value) => pagePatch({ [key]: value })}
-                      onCancel={cancel}
+                {layer?.kind === "vector" && !!layer.vector?.parts?.length && (
+                  <label
+                    className="switch-row original-vector-colors"
+                    title={t("originalColorsHint")}
+                  >
+                    <span>{t("originalColors")}</span>
+                    <Switch
+                      aria-label={t("originalColors")}
+                      disabled={locked}
+                      checked={!!layer.vector.preserveColors}
+                      onCheckedChange={(preserveColors) => {
+                        if (layer.vector) patch({ vector: { ...layer.vector, preserveColors } });
+                      }}
                     />
-                  ))}
-                </div>
-                <p className="muted-description">{t("selectLayer")}</p>
+                  </label>
+                )}
               </section>
-            )}
-            <SpacingPanel
-              page={page}
-              layer={displayLayer}
-              onLayerPatch={patch}
-              onPagePatch={pagePatch}
-              onLayerPreview={preview}
-              onPagePreview={pagePreview}
-              onCancel={cancel}
-            />
-          </>
-        )}
-        <GuidesPanel engine={engine} page={page} layer={layer} run={run} />
-      </section>
-    </ScrollShadow>
-  );
-}
+              {layer ? (
+                <>
+                  <section className="inspector-section">
+                    <div className="section-title">
+                      <h3>{t("position")}</h3>
+                      {layer.kind === "image" && (
+                        <IconButton
+                          label={t("lockAspect")}
+                          active={aspectLocked}
+                          disabled={locked}
+                          onClick={() => setAspectLocked((value) => !value)}
+                        >
+                          {aspectLocked ? <LockKeyhole size={13} /> : <LockKeyholeOpen size={13} />}
+                        </IconButton>
+                      )}
+                    </div>
+                    <div className="fields-grid">
+                      {field("x", "X")}
+                      {field("y", "Y")}
+                      {field("width", t("width"), 1, 32768)}
+                      {field("height", t("height"), 1, 32768)}
+                      {field("rotation", t("rotation"), -360, 360, "°")}
+                      {layer.kind === "rectangle" && field("radius", t("cornerRadius"), 0, 4096)}
+                    </div>
+                    {asset && (
+                      <div className="image-scale">
+                        <NumberInput
+                          identity={layer}
+                          label={t("imageScale")}
+                          disabled={locked}
+                          value={(layer.width / asset.width) * 100}
+                          resetValue={100}
+                          min={0.1}
+                          max={10000}
+                          unit="%"
+                          onPreview={(value) =>
+                            preview(dimensionPatch("width", (asset.width * value) / 100))
+                          }
+                          onCommit={(value) =>
+                            patch(dimensionPatch("width", (asset.width * value) / 100))
+                          }
+                          onCancel={cancel}
+                        />
+                        <span className="muted-description">
+                          {t("originalDimensions", { width: asset.width, height: asset.height })}
+                        </span>
+                      </div>
+                    )}
+                  </section>
+                  <fieldset className="locked-layer-controls" disabled={locked}>
+                    <AlignmentPanel engine={engine} selected={selected} run={runCurrent} />
+                  </fieldset>
+                  {layer.kind === "text" && (
+                    <TextProperties
+                      layer={displayLayer!}
+                      patch={patch}
+                      preview={preview}
+                      cancel={cancel}
+                    />
+                  )}
+                  {["rectangle", "ellipse", "vector"].includes(layer.kind) && (
+                    <section className="inspector-section">
+                      <h3>{t("stroke")}</h3>
+                      <div className="fields-grid">
+                        {field("strokeWidth", t("stroke"), 0, 128)}
+                        <Input
+                          key={`${layer.id}:${layer.stroke}`}
+                          aria-label={t("strokeHex")}
+                          disabled={locked}
+                          defaultValue={layer.stroke}
+                          onChange={(event) => {
+                            if (/^#(?:[\da-f]{6}|[\da-f]{8})$/i.test(event.currentTarget.value))
+                              preview({ stroke: event.currentTarget.value });
+                            else cancel();
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") event.currentTarget.blur();
+                            if (event.key === "Escape") {
+                              event.preventDefault();
+                              event.currentTarget.value = layer.stroke;
+                              cancel();
+                              event.currentTarget.blur();
+                            }
+                          }}
+                          onBlur={(event) => {
+                            if (
+                              /^#(?:[\da-f]{6}|[\da-f]{8})$/i.test(event.currentTarget.value) &&
+                              event.currentTarget.value !== layer.stroke
+                            )
+                              patch({ stroke: event.currentTarget.value });
+                            else {
+                              event.currentTarget.value = layer.stroke;
+                              cancel();
+                            }
+                          }}
+                        />
+                      </div>
+                    </section>
+                  )}
+                </>
+              ) : (
+                <section className="inspector-section">
+                  <div className="section-title">
+                    <h3>{t("composition")}</h3>
+                  </div>
+                  <Input
+                    key={`${page.id}:${page.name}`}
+                    aria-label={t("renamePage")}
+                    defaultValue={page.name}
+                    onBlur={(event) => {
+                      const name = event.target.value.trim();
+                      if (name && name !== page.name) pagePatch({ name });
+                    }}
+                  />
+                  <div className="fields-grid">
+                    {(["width", "height"] as const).map((key) => (
+                      <NumberInput
+                        key={key}
+                        identity={page}
+                        label={t(key)}
+                        value={page[key]}
+                        resetValue={1080}
+                        min={1}
+                        max={16384}
+                        unit="px"
+                        onPreview={(value) => pagePreview({ [key]: value })}
+                        onCommit={(value) => pagePatch({ [key]: value })}
+                        onCancel={cancel}
+                      />
+                    ))}
+                  </div>
+                  <p className="muted-description">{t("selectLayer")}</p>
+                </section>
+              )}
+              <SpacingPanel
+                page={page}
+                layer={displayLayer}
+                onLayerPatch={patch}
+                onPagePatch={pagePatch}
+                onLayerPreview={preview}
+                onPagePreview={pagePreview}
+                onCancel={cancel}
+              />
+            </>
+          )}
+          <GuidesPanel
+            engine={engine}
+            page={page}
+            layer={layer}
+            run={runCurrent}
+            canEdit={current}
+          />
+        </section>
+      </ScrollShadow>
+    );
+  },
+  (previous, next) =>
+    previous.engine === next.engine &&
+    previous.run === next.run &&
+    previous.assets === next.assets &&
+    // Without an explicit asset scope, retain the original reference-based memo behavior.
+    (next.assets
+      ? sameInspectorPage(previous.page, next.page)
+      : previous.page === next.page && previous.selected === next.selected) &&
+    previous.selected.length === next.selected.length &&
+    previous.selected.every((layer, index) => layer === next.selected[index]),
+);

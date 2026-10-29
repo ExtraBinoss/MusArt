@@ -395,6 +395,9 @@ for (const forceWebGL of [false, true])
       await trigger.click();
       const panel = page.getByRole("dialog", { name: "Effets · CRT photograph", exact: true }),
         revision = await page.evaluate(() => window.musart!.snapshot().revision);
+      await panel.locator(".layer-attachment-viewport").evaluate((node) => {
+        node.scrollTop = 450;
+      });
       const brightness = panel.getByRole("textbox", { name: "Luminosité", exact: true });
       await brightness.fill("1.3");
       await brightness.press("Enter");

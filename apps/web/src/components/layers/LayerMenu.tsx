@@ -16,6 +16,7 @@ import "./messages";
 import { attachmentSelection } from "../../state/selection/attachments";
 import { useAttachmentSelection } from "../../state/selection/use-attachment-selection";
 import { useRenderMetrics } from "../../state/session/render-metrics";
+import { sameSelectionAvailability } from "./menu/availability";
 export const LayerMenu = memo(function LayerMenu({
   engine,
   page,
@@ -69,4 +70,4 @@ export const LayerMenu = memo(function LayerMenu({
       </DropdownMenuContent>
     </DropdownMenu>
   );
-});
+}, sameSelectionAvailability);

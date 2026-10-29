@@ -1,7 +1,7 @@
 import { expect, test, vi } from "vitest";
 import { createEffect, createLayer, createPage, createProject, EditorEngine } from "@musart/core";
 import { createCanvasView } from "../../../src/canvas/session/view-state";
-test("keeps a stable viewport snapshot for paint changes, while geometry, guides and selection remain reactive", () => {
+test("keeps a stable viewport snapshot for paint and selection, while geometry and guides remain reactive", () => {
   const layer = createLayer("rectangle");
   const engine = new EditorEngine(
     createProject({ pages: [createPage({ layers: [layer] }), createPage()] }),
@@ -22,7 +22,7 @@ test("keeps a stable viewport snapshot for paint changes, while geometry, guides
   expect(view.read()).toBe(first);
   engine.select([layer.id]);
   const selected = view.read();
-  expect(selected).not.toBe(first);
+  expect(selected).toBe(first);
   engine.execute({ type: "updateLayers", ids: [layer.id], patch: { x: 90 } });
   expect(view.read()).not.toBe(selected);
   engine.execute({ type: "addGuide", guide: { id: "guide", axis: "x", position: 100 } });
@@ -43,7 +43,8 @@ test("selection-only snapshots reuse immutable geometry without serializing all 
   engine.select([layers[9999]!.id]);
   serialize.mockClear();
   const selected = view.read();
-  expect(selected.selection).toEqual([layers[9999]!.id]);
+  expect(selected).toBe(first);
+  expect(engine.getSnapshot().selection).toEqual([layers[9999]!.id]);
   expect(selected.project).toBe(first.project);
   expect(serialize).not.toHaveBeenCalled();
   expect(view.read()).toBe(selected);

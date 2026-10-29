@@ -8,6 +8,7 @@ export function paintRuler(root: SVGGElement, axis: "x" | "y", ticks: RulerTick[
       element as SVGGElement,
     ]),
   );
+  const additions = document.createDocumentFragment();
   for (const tick of ticks) {
     const key = String(tick.value);
     let group = previous.get(key);
@@ -16,7 +17,7 @@ export function paintRuler(root: SVGGElement, axis: "x" | "y", ticks: RulerTick[
       group = document.createElementNS(namespace, "g");
       group.dataset.value = key;
       group.append(document.createElementNS(namespace, "line"));
-      root.append(group);
+      additions.append(group);
     }
     group.setAttribute(
       "transform",
@@ -43,6 +44,8 @@ export function paintRuler(root: SVGGElement, axis: "x" | "y", ticks: RulerTick[
       group.append(text);
     }
   }
+  // Configure new SVG marks off-document; publish their complete subtree in one live mutation.
+  if (additions.childNodes.length) root.append(additions);
   for (const element of previous.values()) element.remove();
 }
 

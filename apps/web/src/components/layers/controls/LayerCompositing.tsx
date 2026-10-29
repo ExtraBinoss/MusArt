@@ -61,6 +61,7 @@ export const LayerCompositing = memo(function LayerCompositing({
         onCancel={edit.cancel}
       />
       <SelectField
+        identity={selection}
         label={t("blendMode")}
         value={mixedBlend ? "mixed" : blend}
         disabled={disabled}

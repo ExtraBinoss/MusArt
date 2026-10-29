@@ -231,7 +231,9 @@ export class EditorEngine implements EnginePort {
     }
     const page = currentPage(project, pageId);
     const remainingIds = new Set(page.layers.map((layer) => layer.id));
-    selection = selection.filter((id) => remainingIds.has(id));
+    // Property edits preserve presentation identity; explicit handler selections remain authoritative.
+    if (selection.some((id) => !remainingIds.has(id)))
+      selection = selection.filter((id) => remainingIds.has(id));
     this.past.push(before);
     if (this.past.length > this.historyLimit) this.past.shift();
     this.future = [];

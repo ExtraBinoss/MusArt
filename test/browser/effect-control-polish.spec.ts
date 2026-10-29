@@ -88,7 +88,7 @@ test("effect controls reset once, share feedback and keep one photographic color
     await expect(controls).toHaveCSS("row-gap", "6px");
     const heights = await fx
       .locator(
-        '.effect-controls > .number-field,.effect-color-field,.effect-compositing .number-field,.effect-compositing [data-slot="select-trigger"]',
+        '.effect-parameter-row > .number-field,.effect-color-field,.effect-compositing .number-field,.effect-compositing [data-slot="select-trigger"]',
       )
       .evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().height));
     for (const height of heights) expect(height).toBeCloseTo(30, 2);
@@ -108,6 +108,9 @@ test("effect controls reset once, share feedback and keep one photographic color
     expect((await read()).revision).toBe(noOpRevision);
     expect((await pulse(numeric))!.time).toBeLessThan(160);
     const colors = fx.locator(".effect-color-field");
+    await fx.locator(".layer-attachment-viewport").evaluate((node) => {
+      node.scrollTop = node.scrollHeight;
+    });
     const first = colors.filter({ hasText: labels.fr.parameter.background });
     const second = colors.filter({ hasText: labels.fr.parameter.phosphor });
     const firstTrigger = first.getByRole("button", {

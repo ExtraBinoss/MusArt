@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { memo, useCallback, useLayoutEffect, type ReactNode } from "react";
 import { Eye, EyeOff, Trash2, Sun } from "lucide-react";
 import {
   getEffectDefinition,
@@ -12,7 +12,7 @@ import {
   EFFECT_COMPOSITE_MODES,
 } from "@musart/core";
 import { useTranslation } from "react-i18next";
-import { Popover, PopoverTrigger, PopoverContent } from "../../ui/popover";
+import { Popover, PopoverAnchor, PopoverTrigger, PopoverContent } from "../../ui/popover";
 import { IconButton } from "../../shared/IconButton";
 import { ScrollShadow } from "../../shared/scroll/ScrollShadow";
 import { SelectField } from "../../shared/SelectField";
@@ -26,6 +26,9 @@ import { attachmentDeleteKey } from "../../../state/selection/attachment-keydown
 import { useLayerPreview } from "../controls/use-layer-preview";
 import { LockedLayerNotice } from "../../properties/locked/LockedLayerNotice";
 import { usePopoverOwner } from "./use-popover-owner";
+import { freezeEffectPreviews } from "../../../state/session/effect-preview";
+import { resolveLayerPage, useOpenLayerPage } from "../tree/activation";
+import { useLayerPopoverAnchor } from "./use-layer-popover-anchor";
 export function EffectPopover({
   engine,
   page,
@@ -42,22 +45,39 @@ export function EffectPopover({
   children: ReactNode;
 }) {
   const { t } = useTranslation();
-  const owner = usePopoverOwner(
-    JSON.stringify([
-      engine.getSnapshot().project.id,
-      page.id,
-      layer.id,
-      effectId ?? layer.effects[0]?.id,
-    ]),
+  const ownerKey = JSON.stringify([
+    engine.getSnapshot().project.id,
+    page.id,
+    layer.id,
+    effectId ?? layer.effects[0]?.id,
+  ]);
+  const owner = usePopoverOwner(ownerKey);
+  const { open: ownerOpen, onOpenChange: setOwnerOpen, isCurrent: isOwnerCurrent } = owner;
+  const { trigger, virtualRef } = useLayerPopoverAnchor(ownerKey);
+  const currentPage = useOpenLayerPage(engine, page, ownerOpen);
+  const isCurrent = useCallback(
+    () => isOwnerCurrent() && resolveLayerPage(engine, page) !== null,
+    [engine, page, isOwnerCurrent],
   );
+  useLayoutEffect(() => {
+    if (ownerOpen && !currentPage) setOwnerOpen(false);
+  }, [ownerOpen, setOwnerOpen, currentPage]);
+  const runCurrent = (task: () => void) => {
+    if (isCurrent())
+      run(() => {
+        if (isCurrent()) task();
+      });
+  };
   return (
     <Popover
       open={owner.open}
       onOpenChange={(open) => {
+        const current = resolveLayerPage(engine, page);
+        if (open && !current) return;
         if (!owner.onOpenChange(open)) return;
         const id = effectId ?? layer.effects[0]?.id;
-        if (open && id)
-          attachmentSelection(engine).select(page, {
+        if (open && id && current)
+          attachmentSelection(engine).select(current, {
             kind: "effect",
             pageId: page.id,
             layerId: layer.id,
@@ -65,52 +85,90 @@ export function EffectPopover({
           });
       }}
     >
-      <PopoverTrigger asChild>{children}</PopoverTrigger>
-      <PopoverContent
-        onCloseAutoFocus={owner.onCloseAutoFocus}
-        side="left"
-        align="start"
-        className="floating-panel layer-attachment-popover"
-        aria-label={`${t("effects")} · ${layer.name}`}
-        onKeyDown={(event) => {
-          if (attachmentDeleteKey(event.nativeEvent, engine, run)) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
-        }}
-      >
-        <ScrollShadow className="layer-attachment-scroll">
-          <div className="layer-attachment-viewport">
-            <EffectDetails
-              engine={engine}
-              page={page}
-              layer={layer}
-              effectId={effectId}
-              run={run}
-            />
-          </div>
-        </ScrollShadow>
-      </PopoverContent>
+      <PopoverAnchor virtualRef={virtualRef} />
+      <PopoverTrigger ref={trigger} asChild onPointerDownCapture={owner.onTriggerPointerDown}>
+        {children}
+      </PopoverTrigger>
+      {owner.present && (
+        <PopoverContent
+          portalContainer={document.body}
+          onCloseAutoFocus={owner.onCloseAutoFocus}
+          side="left"
+          align="start"
+          className="floating-panel layer-attachment-popover"
+          aria-label={`${t("effects")} · ${layer.name}`}
+          onKeyDown={(event) => {
+            if (isCurrent() && attachmentDeleteKey(event.nativeEvent, engine, runCurrent)) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          }}
+        >
+          <ScrollShadow key={owner.generation} className="layer-attachment-scroll">
+            <div className="layer-attachment-viewport">
+              <EffectDetails
+                key={owner.generation}
+                engine={engine}
+                page={currentPage ?? page}
+                layer={layer}
+                effectId={effectId}
+                run={run}
+                isCurrent={isCurrent}
+                registerDeactivate={owner.registerDeactivate}
+              />
+            </div>
+          </ScrollShadow>
+        </PopoverContent>
+      )}
     </Popover>
   );
 }
-function EffectDetails({
+const EffectDetails = memo(function EffectDetails({
   engine,
   page,
   layer,
   effectId,
   run,
+  isCurrent,
+  registerDeactivate,
 }: {
   engine: EnginePort;
   page: Composition;
   layer: Layer;
   effectId?: string;
   run: (task: () => void) => void;
+  isCurrent: () => boolean;
+  registerDeactivate: (cancel: () => void) => () => void;
 }) {
   const { t } = useTranslation();
-  const edit = useLayerPreview(engine, page, [layer.id], run);
+  const runCurrent = (task: () => void) => {
+    if (isCurrent())
+      run(() => {
+        if (isCurrent()) task();
+      });
+  };
+  const edit = useLayerPreview(engine, page, [layer.id], runCurrent);
+  const cancelEdit = edit.cancel;
+  useLayoutEffect(
+    () =>
+      registerDeactivate(() => {
+        freezeEffectPreviews(engine, false);
+        cancelEdit();
+      }),
+    [engine, cancelEdit, registerDeactivate],
+  );
+  const cancel = () => {
+    if (isCurrent()) edit.cancel();
+  };
+  const begin = () => {
+    const current = resolveLayerPage(engine, page);
+    if (isCurrent() && current) edit.beginOnPage(current);
+  };
   const disabled = createLayerGeometryIndex(page).isLocked(layer.id);
   function update(effect: Effect, patch: Partial<Effect>, preview = false) {
+    const current = resolveLayerPage(engine, page);
+    if (!isCurrent() || !current) return;
+    edit.beginOnPage(current);
     const effects = layer.effects.map((item) => {
       if (item.id !== effect.id) return item;
       const next = { ...item, ...patch };
@@ -122,28 +180,32 @@ function EffectDetails({
   }
   return (
     <div className="layer-effect-details">
-      <LockedLayerNotice engine={engine} page={page} layers={[layer]} run={run} />
+      <LockedLayerNotice engine={engine} page={page} layers={[layer]} run={runCurrent} />
       {layer.effects
         .filter((effect) => !effectId || effect.id === effectId)
         .map((effect) => (
           <section
             key={effect.id}
-            onPointerDownCapture={() =>
-              attachmentSelection(engine).select(page, {
-                kind: "effect",
-                pageId: page.id,
-                layerId: layer.id,
-                effectId: effect.id,
-              })
-            }
-            onFocusCapture={() =>
-              attachmentSelection(engine).select(page, {
-                kind: "effect",
-                pageId: page.id,
-                layerId: layer.id,
-                effectId: effect.id,
-              })
-            }
+            onPointerDownCapture={() => {
+              const current = resolveLayerPage(engine, page);
+              if (isCurrent() && current)
+                attachmentSelection(engine).select(current, {
+                  kind: "effect",
+                  pageId: page.id,
+                  layerId: layer.id,
+                  effectId: effect.id,
+                });
+            }}
+            onFocusCapture={() => {
+              const current = resolveLayerPage(engine, page);
+              if (isCurrent() && current)
+                attachmentSelection(engine).select(current, {
+                  kind: "effect",
+                  pageId: page.id,
+                  layerId: layer.id,
+                  effectId: effect.id,
+                });
+            }}
           >
             <div className="section-title">
               <h3>{t(getEffectDefinition(effect.type).nameKey)}</h3>
@@ -158,7 +220,7 @@ function EffectDetails({
                 <IconButton
                   disabled={disabled}
                   label={t("removeEffect")}
-                  onClick={() => run(capturePresentationDelete(engine))}
+                  onClick={() => runCurrent(capturePresentationDelete(engine))}
                 >
                   <Trash2 size={13} />
                 </IconButton>
@@ -175,10 +237,10 @@ function EffectDetails({
                 max={100}
                 unit="%"
                 disabled={disabled}
-                onStart={edit.begin}
+                onStart={begin}
                 onPreview={(value) => update(effect, { opacity: value / 100 }, true)}
                 onCommit={(value) => update(effect, { opacity: value / 100 })}
-                onCancel={edit.cancel}
+                onCancel={cancel}
               />
               <SelectField
                 label={t("blendMode")}
@@ -191,7 +253,7 @@ function EffectDetails({
                 onPreview={(mode) =>
                   update(effect, { blendMode: mode as Effect["blendMode"] }, true)
                 }
-                onPreviewCancel={edit.cancel}
+                onPreviewCancel={cancel}
                 onValueChange={(mode) => update(effect, { blendMode: mode as Effect["blendMode"] })}
               />
             </div>
@@ -215,7 +277,7 @@ function EffectDetails({
                     true,
                   )
                 }
-                onPreviewCancel={edit.cancel}
+                onPreviewCancel={cancel}
                 onValueChange={(mode) =>
                   update(effect, {
                     composite: mode === "default" ? undefined : (mode as Effect["composite"]),
@@ -224,15 +286,16 @@ function EffectDetails({
               />
             </label>
             <EffectParameters
+              deferOffscreen={Boolean(effectId)}
               engine={engine}
               effect={effect}
               disabled={disabled}
-              onStart={edit.begin}
+              onStart={begin}
               onChange={(patch, preview) => update(effect, patch, preview)}
-              onCancel={edit.cancel}
+              onCancel={cancel}
             />
           </section>
         ))}
     </div>
   );
-}
+});

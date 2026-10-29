@@ -60,7 +60,6 @@ function samePage(a: Composition, b: Composition): boolean {
     (a.name === b.name &&
       a.width === b.width &&
       a.height === b.height &&
-      a.rulers === b.rulers &&
       sameInsets(a.margins, b.margins) &&
       sameGuides(a.guides, b.guides) &&
       a.layers.length === b.layers.length &&

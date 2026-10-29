@@ -1,6 +1,6 @@
-import { memo, useLayoutEffect, useRef, useState } from "react";
+import { memo, useCallback, useLayoutEffect, useRef, useState } from "react";
 import { useRowPosition } from "./use-row-position";
-import { ChevronRight, Eye, EyeOff, LockKeyhole, LockKeyholeOpen, ScanLine } from "lucide-react";
+import { LayerRowContents } from "./LayerRowContents";
 import { useTranslation } from "react-i18next";
 import {
   createLayerGeometryIndex,
@@ -12,18 +12,13 @@ import {
 import type { EditorServices } from "../../../state/contracts";
 import type { useLayerDrag } from "../drag/use-layer-drag";
 import type { LayerDropPosition } from "../drop-target";
-import { Input } from "../../ui/input";
-import { IconButton } from "../../shared/IconButton";
-import { LayerThumbnail } from "./LayerThumbnail";
-import { AttachmentCards } from "../attachments/AttachmentCards";
 import { attachmentSelection, type AttachmentTarget } from "../../../state/selection/attachments";
-import { DropCue } from "../drag/DropCue";
-import { activateLayerPage } from "../tree/activation";
+import { activateLayerPage, resolveLayerPage, sameLayerContainer } from "../tree/activation";
 import "./layer-row.css";
 import "../messages";
 export const LayerRow = memo(function LayerRow({
   engine,
-  page,
+  page: incomingPage,
   layer,
   assets,
   selected,
@@ -63,6 +58,10 @@ export const LayerRow = memo(function LayerRow({
   drag: ReturnType<typeof useLayerDrag>["handlers"];
 }) {
   const { t } = useTranslation();
+  const [retainedPage, setRetainedPage] = useState(incomingPage);
+  // Stable layer membership owns callbacks and drafts; page metadata is resolved at interaction time.
+  const page = sameLayerContainer(retainedPage, incomingPage) ? retainedPage : incomingPage;
+  if (page !== retainedPage) setRetainedPage(page);
   const node = useRef<HTMLDivElement>(null);
   useRowPosition(node, JSON.stringify([page.id, layer.id]), top, moving, reduced);
   const [editing, setEditing] = useState<{ page: Composition; id: string } | null>(null);
@@ -82,17 +81,20 @@ export const LayerRow = memo(function LayerRow({
     ? t("layerControls:lockedByParent", { name: lockedParent.name })
     : t("layerControls:lockedState");
   const expandable = layer.kind === "group" || !!layer.effects.length || !!layer.mask;
-  function canonical() {
-    const snapshot = engine.getSnapshot();
-    return (
-      snapshot.pageId === page.id &&
-      snapshot.project.pages.find((item) => item.id === page.id) === page
-    );
-  }
+  const canonical = useCallback(
+    (origin: Composition) => {
+      const snapshot = engine.getSnapshot();
+      return (
+        snapshot.pageId === origin.id &&
+        snapshot.project.pages.find((item) => item.id === origin.id) === origin
+      );
+    },
+    [engine],
+  );
   function select(additive: boolean) {
-    attachmentSelection(engine).clear();
     const samePage = engine.getSnapshot().pageId === page.id;
     if (!activateLayerPage(engine, page)) return;
+    attachmentSelection(engine).clear();
     const selection = engine.getSnapshot().selection;
     engine.select(
       additive && samePage
@@ -102,15 +104,49 @@ export const LayerRow = memo(function LayerRow({
         : [layer.id],
     );
   }
-  function rename(name: string) {
-    const valid = renaming;
-    setEditing(null);
-    if (valid && name.trim() && name.trim() !== layer.name)
-      run(() => {
-        if (canonical())
-          engine.execute({ type: "updateLayers", ids: [layer.id], patch: { name: name.trim() } });
-      });
-  }
+  const rename = useCallback(
+    (name: string) => {
+      const valid = renaming;
+      setEditing(null);
+      const origin = resolveLayerPage(engine, page);
+      if (valid && origin && name.trim() && name.trim() !== layer.name)
+        run(() => {
+          if (canonical(origin))
+            engine.execute({ type: "updateLayers", ids: [layer.id], patch: { name: name.trim() } });
+        });
+    },
+    [renaming, page, layer.id, layer.name, run, canonical, engine],
+  );
+  const cancelRename = useCallback(() => setEditing(null), []);
+  const toggle = useCallback(
+    () => onToggle(layer.id, layer.kind === "group"),
+    [onToggle, layer.id, layer.kind],
+  );
+  const expand = useCallback(() => {
+    if (!expanded) toggle();
+  }, [expanded, toggle]);
+  const toggleLock = useCallback(() => {
+    if (!activateLayerPage(engine, page)) return;
+    const origin = resolveLayerPage(engine, page);
+    if (!origin) return;
+    run(() => {
+      if (canonical(origin))
+        engine.execute({ type: "updateLayers", ids: [layer.id], patch: { locked: !layer.locked } });
+    });
+  }, [engine, page, run, canonical, layer.id, layer.locked]);
+  const toggleVisibility = useCallback(() => {
+    if (!activateLayerPage(engine, page)) return;
+    const origin = resolveLayerPage(engine, page);
+    if (!origin) return;
+    run(() => {
+      if (canonical(origin))
+        engine.execute({
+          type: "updateLayers",
+          ids: [layer.id],
+          patch: { visible: !layer.visible },
+        });
+    });
+  }, [engine, page, run, canonical, layer.id, layer.visible]);
   return (
     <div
       ref={node}
@@ -131,8 +167,10 @@ export const LayerRow = memo(function LayerRow({
       onClick={(event) => select(event.shiftKey || event.metaKey || event.ctrlKey)}
       onContextMenu={(event) => {
         if ((event.target as Element).closest("[data-attachment-target]")) return;
+        if (!resolveLayerPage(engine, page)) return;
         attachmentSelection(engine).clear();
-        if (!engine.getSnapshot().selection.includes(layer.id)) select(false);
+        const snapshot = engine.getSnapshot();
+        if (snapshot.pageId !== page.id || !snapshot.selection.includes(layer.id)) select(false);
       }}
       onKeyDown={(event) => {
         if (event.target !== event.currentTarget) return;
@@ -151,117 +189,43 @@ export const LayerRow = memo(function LayerRow({
           event.preventDefault();
           return;
         }
-        drag.start(event, layer, page);
+        const current = resolveLayerPage(engine, page);
+        if (current) drag.start(event, layer, current);
+        else event.preventDefault();
       }}
-      onDragOver={(event) => drag.over(event, layer, page)}
+      onDragOver={(event) => {
+        const current = resolveLayerPage(engine, page);
+        if (current) drag.over(event, layer, current);
+      }}
       onDragEndCapture={onDragEnd}
-      onDrop={(event) => drag.drop(event, layer, page)}
+      onDrop={(event) => {
+        const current = resolveLayerPage(engine, page);
+        if (current) drag.drop(event, layer, current);
+      }}
     >
-      {expandable && (
-        <button
-          className="group-chevron"
-          aria-label={layer.name}
-          onDoubleClick={(event) => event.stopPropagation()}
-          onClick={(event) => {
-            event.stopPropagation();
-            onToggle(layer.id, layer.kind === "group");
-          }}
-        >
-          <ChevronRight size={12} className="layer-chevron-icon" data-expanded={expanded} />
-        </button>
-      )}
-      <LayerThumbnail
+      <LayerRowContents
+        engine={engine}
+        page={page}
         layer={layer}
-        asset={layer.assetId ? assets[layer.assetId] : undefined}
+        assets={assets}
         services={services}
         previewKey={previewKey}
-        pageId={page.id}
+        attachmentTarget={attachmentTarget}
+        expanded={expanded}
+        renaming={renaming}
+        parentLocked={parentLocked}
+        locked={locked}
+        lockDescription={lockDescription}
+        drop={drop}
+        anchor={node}
+        run={run}
+        onToggle={toggle}
+        onExpand={expand}
+        onRename={rename}
+        onCancelRename={cancelRename}
+        onLock={toggleLock}
+        onVisibility={toggleVisibility}
       />
-      {renaming ? (
-        <Input
-          autoFocus
-          className="layer-name-input"
-          aria-label={t("renameLayer")}
-          defaultValue={layer.name}
-          onClick={(event) => event.stopPropagation()}
-          onBlur={(event) => rename(event.target.value)}
-          onKeyDown={(event) => {
-            event.stopPropagation();
-            if (event.key === "Enter") rename(event.currentTarget.value);
-            if (event.key === "Escape") setEditing(null);
-          }}
-        />
-      ) : (
-        <span className="layer-name">{layer.name}</span>
-      )}
-      {layer.maskSource && (
-        <span className="mask-indicator" aria-label={t("maskSource")}>
-          <ScanLine size={12} />
-        </span>
-      )}
-      {(layer.effects.length > 0 || layer.mask) && (
-        <AttachmentCards
-          engine={engine}
-          page={page}
-          layer={layer}
-          assets={assets}
-          services={services}
-          previewKey={previewKey}
-          target={attachmentTarget}
-          onExpand={() => {
-            if (!expanded) onToggle(layer.id, layer.kind === "group");
-          }}
-          run={run}
-        />
-      )}
-      {drop && <DropCue anchor={node} position={drop} />}
-      <div
-        className="layer-actions"
-        onClick={(event) => event.stopPropagation()}
-        onDoubleClick={(event) => event.stopPropagation()}
-      >
-        <IconButton
-          disabled={parentLocked}
-          className={`layer-lock-button ${locked ? "is-locked" : ""}`}
-          label={`${parentLocked ? lockDescription : t(layer.locked ? "unlock" : "lock")} · ${layer.name}`}
-          aria-description={locked ? lockDescription : undefined}
-          onClick={() => {
-            if (!activateLayerPage(engine, page)) return;
-            run(() => {
-              if (canonical())
-                engine.execute({
-                  type: "updateLayers",
-                  ids: [layer.id],
-                  patch: { locked: !layer.locked },
-                });
-            });
-          }}
-        >
-          {locked ? <LockKeyhole size={14} /> : <LockKeyholeOpen size={12} />}
-          {locked && (
-            <span className="layer-lock-label" aria-hidden>
-              {t("layerControls:lockedState")}
-            </span>
-          )}
-        </IconButton>
-        <IconButton
-          disabled={parentLocked}
-          label={`${t(layer.visible ? "visible" : "hidden")} · ${layer.name}`}
-          onClick={() => {
-            if (!activateLayerPage(engine, page)) return;
-            run(() => {
-              if (canonical())
-                engine.execute({
-                  type: "updateLayers",
-                  ids: [layer.id],
-                  patch: { visible: !layer.visible },
-                });
-            });
-          }}
-        >
-          {layer.visible ? <Eye size={13} /> : <EyeOff size={13} />}
-        </IconButton>
-      </div>
     </div>
   );
 });
