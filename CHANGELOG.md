@@ -6,6 +6,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Added
 
+- Checkpointed the internal authored-Motion export and audio-mixing modules with focused lifecycle tests; native encoded-output verification and editor wiring remain unfinished.
 
 - Added a per-composition Motion timeline with virtualized layer/property rows, trimming and movement, key selection, property diamonds, automatic subsequent keys and easing editors. Playback, scrubbing and continuous edits use imperative presentation subscriptions; hidden timeline state is retained with React Activity.
 - Added headless-built In Bloom and Motion Stress Lab templates with grouped imagery/video, masks, animated text/effects and every easing family. The gallery filters Static/Motion templates, validates original-media hashes and opens each as an independent project.
@@ -48,6 +49,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 - Timeline focus now allows configured Undo, Redo and Save shortcuts through its gesture boundary. Native text undo and nested shortcut recorders keep ownership, and unrelated canvas commands remain captured.
 - Timeline reopening honors reduced motion immediately, including Static → Motion switches, while the normal entrance/exit uses the retained DOM animation scope. Both paths preserve the hidden timeline and avoid unrelated editor commits.
+- Motion video output cancellation attempts both writer and encoder cleanup even when one fails. Audio-window, mixer and export teardown retain the original failure together with cleanup failures instead of replacing or silently dropping diagnostics.
 - Preserve original track ticks and rational source requests at NTSC frame boundaries instead of rounding logical selection to microseconds. A short native H.264 witness verifies exact random, sequential and playback sampling at 30000/1001 FPS, with zero retained frames/decoders after cleanup.
 - Reject transparent video import/decode before Mediabunny's JavaScript pixel-copy alpha merger can run. Typed English/French failures identify this source capability; opaque VP9 remains available, and native readback instrumentation now also counts actual VideoFrame.copyTo calls.
 - Pause Motion playback when a canvas frame fails, preserve its playhead and allow an explicit retry. Repeated identical diagnostics keep the same notification and expiry instead of restarting it for every failed frame.
