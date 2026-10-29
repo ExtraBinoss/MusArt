@@ -12,6 +12,7 @@ import {
 import type { EditorServices } from "../../../state/contracts";
 import type { useLayerDrag } from "../drag/use-layer-drag";
 import type { LayerDropPosition } from "../drop-target";
+import type { LayerDropRejection } from "../drag/validation";
 import { attachmentSelection, type AttachmentTarget } from "../../../state/selection/attachments";
 import { activateLayerPage, resolveLayerPage, sameLayerContainer } from "../tree/activation";
 import "./layer-row.css";
@@ -28,6 +29,7 @@ export const LayerRow = memo(function LayerRow({
   moving,
   dragging,
   drop,
+  rejected,
   reduced,
   services,
   previewKey,
@@ -48,6 +50,7 @@ export const LayerRow = memo(function LayerRow({
   moving: boolean;
   dragging: boolean;
   drop?: LayerDropPosition;
+  rejected?: LayerDropRejection;
   reduced: boolean;
   services?: Pick<EditorServices, "previewExport">;
   previewKey: string;
@@ -158,6 +161,9 @@ export const LayerRow = memo(function LayerRow({
       tabIndex={0}
       draggable={!locked}
       data-layer-id={layer.id}
+      data-layer-drop-id={layer.id}
+      data-layer-drop-page-id={page.id}
+      data-layer-drop-kind="layer"
       data-layer-tree-key={`layer:${layer.id}`}
       data-dragging={dragging || undefined}
       data-locked={locked || undefined}
@@ -224,6 +230,7 @@ export const LayerRow = memo(function LayerRow({
         locked={locked}
         lockDescription={lockDescription}
         drop={drop}
+        rejected={rejected}
         anchor={node}
         run={run}
         onToggle={toggle}

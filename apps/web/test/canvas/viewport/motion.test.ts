@@ -156,3 +156,22 @@ it("keeps exactly one tracked frame when a subscriber retargets an active animat
   expect(d.frames.size).toBe(0);
   expect(d.motion.read().zoom).toBeCloseTo(2.2);
 });
+
+it("rebases a viewport origin without clamping its first screen pose or publishing per-frame settled views", () => {
+  const constrain = vi.fn((view: View) => ({ ...view, y: Math.min(20, view.y) }));
+  const d = fixture(false, undefined, constrain),
+    settled = vi.fn();
+  d.motion.subscribeSettled(settled);
+  d.motion.zoomBy(2, { x: 0, y: 0 });
+  const calls = constrain.mock.calls.length;
+  d.motion.reframe({ x: 0, y: 100, zoom: 1 }, false);
+  expect(d.motion.read()).toEqual({ x: 0, y: 100, zoom: 1 });
+  expect(constrain).toHaveBeenCalledTimes(calls);
+  expect(d.frames.size).toBe(0);
+  expect(settled).not.toHaveBeenCalled();
+  d.motion.reframe({ x: 0, y: 20, zoom: 1 });
+  expect(settled).toHaveBeenCalledOnce();
+  d.motion.dispose();
+  d.motion.reframe({ x: 1, y: 1, zoom: 1 });
+  expect(d.motion.read()).toEqual({ x: 0, y: 20, zoom: 1 });
+});

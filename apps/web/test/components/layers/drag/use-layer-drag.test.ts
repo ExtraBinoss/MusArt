@@ -303,3 +303,38 @@ test("native autoscroll updates a stationary-pointer target while Motion-only mo
   d.engine.undo();
   expect(d.engine.getSnapshot().project.pages[0]!.layers).toEqual(d.page.layers);
 });
+
+test("two mounted surfaces share one native drag and either target commits its original command once", () => {
+  const d = fixture();
+  const other = renderHook(() => useLayerDrag(d.page, d.engine, d.run));
+  const execute = vi.spyOn(d.engine, "execute");
+  act(() => d.result.current.start(d.event, d.rectangle));
+  expect(other.result.current.dragging).toBe(d.rectangle.id);
+  act(() => other.result.current.over(d.event, d.text));
+  expect(d.result.current.target).toEqual(other.result.current.target);
+  expect(d.result.current.layers).toBe(other.result.current.layers);
+  act(() => other.result.current.drop(d.event, d.text));
+  expect(execute).toHaveBeenCalledOnce();
+  expect(d.result.current.dragging).toBeNull();
+  expect(other.result.current.dragging).toBeNull();
+  other.unmount();
+});
+
+test("unmounting an old native surface cannot remove a replacement owner's preview", () => {
+  const d = fixture(), other = renderHook(() => useLayerDrag(d.page, d.engine, d.run));
+  act(() => d.result.current.start(d.event, d.rectangle));
+  act(() => other.result.current.start(d.event, d.text));
+  d.unmount();
+  expect(other.result.current.dragging).toBe(d.text.id);
+  expect(document.querySelectorAll(".layer-drag-preview")).toHaveLength(1);
+  other.unmount();
+  expect(document.querySelector(".layer-drag-preview")).toBeNull();
+});
+
+test("a rejected native image releases the controller and surfaces the real platform error", () => {
+  const d = fixture();
+  d.transfer.setDragImage.mockImplementation(() => { throw Error("Platform rejected drag image"); });
+  expect(() => act(() => d.result.current.start(d.event, d.rectangle))).toThrow("Platform rejected drag image");
+  expect(d.result.current.dragging).toBeNull();
+  expect(document.querySelector(".layer-drag-preview")).toBeNull();
+});

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { useReducedMotion } from "motion/react";
 import {
   ChevronDown,
   ChevronRight,
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 import {
   getEffectDefinition,
+  createLayerGeometryIndex,
   motionTimeToSeconds,
   resolveLayerMotionProperty,
   type EnginePort,
@@ -29,6 +31,9 @@ import { KeyCluster } from "./KeyCluster";
 import { KeyframeMarker } from "./KeyframeMarker";
 import { createTimelineHoverSource } from "../../state/motion/hover";
 import "./row-hover.css";
+import { TimelineLayerRow } from "./layer-drag/TimelineLayerRow";
+import type { TimelineLayerDrag } from "./layer-drag/use-timeline-layer-drag";
+import "./layer-drag/layer-drag.css";
 
 const propertyLabels: Readonly<Record<string, string>> = {
   x: "positionX",
@@ -61,6 +66,7 @@ export function TimelineRows({
   compositionId,
   onZoomRange,
   interactive = true,
+  drag,
 }: {
   rows: readonly TimelineRow[];
   first: number;
@@ -80,10 +86,14 @@ export function TimelineRows({
   compositionId?: string;
   onZoomRange?: (start: number, end: number) => void;
   interactive?: boolean;
+  drag?: TimelineLayerDrag;
 }) {
   const { t } = useTranslation("motion"),
     { t: common } = useTranslation();
   const hover = useMemo(() => (engine ? createTimelineHoverSource(engine) : null), [engine]);
+  const reduced = !!useReducedMotion();
+  const dragPage = drag?.page;
+  const geometry = useMemo(() => dragPage ? createLayerGeometryIndex(dragPage) : null, [dragPage]);
   const hovered = useRef<{ key: string; node: HTMLElement; clear(): void } | null>(null);
   const clearHover = useCallback((key?: string) => {
     const current = hovered.current;
@@ -120,7 +130,8 @@ export function TimelineRows({
     );
     return `${common(definition.nameKey)} · ${parameter ? common(parameter.labelKey) : t(target.property)}`;
   }
-  return rows.slice(first, last).map((row, offset) => {
+  const visible = drag ? drag.window(first, last) : rows.slice(first, last).map((entry, offset) => ({ entry, at: first + offset }));
+  return visible.map(({ entry: row, at }) => {
     const Icon = row.kind === "property" ? Diamond : (layerIcons[row.layer.kind] ?? Layers);
     const active = selected.has(row.layer.id);
     const name = row.kind === "property" ? propertyName(row.property.target, row) : row.layer.name;
@@ -135,10 +146,14 @@ export function TimelineRows({
       !!compositionId &&
       resolveLayerMotionProperty(row.layer, row.property.target)?.interpolation === "continuous";
     return (
-      <div
+      <TimelineLayerRow
         key={row.key}
+        row={row}
+        top={at * rowHeight}
+        height={rowHeight}
+        reduced={reduced}
+        drag={drag}
         className={`motion-row ${active ? "is-selected" : ""} ${row.kind === "property" ? "is-property" : ""}`}
-        style={{ top: (first + offset) * rowHeight, height: rowHeight }}
         data-layer-id={row.layer.id}
         data-layer-kind={row.layer.kind}
         data-motion-hover-layer={row.layer.id}
@@ -152,7 +167,14 @@ export function TimelineRows({
             clearHover(row.key);
         }}
       >
-        <div className="motion-row-label" style={{ paddingLeft: 10 + row.depth * 14 }}>
+        <div className="motion-row-label" style={{ paddingLeft: 10 + row.depth * 14 }}
+          draggable={!!drag && interactive && row.kind === "layer" && !geometry?.isLocked(row.layer.id)}
+          onDragStartCapture={drag ? event => {
+            if (!interactive || row.kind !== "layer") { event.preventDefault(); return; }
+            clearHover(); transport.pause(); drag.native.start(event, row.layer, drag.page);
+          } : undefined}
+          onDragEndCapture={drag?.native.cancelOwned}
+        >
           {row.kind === "layer" && row.expandable ? (
             <button
               type="button"
@@ -229,7 +251,9 @@ export function TimelineRows({
                 disabled={!interactive}
                 aria-label={t("track", { name })}
                 onPointerDown={(event) => {
-                  if (row.track) gestures?.beginTrack(event, row.track, "move");
+                  if (!row.track) return;
+                  if (drag) { clearHover(); drag.pointer.begin(event, row.track); }
+                  else gestures?.beginTrack(event, row.track, "move");
                 }}
                 onClick={(event) => {
                   if (gestures?.consumePointerClick(event.detail) || (gestures && event.detail > 0))
@@ -293,7 +317,7 @@ export function TimelineRows({
               ),
             )}
         </div>
-      </div>
+      </TimelineLayerRow>
     );
   });
 }

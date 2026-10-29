@@ -6,6 +6,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Added
 
+- Checkpointed unfinished shared layer dragging, evaluated Motion transforms, stable Pin framing and adaptive handle styling for the next session. The resume guide records validated checks, pending integration/optical tests, known gesture guards and the approved composition-export, audio and GPU-transition scope.
+
 - Checkpointed the internal authored-Motion export and audio-mixing modules with focused lifecycle tests; native encoded-output verification and editor wiring remain unfinished.
 
 - Added a per-composition Motion timeline with virtualized layer/property rows, trimming and movement, key selection, property diamonds, automatic subsequent keys and easing editors. Playback, scrubbing and continuous edits use imperative presentation subscriptions; a retained dock keeps the complete transport/ruler header usable when the body is folded.
@@ -60,6 +62,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 - Locked artwork remains inspectable on the canvas with a constant-size lock badge and no editing handles. Layer rows expose persistent protection indicators, while the inspector and effect/mask popovers identify blocking parent locks and unlock only that chain in one undoable transaction.
 
 ### Fixed
+
+- Resolve canvas selection frames and resize starts from the evaluated Motion pose, including animated parent transforms. Clicks during authored playback can select visible artwork without starting edit gestures; historical replay remains protected.
 
 - Rejected colliding keyframe drag candidates before moving their markers, and retired all pending marker/link/tooltip previews when playback or another presentation replaces the timing draft. The last valid preview remains coherent and invalid releases never add history.
 - Allowed the persistent canvas timeline button to dismiss an already pinned panel, returning to the live header without a layout jump or a duplicate expand button.

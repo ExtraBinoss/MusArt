@@ -125,9 +125,11 @@ export function SelectionOverlays({
     paint();
     return controller.subscribe(paint);
   }, [controller, selected]);
-  const index = createLayerGeometryIndex(page);
+  // Selection-only publications retain the scene identity: mount directly on its current pose.
+  const presented = controller.read().page;
+  const index = createLayerGeometryIndex(presented);
   return (
-    <div ref={root} className="canvas-selection-overlays" data-selection-size={selected.length}>
+    <div ref={root} className="canvas-selection-overlays" data-selection-size={selected.length} data-selection-count={selected.length}>
       {selected.length > MAX_INDIVIDUAL_FRAMES ? (
         <CollectiveFrame
           selected={selected}
@@ -136,59 +138,63 @@ export function SelectionOverlays({
           viewSource={viewSource}
         />
       ) : (
-        selected.map((layer) => (
-          <div
-            key={layer.id}
-            className="canvas-selection"
-            data-layer-id={layer.id}
-            data-locked={layer.locked || index.isLocked(layer.id) || undefined}
-            style={{
-              display: index.isVisible(layer.id) && !layer.maskSource ? undefined : "none",
-              width: layer.width,
-              height: layer.height,
-              transform: `matrix(${index.worldMatrix(layer.id).join(",")})`,
-              borderWidth: 1 / zoom,
-            }}
-          >
-            {(layer.locked || index.isLocked(layer.id)) && (
-              <span
-                className="canvas-layer-lock"
-                role="img"
-                aria-label={t("layerControls:lockedState", { defaultValue: "Locked" })}
-                style={{ transform: `translate(-50%, -50%) scale(${1 / zoom})` }}
-              >
-                <LockKeyhole size={16} aria-hidden="true" />
-              </span>
-            )}
-            {!layer.locked &&
-              !index.ancestors(layer.id).some((parent) => parent.locked) &&
-              (["nw", "ne", "sw", "se", "rotate"] as const).map((handle) => (
-                <button
-                  type="button"
-                  key={handle}
-                  className={`canvas-handle canvas-handle-${handle}`}
-                  aria-label={`${handle === "rotate" ? t("rotate", { defaultValue: "Tourner" }) : t("resize", { defaultValue: "Redimensionner" })} ${layer.name} ${handle}`}
-                  style={{ transform: `scale(${1 / zoom})` }}
-                  data-layer-id={layer.id}
-                  data-handle={handle}
-                  onPointerDown={(event) => {
-                    if (!controller.read().playback) onHandle(event);
+        selected.map((selectedLayer) => {
+          const layer = index.byId.get(selectedLayer.id);
+          if (!layer || presented.id !== page.id) return null;
+          const locked = selectedLayer.locked || index.isLocked(layer.id);
+          return (
+            <div
+              key={layer.id}
+              className="canvas-selection"
+              data-layer-id={layer.id}
+              data-locked={locked || undefined}
+              style={{
+                display: index.isVisible(layer.id) && !layer.maskSource ? undefined : "none",
+                width: layer.width,
+                height: layer.height,
+                transform: `matrix(${index.worldMatrix(layer.id).join(",")})`,
+                borderWidth: 1 / zoom,
+              }}
+            >
+              {locked && (
+                <span
+                  className="canvas-layer-lock"
+                  role="img"
+                  aria-label={t("layerControls:lockedState", { defaultValue: "Locked" })}
+                  style={{ transform: `translate(-50%, -50%) scale(${1 / zoom})` }}
+                >
+                  <LockKeyhole size={16} aria-hidden="true" />
+                </span>
+              )}
+              {!locked &&
+                (["nw", "ne", "sw", "se", "rotate"] as const).map((handle) => (
+                  <button
+                    type="button"
+                    key={handle}
+                    className={`canvas-handle canvas-handle-${handle}`}
+                    aria-label={`${handle === "rotate" ? t("rotate", { defaultValue: "Tourner" }) : t("resize", { defaultValue: "Redimensionner" })} ${layer.name} ${handle}`}
+                    style={{ transform: `scale(${1 / zoom})` }}
+                    data-layer-id={layer.id}
+                    data-handle={handle}
+                    onPointerDown={(event) => {
+                      if (!controller.read().playback) onHandle(event);
+                    }}
+                  />
+                ))}
+              {selected.length === 1 && (
+                <span
+                  className="canvas-selection-size"
+                  style={{
+                    transform: `translateX(-50%) scale(${1 / zoom})`,
+                    transformOrigin: "top center",
                   }}
-                />
-              ))}
-            {selected.length === 1 && (
-              <span
-                className="canvas-selection-size"
-                style={{
-                  transform: `translateX(-50%) scale(${1 / zoom})`,
-                  transformOrigin: "top center",
-                }}
-              >
-                {Math.round(layer.width)} × {Math.round(layer.height)}
-              </span>
-            )}
-          </div>
-        ))
+                >
+                  {Math.round(layer.width)} × {Math.round(layer.height)}
+                </span>
+              )}
+            </div>
+          );
+        })
       )}
     </div>
   );

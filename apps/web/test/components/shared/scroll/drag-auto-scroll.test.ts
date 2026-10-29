@@ -1,5 +1,5 @@
 import { expect, it, vi } from "vitest";
-import { createTimelineAutoScroll } from "../../../../src/components/motion/selection/autoscroll";
+import { createDragAutoScroll } from "../../../../src/components/shared/scroll/drag-auto-scroll";
 
 function fixture() {
   const viewport = document.createElement("div");
@@ -36,7 +36,7 @@ function fixture() {
 
 it("uses one bounded frame loop for both axes and stops on release or leaving the edge", () => {
   const d = fixture(),
-    scroll = createTimelineAutoScroll(d);
+    scroll = createDragAutoScroll(d);
   scroll.update(495, 195);
   scroll.update(496, 196);
   expect(d.frames.size).toBe(1);
@@ -58,7 +58,7 @@ it("uses one bounded frame loop for both axes and stops on release or leaving th
 
 it("stops at scroll bounds and keeps ordinary track drags horizontal", () => {
   const d = fixture(),
-    scroll = createTimelineAutoScroll({ ...d, horizontalOnly: true });
+    scroll = createDragAutoScroll({ ...d, horizontalOnly: true });
   scroll.update(495, 195);
   d.tick(0);
   expect(d.viewport.scrollTop).toBe(0);
@@ -68,4 +68,44 @@ it("stops at scroll bounds and keeps ordinary track drags horizontal", () => {
   scroll.update(10, 195);
   expect(d.frames.size).toBe(0);
   scroll.stop();
+});
+
+it("coalesces interior pointer paint into one frame, keeps vertical drags vertical and stops idle", () => {
+  const d = fixture(), onFrame = vi.fn();
+  const scroll = createDragAutoScroll({ ...d, verticalOnly: true, onFrame });
+  for (let index = 0; index < 50; index++) scroll.update(350 + index / 10, 100);
+  expect(d.frames.size).toBe(1);
+  d.tick(0);
+  expect(onFrame).toHaveBeenCalledOnce();
+  expect(d.frames.size).toBe(0);
+  scroll.update(495, 195);
+  d.tick(16);
+  expect(d.viewport.scrollTop).toBeGreaterThan(0);
+  expect(d.viewport.scrollLeft).toBe(0);
+  scroll.stop();
+  d.tick(32);
+  expect(d.frames.size).toBe(0);
+});
+
+it("caches viewport rectangles through pixel moves and invalidates from native container resize", () => {
+  const callbacks: ResizeObserverCallback[] = [], disconnect = vi.fn();
+  const Original = globalThis.ResizeObserver;
+  globalThis.ResizeObserver = class {
+    constructor(callback: ResizeObserverCallback) { callbacks.push(callback); }
+    observe() {}
+    unobserve() {}
+    disconnect = disconnect;
+  };
+  try {
+    const d = fixture(), onGeometryChange = vi.fn();
+    const scroll = createDragAutoScroll({ ...d, verticalOnly: true, onFrame: vi.fn(), onGeometryChange });
+    for (let index = 0; index < 20; index++) { scroll.update(350 + index, 100); d.tick(index * 16); }
+    expect(d.viewport.getBoundingClientRect).toHaveBeenCalledOnce();
+    callbacks[0]!([], {} as ResizeObserver);
+    scroll.update(375, 100); d.tick(400);
+    expect(onGeometryChange).toHaveBeenCalledOnce();
+    expect(d.viewport.getBoundingClientRect).toHaveBeenCalledTimes(2);
+    scroll.stop();
+    expect(disconnect).toHaveBeenCalledOnce();
+  } finally { globalThis.ResizeObserver = Original; }
 });

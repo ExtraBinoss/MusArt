@@ -2,15 +2,18 @@ import { useLayoutEffect, useRef, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import type { LayerDropPosition } from "../drop-target";
+import type { LayerDropRejection } from "./validation";
 import "../messages";
 
 /** A body portal keeps a native drag's intent above virtual rows and scroll clipping. */
 export function DropCue({
   anchor,
   position,
+  reason,
 }: {
   anchor: RefObject<HTMLElement | null>;
-  position: LayerDropPosition;
+  position?: LayerDropPosition;
+  reason?: LayerDropRejection;
 }) {
   const { t } = useTranslation();
   const cue = useRef<HTMLDivElement>(null);
@@ -30,10 +33,10 @@ export function DropCue({
       window.removeEventListener("resize", place);
       window.removeEventListener("scroll", place, true);
     };
-  }, [anchor, position]);
+  }, [anchor, position, reason]);
   return createPortal(
-    <div ref={cue} role="status" className="layer-drop-cue" data-drop-position={position}>
-      {t(`layerControls:drop${position[0]!.toUpperCase()}${position.slice(1)}`)}
+    <div ref={cue} role="status" className="layer-drop-cue" data-drop-position={position} data-drop-rejected={reason}>
+      {reason ? t(`layerControls:dropRejected.${reason}`) : position ? t(`layerControls:drop${position[0]!.toUpperCase()}${position.slice(1)}`) : null}
     </div>,
     document.body,
   );

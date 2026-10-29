@@ -2,7 +2,7 @@ import type { PointerEvent as ReactPointerEvent } from "react";
 import type { EnginePort } from "@musart/core";
 import type { TimelineRow } from "../tree";
 import { createTimelineSelectionIndex, selectedRangeKeys, type KeyRange } from "./ranges";
-import { createTimelineAutoScroll } from "./autoscroll";
+import { createDragAutoScroll } from "../../shared/scroll/drag-auto-scroll";
 
 interface Surface {
   root: HTMLElement;
@@ -24,7 +24,7 @@ interface Marquee {
   surface: Surface;
   touched: Set<HTMLElement>;
   stopEngine: () => void;
-  scroll: ReturnType<typeof createTimelineAutoScroll>;
+  scroll: ReturnType<typeof createDragAutoScroll>;
   dirty: boolean;
 }
 
@@ -178,7 +178,7 @@ export function createTimelineMarquee(options: {
         touched: new Set(),
         stopEngine: () => {},
         dirty: false,
-        scroll: createTimelineAutoScroll({
+        scroll: createDragAutoScroll({
           viewport: surface.viewport,
           leftInset: surface.gutter,
           onScroll: preview,

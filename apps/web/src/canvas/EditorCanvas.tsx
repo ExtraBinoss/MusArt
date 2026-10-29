@@ -29,12 +29,12 @@ import { useRenderMetrics } from "../state/session/render-metrics";
 import { EMPTY_PREVIEW_SOURCE } from "../state/session/preview-source";
 import {
   clickSelection,
-  patchesToCommands,
   selectedRoots,
   type Handle,
   type LayerPatch,
 } from "./interaction/gestures";
-import { clientToPage, type Point, type View } from "./viewport/view";
+import { clientToPage, type Point } from "./viewport/view";
+import type { Gesture } from "./interaction/gesture-state";
 import { useViewport } from "./viewport/use-viewport";
 import { ViewportControls } from "./viewport/ViewportControls";
 import { createWorkspace, createArtboardView } from "./artboards/workspace";
@@ -43,11 +43,18 @@ import { artboardStyle } from "./artboards/presentation";
 import { ArtboardHeadings } from "./artboards/ArtboardHeadings";
 import { ArtboardModeFooter } from "./artboards/ArtboardModeFooter";
 import { InactiveArtboards } from "./artboards/InactiveArtboards";
-import { captureGestureOrigin, isGestureOriginCurrent } from "./interaction/gesture-origin";
+import { captureGestureOrigin } from "./interaction/gesture-origin";
+import {
+  captureTransformAuthoring,
+  isTransformAuthoringCurrent,
+  transformAuthoringCommands,
+  watchTransformAuthoring,
+} from "./interaction/transform-authoring";
 import "./artboards/artboards.css";
 import { QuickAdd } from "./quick-add/QuickAdd";
 import { CanvasSelection } from "./selection/CanvasSelection";
 import { canvasHit } from "./selection/hit";
+import { editablePresentedLayer, pickMotionPlayback } from "./selection/presented-pick";
 import { useMarquee } from "./selection/use-marquee";
 import { createLiveMarquee } from "./selection/live-marquee";
 import * as marqueeScope from "./selection/marquee-scope";
@@ -57,24 +64,11 @@ import { Measurements } from "./guides/Measurements";
 import { useWand } from "./interaction/use-wand";
 import { PixelSelectionOverlay, PixelSelectionToolbar } from "./selection/PixelSelectionOverlay";
 import { attachmentSelection } from "../state/selection/attachments";
-import {
-  useTransformSnapping,
-  type TransformGesture,
-} from "./interaction/snapping/use-transform-snapping";
+import { useTransformSnapping } from "./interaction/snapping/use-transform-snapping";
 import { EffectGizmo } from "./effects/EffectGizmo";
 import "./canvas.css";
 export type { Tool } from "./interaction/gestures";
 
-interface Gesture extends TransformGesture, marqueeScope.MarqueeScope {
-  pointerId: number;
-  mode: "pan" | "move" | "resize" | "box" | "draw";
-  view: View;
-  layers: Layer[];
-  handle?: Handle;
-  shape?: Layer;
-  current: Point;
-  boxStarted?: boolean;
-}
 export function EditorCanvas({
   engine,
   tool,
@@ -158,10 +152,14 @@ export function EditorCanvas({
     if (controller.read().playback && pixelSelection?.read()) pixelSelection.deselect();
     if (
       gesture.current &&
-      (!isGestureOriginCurrent(engine, gesture.current.origin) || controller.read().playback)
+      (!isTransformAuthoringCurrent(engine, gesture.current) || controller.read().playback)
     )
       cancelGesture();
   }, [engine, controller, cancelGesture, pixelSelection]);
+  useEffect(
+    () => watchTransformAuthoring(engine, () => gesture.current, cancelGesture),
+    [engine, cancelGesture],
+  );
   useCanvasPresentation({ controller, workspace, motion, viewport, beforePaint });
 
   function pagePoint(event: { clientX: number; clientY: number }): Point {
@@ -173,7 +171,7 @@ export function EditorCanvas({
     );
   }
   function capture(event: ReactPointerEvent) {
-    viewport.current?.focus();
+    viewport.current?.focus({ preventScroll: true });
     viewport.current?.setPointerCapture(event.pointerId);
   }
   function beginHandle(event: ReactPointerEvent, layer: Layer, handle: Handle) {
@@ -182,7 +180,8 @@ export function EditorCanvas({
     capture(event);
     const point = pagePoint(event);
     gesture.current = {
-      origin: captureGestureOrigin(engine),
+      ...captureTransformAuthoring(engine),
+      presentation: controller.read().page,
       pointerId: event.pointerId,
       mode: "resize",
       from: point,
@@ -196,20 +195,26 @@ export function EditorCanvas({
   function handlePointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
     if (event.button !== 0) return;
     if (gesture.current && gesture.current.pointerId !== event.pointerId) return;
-    const layer = page.layers.find((item) => item.id === event.currentTarget.dataset.layerId);
+    const layer = editablePresentedLayer(controller.read(), event.currentTarget.dataset.layerId);
     const handle = event.currentTarget.dataset.handle as Handle;
     if (layer) beginHandle(event, layer, handle);
   }
   function pointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    if (event.button < 0 || event.button > 2 || controller.read().playback) return;
+    if (event.button < 0 || event.button > 2) return;
     if (gesture.current && gesture.current.pointerId !== event.pointerId) return;
     if ((event.target as HTMLElement).closest("[data-canvas-control]")) return;
+    const frame = controller.read();
+    if (frame.playback) {
+      event.preventDefault();
+      if (tool === "pointer") pickMotionPlayback(engine, frame, pagePoint(event), event);
+      return;
+    }
     event.preventDefault();
-    event.currentTarget.focus({ preventScroll: true });
     capture(event);
     const point = pagePoint(event);
     const base = {
       origin: captureGestureOrigin(engine),
+      presentation: controller.read().page,
       pointerId: event.pointerId,
       from: point,
       current: point,
@@ -311,7 +316,12 @@ export function EditorCanvas({
     const ids = clickSelection(engine.getSnapshot().selection, hit.id, additive);
     engine.select(ids);
     if (picked?.locked) return;
-    gesture.current = { ...base, mode: "move", layers: selectedRoots(currentPage, ids) };
+    gesture.current = {
+      ...base,
+      ...captureTransformAuthoring(engine),
+      mode: "move",
+      layers: selectedRoots(currentPage, ids),
+    };
   }
   function pointerMove(event: ReactPointerEvent<HTMLDivElement>) {
     if (wand.active()) {
@@ -320,7 +330,7 @@ export function EditorCanvas({
     }
     const active = gesture.current;
     if (!active || active.pointerId !== event.pointerId) return;
-    if (!isGestureOriginCurrent(engine, active.origin)) {
+    if (!isTransformAuthoringCurrent(engine, active)) {
       cancelGesture();
       return;
     }
@@ -366,7 +376,7 @@ export function EditorCanvas({
     }
     const active = gesture.current;
     if (!active || active.pointerId !== event.pointerId) return;
-    if (!isGestureOriginCurrent(engine, active.origin)) {
+    if (!isTransformAuthoringCurrent(engine, active)) {
       cancelGesture();
       return;
     }
@@ -399,9 +409,8 @@ export function EditorCanvas({
         );
       liveMarquee.commit();
     }
-    const commands = patchesToCommands(patchesRef.current);
-    // Clear the transient frame before publishing canonical edits in this same input task.
-    // Otherwise observers materialize the entire preview again over the new document.
+    const commands = transformAuthoringCommands(engine, active, patchesRef.current);
+    // Clear the preview before canonical edits so observers cannot apply it twice.
     cancelGesture();
     try {
       if (active.mode === "move" || active.mode === "resize") {

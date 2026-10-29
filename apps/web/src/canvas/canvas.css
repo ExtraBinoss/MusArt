@@ -114,13 +114,7 @@
   box-shadow: 0 2px 8px #0003;
 }
 .canvas-handle {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: white;
-  border: 1px solid #2563eb;
   pointer-events: auto;
-  padding: 0;
 }
 .canvas-handle-nw {
   left: -4px;

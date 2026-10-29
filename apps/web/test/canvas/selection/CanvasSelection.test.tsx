@@ -182,3 +182,96 @@ test("temporally absent hover targets disappear and unmount/page changes cannot 
   clear();
   expect(hover.read()).toBeNull();
 });
+
+function hoverFixture() {
+  const d = setup(),
+    controller = new SceneController(d.engine, EMPTY_PREVIEW_SOURCE);
+  const hover = createTimelineHoverSource(d.engine);
+  let renders = 0;
+  const viewSource = { read: () => ({ x: 0, y: 0, zoom: 1 }), subscribe: () => () => {} };
+  function Host() {
+    renders++;
+    return (
+      <CanvasSelection
+        engine={d.engine}
+        controller={controller}
+        viewSource={viewSource}
+        viewport={{ current: null }}
+        showHandles
+        onHandle={vi.fn()}
+      />
+    );
+  }
+  return { ...d, controller, hover, Host, renders: () => renders };
+}
+
+test("selecting the hovered layer hides its redundant frame without clearing the hover lease", () => {
+  const d = hoverFixture(),
+    mount = d.mount(<d.Host />);
+  const clear = d.hover.show(d.engine.getSnapshot().pageId, d.rectangle.id);
+  const target = d.hover.read(),
+    frame = d.controller.read();
+  const outline = document.querySelector<HTMLElement>(".canvas-timeline-hover")!;
+  expect(outline.style.display).toBe("");
+  act(() => d.engine.select([d.rectangle.id]));
+  expect(outline.style.display).toBe("none");
+  expect(d.hover.read()).toBe(target);
+  expect(d.controller.read()).toBe(frame);
+  expect(d.renders()).toBe(1);
+  clear();
+  mount.unmount();
+});
+
+test("deselecting restores the same hover target without a scene publication", () => {
+  const d = hoverFixture();
+  d.engine.select([d.rectangle.id]);
+  const mount = d.mount(<d.Host />),
+    changed = vi.fn();
+  const stopScene = d.controller.subscribe(changed);
+  const clear = d.hover.show(d.engine.getSnapshot().pageId, d.rectangle.id);
+  const target = d.hover.read(),
+    frame = d.controller.read();
+  const outline = document.querySelector<HTMLElement>(".canvas-timeline-hover")!;
+  expect(outline.style.display).toBe("none");
+  act(() => d.engine.select([]));
+  expect(outline.style.display).toBe("");
+  expect(outline.dataset.layerId).toBe(d.rectangle.id);
+  expect(d.hover.read()).toBe(target);
+  expect(d.controller.read()).toBe(frame);
+  expect(changed).not.toHaveBeenCalled();
+  expect(d.renders()).toBe(1);
+  clear();
+  stopScene();
+  mount.unmount();
+});
+
+test("Play hover remains imperative and stale lease cleanup cannot hide its replacement or leak subscriptions", () => {
+  const d = hoverFixture();
+  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const subscribe = d.engine.subscribe,
+    subscriptions = new Set<() => void>();
+  vi.spyOn(d.engine, "subscribe").mockImplementation((listener) => {
+    subscriptions.add(listener);
+    const stop = subscribe(listener);
+    return () => {
+      subscriptions.delete(listener);
+      stop();
+    };
+  });
+  const mount = d.mount(<d.Host />),
+    transport = createMotionTransport(d.engine);
+  const oldClear = d.hover.show(d.engine.getSnapshot().pageId, d.rectangle.id);
+  const outline = document.querySelector<HTMLElement>(".canvas-timeline-hover")!;
+  act(() => transport.play());
+  expect(outline.style.opacity).toBe("0.2");
+  const clear = d.hover.show(d.engine.getSnapshot().pageId, d.text.id);
+  oldClear();
+  expect(outline.dataset.layerId).toBe(d.text.id);
+  expect(outline.style.display).toBe("");
+  expect(d.renders()).toBe(1);
+  act(() => transport.pause());
+  mount.unmount();
+  clear();
+  expect(subscriptions.size).toBe(0);
+  expect(d.hover.read()).toBeNull();
+});

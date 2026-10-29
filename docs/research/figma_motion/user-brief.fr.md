@@ -690,6 +690,100 @@ et pourqoi le dnd des layers ne marche plus dutout, il fait juste croix. why????
 quand je fais pin je veux bien que ca se pin daccord mais faut que ca s'anime de manière smooth et que dans la canvas ca nous bouge pas ou alors que ce soit smooth quoi, pas de truc violent quoi, truc vrm smooth
 ```
 
+## M93 — Drag surface clarification
+
+Question: La croix pendant le drag dans la liste Calques apparaît-elle aussi quand la lecture est arrêtée ?
+
+```text
+le drag je parle dans les layers (genre le panneau layer dans la timeline j'ai pas l'impression que je peux drag? et c'est un soucis, le meme moteur de dnd, vélocité et tout temps réel doit etre dans les layers etl e motion
+```
+
+## M94
+
+```text
+meme le truc de la timleine pourrait le drag up and down etc, pas que dans les trucs de gauche
+```
+
+## M95 — Subsequently canceled
+
+```text
+le preferences doit etre pareil bouton que le projets, template etc
+```
+
+## M96 — Cancels M95 only
+
+```text
+attend pardon oublie
+```
+
+M96 cancels the preference-button request. Motion selection, Pin framing and the shared drag engine remain active work.
+
+## M97 — Adaptive handle contrast
+
+```text
+le resiez handle doit adapter ses couleurs de handle, afin de s'adapter a la visibilité dans le canva,s genre faut echantionné , regarder les trucs dominants, et voir si le handle doit etre  blanc ou noir, parfois dans le hover dnas le motion c un resize avec handle noir aussi jsp pk
+```
+
+## M98 — Subsequently canceled text request
+
+```text
+kje dis que l'animation clear tout alors que le texte est similaire et tout tu vois
+```
+
+## M99 — Subsequently canceled hover request
+
+```text
+si y'a du motion, il doit etre play au hover, je pense avec l'engine, prépare le cou petc
+```
+
+## M100
+
+```text
+oh pnt
+```
+
+## M101
+
+```text
+pardon
+```
+
+## M102 — Cancels M98 and M99 only
+
+```text
+oublie  : si y'a du motion, il doit etre play au hover, je pense avec l'engine, prépare le cou petc
+kje dis que l'animation clear tout alors que le texte est similaire et tout tu vois
+```
+
+The text-transition and motion-hover-play requests are canceled. No implementation
+is authorized for those requests. The existing motion work and adaptive handle
+contrast remain active.
+
+## M103 — Graceful stop and tomorrow's scope
+
+```text
+peut tu arreter gracefully, me faire un recap pour reprendre demain en mode "go" je suis ok pour l'export de compositon et tout (tout ca ca serait dans export ducoup?? avec ptete un bouton dans le "..." qui fait pareil quoi
+
+le exporter pourra chosiir le artboard à selectionné par un select quoi avec les noms + scrollshadow etc
+
+il détecte automatiquement si c motion ou statique, si c motion ca la joue en temps réel dans le panneau si possible ou jsais pas, avec les params correct de medaibunny dans le bon ordre et surtout avec des defaults précis et tout,
+et pour les son il faut le add, donc voila, puis les sfx faudrait soit utiliser CINETIC qui a des sons typescript avec webaudio, soit juste une banque de cc0 pour vidéo comme ça on a une banque deja de sound (les sons auront une waveform type instagram a baton quoi) ou jsp clean quoi) faut des whoosh des trucs par catéégorie dans un selecteru
+
+et demain faudra aussi add des transitions car dans les motions on veux des transitions pareil enormement genre un pack de 30 en full gpu et tout propre ,et surtout fludie et catégorisé.
+```
+
+## M104 — One synchronized stacking order
+
+```text
+et rajoute que les layers dans le motion jouent le role de z-index tout comme les layers dans l'app normal, les deux sont synchro quoi avec le dnd etc hein!
+```
+
+## M105 — Recap only, not a coding resume
+
+```text
+allez go fait moi le recap jattend tjr
+```
+
 ## Reference handling
 
 The screenshots are user-supplied Figma UI references, not MusArt product assets. They document the requested appearance and interaction target; they do not grant a license to redistribute Figma code, brand assets or an external design system inside the application. Preserve MusArt branding and use the repository's genuine shadcn/Radix controls.

@@ -279,3 +279,54 @@ it("retires gesture DOM immediately when the transport replaces its draft owner"
   expect(d.onError).not.toHaveBeenCalled();
   d.controls.dispose();
 });
+
+it("hands off a delayed horizontal intent using original coordinates and commits once", () => {
+  const d = fixture(),
+    before = d.engine.getSnapshot().project;
+  const input = {
+    node: d.body,
+    button: 0,
+    pointerId: 7,
+    clientX: 100,
+    clientY: 80,
+    shiftKey: false,
+  };
+  expect(d.controls.beginTrackInput(input, d.track(), "move")).toBe(true);
+  d.controls.updatePointer({ pointerId: 7, clientX: 150, clientY: 82, shiftKey: false });
+  expect(d.row.style.getPropertyValue("--motion-drag-x")).toBe("50px");
+  expect(d.engine.getSnapshot().project).toBe(before);
+  const commit = vi.spyOn(d.engine, "transaction");
+  d.send(d.body, "pointerup", 150);
+  expect(commit).toHaveBeenCalledOnce();
+  expect(d.track().start).toEqual({ value: 1, rate: 2 });
+  d.engine.undo();
+  expect(d.engine.getSnapshot().project).toBe(before);
+  d.controls.dispose();
+});
+
+it("restores the pre-axis selection on typed cancellation and ignores foreign pointer packets", () => {
+  const d = fixture(),
+    before = d.engine.getSnapshot().project;
+  d.engine.select(["a"]);
+  d.controls.beginTrackInput(
+    {
+      node: d.body,
+      button: 0,
+      pointerId: 7,
+      clientX: 100,
+      clientY: 80,
+      shiftKey: false,
+      originalLayers: ["b"],
+    },
+    d.track(),
+    "move",
+  );
+  d.controls.updatePointer({ pointerId: 99, clientX: 150, clientY: 80, shiftKey: false });
+  expect(d.row.style.getPropertyValue("--motion-drag-x")).toBe("");
+  d.controls.updatePointer({ pointerId: 7, clientX: 150, clientY: 80, shiftKey: false });
+  d.controls.cancel();
+  expect(d.engine.getSnapshot().selection).toEqual(["b"]);
+  expect(d.engine.getSnapshot().project).toBe(before);
+  expect(d.row.style.getPropertyValue("--motion-drag-x")).toBe("");
+  d.controls.dispose();
+});

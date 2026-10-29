@@ -33,6 +33,7 @@ export {
 export { EditorEngine } from "./session/engine";
 export type { EngineOptions } from "./session/engine";
 export { EngineError } from "./errors";
+export { assertMotionHierarchyChange } from "./motion/hierarchy";
 export type { EngineErrorCode } from "./errors";
 export { validateProject } from "./document/validation";
 export {

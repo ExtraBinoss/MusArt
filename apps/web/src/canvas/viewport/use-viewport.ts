@@ -2,6 +2,9 @@ import { useEffect, useMemo, useRef, useSyncExternalStore, type RefObject } from
 import type { EnginePort } from "@musart/core";
 import type { WorkspaceSource } from "../artboards/workspace";
 import { createViewportActions } from "../session/viewport-actions";
+import { createViewportResizeAnchor } from "../session/viewport-resize";
+import { animatePresentationProgress } from "../../components/shared/motion/presentation-spring";
+import { createResizeAnchor } from "./resize-anchor";
 import { ViewMotion } from "./motion";
 import {
   constrainView,
@@ -40,6 +43,23 @@ function createMotion(
   });
 }
 
+function createReservation(
+  engine: EnginePort,
+  workspace: WorkspaceSource,
+  viewport: RefObject<HTMLDivElement | null>,
+  media: MediaQueryList,
+  motion: ViewMotion,
+) {
+  return createResizeAnchor({
+    motion,
+    rect: () => viewport.current?.getBoundingClientRect() ?? null,
+    workspace: () => workspace.read(),
+    reduced: () => media.matches,
+    spring: animatePresentationProgress,
+    scope: () => engine.getSnapshot().project,
+  });
+}
+
 export function useViewport({
   engine,
   workspace,
@@ -65,6 +85,11 @@ export function useViewport({
   );
   const viewRef = useRef(view);
   const actions = useMemo(() => createViewportActions(engine), [engine]);
+  const resizePort = useMemo(() => createViewportResizeAnchor(engine), [engine]);
+  const resizeAnchor = useMemo(
+    () => createReservation(engine, workspace, viewport, media, motion),
+    [motion, viewport, workspace, media, engine],
+  );
   const panIdle = useMemo<PanIdle>(() => ({ timer: undefined }), []);
   useEffect(() => {
     motion.activate();
@@ -73,7 +98,10 @@ export function useViewport({
       viewRef.current = motion.read();
     });
     const changed = () => {
-      if (media.matches) motion.finish();
+      if (media.matches) {
+        resizeAnchor.finish();
+        motion.finish();
+      }
     };
     media.addEventListener("change", changed);
     return () => {
@@ -81,7 +109,14 @@ export function useViewport({
       media.removeEventListener("change", changed);
       motion.dispose();
     };
-  }, [motion, media]);
+  }, [motion, media, resizeAnchor]);
+  useEffect(() => {
+    const unregister = resizePort.register(resizeAnchor.capture);
+    return () => {
+      unregister();
+      resizeAnchor.cancel();
+    };
+  }, [resizePort, resizeAnchor, projectId, layoutKey]);
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
       const rect = viewport.current?.getBoundingClientRect();
@@ -93,6 +128,7 @@ export function useViewport({
     () =>
       actions.subscribe((action) => {
         clearPanIdle(panIdle);
+        resizeAnchor.cancel();
         const handlers = {
           fit: () => {
             const rect = viewport.current?.getBoundingClientRect();
@@ -105,13 +141,14 @@ export function useViewport({
         };
         handlers[action]();
       }),
-    [actions, workspace, motion, viewport, panIdle],
+    [actions, workspace, motion, viewport, panIdle, resizeAnchor],
   );
   useEffect(() => {
     const element = viewport.current;
     if (!element) return;
     const wheel = (event: WheelEvent) => {
       event.preventDefault();
+      resizeAnchor.cancel();
       clearPanIdle(panIdle);
       const rect = element.getBoundingClientRect();
       if (event.ctrlKey || event.metaKey)
@@ -137,9 +174,12 @@ export function useViewport({
         }, PAN_SETTLE_MS);
       }
     };
-    const observer = new ResizeObserver(() => motion.jump(motion.read()));
+    const observer = new ResizeObserver(() => {
+      if (!resizeAnchor.resizeHandled()) motion.jump(motion.read());
+    });
     const interrupt = () => {
       clearPanIdle(panIdle);
+      resizeAnchor.cancel();
       motion.stop();
     };
     observer.observe(element);
@@ -151,6 +191,6 @@ export function useViewport({
       element.removeEventListener("pointerdown", interrupt, true);
       clearPanIdle(panIdle);
     };
-  }, [motion, viewport, panIdle]);
+  }, [motion, viewport, panIdle, resizeAnchor]);
   return { view, viewRef, motion, actions };
 }

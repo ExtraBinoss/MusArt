@@ -5,6 +5,7 @@ import type { Composition, EnginePort, Layer, Project } from "@musart/core";
 import type { EditorServices } from "../../../state/contracts";
 import type { AttachmentTarget } from "../../../state/selection/attachments";
 import type { LayerDropPosition } from "../drop-target";
+import type { LayerDropRejection } from "../drag/validation";
 import { Input } from "../../ui/input";
 import { IconButton } from "../../shared/IconButton";
 import { LayerThumbnail } from "./LayerThumbnail";
@@ -27,6 +28,7 @@ export const LayerRowContents = memo(function LayerRowContents({
   locked,
   lockDescription,
   drop,
+  rejected,
   anchor,
   run,
   onToggle,
@@ -49,6 +51,7 @@ export const LayerRowContents = memo(function LayerRowContents({
   locked: boolean;
   lockDescription: string;
   drop?: LayerDropPosition;
+  rejected?: LayerDropRejection;
   anchor: RefObject<HTMLDivElement | null>;
   run: (task: () => void) => void;
   onToggle: () => void;
@@ -117,7 +120,7 @@ export const LayerRowContents = memo(function LayerRowContents({
           run={run}
         />
       )}
-      {drop && <DropCue anchor={anchor} position={drop} />}
+      {(drop || rejected) && <DropCue anchor={anchor} position={drop} reason={rejected} />}
       <div
         className="layer-actions"
         onClick={(event) => event.stopPropagation()}

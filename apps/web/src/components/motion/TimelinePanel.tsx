@@ -34,7 +34,7 @@ import { useRenderMetrics } from "../../state/session/render-metrics";
 import { TimelineControls } from "./TimelineControls";
 import { TimelineRows } from "./TimelineRows";
 import { TimelineRuler } from "./TimelineRuler";
-import { projectTimelineRows } from "./tree";
+import { useTimelineLayerDrag } from "./layer-drag/use-timeline-layer-drag";
 import type { TimelineTransport, TimelineUnit } from "./model";
 import { createTimelineGestures } from "./gestures";
 import { clampTimelineHeight } from "./height";
@@ -202,7 +202,8 @@ export function TimelinePanel({
     window.addEventListener("resize", fit);
     return () => window.removeEventListener("resize", fit);
   }, [fitHeight]);
-  const rows = useMemo(() => projectTimelineRows(page, collapsed), [page, collapsed]);
+  const layerDrag = useTimelineLayerDrag({ engine, page, collapsed, transport, gestures, active, onError: setInteractionError });
+  const rows = layerDrag.rows;
   const selected = useMemo(() => new Set(snapshot.selection), [snapshot.selection]);
   const virtual = useVirtualList(rows.length, ROW_HEIGHT, viewport, 5);
   const toggleUnit = useCallback(() => setUnit((value) => (value === "s" ? "ms" : "s")), []);
@@ -397,6 +398,10 @@ export function TimelinePanel({
           <div
             className="motion-timeline-scroll"
             ref={viewport}
+            data-layer-drag-viewport
+            data-layer-drag-top-inset="32"
+            onDragOver={layerDrag.native.overTree}
+            onDrop={(event) => layerDrag.native.drop(event)}
             onScroll={(event) => {
               const node = event.currentTarget;
               const row = Math.floor(node.scrollTop / ROW_HEIGHT);
@@ -497,6 +502,7 @@ export function TimelinePanel({
               >
                 <TimelineRows
                   rows={rows}
+                  drag={layerDrag}
                   gestures={gestures}
                   interactive={active}
                   engine={engine}
@@ -565,7 +571,7 @@ export function TimelinePanel({
         <output ref={feedback} className="motion-gesture-feedback" aria-live="off" />
         {interactionError && (
           <p className="motion-gesture-error" role="alert">
-            {t(interactionError)}
+            {t(interactionError, { defaultValue: interactionError })}
           </p>
         )}
       </section>
