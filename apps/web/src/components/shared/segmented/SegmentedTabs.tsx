@@ -63,7 +63,11 @@ export function SegmentedTabs({
             }
           />
         )}
-        {item.icon}
+        {item.icon && (
+          <span className="segmented-tab-icon" aria-hidden>
+            {item.icon}
+          </span>
+        )}
         <span className="segmented-tab-label">{item.label}</span>
       </Trigger>
     );

@@ -24,7 +24,9 @@ export const EditorSidebar = memo(function EditorSidebar({
   onTimelapseOpenChange,
   exportOpen,
   onExportOpenChange,
+  mobilePanel,
 }: {
+  mobilePanel?: "properties" | "layers";
   engine: EnginePort;
   services: EditorServices;
   run: (action: () => void) => void;
@@ -44,42 +46,49 @@ export const EditorSidebar = memo(function EditorSidebar({
     () => ({ target, page, selection: snapshot.selection, assets: snapshot.project.assets }),
     [target, page, snapshot.selection, snapshot.project.assets],
   );
+  const inspector = (
+    <div className="inspector-tabs">
+      <div className="inspector-header">
+        <span className="inspector-design-label">
+          <PenTool size={13} />
+          {t("design")}
+        </span>
+        <ExportActions
+          engine={engine}
+          timelapseOpen={timelapseOpen}
+          onTimelapseOpenChange={onTimelapseOpenChange ?? (() => {})}
+          open={exportOpen}
+          onOpenChange={onExportOpenChange}
+          page={page}
+          pageCount={snapshot.project.pages.length}
+          selection={snapshot.selection}
+          revision={snapshot.revision}
+          services={services}
+          onTask={onTask}
+        />
+      </div>
+      <InspectorPresentation engine={engine} properties={properties} run={run} />
+    </div>
+  );
+  const layers = (
+    <LayersPanel
+      engine={engine}
+      services={services}
+      page={page}
+      project={snapshot.project}
+      selection={snapshot.selection}
+      run={run}
+    />
+  );
+  if (mobilePanel) return mobilePanel === "properties" ? inspector : layers;
   return (
     <ResizablePanelGroup orientation="vertical" className="sidebar-panels">
       <ResizablePanel id="properties" defaultSize="63%" minSize="22%">
-        <div className="inspector-tabs">
-          <div className="inspector-header">
-            <span className="inspector-design-label">
-              <PenTool size={13} />
-              {t("design")}
-            </span>
-            <ExportActions
-              engine={engine}
-              timelapseOpen={timelapseOpen}
-              onTimelapseOpenChange={onTimelapseOpenChange ?? (() => {})}
-              open={exportOpen}
-              onOpenChange={onExportOpenChange}
-              page={page}
-              pageCount={snapshot.project.pages.length}
-              selection={snapshot.selection}
-              revision={snapshot.revision}
-              services={services}
-              onTask={onTask}
-            />
-          </div>
-          <InspectorPresentation engine={engine} properties={properties} run={run} />
-        </div>
+        {inspector}
       </ResizablePanel>
       <ResizableHandle aria-label={t("panelResize")} withHandle className="layers-resize" />
       <ResizablePanel id="layers" defaultSize="37%" minSize="20%">
-        <LayersPanel
-          engine={engine}
-          services={services}
-          page={page}
-          project={snapshot.project}
-          selection={snapshot.selection}
-          run={run}
-        />
+        {layers}
       </ResizablePanel>
     </ResizablePanelGroup>
   );

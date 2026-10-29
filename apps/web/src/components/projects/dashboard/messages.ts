@@ -1,6 +1,12 @@
 import { registerFeatureTranslations } from "../../../state/i18n/feature-resources";
 export const messages = {
   en: {
+    home: "MusArt home",
+    backHome: "Back",
+    createActions: "Creation options",
+    backHomeLabel: "Back to home",
+    searchProjects: "Search projects",
+    noResults: "No matching project in the loaded items. Load more or try another name.",
     preferencesHint: "Personalize the editor’s appearance and language.",
     editShortcuts: "Customize shortcuts",
     title: "MusArt dashboard",
@@ -11,7 +17,6 @@ export const messages = {
     projectHeading: "Your projects",
     description: "Start from a template or make room for your next idea.",
     projectsHint: "Your work stays on this device. Pick up where you left off.",
-    local: "Your creative workspace, on this device",
     import: "Import .musart",
     custom: "Custom canvas",
     back: "Back to templates",
@@ -21,6 +26,13 @@ export const messages = {
     previewCount: "{{current}} of {{total}} artboards",
   },
   fr: {
+    home: "Accueil MusArt",
+    backHome: "Retour",
+    createActions: "Options de création",
+    backHomeLabel: "Retour à l’accueil",
+    searchProjects: "Rechercher un projet",
+    noResults:
+      "Aucun projet correspondant parmi les éléments chargés. Chargez la suite ou essayez un autre nom.",
     preferencesHint: "Personnalisez l’apparence et la langue de l’éditeur.",
     editShortcuts: "Personnaliser les raccourcis",
     title: "Tableau de bord MusArt",
@@ -31,7 +43,6 @@ export const messages = {
     projectHeading: "Vos projets",
     description: "Partez d’un template ou faites place à votre prochaine idée.",
     projectsHint: "Votre travail reste sur cet appareil. Reprenez là où vous en étiez.",
-    local: "Votre espace créatif, sur cet appareil",
     import: "Importer .musart",
     custom: "Canvas personnalisé",
     back: "Retour aux templates",

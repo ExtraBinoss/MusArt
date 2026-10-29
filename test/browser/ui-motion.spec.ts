@@ -188,10 +188,10 @@ test("layer expansion animates bounded real rows, ordinary scrolling and native 
   const canvas = page.getByTestId("editor-canvas");
   await canvas.hover({ position: { x: 450, y: 250 } });
   await page.mouse.wheel(0, 400);
-  const recenter = page.locator(".canvas-recenter");
-  await expect(recenter).toBeVisible();
-  expect((await recenter.boundingBox())!.height).toBe(40);
-  expect((await page.locator(".canvas-controls").boundingBox())!.height).toBe(40);
+  const brand = page.locator(".brand-button");
+  await expect(brand).toBeVisible();
+  expect((await brand.boundingBox())!.height).toBe(42);
+  expect((await page.locator(".canvas-controls").boundingBox())!.height).toBe(42);
   expect((await page.locator(".canvas-controls button").first().boundingBox())!.height).toBe(32);
   await page.screenshot({ path: "artifacts/screenshots/layer-motion-recenter.png" });
   await page.emulateMedia({ reducedMotion: "reduce" });

@@ -166,14 +166,23 @@ test("spotlight hands off real file pickers and opens settings/new/export dialog
   expect(await page.getByRole("dialog").count()).toBe(1);
   await page.keyboard.press("Escape");
   await choose(page, "new project", /^Nouveau projet/);
-  await expect(
-    page.getByRole("heading", { name: "Quel projet voulez-vous créer ?", exact: true }),
-  ).toBeVisible();
-  expect(await page.getByRole("dialog").count()).toBe(1);
-  const creation = page.getByRole("dialog", { name: "Tableau de bord MusArt", exact: true });
+  const creation = page.getByRole("dialog", {
+    name: "Un nouvel espace pour vos idées.",
+    exact: true,
+  });
+  await expect(creation).toBeVisible();
+  await expect(page.locator('[role="dialog"]')).toHaveCount(2);
   await expect(creation.getByRole("textbox", { name: "Nom", exact: true })).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(creation).toBeHidden();
+  const dashboard = page.getByRole("dialog", { name: "Tableau de bord MusArt", exact: true });
+  await expect(dashboard).toBeVisible();
+  await expect(
+    dashboard.getByRole("button", { name: "Nouveau projet", exact: true }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dashboard).toBeHidden();
+  await expect(page.getByTestId("editor-canvas")).toBeVisible();
   await choose(page, "png", /^Exporter/);
   await expect(
     page.getByRole("dialog", { name: "Exporter la composition", exact: true }),

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Diamond, Square } from "lucide-react";
+import { ModeIcon } from "./ModeIcon";
 import { useTranslation } from "react-i18next";
 import {
   planMotionInitialization,
@@ -7,6 +7,7 @@ import {
   type MotionInitializationPlan,
   type SessionSnapshot,
 } from "@musart/core";
+import { Button } from "../ui/button";
 import { SegmentedTabs } from "../shared/segmented/SegmentedTabs";
 import {
   AlertDialog,
@@ -25,10 +26,14 @@ export function CompositionMode({
   engine,
   snapshot,
   onMotionEnabled,
+  presentation = "segmented",
+  buttonLabel,
 }: {
   engine: EnginePort;
   snapshot: SessionSnapshot;
   onMotionEnabled?: () => void;
+  presentation?: "segmented" | "button";
+  buttonLabel?: string;
 }) {
   const { t } = useTranslation("motion");
   const page = snapshot.project.pages.find((item) => item.id === snapshot.pageId)!;
@@ -77,18 +82,25 @@ export function CompositionMode({
   }
   return (
     <div className="motion-mode" data-canvas-control data-keybinding-capture>
-      <SegmentedTabs
-        tooltips
-        mode="choice"
-        size="compact"
-        value={current}
-        label={t("mode")}
-        onValueChange={choose}
-        items={[
-          { value: "static", label: t("static"), icon: <Square size={13} /> },
-          { value: "motion", label: t("motion"), icon: <Diamond size={13} /> },
-        ]}
-      />
+      {presentation === "button" && current === "static" ? (
+        <Button size="lg" className="motion-enable-button" onClick={() => choose("motion")}>
+          <ModeIcon mode="motion" size={22} />
+          {buttonLabel ?? t("motion")}
+        </Button>
+      ) : (
+        <SegmentedTabs
+          tooltips
+          mode="choice"
+          size="compact"
+          value={current}
+          label={t("mode")}
+          onValueChange={choose}
+          items={[
+            { value: "static", label: t("static"), icon: <ModeIcon mode="static" size={15} /> },
+            { value: "motion", label: t("motion"), icon: <ModeIcon mode="motion" size={15} /> },
+          ]}
+        />
+      )}
       {error && (
         <p className="motion-error" role="alert">
           {t(error)}

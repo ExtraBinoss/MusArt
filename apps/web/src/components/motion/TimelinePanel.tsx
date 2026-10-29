@@ -32,10 +32,9 @@ import { createTimelineGestures } from "./gestures";
 import { clampTimelineHeight, readTimelineHeight, rememberTimelineHeight } from "./height";
 import "./messages";
 import "./timeline.css";
+import "./timeline-compact.css";
 
-const GUTTER = 244,
-  ACTION_WIDTH = 112,
-  ROW_HEIGHT = 24;
+const ACTION_WIDTH = 112;
 
 export function TimelinePanel({
   engine,
@@ -43,13 +42,18 @@ export function TimelinePanel({
   transport,
   onClose,
   active = true,
+  compact = false,
 }: {
   engine: EnginePort;
   snapshot: SessionSnapshot;
   transport: TimelineTransport;
   onClose: () => void;
   active?: boolean;
+  compact?: boolean;
 }) {
+  const GUTTER = compact ? 120 : 244;
+  const rowHeight = compact ? 32 : 24;
+  const actionWidth = compact ? 0 : ACTION_WIDTH;
   const { t } = useTranslation("motion");
   const panel = useRef<HTMLElement>(null),
     viewport = useRef<HTMLDivElement>(null),
@@ -73,7 +77,7 @@ export function TimelinePanel({
   const resize = useRef<{ pointer: number; y: number; height: number } | null>(null);
   const page = snapshot.project.pages.find((item) => item.id === snapshot.pageId)!;
   const duration = page.motion ? motionTimeToSeconds(page.motion.duration) : 2;
-  const width = Math.max(view.width, Math.min(1_000_000, duration * zoom + ACTION_WIDTH + 64));
+  const width = Math.max(view.width, Math.min(1_000_000, duration * zoom + actionWidth + 64));
   const scale = zoom;
   useLayoutEffect(() => {
     committedZoom.current = scale;
@@ -120,7 +124,7 @@ export function TimelinePanel({
       node.removeEventListener("wheel", wheel);
       if (frame !== null) cancelAnimationFrame(frame);
     };
-  }, [active]);
+  }, [active, GUTTER]);
   const gestures = useMemo(
     () =>
       createTimelineGestures({
@@ -140,9 +144,10 @@ export function TimelinePanel({
         viewport: viewport.current,
         feedback: feedback.current,
         scale,
+        gutter: GUTTER,
       });
     else gestures.dispose();
-  }, [gestures, scale, active]);
+  }, [gestures, scale, active, GUTTER]);
   useLayoutEffect(() => {
     if (active) return;
     const origin = resize.current;
@@ -175,7 +180,7 @@ export function TimelinePanel({
   }, [engine]);
   const rows = useMemo(() => projectTimelineRows(page, collapsed), [page, collapsed]);
   const selected = useMemo(() => new Set(snapshot.selection), [snapshot.selection]);
-  const virtual = useVirtualList(rows.length, ROW_HEIGHT, viewport, 5);
+  const virtual = useVirtualList(rows.length, rowHeight, viewport, 5);
   const toggleUnit = useCallback(() => setUnit((value) => (value === "s" ? "ms" : "s")), []);
   // Vertical window changes do not rebuild the transport's Radix controls or ruler.
   const collapseControl = useMemo(
@@ -205,7 +210,7 @@ export function TimelinePanel({
     const observer = new ResizeObserver(measure);
     observer.observe(node);
     return () => observer.disconnect();
-  }, []);
+  }, [GUTTER]);
   useLayoutEffect(() => {
     let previous: number | null = null;
     const paint = () => {
@@ -232,7 +237,7 @@ export function TimelinePanel({
         node = viewport.current;
       const x = motionTimeToSeconds(state.time) * scale;
       if (active && state.playing && state.compositionId === page.id && node) {
-        const visibleWidth = Math.max(1, view.width - ACTION_WIDTH);
+        const visibleWidth = Math.max(1, view.width - actionWidth);
         const padding = Math.min(48, visibleWidth / 4);
         const reset =
           previous !== null && state.playbackMode === "loop" && previous - x > visibleWidth / 2;
@@ -256,7 +261,7 @@ export function TimelinePanel({
       unsubscribe();
       paintPlayhead.current = () => {};
     };
-  }, [transport, scale, page.id, view.width, width, active]);
+  }, [transport, scale, page.id, view.width, width, active, GUTTER, actionWidth]);
   function size(value: number) {
     return clampTimelineHeight(value, window.innerHeight);
   }
@@ -278,12 +283,57 @@ export function TimelinePanel({
     if (event.currentTarget.hasPointerCapture(event.pointerId))
       event.currentTarget.releasePointerCapture(event.pointerId);
   }
+  const controls = (
+    <TimelineControls
+      engine={engine}
+      snapshot={snapshot}
+      transport={transport}
+      active={active}
+      unit={unit}
+      onUnit={toggleUnit}
+      collapseControl={compact ? undefined : collapseControl}
+    />
+  );
+  const zoomControl = (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Slider
+          className="motion-zoom"
+          tone="neutral"
+          disabled={!active}
+          min={20}
+          max={640}
+          step={10}
+          value={[zoom]}
+          aria-label={t("zoom")}
+          onValueChange={(values) => {
+            zoomAnchor.current = null;
+            desiredZoom.current = values[0] ?? 120;
+            setZoom(values[0] ?? 120);
+          }}
+        />
+      </TooltipTrigger>
+      <TooltipContent side="top" className="motion-control-tooltip">
+        <span>{t("zoom")}</span>
+        <KbdGroup>
+          <Kbd>Ctrl / ⌘</Kbd>
+          <Kbd>{t("wheel")}</Kbd>
+        </KbdGroup>
+      </TooltipContent>
+    </Tooltip>
+  );
   return (
     <TooltipProvider delayDuration={250}>
       <section
         ref={panel}
         className="motion-timeline"
-        style={{ height }}
+        data-compact={compact || undefined}
+        style={
+          {
+            height: compact ? undefined : height,
+            "--motion-gutter": `${GUTTER}px`,
+          } as import("react").CSSProperties
+        }
         aria-label={t("timeline")}
         data-canvas-control
         data-keybinding-capture
@@ -363,13 +413,14 @@ export function TimelinePanel({
         >
           <span className="panel-divider-grip" aria-hidden />
         </div>
-        <ScrollShadow className="motion-scroll-shadow">
+        {compact && <div className="motion-compact-toolbar">{controls}</div>}
+        <ScrollShadow className="motion-scroll-shadow" axis="both">
           <div
             className="motion-timeline-scroll"
             ref={viewport}
             onScroll={(event) => {
               const node = event.currentTarget;
-              const row = Math.floor(node.scrollTop / ROW_HEIGHT);
+              const row = Math.floor(node.scrollTop / rowHeight);
               if (row !== verticalRow.current) {
                 verticalRow.current = row;
                 virtual.onScroll(event);
@@ -386,15 +437,16 @@ export function TimelinePanel({
             >
               <div className="motion-ruler-line">
                 <div className="motion-ruler-label">
-                  <TimelineControls
-                    engine={engine}
-                    snapshot={snapshot}
-                    transport={transport}
-                    active={active}
-                    unit={unit}
-                    onUnit={toggleUnit}
-                    collapseControl={collapseControl}
-                  />
+                  {compact ? (
+                    <>
+                      {collapseControl}
+                      <span className="motion-compact-label">
+                        {t("layers", { ns: "translation" })}
+                      </span>
+                    </>
+                  ) : (
+                    controls
+                  )}
                 </div>
                 <TimelineRuler
                   transport={transport}
@@ -403,40 +455,17 @@ export function TimelinePanel({
                   displayDuration={width / scale}
                   pixelsPerSecond={scale}
                   left={Math.max(0, view.left - 120)}
-                  width={Math.max(0, view.width + 240 - ACTION_WIDTH)}
+                  width={Math.max(0, view.width + 240 - actionWidth)}
                   unit={unit}
                 />
-                <div className="motion-timeline-actions">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Slider
-                        className="motion-zoom"
-                        tone="neutral"
-                        disabled={!active}
-                        min={20}
-                        max={640}
-                        step={10}
-                        value={[zoom]}
-                        aria-label={t("zoom")}
-                        onValueChange={(values) => {
-                          zoomAnchor.current = null;
-                          desiredZoom.current = values[0] ?? 120;
-                          setZoom(values[0] ?? 120);
-                        }}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="motion-control-tooltip">
-                      <span>{t("zoom")}</span>
-                      <KbdGroup>
-                        <Kbd>Ctrl / ⌘</Kbd>
-                        <Kbd>{t("wheel")}</Kbd>
-                      </KbdGroup>
-                    </TooltipContent>
-                  </Tooltip>
-                  <TimelineIconButton label={t("close")} onClick={onClose}>
-                    <PanelBottomClose size={14} />
-                  </TimelineIconButton>
-                </div>
+                {!compact && (
+                  <div className="motion-timeline-actions">
+                    {zoomControl}
+                    <TimelineIconButton label={t("close")} onClick={onClose}>
+                      <PanelBottomClose size={14} />
+                    </TimelineIconButton>
+                  </div>
+                )}
               </div>
               <div
                 className="motion-row-space"
@@ -445,7 +474,7 @@ export function TimelinePanel({
                 role="group"
                 aria-label={t("selectKeysArea")}
                 onPointerDown={(event) => {
-                  if (active) gestures.beginMarquee(event, rows, ROW_HEIGHT);
+                  if (active) gestures.beginMarquee(event, rows, rowHeight);
                 }}
               >
                 <TimelineRows
@@ -456,7 +485,7 @@ export function TimelinePanel({
                   compositionId={page.id}
                   first={virtual.first}
                   last={virtual.last}
-                  rowHeight={ROW_HEIGHT}
+                  rowHeight={rowHeight}
                   selected={selected}
                   pixelsPerSecond={scale}
                   duration={duration}
@@ -486,7 +515,7 @@ export function TimelinePanel({
                       640,
                       Math.max(
                         zoom * 2,
-                        (view.width - ACTION_WIDTH - 48) / Math.max(0.001, end - start),
+                        (view.width - actionWidth - 48) / Math.max(0.001, end - start),
                       ),
                     );
                     if (next === scale && viewport.current) {
@@ -513,6 +542,12 @@ export function TimelinePanel({
             )}
           </div>
         </ScrollShadow>
+        {compact && (
+          <div className="motion-compact-zoom">
+            <span>{t("zoom")}</span>
+            {zoomControl}
+          </div>
+        )}
         <output ref={feedback} className="motion-gesture-feedback" aria-live="off" />
         {interactionError && (
           <p className="motion-gesture-error" role="alert">

@@ -176,3 +176,97 @@ test("child mutation observation defers boundary measurements until the browser 
   expect(viewport.parentElement).toHaveAttribute("data-overflow-bottom");
   view.unmount();
 });
+
+test("two-axis fades track horizontal boundaries without React/layout reads and clear native scrollbar gutters", () => {
+  let resize!: ResizeObserverCallback;
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      constructor(callback: ResizeObserverCallback) {
+        resize = callback;
+      }
+      observe() {}
+      disconnect() {}
+    },
+  );
+  const renders = vi.fn();
+  const view = render(
+    <Profiler id="axes" onRender={renders}>
+      <ScrollShadow axis="both">
+        <div role="list" />
+      </ScrollShadow>
+    </Profiler>,
+  );
+  const viewport = screen.getByRole("list"),
+    root = viewport.parentElement!;
+  const width = vi.fn(() => 390),
+    scrollWidth = vi.fn(() => 1400);
+  Object.defineProperties(viewport, {
+    clientWidth: { get: width },
+    scrollWidth: { get: scrollWidth },
+    clientHeight: { value: 200 },
+    scrollHeight: { value: 600 },
+    offsetWidth: { value: 398 },
+    offsetHeight: { value: 208 },
+  });
+  act(() => resize([], {} as ResizeObserver));
+  expect(root).toHaveAttribute("data-overflow-right");
+  expect(root).not.toHaveAttribute("data-overflow-left");
+  expect(root).toHaveAttribute("data-overflow-bottom");
+  expect(root.querySelectorAll(".scroll-shadow-side")).toHaveLength(2);
+  expect(root.style.getPropertyValue("--scroll-shadow-scrollbar-right")).toBe("8px");
+  expect(root.style.getPropertyValue("--scroll-shadow-scrollbar-bottom")).toBe("8px");
+  width.mockClear();
+  scrollWidth.mockClear();
+  const baseline = renders.mock.calls.length;
+  fireEvent.scroll(viewport, { target: { scrollLeft: 320, scrollTop: 100 } });
+  expect(root).toHaveAttribute("data-overflow-left");
+  expect(root).toHaveAttribute("data-overflow-right");
+  fireEvent.scroll(viewport, { target: { scrollLeft: 1010 } });
+  expect(root).not.toHaveAttribute("data-overflow-right");
+  expect(width).not.toHaveBeenCalled();
+  expect(scrollWidth).not.toHaveBeenCalled();
+  expect(renders).toHaveBeenCalledTimes(baseline);
+  view.unmount();
+});
+
+test("horizontal-only surfaces preserve the first viewport and suppress vertical fades", () => {
+  let resize!: ResizeObserverCallback;
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      constructor(callback: ResizeObserverCallback) {
+        resize = callback;
+      }
+      observe() {}
+      disconnect() {}
+    },
+  );
+  const view = render(
+    <ScrollShadow axis="horizontal">
+      <div role="list" />
+    </ScrollShadow>,
+  );
+  const viewport = screen.getByRole("list"),
+    root = viewport.parentElement!;
+  Object.defineProperties(viewport, {
+    clientWidth: { value: 100 },
+    scrollWidth: { value: 500 },
+    clientHeight: { value: 100 },
+    scrollHeight: { value: 500 },
+  });
+  act(() => resize([], {} as ResizeObserver));
+  expect(root.firstElementChild).toBe(viewport);
+  expect(root).toHaveAttribute("data-scroll-axis", "horizontal");
+  expect(root).toHaveAttribute("data-overflow-right");
+  expect(root).not.toHaveAttribute("data-overflow-bottom");
+  view.rerender(
+    <ScrollShadow>
+      <div role="list" />
+    </ScrollShadow>,
+  );
+  act(() => resize([], {} as ResizeObserver));
+  expect(root.querySelector(".scroll-shadow-side")).toBeNull();
+  expect(root).toHaveAttribute("data-overflow-bottom");
+  expect(root).not.toHaveAttribute("data-overflow-right");
+});

@@ -35,6 +35,7 @@ import {
   type LayerPatch,
 } from "./interaction/gestures";
 import { clientToPage, type Point, type View } from "./viewport/view";
+import { installTouchNavigation } from "./viewport/touch-navigation";
 import { useViewport } from "./viewport/use-viewport";
 import { ViewportControls } from "./viewport/ViewportControls";
 import { createWorkspace, createArtboardView } from "./artboards/workspace";
@@ -153,6 +154,13 @@ export function EditorCanvas({
       marquee.clear();
     },
     [motion, controller, cancelWand, snapFeedback, marquee, liveMarquee],
+  );
+  useEffect(
+    () =>
+      viewport.current
+        ? installTouchNavigation(viewport.current, motion, cancelGesture)
+        : undefined,
+    [motion, cancelGesture],
   );
   const beforePaint = useCallback(() => {
     if (controller.read().playback && pixelSelection?.read()) pixelSelection.deselect();

@@ -156,9 +156,13 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 35px 13px 13px;
-  color: #fff;
-  background: linear-gradient(transparent, #10121a99 45%, #10121ac4);
+  padding: 22px 13px 13px;
+  color: var(--foreground);
+  background: linear-gradient(
+    transparent,
+    color-mix(in srgb, var(--card) 72%, transparent) 55%,
+    var(--card)
+  );
   pointer-events: none;
 }
 .project-card-overlay > div {
@@ -184,11 +188,11 @@
   background: transparent;
   border: 0;
   border-radius: 0;
-  text-shadow: 0 1px 4px #0006;
+  text-shadow: none;
 }
 .project-card-overlay .project-options-trigger {
-  color: #fff;
-  background: #ffffff12;
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
   border: 1px solid transparent;
   width: 28px;
   height: 28px;
@@ -199,7 +203,7 @@
     background 140ms;
 }
 .project-card-overlay .project-options-trigger:hover {
-  background: #ffffff25;
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
 }
 .project-card:hover .project-options-trigger,
 .project-card:focus-within .project-options-trigger,
@@ -207,7 +211,7 @@
   opacity: 1;
 }
 .project-card-name:focus-visible {
-  outline: 2px solid #ffffff90;
+  outline: 2px solid var(--ring);
   outline-offset: 2px;
   border-radius: 3px;
 }
@@ -222,9 +226,9 @@
   height: 28px;
   padding: 3px 6px;
   font-size: 12px;
-  background: #10121acc;
-  color: #fff;
-  border-color: #ffffff50;
+  background: var(--field);
+  color: var(--foreground);
+  border-color: var(--border);
   border-radius: 7px;
 }
 .project-card-details {
@@ -234,8 +238,8 @@
   gap: 8px;
   margin-top: 7px;
   font-size: 10px;
-  color: #ffffffe0;
-  text-shadow: 0 1px 3px #0005;
+  color: var(--muted-foreground);
+  text-shadow: none;
 }
 .project-card-details > span:first-child {
   overflow: hidden;

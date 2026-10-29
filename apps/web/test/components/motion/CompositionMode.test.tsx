@@ -57,3 +57,33 @@ it("shows a truthful stale error rather than applying the old counted operation"
   expect(d.engine.getSnapshot()).toBe(before);
   expect(screen.getByRole("alert")).toHaveTextContent("La composition a changé");
 });
+
+it("the mobile primary action uses the same counted confirmation and one validated mode command", () => {
+  const d = setup(),
+    enabled = vi.fn();
+  d.engine.execute({ type: "addLayers", layers: [createLayer("rectangle")] });
+  function Host() {
+    const snapshot = useSyncExternalStore(d.engine.subscribe, d.engine.getSnapshot);
+    return (
+      <CompositionMode
+        engine={d.engine}
+        snapshot={snapshot}
+        presentation="button"
+        buttonLabel="Passer en mode Motion"
+        onMotionEnabled={enabled}
+      />
+    );
+  }
+  d.mount(<Host />);
+  expect(screen.queryByRole("radiogroup")).toBeNull();
+  const before = d.engine.getSnapshot();
+  fireEvent.click(screen.getByRole("button", { name: "Passer en mode Motion" }));
+  expect(screen.getByRole("alertdialog")).toHaveTextContent("4 éléments");
+  expect(d.engine.getSnapshot()).toBe(before);
+  fireEvent.click(screen.getByRole("button", { name: "Oui, activer Motion" }));
+  expect(enabled).toHaveBeenCalledOnce();
+  expect(d.engine.getSnapshot().project.pages[0]!.motion!.tracks).toHaveLength(4);
+  expect(screen.getByRole("radio", { name: "Motion" })).toBeChecked();
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project.pages[0]!.motion).toBeUndefined();
+});

@@ -4,6 +4,7 @@ import { createBloomTemplate } from "../../../../../src/services/projects/templa
 import {
   MotionTemplateError,
   openMotionTemplate,
+  prepareMotionTemplate,
   parseMotionTemplateManifest,
   type TemplateFetcher,
 } from "../../../../../src/services/projects/templates/motion/loader";
@@ -173,4 +174,14 @@ test("reports download, malformed JSON, bounded stream overflow and original int
 test("localizes actionable template failures in English and French", () => {
   expect(i18n.getResource("en", "motionTemplates", "integrity")).toContain("original source");
   expect(i18n.getResource("fr", "motionTemplates", "unsupported")).toContain("modèles vidéo");
+});
+
+test("preview preparation validates original bytes without installing or renaming a project", async () => {
+  const f = fixture();
+  const prepared = await prepareMotionTemplate("in-bloom", {}, f.fetcher);
+  expect(prepared.project.id).toBe(f.manifest.project.id);
+  expect(prepared.project.pages).toEqual(f.manifest.project.pages);
+  expect(prepared.originals).toHaveLength(1);
+  expect(prepared.originals[0]!.blob.size).toBe(f.bytes.byteLength);
+  expect(f.openMediaProject).not.toHaveBeenCalled();
 });

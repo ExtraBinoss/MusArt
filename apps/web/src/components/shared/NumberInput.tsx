@@ -1,8 +1,18 @@
 // Adapted from ResumI apps/web/src/ui/number-input.tsx, MIT.
 // Copyright (c) 2026 ResumI contributors. See docs/legal/resumi-MIT.txt.
 // Adaptation: imperative drafts and one validated commit per gesture.
-import { useId, useLayoutEffect, useMemo, useRef, type PointerEvent, type ReactNode } from "react";
+import {
+  useContext,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  type PointerEvent,
+  type ReactNode,
+} from "react";
 import { useTranslation } from "react-i18next";
+import { MobileControlsContext } from "../workspace/mobile/use-mobile";
+import { MobileNumberInput } from "../workspace/mobile/MobileNumberInput";
 import { Input } from "../ui/input";
 import { useResetFeedback } from "./use-reset-feedback";
 
@@ -29,7 +39,11 @@ export interface NumberInputProps {
   presentation?: { read(): number | null; subscribe(listener: () => void): () => void };
 }
 /** A single field with a scrub handle, native number editing and a quiet unit. */
-export function NumberInput({
+export function NumberInput(props: NumberInputProps) {
+  const mobile = useContext(MobileControlsContext);
+  return mobile ? <MobileNumberInput {...props} /> : <DesktopNumberInput {...props} />;
+}
+function DesktopNumberInput({
   label,
   identity,
   value,

@@ -69,3 +69,43 @@
     transition: none;
   }
 }
+
+.scroll-shadow[data-scroll-axis="horizontal"]::before,
+.scroll-shadow[data-scroll-axis="horizontal"]::after {
+  display: none;
+}
+.scroll-shadow-side {
+  position: absolute;
+  top: var(--scroll-shadow-side-top, 0px);
+  bottom: var(--scroll-shadow-scrollbar-bottom, 0px);
+  z-index: 8;
+  width: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+.scroll-shadow-side.is-left {
+  left: var(--scroll-shadow-side-start, 0px);
+  background: linear-gradient(
+    to right,
+    var(--scroll-shadow-surface, var(--background)),
+    transparent
+  );
+}
+.scroll-shadow-side.is-right {
+  right: var(--scroll-shadow-scrollbar-right, 0px);
+  background: linear-gradient(
+    to left,
+    var(--scroll-shadow-surface, var(--background)),
+    transparent
+  );
+}
+.scroll-shadow[data-overflow-left] > .scroll-shadow-side.is-left,
+.scroll-shadow[data-overflow-right] > .scroll-shadow-side.is-right {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-shadow-side {
+    transition: none;
+  }
+}

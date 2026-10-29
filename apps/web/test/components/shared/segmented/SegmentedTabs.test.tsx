@@ -103,3 +103,31 @@ test("value choices reuse the surface with genuine radio semantics and a single 
   );
   expect(screen.getByRole("radio", { name: "Light" })).toBeDisabled();
 });
+
+test("tabs and radio choices use the same explicit icon and label slots", () => {
+  const view = setup().mount(
+    <Tabs value="projects">
+      <SegmentedTabs
+        value="projects"
+        label="Library"
+        items={[{ value: "projects", label: "Projects", icon: <svg width="17" height="17" /> }]}
+      />
+    </Tabs>,
+  );
+  const tab = screen.getByRole("tab", { name: "Projects" });
+  expect(tab.querySelector(".segmented-tab-icon > svg")).not.toBeNull();
+  expect(tab.querySelector(".segmented-tab-icon")).toHaveAttribute("aria-hidden", "true");
+  expect(tab.querySelector(".segmented-tab-label")).toHaveTextContent("Projects");
+  view.rerender(
+    <SegmentedTabs
+      mode="choice"
+      value="static"
+      onValueChange={() => undefined}
+      label="Mode"
+      items={[{ value: "static", label: "Static", icon: <svg width="15" height="15" /> }]}
+    />,
+  );
+  const radio = screen.getByRole("radio", { name: "Static" });
+  expect(radio.querySelector(".segmented-tab-icon > svg")).not.toBeNull();
+  expect(radio.querySelector(".segmented-tab-label")).toHaveTextContent("Static");
+});

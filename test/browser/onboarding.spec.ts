@@ -1,130 +1,145 @@
-import { expect, test } from "@playwright/test";
-import { mkdir } from "node:fs/promises";
+import { expect, test, type Page } from "@playwright/test";
+import { readFile } from "node:fs/promises";
+import { parseProject } from "@musart/core";
 import { installReadbackProbe } from "./support/readback-probe";
-import { inspectImage } from "./support/image-probe";
+
+async function storedProjectIds(page: Page) {
+  return page.evaluate(async () => {
+    const opening = indexedDB.open("musart-studio");
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      opening.onsuccess = () => resolve(opening.result);
+      opening.onerror = () => reject(opening.error);
+    });
+    try {
+      return await new Promise<IDBValidKey[]>((resolve, reject) => {
+        const request = db.transaction("projects").objectStore("projects").getAllKeys();
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    } finally {
+      db.close();
+    }
+  });
+}
 
 for (const fallback of [false, true]) {
-  test(`first-visit onboarding uses real gradients and remembers completion (${fallback ? "WebGL" : "WebGPU"})`, async ({
+  test(`first visit creates no placeholder and opens a real portable template (${fallback ? "WebGL" : "WebGPU"})`, async ({
     page,
-  }) => {
+  }, info) => {
     if (fallback)
       await page.addInitScript(() => Object.defineProperty(navigator, "gpu", { value: undefined }));
     await installReadbackProbe(page);
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.goto("/");
-    const dialog = page.getByRole("dialog", { name: "Bienvenue dans MusArt" });
-    await expect(dialog).toBeVisible();
-    await expect(page.getByRole("progressbar")).toHaveCount(0);
-    const art = page.locator(".onboarding-gradient");
-    await expect(art).toHaveAttribute("data-gradient-state", "ready");
-    const backend = await art.locator("canvas").evaluate((canvas: HTMLCanvasElement) => {
-      if (canvas.getContext("webgpu")) return "webgpu";
-      return canvas.getContext("webgl2") ? "webgl2" : "unavailable";
-    });
-    expect(backend).toBe(fallback ? "webgl2" : "webgpu");
-    await expect(page.locator(".canvas-artboard canvas")).toHaveCount(0);
-    await page.keyboard.press("Escape");
-    await page.mouse.click(5, 5);
-    await expect(dialog).toBeVisible();
-    expect(await page.evaluate(() => localStorage.getItem("musart.onboarding.v1"))).toBeNull();
-    const movingBefore = await art.screenshot();
-    const beforeFrames = Number(await art.getAttribute("data-gradient-frames"));
-    await expect
-      .poll(async () => Number(await art.getAttribute("data-gradient-frames")))
-      .toBeGreaterThan(beforeFrames + 3);
-    const movingAfter = await art.screenshot();
-    await page.getByRole("button", { name: "Mettre le dégradé en pause" }).click();
-    const movingA = await inspectImage(page, movingBefore, [{ x: 0, y: 0, width: 1, height: 1 }]);
-    const movingB = await inspectImage(page, movingAfter, [{ x: 0, y: 0, width: 1, height: 1 }]);
-    expect(movingA.regions[0]!.hash).not.toBe(movingB.regions[0]!.hash);
-    const first = await art.screenshot();
-    const image = await inspectImage(page, first, [{ x: 0, y: 0, width: 1, height: 1 }]);
-    expect(image.colors).toBeGreaterThan(50);
-    await page.getByRole("button", { name: "Palette Aurora" }).click();
-    await expect(art).toHaveAttribute("data-gradient-palette", "aurora");
-    const second = await inspectImage(page, await art.screenshot(), [
-      { x: 0, y: 0, width: 1, height: 1 },
-    ]);
-    expect(second.regions[0]!.hash).not.toBe(image.regions[0]!.hash);
-    await mkdir("artifacts/screenshots", { recursive: true });
-    await page.screenshot({
-      path: `artifacts/screenshots/onboarding-${fallback ? "webgl" : "webgpu"}.png`,
-    });
-    await page.getByRole("button", { name: "Faire un petit tour" }).click();
-    await expect(page.getByRole("heading", { name: /Jouez avec les calques/ })).toBeFocused();
-    await page.getByRole("button", { name: "Continuer", exact: true }).click();
-    await expect(page.getByText(/Effacer les données/)).toBeVisible();
-    await page.getByRole("button", { name: "Ouvrir mon atelier" }).click();
-    await expect(page.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeVisible();
-    await expect(art).toHaveCount(0);
+    const landing = page.locator(".landing-page");
+    await expect(page.getByRole("heading", { level: 1, name: "Créez. Animez." })).toBeVisible();
     await expect(page.locator("canvas")).toHaveCount(0);
-    const projects = await page.evaluate(
-      () =>
-        new Promise<number>((resolve, reject) => {
-          const opening = indexedDB.open("musart-studio");
-          opening.onerror = () => reject(opening.error);
-          opening.onsuccess = () => {
-            const db = opening.result;
-            const count = db.transaction("projects").objectStore("projects").count();
-            count.onsuccess = () => {
-              db.close();
-              resolve(count.result);
-            };
-            count.onerror = () => {
-              db.close();
-              reject(count.error);
-            };
-          };
-        }),
+    await expect(page.locator("video")).toHaveCount(0);
+    expect(await storedProjectIds(page)).toEqual([]);
+    await page.keyboard.press("Control+s");
+    await page.keyboard.press("Escape");
+    await expect(landing).toBeVisible();
+    expect(await storedProjectIds(page)).toEqual([]);
+    await page.getByRole("button", { name: "Try MusArt", exact: true }).click();
+    const dashboard = page.getByRole("dialog", { name: "Tableau de bord MusArt", exact: true });
+    await expect(dashboard).toBeVisible();
+    expect(await storedProjectIds(page)).toEqual([]);
+    await page.getByRole("button", { name: "Retour à l’accueil", exact: true }).click();
+    await expect(landing).toBeVisible();
+    await page.getByRole("button", { name: "Créer depuis Story Instagram", exact: true }).click();
+    const canvas = page.locator('.canvas-artboard canvas[data-renderer-ready="true"]');
+    await expect(canvas).toBeVisible();
+    const backend = await canvas.evaluate((element: HTMLCanvasElement) =>
+      element.getContext("webgpu")
+        ? "webgpu"
+        : element.getContext("webgl2")
+          ? "webgl2"
+          : "unavailable",
     );
-    expect(projects).toBe(0);
-    expect(
-      await page.evaluate(() => JSON.parse(localStorage.getItem("musart.onboarding.v1")!)),
-    ).toEqual({ version: 1, completed: true });
+    expect(backend).toBe(fallback ? "webgl2" : "webgpu");
+    const ids = await storedProjectIds(page);
+    expect(ids).toHaveLength(1);
+    await page.getByRole("button", { name: "Actions du projet", exact: true }).click();
+    const downloading = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Télécharger le projet .musart", exact: true }).click();
+    const download = await downloading;
+    expect(download.suggestedFilename()).toMatch(/\.musart$/);
+    const project = parseProject(await readFile((await download.path())!, "utf8"));
+    expect(project.id).toBe(ids[0]);
+    expect(project.pages[0]).toMatchObject({ width: 1080, height: 1920, layers: [] });
+    await page.keyboard.press("Escape");
     await page.reload();
-    await expect(page.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeVisible();
-    await expect(page.locator(".onboarding-dialog")).toHaveCount(0);
-    expect(
-      await page.evaluate(() => {
-        const p = window.__musartVideoReadbacks!;
-        return [p.gpu, p.webgl, p.canvas];
-      }),
-    ).toEqual([0, 0, 0]);
+    await expect(canvas).toBeVisible();
+    await expect(landing).toHaveCount(0);
+    expect(await storedProjectIds(page)).toEqual(ids);
+    await page.screenshot({
+      path: info.outputPath(`first-visit-${fallback ? "webgl" : "webgpu"}.png`),
+    });
+    const reads = await page.evaluate(() => window.__musartVideoReadbacks!);
+    expect({ gpu: reads.gpu, webgl: reads.webgl, canvas: reads.canvas }).toEqual({
+      gpu: 0,
+      webgl: 0,
+      canvas: 0,
+    });
     expect(errors).toEqual([]);
   });
 }
 
-test("small screens, dark mode, reduced motion and English remain usable", async ({ page }) => {
+test("small screens, system dark mode, reduced motion and English stay usable", async ({
+  page,
+}, info) => {
   await page.setViewportSize({ width: 390, height: 700 });
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.addInitScript(() => localStorage.setItem("musart.theme", "dark"));
-  await page.goto("/");
-  const art = page.locator(".onboarding-gradient");
-  await expect(page.getByRole("dialog", { name: "Bienvenue dans MusArt" })).toBeVisible();
-  await expect(page.getByRole("progressbar")).toHaveCount(0);
-  await expect(art).toHaveAttribute("data-gradient-state", "ready");
-  const frames = await art.getAttribute("data-gradient-frames");
-  await page.waitForTimeout(180);
-  await expect(art).toHaveAttribute("data-gradient-frames", frames!);
-  await expect(page.getByRole("button", { name: "Mettre le dégradé en pause" })).toBeHidden();
-  await page.getByRole("button", { name: "Passer en anglais" }).click();
-  await expect(page.getByRole("dialog", { name: "Welcome to MusArt" })).toBeVisible();
-  const scroll = page.locator(".onboarding-scroll");
-  await scroll.evaluate((element) => {
-    element.scrollTop = element.scrollHeight;
+  await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "dark" });
+  await page.addInitScript(() => {
+    localStorage.setItem("musart.theme", "system");
+    localStorage.setItem("musart.language", "en");
   });
-  await page.getByRole("button", { name: "Show me around" }).click();
-  await expect.poll(() => scroll.evaluate((element) => element.scrollTop)).toBe(0);
-  await page.getByRole("button", { name: "Next", exact: true }).click();
-  const start = page.getByRole("button", { name: "Open my studio" });
-  await expect(start).toBeInViewport();
-  const overflow = await page
-    .locator(".onboarding-dialog")
-    .evaluate((element) => element.scrollWidth > element.clientWidth);
-  expect(overflow).toBe(false);
-  await mkdir("artifacts/screenshots", { recursive: true });
-  await page.screenshot({ path: "artifacts/screenshots/onboarding-mobile-dark.png" });
-  await start.click();
-  await expect(page.getByRole("dialog", { name: "MusArt dashboard" })).toBeVisible();
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1, name: "Create. Animate." })).toBeVisible();
+  await expect(page.locator("html")).toHaveClass(/dark/);
+  await expect(page.locator(".hero-letter").first()).toHaveCSS("animation-name", "none");
+  await expect(page.locator(".hero-letter").first()).toHaveCSS("transform", "none");
+  await page
+    .getByRole("heading", { name: "Your agent, by your side.", exact: true })
+    .scrollIntoViewIfNeeded();
+  expect(
+    await page
+      .locator(".landing-page")
+      .evaluate((element) => element.scrollWidth > element.clientWidth),
+  ).toBe(false);
+  await page.screenshot({ path: info.outputPath("first-visit-mobile-dark.png") });
+  await page.getByRole("button", { name: "Try MusArt", exact: true }).click();
+  const dashboard = page.getByRole("dialog", { name: "MusArt dashboard", exact: true });
+  await expect(dashboard).toBeVisible();
+  await expect(dashboard.getByRole("tab", { name: "Projects", exact: true })).toBeInViewport();
+  await expect(
+    dashboard.getByRole("button", { name: "New project", exact: true }),
+  ).toBeInViewport();
+  expect(await storedProjectIds(page)).toEqual([]);
+});
+
+test("a real template download failure leaves the landing usable without saving a project", async ({
+  page,
+}) => {
+  await page.route("**/templates/motion/in-bloom.json", (route) =>
+    route.fulfill({ status: 503, contentType: "application/json", body: "{}" }),
+  );
+  await page.goto("/");
+  const template = page.getByRole("button", {
+    name: "Créer depuis In Bloom — Démo Motion",
+    exact: true,
+  });
+  await template.click();
+  await expect(page.getByRole("alert")).toContainText(
+    "Le modèle n’a pas pu être téléchargé. Réessayez.",
+  );
+  await expect(template).toBeEnabled();
+  await expect(page.locator(".landing-page")).toBeVisible();
+  expect(await storedProjectIds(page)).toEqual([]);
+  await page.getByRole("button", { name: "Try MusArt", exact: true }).click();
+  await expect(
+    page.getByRole("dialog", { name: "Tableau de bord MusArt", exact: true }),
+  ).toBeVisible();
+  expect(await storedProjectIds(page)).toEqual([]);
 });

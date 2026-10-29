@@ -38,7 +38,7 @@ test("compact header and dock expose real commands, persist pins and support key
   const heights = await page
     .locator(".brand-button, .project-pill")
     .evaluateAll((elements) => elements.map((element) => element.getBoundingClientRect().height));
-  expect(new Set(heights)).toEqual(new Set([36]));
+  expect(new Set(heights)).toEqual(new Set([42]));
   const search = page.locator(".toolbar .magic-search-trigger");
   await expect(search).toHaveText("");
   await search.click();

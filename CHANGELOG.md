@@ -6,6 +6,13 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Added
 
+- Replaced the first-visit tour with a theme-aware landing page, an animated headline, a draggable carousel of real editable templates and four video placeholders in `public/videos`. The Projects/Templates library now has a desktop sidebar with five cached recent previews and Preferences, a compact mobile navigation, animated search, Static/Motion filtering and matching preview cards. Project loading remains bounded and asynchronous import/template creation keeps its stale-result guards.
+- Simplified project creation into a separate dialog with visual presets, linked dimensions, a live aspect-ratio preview and a split import action. Library page/card transitions respect reduced motion and keep the scroll gutter at the outer edge.
+- Added live Motion template hover previews through the real validated engine/render graph, with silent native video, one GPU owner, coalesced exact-rational frames, cancellation, bounded resources and zero image encoding or GPU readbacks. Previews leave the current document and editor React tree untouched.
+- Added a full-width mobile editor with bottom navigation, draggable non-modal sheets for Properties, Motion, Layers and tools, compact color controls, and genuine Radix property sliders with a single precision input. Active adjustments reveal the canvas through the surrounding interface, preview without rebuilding the editor, commit once per gesture and restore cancelled drafts. Sheets include shared scroll shadows, neutral animated drag feedback, a sliding navigation indicator, compact tools and a primary Motion activation action. Mobile export uses the existing validated export settings inside its own sheet, with dismissal locked during processing.
+- Added real evaluated WebGPU covers for the two Motion gallery templates at 2.4 seconds and a 480-pixel maximum edge, using their original video and the shared render graph with zero GPU readbacks.
+- Added native two-finger canvas zoom/pan with cancellation of the interrupted document gesture, shared Static/Motion artwork from the supplied icons, and safe-area spacing for mobile controls.
+
 - Checkpointed the internal authored-Motion export and audio-mixing modules with focused lifecycle tests; native encoded-output verification and editor wiring remain unfinished.
 
 - Added a per-composition Motion timeline with virtualized layer/property rows, trimming and movement, key selection, property diamonds, automatic subsequent keys and easing editors. Playback, scrubbing and continuous edits use imperative presentation subscriptions; hidden timeline state is retained with React Activity.
@@ -19,6 +26,9 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 - Added headless `evaluate` reports with exact decimal or tick/rate times, plus artboard selection for command application. Creation, authoring and evaluation run without a browser; media rendering and encoding remain separate platform adapters.
 
 ### Changed
+
+- Reorganized the compact mobile timeline with a smaller label gutter, touch-sized rows, a full-width transport toolbar and a separate zoom control. Shared scroll shadows now cover horizontal overflow while keeping sticky labels and native scrollbar controls clear.
+- Kept the desktop tool dock inside the available canvas height below the project controls, added hover-to-scroll overflow arrows with the shared scroll shadows, and animated floating controls away from visible rulers. Unified floating-control sizes and moved zoom tooltips below their buttons.
 
 - Rebuilt the gradient picker with shared Solid/Gradient segmented controls, draggable color stops and compact position, hex and opacity rows, preserving imperative previews, cancellation and one-step undo.
 - Refined Motion easing editors with hover curve previews, shared glass control points and reliable nested-select ownership. Ordinary controls use neutral theme states, tracks distinguish image/video media colors, and scroll shadows clear the scrollbars without layout reads on every scroll event.

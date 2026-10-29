@@ -24,6 +24,7 @@
   gap: 7px;
   color: var(--muted-foreground);
   font-size: 12px;
+  line-height: 1.25;
   font-weight: 500;
   background: transparent;
   box-shadow: none;
@@ -80,4 +81,34 @@
   display: inline-flex;
   flex: 1;
   min-width: 0;
+}
+
+/* Tabs and radio choices share a real icon box and text line, regardless of their primitive. */
+.segmented-tabs .segmented-tab > .segmented-tab-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  line-height: 0;
+}
+.segmented-tabs .segmented-tab-icon svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.segmented-tabs .segmented-tab-label {
+  display: block;
+  line-height: 1.25;
+}
+.segmented-tabs[data-size="compact"] .segmented-tab > .segmented-tab-icon {
+  flex-basis: 14px;
+  width: 14px;
+  height: 14px;
+}
+.segmented-tabs[data-size="compact"] .segmented-tab-icon svg {
+  width: 14px;
+  height: 14px;
 }

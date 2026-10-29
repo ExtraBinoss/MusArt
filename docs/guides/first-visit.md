@@ -1,25 +1,26 @@
 # Your first visit
 
-MusArt opens a short welcome tour before the project dashboard on a new browser visit. Complete its three steps to enter your studio. No account is required, and the tour does not create or save a project.
+When there is no project to restore, MusArt opens its landing page. It introduces the editor, effects, Motion and agent-assisted creation. **Start creating** and **Try MusArt** both open the project library. Visiting these pages does not create or save a document, and no account is required.
 
-| Step     | What you will discover                                                                                                                   |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Discover | Posters and graphics, editable typography and effects, and creation timelapses.                                                          |
-| Explore  | Layers, artboards, masks, undo and Magic Search. Press Ctrl/Cmd+K in the editor to find actions, and customize shortcuts in Preferences. |
-| Create   | Browser-local saving, editable `.musart` backups and sharing artwork with its original images.                                           |
+The landing page currently uses designed video placeholders. Future clips belong in [`apps/web/public/videos/`](../../apps/web/public/videos/README.md); the README describes the four feature slots. The application does not generate or download a demo video. A horizontal template carousel supports dragging, touch swipes, wheel scrolling and arrow controls. Hovering or focusing a Motion card on a device with a fine pointer plays a silent preview through the real engine and GPU graph. Leaving, scrolling, dragging or hiding the page stops it; reduced motion and touch devices keep the poster. The preview does not install or edit a project. Choosing a card opens the corresponding real template through the same guarded loader as the library. The finite headline reveal pauses in hidden tabs and respects reduced motion. Use the MusArt brand in the library to return to this page.
 
-Use **Back** to revisit a step and the final **Open my studio** button to enter the dashboard. Escape and clicks outside the dialog leave the first-visit tour open. You can then choose a template, create a blank canvas or import an existing project.
+## Choose your starting point
 
-## Make yourself at home
+The desktop library has a left sidebar with Projects, Templates and five recent projects with cached thumbnails. Community is marked as coming soon and stays disabled. On phones, Projects and Templates remain available in a compact top navigation. The Back button returns to the landing page. Preferences are at the bottom of the desktop sidebar and in the header on phones. To preview the landing directly, add `?welcome=1` to the app URL; this does not clear stored projects.
 
-| Control          | Behavior                                                                                                                  |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Language         | Switch between English and French without leaving the welcome. The same language carries into the editor.                 |
-| Palette swatches | Try three palettes rendered by MusArt's own Gradient effect. These choices are a demonstration and do not edit a project. |
-| Pause / Play     | Pause or resume the decorative gradient. It also stops when the page is hidden.                                           |
-| Reduced motion   | Your device's reduced-motion preference keeps the artwork still and removes entrance motion.                              |
-| Small screens    | The artwork sits above the explanations; the content scrolls while navigation remains available.                          |
+Choose a starting point:
 
-Completion is remembered in this browser, separately from your projects. An unfinished tour appears again on the next visit. If the browser cannot remember completion, MusArt explains the failure and offers **Continue for this visit**. Clearing site preferences can make the tour appear again when there is no project to restore. Existing projects continue to open normally.
+- **Projects** shows work saved on this device. Search filters the loaded items; **Load more projects** reads another bounded page without loading every project or its original assets.
+- **Templates** shows static and Motion starting points with the same image-card layout. Search by name or format and use the mode filter to narrow the list.
+
+Choose a project or template to open the editor. The creation button’s adjacent arrow opens **Import .musart** for an editable portable project. Switching between Projects and Templates uses a short transition; outgoing controls become inert immediately, and reduced motion removes the movement. Real import, download and storage errors remain visible; an unsuccessful operation leaves the library open.
+
+**New project** opens a separate dialog. Give the project a name, choose a visual format preset or enter custom dimensions, then select **Create**. The preview updates as the dimensions change. The link button locks or unlocks the aspect ratio. New projects use the standard canvas background; background editing remains available in the editor. Escape closes the creation dialog and returns to the library.
+
+## On a phone
+
+The canvas fills the editor. The bottom navigation opens Properties, Motion, Layers or Tools in a sheet, and Export opens the export options. Drag the sheet's top pill down, press Escape or use its close button to return to the canvas.
+
+Numeric properties use a slider and a precise value input. During a slider gesture, surrounding controls fade so the artwork stays visible. Releasing the slider commits one edit; cancelling restores the starting value. Pinch and pan with two fingers to navigate the canvas. The desktop editor keeps its side panels and keyboard shortcuts.
 
 Projects and fonts remain on this browser's origin. Download a `.musart` backup before clearing site data, and install custom fonts separately on another device. See [keyboard shortcuts and sharing](keyboard-shortcuts.md) and [fonts](fonts.md).

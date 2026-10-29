@@ -7,12 +7,15 @@ export function ScrollShadow({
   className,
   style,
   surface,
+  axis = "vertical",
 }: {
   children: ReactElement;
   className?: string;
   style?: CSSProperties;
   /** CSS color or theme token. An omitted value inherits --scroll-shadow-surface. */
   surface?: string;
+  /** Keep vertical behavior by default; horizontal fades also support two-axis viewports. */
+  axis?: "vertical" | "horizontal" | "both";
 }) {
   const root = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
@@ -20,24 +23,30 @@ export function ScrollShadow({
       viewport = wrapper?.firstElementChild;
     if (!(viewport instanceof HTMLElement) || !wrapper) return;
     let maximumTop = 0,
+      maximumLeft = 0,
       bottomGutter = -1,
       rightGutter = -1;
     function paint() {
       if (!wrapper || !(viewport instanceof HTMLElement)) return;
       const top = viewport.scrollTop;
-      wrapper.toggleAttribute("data-overflow-top", top > 1);
-      wrapper.toggleAttribute("data-overflow-bottom", maximumTop - top > 1);
+      const left = viewport.scrollLeft;
+      wrapper.toggleAttribute("data-overflow-top", axis !== "horizontal" && top > 1);
+      wrapper.toggleAttribute(
+        "data-overflow-bottom",
+        axis !== "horizontal" && maximumTop - top > 1,
+      );
+      wrapper.toggleAttribute("data-overflow-left", axis !== "vertical" && left > 1);
+      wrapper.toggleAttribute("data-overflow-right", axis !== "vertical" && maximumLeft - left > 1);
     }
     function measure() {
       if (!wrapper || !(viewport instanceof HTMLElement)) return;
       const height = viewport.clientHeight,
-        width = viewport.clientWidth;
+        width = viewport.clientWidth,
+        scrollWidth = viewport.scrollWidth;
       maximumTop = Math.max(0, viewport.scrollHeight - height);
+      maximumLeft = Math.max(0, scrollWidth - width);
       // Overlay scrollbars occupy no layout gutter. Keep the shared six-pixel bar clear too.
-      const bottom = Math.max(
-          viewport.offsetHeight - height,
-          viewport.scrollWidth > width + 1 ? 6 : 0,
-        ),
+      const bottom = Math.max(viewport.offsetHeight - height, scrollWidth > width + 1 ? 6 : 0),
         right = Math.max(viewport.offsetWidth - width, maximumTop > 1 ? 6 : 0);
       if (bottom !== bottomGutter) {
         bottomGutter = bottom;
@@ -66,14 +75,21 @@ export function ScrollShadow({
       resize.disconnect();
       childrenObserver.disconnect();
     };
-  }, [children.type, children.key]);
+  }, [children.type, children.key, axis]);
   return (
     <div
       className={cn("scroll-shadow", className)}
       ref={root}
+      data-scroll-axis={axis}
       style={surface ? ({ ...style, "--scroll-shadow-surface": surface } as CSSProperties) : style}
     >
       {children}
+      {axis !== "vertical" && (
+        <>
+          <span className="scroll-shadow-side is-left" aria-hidden />
+          <span className="scroll-shadow-side is-right" aria-hidden />
+        </>
+      )}
     </div>
   );
 }

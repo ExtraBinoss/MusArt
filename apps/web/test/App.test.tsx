@@ -2,6 +2,7 @@ import { expect, test, vi } from "vitest";
 import { screen, fireEvent, waitFor, act, within } from "@testing-library/react";
 import { App } from "../src/App";
 import { setup } from "./support/ui";
+import { projectSummary } from "./support/projects";
 import { toolAtom } from "../src/state/session/editor";
 import { createEffect, createProject } from "@musart/core";
 import { createMotionTransport } from "../src/services/motion/transport";
@@ -203,10 +204,11 @@ test("opens the real project/export dialogs and switches panel modes through com
     fireEvent.click(await screen.findByRole("option", { name: label }));
   }
   await search("new project", /Nouveau projet/);
-  expect(
-    await screen.findByRole("heading", { name: "Quel projet voulez-vous créer ?" }),
-  ).toBeVisible();
-  fireEvent.click(screen.getByRole("button", { name: "Fermer" }));
+  const creation = await screen.findByRole("dialog", { name: "Un nouvel espace pour vos idées." });
+  expect(creation).toBeVisible();
+  fireEvent.click(within(creation).getByRole("button", { name: "Fermer" }));
+  const library = screen.getByRole("dialog", { name: "Tableau de bord MusArt" });
+  fireEvent.click(within(library).getByRole("button", { name: "Fermer" }));
   await search("animate", /Exporter un timelapse/);
   expect(await screen.findByRole("dialog", { name: "Timelapse" })).toBeVisible();
   expect(screen.queryByRole("tab", { name: "Animation" })).toBeNull();
@@ -222,10 +224,8 @@ test("starts with the shared empty dashboard and mounts the editor only after ch
   });
   d.mount(<App engine={d.engine} services={d.services} welcome />);
   expect(screen.queryByTestId("canvas")).not.toBeInTheDocument();
-  expect(screen.getByRole("dialog", { name: "Bienvenue dans MusArt" })).toBeVisible();
-  fireEvent.click(screen.getByRole("button", { name: "Faire un petit tour" }));
-  fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
-  fireEvent.click(screen.getByRole("button", { name: "Ouvrir mon atelier" }));
+  expect(screen.getByRole("heading", { name: "Créez. Animez." })).toBeVisible();
+  fireEvent.click(screen.getAllByRole("button", { name: "Commencer à créer" })[0]!);
   expect(
     await screen.findByRole("heading", { name: "Quel projet voulez-vous créer ?" }),
   ).toBeVisible();
@@ -245,4 +245,25 @@ test("starts with the shared empty dashboard and mounts the editor only after ch
   expect(d.services.createProject).toHaveBeenCalledWith(
     expect.objectContaining({ presetId: "tiktok-video" }),
   );
+});
+
+test("welcome preview can reopen the already restored project without replacing its identity", async () => {
+  const previous = location.href;
+  history.replaceState(null, "", "?welcome=1");
+  try {
+    const d = setup();
+    vi.mocked(d.services.listProjectPage).mockResolvedValue({
+      projects: [projectSummary(d.project.id, d.project.name)],
+      before: null,
+    });
+    d.mount(<App engine={d.engine} services={d.services} />);
+    expect(screen.queryByTestId("canvas")).toBeNull();
+    fireEvent.click(screen.getAllByRole("button", { name: "Commencer à créer" })[0]!);
+    fireEvent.click(await screen.findByRole("button", { name: "Atelier" }));
+    await screen.findByTestId("canvas");
+    expect(d.services.openProject).toHaveBeenCalledExactlyOnceWith(d.project.id);
+    expect(d.engine.getSnapshot().project.id).toBe(d.project.id);
+  } finally {
+    history.replaceState(null, "", previous);
+  }
 });

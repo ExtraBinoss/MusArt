@@ -13,7 +13,7 @@ import { memo } from "react";
 import type { EnginePort } from "@musart/core";
 import { useTranslation } from "react-i18next";
 import { toolAtom } from "../../state/session/editor";
-import { ScrollShadow } from "../shared/scroll/ScrollShadow";
+import { ToolbarScroll } from "./dock/ToolbarScroll";
 import { IconButton } from "../shared/IconButton";
 import { ShapeToolSlot } from "../assets/ShapeToolSlot";
 import { Separator } from "../ui/separator";
@@ -40,38 +40,36 @@ function ToolbarContents(surface: SearchSurface) {
   const bindings = useKeybindings();
   return (
     <nav className="toolbar floating-panel" aria-label={t("selection")}>
-      <ScrollShadow className="toolbar-scroll" surface="var(--popover)">
-        <div className="toolbar-contents" data-dock-scroll>
-          <StaticTools engine={engine} />
-          <Separator />
-          <IconButton
-            label={t("import")}
-            shortcut={bindingLabel("action:importImages", bindings)}
-            onClick={() => surface.run("action:importImages")}
-          >
-            <ImagePlus strokeWidth={1.65} />
-          </IconButton>
-          <Separator />
-          <IconButton
-            label={t("undo")}
-            shortcut={bindingLabel("action:undo", bindings)}
-            disabled={!canUndo}
-            onClick={() => surface.run("action:undo")}
-          >
-            <Undo2 strokeWidth={1.65} />
-          </IconButton>
-          <IconButton
-            label={t("redo")}
-            shortcut={bindingLabel("action:redo", bindings)}
-            disabled={!canRedo}
-            onClick={() => surface.run("action:redo")}
-          >
-            <Redo2 strokeWidth={1.65} />
-          </IconButton>
-          <PinnedCommands commands={surface.commands} run={surface.run} />
-          {surface.trigger}
-        </div>
-      </ScrollShadow>
+      <ToolbarScroll>
+        <StaticTools engine={engine} />
+        <Separator />
+        <IconButton
+          label={t("import")}
+          shortcut={bindingLabel("action:importImages", bindings)}
+          onClick={() => surface.run("action:importImages")}
+        >
+          <ImagePlus strokeWidth={1.65} />
+        </IconButton>
+        <Separator />
+        <IconButton
+          label={t("undo")}
+          shortcut={bindingLabel("action:undo", bindings)}
+          disabled={!canUndo}
+          onClick={() => surface.run("action:undo")}
+        >
+          <Undo2 strokeWidth={1.65} />
+        </IconButton>
+        <IconButton
+          label={t("redo")}
+          shortcut={bindingLabel("action:redo", bindings)}
+          disabled={!canRedo}
+          onClick={() => surface.run("action:redo")}
+        >
+          <Redo2 strokeWidth={1.65} />
+        </IconButton>
+        <PinnedCommands commands={surface.commands} run={surface.run} />
+        {surface.trigger}
+      </ToolbarScroll>
     </nav>
   );
 }

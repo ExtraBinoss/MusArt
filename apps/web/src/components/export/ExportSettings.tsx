@@ -23,7 +23,11 @@ export function ExportSettings({
   onTask,
   onOpenChange,
   pendingRef,
-}: Omit<ExportPopoverProps, "open"> & { pendingRef: MutableRefObject<boolean> }) {
+  onPendingChange,
+}: Omit<ExportPopoverProps, "open"> & {
+  pendingRef: MutableRefObject<boolean>;
+  onPendingChange?: (pending: boolean) => void;
+}) {
   const { t } = useTranslation();
   const [options, setOptions] = useState<ExportOptions>({
     scale: 1,
@@ -51,6 +55,7 @@ export function ExportSettings({
   async function submit() {
     if (pendingRef.current) return;
     pendingRef.current = true;
+    onPendingChange?.(true);
     setBusy(true);
     setFailed(false);
     const request = { ...options, ...(selectionOnly ? { selectionOnly: true } : {}) };
@@ -70,7 +75,10 @@ export function ExportSettings({
       if (alive.current) setFailed(true);
     } finally {
       pendingRef.current = false;
-      if (alive.current) setBusy(false);
+      if (alive.current) {
+        setBusy(false);
+        onPendingChange?.(false);
+      }
     }
     if (alive.current && ok) onOpenChange(false);
   }

@@ -38,6 +38,7 @@ export function ViewportControls({
       <div className="canvas-controls floating-panel" data-canvas-control>
         <IconButton
           size="icon"
+          tooltipSide="bottom"
           label={t("zoomOut", { defaultValue: "Dézoomer" })}
           shortcut={bindingLabel("action:zoomOut", bindings)}
           onClick={() => actions.run("zoomOut")}
@@ -46,6 +47,7 @@ export function ViewportControls({
         </IconButton>
         <IconButton
           className="canvas-zoom"
+          tooltipSide="bottom"
           label={t("resetView", { defaultValue: "100 % et recentrer" })}
           shortcut={bindingLabel("action:reset", bindings)}
           onClick={() => actions.run("reset")}
@@ -54,6 +56,7 @@ export function ViewportControls({
         </IconButton>
         <IconButton
           size="icon"
+          tooltipSide="bottom"
           label={t("zoomIn", { defaultValue: "Zoomer" })}
           shortcut={bindingLabel("action:zoomIn", bindings)}
           onClick={() => actions.run("zoomIn")}

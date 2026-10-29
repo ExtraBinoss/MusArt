@@ -500,3 +500,78 @@
 .page-tab[data-state="active"] {
   color: var(--foreground);
 }
+
+/* Shared floating geometry follows the workspace, including a reduced Motion viewport. */
+.workspace {
+  --workspace-gap: 18px;
+  --floating-size: 42px;
+  --floating-padding: 4px;
+  --ruler-inset: 0px;
+}
+.workspace:has(.canvas-rulers) {
+  --ruler-inset: 20px;
+}
+.workspace > .project-trigger {
+  top: calc(max(var(--workspace-gap), env(safe-area-inset-top)) + var(--ruler-inset));
+  left: calc(var(--workspace-gap) + var(--ruler-inset));
+  max-width: calc(100% - 2 * var(--workspace-gap) - var(--ruler-inset) - 154px);
+  transition:
+    top 180ms ease,
+    left 180ms ease;
+}
+.workspace .brand-button,
+.workspace .project-pill,
+.workspace .pages-tabs {
+  height: var(--floating-size);
+}
+.workspace .brand-button {
+  width: var(--floating-size);
+}
+.workspace .project-pill {
+  min-width: 0;
+  padding-inline: 10px;
+}
+.workspace > .toolbar {
+  --toolbar-top: calc(
+    max(var(--workspace-gap), env(safe-area-inset-top)) + var(--ruler-inset) +
+      var(--floating-size) + 16px
+  );
+  top: var(--toolbar-top);
+  bottom: var(--workspace-gap);
+  left: calc(var(--workspace-gap) + var(--ruler-inset));
+  height: fit-content;
+  max-height: calc(100% - var(--toolbar-top) - var(--workspace-gap));
+  margin-block: auto;
+  transform: none;
+  padding: var(--floating-padding);
+  gap: 0;
+  transition:
+    top 180ms ease,
+    left 180ms ease;
+}
+.workspace > .toolbar .toolbar-contents .icon-button {
+  width: 32px;
+  height: 32px;
+}
+.workspace > .tool-settings {
+  top: calc(var(--workspace-gap) + var(--ruler-inset) + var(--floating-size) + 16px);
+  left: calc(var(--workspace-gap) + var(--ruler-inset) + var(--floating-size) + 16px);
+  max-height: calc(100% - 110px - var(--ruler-inset));
+  overflow-y: auto;
+  transition:
+    top 180ms ease,
+    left 180ms ease;
+}
+@media (min-width: 768px) and (max-width: 1100px) {
+  .workspace {
+    --workspace-gap: 12px;
+  }
+}
+@media (max-width: 767px) {
+  .workspace {
+    --workspace-gap: 10px;
+  }
+  .workspace > .project-trigger {
+    max-width: calc(100% - 2 * var(--workspace-gap) - var(--ruler-inset) - 90px);
+  }
+}

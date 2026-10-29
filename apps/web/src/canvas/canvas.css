@@ -220,3 +220,28 @@
   position: absolute;
   inset: 0;
 }
+
+.editor-canvas .canvas-controls {
+  top: calc(var(--workspace-gap, 18px) + var(--ruler-inset, 0px));
+  right: var(--workspace-gap, 18px);
+  height: var(--floating-size, 42px);
+  padding: var(--floating-padding, 4px);
+  transition: top 180ms ease;
+}
+.editor-canvas .canvas-controls .canvas-zoom {
+  width: 61px;
+  min-width: 61px;
+}
+.editor-canvas .canvas-timeline-toggle {
+  width: var(--floating-size, 42px);
+  height: var(--floating-size, 42px);
+  right: var(--workspace-gap, 18px);
+  bottom: var(--workspace-gap, 18px);
+  padding: var(--floating-padding, 4px);
+}
+@media (max-width: 767px) {
+  .editor-canvas .canvas-controls {
+    top: auto;
+    bottom: 12px;
+  }
+}

@@ -1,14 +1,14 @@
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus } from "lucide-react";
-import { PRESETS } from "@musart/core";
+import { ArrowUpRight, Link, Unlink } from "lucide-react";
 import type { NewProjectOptions } from "../../../state/contracts";
-import { SocialBrandIcon } from "../../assets/SocialBrandIcon";
-import { SelectField } from "../../shared/SelectField";
-import { NumberInput } from "../../shared/NumberInput";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
+import { FormatPresets } from "./FormatPresets";
+import "./messages";
+import "./creation.css";
+
 export function NewProjectForm({
   onCreate,
   disabled = false,
@@ -17,106 +17,131 @@ export function NewProjectForm({
   onCreate(this: void, options: NewProjectOptions): void;
 }) {
   const { t } = useTranslation();
-  const [options, setOptions] = useState<NewProjectOptions>({
-    name: t("untitled"),
-    width: 1080,
-    height: 1080,
-    background: "#faf9f6",
-  });
+  const id = useId();
+  const [name, setName] = useState(t("untitled"));
+  const [dimensions, setDimensions] = useState({ width: "1080", height: "1080" });
   const [preset, setPreset] = useState("custom");
-  const [category, setCategory] = useState("all");
+  const [linked, setLinked] = useState(false);
+  const ratio = useRef(1);
+  const width = Number(dimensions.width),
+    height = Number(dimensions.height);
+  const valid =
+    Number.isInteger(width) &&
+    Number.isInteger(height) &&
+    width >= 1 &&
+    height >= 1 &&
+    width <= 16384 &&
+    height <= 16384;
+  function change(axis: "width" | "height", value: string) {
+    setPreset("custom");
+    const next = Number(value);
+    if (linked && next >= 1 && next <= 16384) {
+      const opposite = Math.max(
+        1,
+        Math.round(axis === "width" ? next / ratio.current : next * ratio.current),
+      );
+      setDimensions(
+        axis === "width"
+          ? { width: value, height: String(opposite) }
+          : { width: String(opposite), height: value },
+      );
+      return;
+    }
+    setDimensions((current) => ({ ...current, [axis]: value }));
+  }
   return (
     <form
       className="new-project-form"
       onSubmit={(event) => {
         event.preventDefault();
-        onCreate(preset === "custom" ? options : { ...options, presetId: preset });
+        if (disabled || !valid || !name.trim()) return;
+        onCreate({
+          name: name.trim(),
+          width,
+          height,
+          background: "#faf9f6",
+          ...(preset !== "custom" ? { presetId: preset } : {}),
+        });
       }}
     >
-      <fieldset disabled={disabled} className="new-project-fields">
-        <Label htmlFor="new-project-name">{t("name")}</Label>
-        <Input
-          id="new-project-name"
-          autoFocus
-          value={options.name}
-          required
-          maxLength={160}
-          onChange={(event) => setOptions({ ...options, name: event.target.value })}
-        />
-        <SelectField
-          label={t("presetCategory")}
-          value={category}
-          options={["all", "social", "video", "print", "screen"].map((value) => ({
-            value,
-            label: t(`presetCategory_${value}`),
-          }))}
-          onValueChange={setCategory}
-        />
-        <Label htmlFor="new-project-preset">{t("presetLabel")}</Label>
-        <SelectField
-          id="new-project-preset"
-          label={t("presetLabel")}
-          value={preset}
-          options={[
-            { value: "custom", label: t("custom") },
-            ...PRESETS.filter((item) => category === "all" || item.category === category).map(
-              (item) => ({
-                value: item.id,
-                label: (
-                  <>
-                    <SocialBrandIcon id={item.brandId} size={14} />
-                    <span>
-                      {t(item.nameKey)} · {item.width} × {item.height}
-                    </span>
-                  </>
-                ),
-              }),
-            ),
-          ]}
-          onValueChange={(value) => {
-            setPreset(value);
-            const selected = PRESETS.find((item) => item.id === value);
-            if (selected)
-              setOptions({ ...options, width: selected.width, height: selected.height });
-          }}
-        />
-        <div className="new-dimensions">
-          <NumberInput
-            key={`w:${options.width}`}
-            label={t("width")}
-            unit="px"
-            value={options.width}
-            min={1}
-            max={16384}
-            onCommit={(width) => {
-              setPreset("custom");
-              setOptions({ ...options, width });
+      <fieldset disabled={disabled} className="creation-fields">
+        <div className="creation-preview" role="img" aria-label={t("creation:preview")}>
+          <div
+            className="creation-preview-board"
+            style={{
+              aspectRatio: `${valid ? width : 1080}/${valid ? height : 1080}`,
+              width: `min(78%, calc(var(--creation-preview-height) * 0.76 * ${valid ? width / height : 1}))`,
             }}
-          />
-          <span>×</span>
-          <NumberInput
-            key={`h:${options.height}`}
-            label={t("height")}
-            unit="px"
-            value={options.height}
-            min={1}
-            max={16384}
-            onCommit={(height) => {
-              setPreset("custom");
-              setOptions({ ...options, height });
-            }}
+          >
+            <span>✳</span>
+            <span>{t("creation:ready")}</span>
+          </div>
+          <span className="creation-preview-size">
+            {t("creation:size", { width: valid ? width : "—", height: valid ? height : "—" })}
+          </span>
+        </div>
+        <div className="creation-name">
+          <Label htmlFor={`${id}-name`}>{t("name")}</Label>
+          <Input
+            id={`${id}-name`}
+            autoFocus
+            value={name}
+            required
+            maxLength={160}
+            onChange={(event) => setName(event.target.value)}
           />
         </div>
-        <Label htmlFor="new-project-background">{t("background")}</Label>
-        <Input
-          id="new-project-background"
-          type="color"
-          value={options.background}
-          onChange={(event) => setOptions({ ...options, background: event.target.value })}
+        <FormatPresets
+          selected={preset}
+          disabled={disabled}
+          onChoose={(item) => {
+            setPreset(item?.id ?? "custom");
+            if (item) {
+              setDimensions({ width: String(item.width), height: String(item.height) });
+              ratio.current = item.width / item.height;
+            }
+          }}
         />
-        <Button type="submit">
-          <Plus size={15} />
+        <div className="creation-dimensions">
+          {(["width", "height"] as const).map((axis, index) => (
+            <div key={axis} className="creation-dimension">
+              <Label htmlFor={`${id}-${axis}`}>{t(axis)}</Label>
+              <div>
+                <Input
+                  id={`${id}-${axis}`}
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={16384}
+                  step={1}
+                  required
+                  value={dimensions[axis]}
+                  onChange={(event) => change(axis, event.target.value)}
+                />
+                <span aria-hidden>px</span>
+              </div>
+              {index === 0 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="creation-ratio"
+                  aria-label={t(linked ? "creation:unlink" : "creation:link")}
+                  aria-pressed={linked}
+                  disabled={!valid}
+                  onClick={() => {
+                    ratio.current = width / height;
+                    setLinked(!linked);
+                  }}
+                >
+                  {linked ? <Link size={17} /> : <Unlink size={17} />}
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+        <Button type="submit" className="creation-submit" disabled={!valid || !name.trim()}>
           {t("create")}
+          <ArrowUpRight size={16} />
         </Button>
       </fieldset>
     </form>
