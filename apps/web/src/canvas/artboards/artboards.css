@@ -45,6 +45,38 @@
   background: var(--workspace, oklch(0.945 0.004 260));
   isolation: isolate;
 }
+.artboard-mode-footer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: 2px;
+  border-radius: 10px;
+  z-index: 7;
+  width: max-content;
+  max-width: calc(100% - 32px);
+}
+.artboard-mode-footer .motion-mode {
+  min-width: 0;
+}
+.artboard-mode-footer .segmented-tabs[data-size="compact"][role="radiogroup"] {
+  width: max-content;
+}
+.artboard-mode-footer .segmented-tab-tooltip,
+.artboard-mode-footer .segmented-tab {
+  flex: 0 0 auto;
+}
+.artboard-mode-footer[data-compact="true"] .segmented-tab-label {
+  display: none;
+}
+.artboard-mode-footer[data-compact="true"] .segmented-tab {
+  min-width: 30px;
+  padding-inline: 8px;
+}
+.artboard-mode-footer .motion-error {
+  position: absolute;
+  top: 100%;
+  width: 240px;
+}
 .artboard-heading[data-displaced="true"]::after {
   content: "";
   position: absolute;

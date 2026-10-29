@@ -59,7 +59,13 @@ it("rejects stale asset bases before writing and applies changed/deleted origina
     expect(await d.db.get("projects", d.project.id)).toEqual(before);
     const changed = {
       ...d.project,
-      assets: { photo: { ...d.project.assets.photo!, dataUrl: "data:image/png;base64,BBBBBBBB" } },
+      assets: {
+        photo: {
+          ...d.project.assets.photo!,
+          kind: "image" as const,
+          dataUrl: "data:image/png;base64,BBBBBBBB",
+        },
+      },
     };
     const next = prepareProjectWrite(
       changed,

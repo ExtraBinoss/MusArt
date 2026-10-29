@@ -1,0 +1,121 @@
+/* Converta's pill proportions, adapted to genuine Radix and MusArt theme tokens.
+ * Source: user-authorized ../../Plinka/Converta/apps/web/src/components/ui/{slider,switch}.tsx.
+ * Original shadcn MIT notices remain in the components and docs/legal/shadcn-MIT.txt. */
+.glass-slider {
+  min-height: 24px;
+}
+.glass-slider[data-orientation="vertical"] {
+  min-width: 24px;
+}
+.glass-slider [data-slot="slider-track"] {
+  background: color-mix(in srgb, var(--input) 90%, transparent);
+  box-shadow: inset 0 1px 2px #0000000a;
+}
+.glass-slider[data-orientation="horizontal"] [data-slot="slider-track"] {
+  width: 100%;
+  height: 8px;
+}
+.glass-slider[data-orientation="vertical"] [data-slot="slider-track"] {
+  height: 100%;
+  width: 8px;
+}
+.glass-slider [data-slot="slider-range"] {
+  background: var(--primary);
+}
+.glass-slider[data-tone="neutral"] [data-slot="slider-range"] {
+  background: var(--muted-foreground);
+}
+.glass-slider-thumb {
+  width: 20px;
+  height: 14px;
+  background: linear-gradient(180deg, #fff, #fffffff2);
+  border: 1px solid #00000012;
+  box-shadow:
+    0 1px 3px #00000020,
+    0 0 0 1px #00000006,
+    inset 0 1px 1px #fff;
+  backdrop-filter: blur(4px) saturate(1.2);
+  transition:
+    box-shadow 140ms ease,
+    scale 140ms ease;
+}
+.glass-slider[data-orientation="vertical"] .glass-slider-thumb {
+  width: 14px;
+  height: 20px;
+}
+.glass-slider-thumb:hover,
+.glass-slider-thumb:focus-visible {
+  box-shadow:
+    0 2px 6px #00000026,
+    0 0 0 4px color-mix(in srgb, var(--ring) 25%, transparent);
+}
+.glass-slider-thumb:active {
+  scale: 1.08;
+}
+.glass-switch {
+  padding: 0;
+  border: 2px solid transparent;
+  background: color-mix(in srgb, var(--input) 90%, transparent);
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+.glass-switch[data-size="default"] {
+  width: 44px;
+  height: 20px;
+}
+.glass-switch[data-size="sm"] {
+  width: 28px;
+  height: 16px;
+}
+.glass-switch[data-state="checked"] {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.glass-switch:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 30%, transparent);
+}
+.glass-switch[aria-invalid="true"] {
+  border-color: var(--destructive);
+}
+.glass-switch-thumb {
+  background: linear-gradient(
+    180deg,
+    var(--background),
+    color-mix(in srgb, var(--background) 92%, white)
+  );
+  box-shadow:
+    0 1px 3px #00000029,
+    inset 0 1px 1px #ffffffa6;
+  transition:
+    transform 170ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 140ms ease;
+}
+.glass-switch[data-size="default"] .glass-switch-thumb {
+  width: 24px;
+  height: 16px;
+}
+.glass-switch[data-size="sm"] .glass-switch-thumb {
+  width: 16px;
+  height: 12px;
+}
+.glass-switch-thumb[data-state="checked"] {
+  transform: translateX(calc(100% - 8px));
+}
+.glass-switch-thumb[data-state="unchecked"] {
+  transform: translateX(0);
+}
+.dark .glass-switch[data-state="checked"] .glass-switch-thumb {
+  background: var(--primary-foreground);
+}
+.dark .glass-switch[data-state="unchecked"] .glass-switch-thumb {
+  background: var(--foreground);
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass-slider-thumb,
+  .glass-switch,
+  .glass-switch-thumb {
+    transition: none;
+  }
+}

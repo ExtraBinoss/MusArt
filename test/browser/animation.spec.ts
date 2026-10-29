@@ -1,4 +1,4 @@
-import { expect, test, type Page, type Download } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { readFile, writeFile } from "node:fs/promises";
 import { createLayer, createPage, createProject } from "@musart/core";
 import { installReadbackProbe } from "./support/readback-probe";
@@ -12,12 +12,27 @@ interface VideoWitness {
   firstHash: number;
   lastHash: number;
 }
+async function reactCommits(page: Page) {
+  return page.evaluate(() =>
+    Object.fromEntries(
+      [".musart-app", ".inspector", ".canvas-area", ".editor-canvas", ".editor-gpu-scene"].map(
+        (selector) => {
+          const value = document.querySelector<HTMLElement>(selector)?.dataset.reactRenders;
+          if (value === undefined) throw new Error(`Missing React counter: ${selector}`);
+          return [selector, Number(value)];
+        },
+      ),
+    ),
+  );
+}
 async function inspectVideo(inspector: Page, bytes: Buffer, mime: string): Promise<VideoWitness> {
   return inspector.evaluate(
     async ({ source }) => {
       const video = document.createElement("video");
       video.muted = true;
       video.preload = "auto";
+      video.playsInline = true;
+      document.body.append(video);
       video.src = source;
       await new Promise<void>((resolve, reject) => {
         video.onloadeddata = () => resolve();
@@ -34,8 +49,23 @@ async function inspectVideo(inspector: Page, bytes: Buffer, mime: string): Promi
       async function frame(time: number) {
         if (video.currentTime !== time)
           await new Promise<void>((resolve, reject) => {
-            video.onseeked = () => resolve();
-            video.onerror = () => reject(new Error("Native video seek failed"));
+            let handle = 0;
+            const timeout = setTimeout(() => {
+              video.cancelVideoFrameCallback(handle);
+              reject(new Error(`Native frame was not presented for ${time}s`));
+            }, 10000);
+            function presented(_now: number, metadata: VideoFrameCallbackMetadata) {
+              if (!video.seeking && Math.abs(metadata.mediaTime - time) <= 0.05) {
+                clearTimeout(timeout);
+                resolve();
+              } else handle = video.requestVideoFrameCallback(presented);
+            }
+            // seeked can precede presentation; do not read the previous decoded canvas frame.
+            handle = video.requestVideoFrameCallback(presented);
+            video.onerror = () => {
+              clearTimeout(timeout);
+              reject(new Error("Native video seek failed"));
+            };
             video.currentTime = time;
           });
         context.drawImage(video, 0, 0);
@@ -52,6 +82,7 @@ async function inspectVideo(inspector: Page, bytes: Buffer, mime: string): Promi
         last = await frame(Math.max(0, duration - 0.025));
       video.removeAttribute("src");
       video.load();
+      video.remove();
       return {
         width,
         height,
@@ -65,17 +96,6 @@ async function inspectVideo(inspector: Page, bytes: Buffer, mime: string): Promi
     { source: `data:${mime};base64,${bytes.toString("base64")}` },
   );
 }
-async function choose(page: Page, label: string, option: string) {
-  await page.getByRole("combobox", { name: label, exact: true }).click();
-  await page.getByRole("option", { name: option, exact: true }).click();
-}
-async function downloadVideo(page: Page, format: "WebM" | "MP4"): Promise<Download> {
-  await choose(page, "Format", format);
-  const downloading = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Exporter la vidéo", exact: true }).click();
-  return downloading;
-}
-
 test("automatic history becomes a real encoded video with changing frames and zero editor readbacks", async ({
   page,
 }, testInfo) => {
@@ -114,67 +134,66 @@ test("automatic history becomes a real encoded video with changing frames and ze
   expect(history).toMatchObject({ ready: true, error: false, pending: 0 });
   expect(history.events).toBeGreaterThanOrEqual(3);
   const before = await page.evaluate(() => window.musart!.snapshot());
-  await page.getByRole("tab", { name: "Animation", exact: true }).click();
-  await page.getByRole("button", { name: "Préparer le timelapse", exact: true }).click();
-  await expect(page.getByRole("slider", { name: "Position de lecture" })).toBeVisible();
-  for (const [label, value] of [
-    ["Durée", "0.2"],
-    ["Fréquence", "10"],
-    ["Résolution", "1"],
-  ]) {
-    const field = page.getByRole("textbox", { name: label, exact: true });
-    await field.fill(value!);
-    await field.press("Tab");
+  await page.getByRole("button", { name: "Options d’export", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Exporter un timelapse…", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Timelapse", exact: true });
+  await expect(dialog).toBeVisible();
+  await expect(page.getByRole("tab", { name: "Animation", exact: true })).toHaveCount(0);
+  const exportButton = dialog.getByRole("button", { name: "Exporter la vidéo", exact: true });
+  await expect(exportButton).toBeEnabled();
+  const duration = dialog.getByRole("spinbutton", {
+    name: "Durée finale de la vidéo",
+    exact: true,
+  });
+  for (const value of ["0", "31", ""]) {
+    await duration.fill(value);
+    await expect(exportButton).toBeDisabled();
   }
+  await duration.fill("1.03");
+  await expect(exportButton).toBeEnabled();
+  await expect(dialog.getByRole("button", { name: "Lire l’aperçu", exact: true })).toBeEnabled();
+  const replayDuration = await page.evaluate(
+    async () => (await window.musart!.historyReplay()).duration,
+  );
+  const scrubber = dialog.getByRole("slider", { name: "Position de l’aperçu", exact: true });
+  const commitsBefore = await reactCommits(page);
+  await scrubber.focus();
+  await scrubber.press("End");
+  await expect(dialog.locator("[data-history-time]")).toHaveAttribute(
+    "data-history-time",
+    String(replayDuration),
+  );
+  await scrubber.press("Home");
+  await expect(dialog.locator("[data-history-time]")).toHaveAttribute("data-history-time", "0");
+  await dialog.getByRole("button", { name: "Lire l’aperçu", exact: true }).click();
+  await expect(dialog.locator("[data-history-time]")).not.toHaveAttribute("data-history-time", "0");
+  await dialog.getByRole("button", { name: "Mettre l’aperçu en pause", exact: true }).click();
+  const commitsAfter = await reactCommits(page);
+  expect(commitsAfter).toEqual(commitsBefore);
+  await dialog.screenshot({ path: "artifacts/timelapse-dialog.png" });
   const inspector = await page.context().newPage();
-  const witnesses: Record<string, VideoWitness> = {};
+  let witness: VideoWitness;
   try {
-    for (const format of ["WebM", "MP4"] as const) {
-      if (format === "MP4") {
-        const supported = await page.evaluate(
-          async () =>
-            typeof VideoEncoder !== "undefined" &&
-            (
-              await VideoEncoder.isConfigSupported({
-                codec: "avc1.42001f",
-                width: 320,
-                height: 220,
-                framerate: 10,
-                bitrate: 1000000,
-              })
-            ).supported,
-        );
-        if (!supported) {
-          testInfo.annotations.push({
-            type: "codec",
-            description: "Native AVC encoding unavailable; mandatory WebM path verified.",
-          });
-          continue;
-        }
-      }
-      const download = await downloadVideo(page, format);
-      expect(download.suggestedFilename()).toBe(
-        `Video QA-replay.${format === "MP4" ? "mp4" : "webm"}`,
-      );
-      await download.saveAs(
-        `artifacts/videos/creative-replay.${format === "MP4" ? "mp4" : "webm"}`,
-      );
-      const bytes = await readFile((await download.path())!);
-      if (format === "MP4") expect(bytes.subarray(4, 8).toString("ascii")).toBe("ftyp");
-      else expect(bytes.subarray(0, 4).toString("hex")).toBe("1a45dfa3");
-      const witness = await inspectVideo(
-        inspector,
-        bytes,
-        format === "MP4" ? "video/mp4" : "video/webm",
-      );
-      witnesses[format] = witness;
-      expect(witness).toMatchObject({ width: 320, height: 220 });
-      expect(witness.duration).toBeGreaterThanOrEqual(0.19);
-      expect(witness.duration).toBeLessThanOrEqual(0.25);
-      expect(witness.lastHash).not.toBe(witness.firstHash);
-      expect(witness.last[0]).toBeLessThan(100);
-      expect(witness.last[2]).toBeGreaterThan(150);
-    }
+    const downloading = page.waitForEvent("download");
+    await exportButton.click();
+    const download = await downloading;
+    const mp4 = download.suggestedFilename().endsWith(".mp4");
+    expect(download.suggestedFilename()).toBe(`Video QA-timelapse.${mp4 ? "mp4" : "webm"}`);
+    await download.saveAs(`artifacts/videos/creative-timelapse.${mp4 ? "mp4" : "webm"}`);
+    const bytes = await readFile((await download.path())!);
+    if (mp4) expect(bytes.subarray(4, 8).toString("ascii")).toBe("ftyp");
+    else expect(bytes.subarray(0, 4).toString("hex")).toBe("1a45dfa3");
+    witness = await inspectVideo(inspector, bytes, mp4 ? "video/mp4" : "video/webm");
+    await writeFile("artifacts/timelapse-native-witness.json", JSON.stringify(witness, null, 2));
+    expect(witness).toMatchObject({ width: 320, height: 220 });
+    expect(witness.duration).toBeCloseTo(1.03, 2);
+    expect(witness.lastHash).not.toBe(witness.firstHash);
+    expect(witness.last[0]).toBeLessThan(100);
+    expect(witness.last[2]).toBeGreaterThan(150);
+    await expect(dialog.getByText("Votre timelapse est prêt.", { exact: true })).toBeVisible();
+    await dialog.getByRole("button", { name: "Annuler", exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Options d’export", exact: true })).toBeFocused();
   } finally {
     await inspector.close();
   }
@@ -191,10 +210,10 @@ test("automatic history becomes a real encoded video with changing frames and ze
   expect(errors).toEqual([]);
   await writeFile(
     "artifacts/video-report.json",
-    JSON.stringify({ history, readbacks, witnesses }, null, 2),
+    JSON.stringify({ history, readbacks, witness, commitsBefore, commitsAfter }, null, 2),
   );
-  await testInfo.attach("native-video-witnesses", {
-    body: JSON.stringify({ history, readbacks, witnesses }, null, 2),
+  await testInfo.attach("native-video-witness", {
+    body: JSON.stringify({ history, readbacks, witness, commitsBefore, commitsAfter }, null, 2),
     contentType: "application/json",
   });
 });

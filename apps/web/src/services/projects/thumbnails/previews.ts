@@ -1,3 +1,4 @@
+import type { MediaSourceResolver } from "@musart/render";
 import { hasThumbnailBudget } from "./scheduling";
 import type { Asset, Composition } from "@musart/core";
 import type { ActivityPort } from "./activity";
@@ -10,6 +11,7 @@ export interface ThumbnailPreviewOptions {
   priority?: "foreground" | "visible" | "background";
   signal?: AbortSignal;
   isCurrent?: () => boolean;
+  mediaResolver?: MediaSourceResolver;
 }
 export interface ThumbnailPreview {
   blob: Blob;
@@ -257,12 +259,13 @@ export class ThumbnailPreviews {
         if (this.current(job)) this.pending.set(job.key, job);
         return;
       }
-      const result = await this.renderer.render(
-        job.page,
-        job.assets,
-        () => this.canRender(job),
-        job.edge,
-      );
+      const resolver = [...job.consumers].find((consumer) => consumer.options.mediaResolver)
+        ?.options.mediaResolver;
+      const result = resolver
+        ? await this.renderer.render(job.page, job.assets, () => this.canRender(job), job.edge, {
+            mediaResolver: resolver,
+          })
+        : await this.renderer.render(job.page, job.assets, () => this.canRender(job), job.edge);
       if (!this.current(job)) return;
       if (this.blocked(job)) {
         this.pending.set(job.key, job);

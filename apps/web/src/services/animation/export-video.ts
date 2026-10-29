@@ -1,10 +1,12 @@
 import { evaluateReplay, type Composition, type ReplaySpec } from "@musart/core";
 import type { CanvasSource } from "mediabunny";
 import type { VideoCodec } from "mediabunny";
-import type { FontResolver } from "@musart/render";
+import type { FontResolver, MediaSourceResolver } from "@musart/render";
+import { createReplayTiming, replayFrame } from "./replay-timing";
 
 export interface VideoExportOptions {
   fontResolver?: FontResolver;
+  mediaResolver?: MediaSourceResolver;
   duration: number;
   fps: number;
   scale: number;
@@ -15,7 +17,14 @@ export interface VideoExportOptions {
   forceWebGL?: boolean;
 }
 export class VideoExportError extends Error {
-  constructor(public readonly code: "invalidOptions" | "missingPage" | "noCodec" | "emptyVideo") {
+  constructor(
+    public readonly code:
+      | "invalidOptions"
+      | "missingPage"
+      | "noCodec"
+      | "emptyVideo"
+      | "emptyHistory",
+  ) {
     super(code);
     this.name = "VideoExportError";
   }
@@ -31,18 +40,19 @@ export async function exportReplayVideo(
 ): Promise<Blob> {
   const { duration, fps, scale, container, signal } = options;
   if (
-    !Number.isFinite(duration) ||
-    duration < 0.1 ||
-    duration > 120 ||
-    !Number.isInteger(fps) ||
-    fps < 1 ||
-    fps > 60 ||
     !Number.isFinite(scale) ||
     scale < 0.1 ||
     scale > 4 ||
     !["auto", "mp4", "webm"].includes(container)
   )
     throw new VideoExportError("invalidOptions");
+  let timing;
+  try {
+    timing = createReplayTiming(duration, fps, spec.duration);
+  } catch {
+    throw new VideoExportError("invalidOptions");
+  }
+  if (!spec.events.length) throw new VideoExportError("emptyHistory");
   abort(signal);
   const [
     { createRenderSession },
@@ -82,16 +92,24 @@ export async function exportReplayVideo(
   });
   const session = createRenderSession({
     forceWebGL: options.forceWebGL,
+    ...(options.mediaResolver ? { mediaResolver: options.mediaResolver } : {}),
     ...(options.fontResolver ? { fontResolver: options.fontResolver } : {}),
   });
   let source: CanvasSource | undefined;
   let finalized = false;
+  let closed = false;
+  let cancellation: Promise<void> | undefined;
+  const cancelOutput = () => (cancellation ??= Promise.resolve(output.cancel()));
+  const onAbort = () => {
+    void cancelOutput().catch(() => {});
+  };
+  signal?.addEventListener("abort", onAbort, { once: true });
   try {
-    const count = Math.max(2, Math.ceil(duration * fps));
+    const { count } = timing;
     for (let index = 0; index < count; index++) {
       abort(signal);
-      const time = (index / (count - 1)) * spec.duration;
-      const project = evaluateReplay(spec, time);
+      const sample = replayFrame(timing, index);
+      const project = evaluateReplay(spec, sample.historyTime);
       const page: Composition = project.pages.find((item) => item.id === pageId) ?? {
         ...lastPage,
         layers: [],
@@ -110,10 +128,13 @@ export async function exportReplayVideo(
               alpha: "discard",
               keyFrameInterval: 2,
             });
-            output.addVideoTrack(source, { frameRate: fps });
+            // frameRate metadata would snap the shortened final sample beyond duration.
+            output.addVideoTrack(source);
             await output.start();
           }
-          await source.add(index / fps, 1 / fps, { keyFrame: index % (fps * 2) === 0 });
+          await source.add(sample.timestamp, sample.duration, {
+            keyFrame: index % (fps * 2) === 0,
+          });
         },
         { scale },
       );
@@ -121,15 +142,22 @@ export async function exportReplayVideo(
     }
     abort(signal);
     source?.close();
+    closed = true;
     await output.finalize();
     finalized = true;
+    abort(signal);
     if (!target.buffer?.byteLength) throw new VideoExportError("emptyVideo");
     return new Blob([target.buffer], { type: codec === "avc" ? "video/mp4" : "video/webm" });
   } finally {
+    signal?.removeEventListener("abort", onAbort);
     try {
-      if (!finalized) await output.cancel();
+      if (!finalized) await cancelOutput();
     } finally {
-      await session.dispose();
+      try {
+        if (!closed) source?.close();
+      } finally {
+        await session.dispose();
+      }
     }
   }
 }

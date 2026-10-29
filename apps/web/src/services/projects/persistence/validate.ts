@@ -1,3 +1,4 @@
+import { validateAssetDescription } from "@musart/core";
 import type { ProjectWriteFrame } from "./model";
 import { THUMBNAIL_RENDER_VERSION } from "../thumbnails/model";
 /** Transport metadata is private, but incomplete/corrupt frames must fail before acquiring write locks. */
@@ -33,14 +34,19 @@ export function validateProjectWrite(frame: ProjectWriteFrame): void {
       Object.hasOwn(asset, "dataUrl")
     )
       throw Error("Invalid original metadata.");
+    if (asset.kind === "video")
+      validateAssetDescription(asset as unknown as Record<string, unknown>);
     ids.add(asset.id);
   }
   const originals = new Set<string>();
+  const imageIds = new Set(
+    frame.descriptions.filter((asset) => asset.kind !== "video").map((asset) => asset.id),
+  );
   for (const asset of frame.originals) {
     if (
       !asset ||
       asset.projectId !== frame.document.id ||
-      !ids.has(asset.assetId) ||
+      !imageIds.has(asset.assetId) ||
       originals.has(asset.assetId) ||
       typeof asset.dataUrl !== "string" ||
       !asset.dataUrl.startsWith("data:image/")
@@ -48,7 +54,7 @@ export function validateProjectWrite(frame: ProjectWriteFrame): void {
       throw Error("Invalid captured original.");
     originals.add(asset.assetId);
   }
-  if (frame.basis === undefined && originals.size !== ids.size)
+  if (frame.basis === undefined && originals.size !== imageIds.size)
     throw Error("Missing captured originals.");
   if (
     frame.document.pages.some(

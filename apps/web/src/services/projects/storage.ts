@@ -33,6 +33,9 @@ import {
 import { isProjectDeleted, retireProject } from "./lifecycle";
 import {
   validateProject,
+  isVideoAsset,
+  sameAssetOriginal,
+  type VideoAsset,
   isPublishedProject,
   EditorEngine,
   diffReplayState,
@@ -43,6 +46,13 @@ import {
   type Project,
 } from "@musart/core";
 import type { ProjectSummary } from "../../state/contracts";
+import type {
+  PreparedProjectSave,
+  PreparedProjectWrite,
+  SaveProjectOptions,
+} from "./writes/prepared";
+import type { MediaOriginalInput } from "./media/model";
+import { readMediaOriginal } from "./media/read";
 
 /** Original bytes are persisted independently from small, frequently changing manifests. */
 export class ProjectStore {
@@ -63,6 +73,7 @@ export class ProjectStore {
   private readonly digestMemo = new ThumbnailDigestMemo();
   private readonly pagePayloads = new WeakMap<Composition, number>();
   private generation = 0;
+  private readonly preparedWrites = new WeakMap<PreparedProjectSave, PreparedProjectWrite>();
   private assertGeneration(generation: number) {
     if (generation !== this.generation)
       throw new DOMException("Project store operation was closed.", "AbortError");
@@ -94,14 +105,16 @@ export class ProjectStore {
     });
     return this.connection;
   }
-  async save(
-    input: Project,
-    thumbnail?: string,
-    options: { remember?: boolean; expectedRevision?: string; requireAbsent?: boolean } = {},
-  ) {
+  async prepareSave(input: Project, thumbnail?: string, options: SaveProjectOptions = {}) {
     const generation = this.generation;
     const project = snapshotProject(input);
     if (!isPublishedProject(project)) validateProject(project);
+    const originals = (options.mediaOriginals ?? []).map((original) => ({
+      projectId: project.id,
+      originalId: original.originalId,
+      contentRevision: original.contentRevision,
+      blob: original.blob,
+    }));
     this.digestMemo.certify(project);
     const basis = this.activeAssets;
     const db = await this.db();
@@ -128,10 +141,21 @@ export class ProjectStore {
       thumbnail,
       basis,
     );
+    const token = Object.freeze({ project });
+    this.preparedWrites.set(token, { project, ...prepared, originals, generation });
+    return token;
+  }
+  /** Only native transactional I/O remains here; hashing and confirmation happen before locking. */
+  async persistPrepared(token: PreparedProjectSave): Promise<void> {
+    const prepared = this.preparedWrites.get(token);
+    if (!prepared) throw Error("Unknown or already consumed prepared project write.");
+    this.preparedWrites.delete(token);
+    const { project, generation, originals } = prepared;
+    this.assertGeneration(generation);
     const persistence = (this.persistence ??= new PersistenceClient(this.name, () => this.db()));
     let result;
     try {
-      result = await persistence.save(prepared.frame);
+      result = await persistence.save(prepared.frame, originals);
     } catch (error) {
       if (
         !error ||
@@ -143,7 +167,7 @@ export class ProjectStore {
       // This transaction wrote nothing. Keep the same captured document revision;
       // a concurrent writer still fails CAS when the complete originals are retried.
       this.assertGeneration(generation);
-      result = await persistence.save(withFullOriginals(prepared.frame, project));
+      result = await persistence.save(withFullOriginals(prepared.frame, project), originals);
     }
     // Closing drains already-admitted writes, but their results cannot repopulate
     // caches or loaded baselines belonging to a closed/reopened generation.
@@ -156,13 +180,36 @@ export class ProjectStore {
       this.observeWrite(project.id, result.writeRevision);
     }
   }
-  /** Editor writes retain their loaded baseline; unknown existing projects must be reopened. */
-  saveCurrent(project: Project): Promise<void> {
+  async save(input: Project, thumbnail?: string, options: SaveProjectOptions = {}): Promise<void> {
+    await this.persistPrepared(await this.prepareSave(input, thumbnail, options));
+  }
+  prepareSaveCurrent(
+    project: Project,
+    options: { mediaOriginals?: readonly MediaOriginalInput[] } = {},
+  ) {
     const expected = this.observedWrites.get(project.id);
-    return this.save(project, undefined, {
+    return this.prepareSave(project, undefined, {
+      ...options,
       expectedRevision: expected ?? "",
       requireAbsent: expected === undefined,
     });
+  }
+  /** Editor writes retain their loaded baseline; unknown existing projects must be reopened. */
+  async saveCurrent(
+    project: Project,
+    options: { mediaOriginals?: readonly MediaOriginalInput[] } = {},
+  ): Promise<void> {
+    await this.persistPrepared(await this.prepareSaveCurrent(project, options));
+  }
+  async loadMediaOriginal(
+    projectId: string,
+    asset: VideoAsset,
+    options: { signal?: AbortSignal } = {},
+  ): Promise<Blob> {
+    const generation = this.generation;
+    const blob = await readMediaOriginal(await this.db(), projectId, asset, options.signal);
+    this.assertGeneration(generation);
+    return blob;
   }
   async load(
     id: string,
@@ -181,10 +228,12 @@ export class ProjectStore {
     if (record.storageVersion === 2) {
       const assets: Record<string, Asset> = {};
       for (const [assetId, metadata] of Object.entries(record.project.assets)) {
-        const original = await tx.objectStore("assets").get([id, assetId]);
-        if (!original) throw new Error(`Ressource locale manquante : ${metadata.name}.`);
+        const original =
+          metadata.kind === "video" ? undefined : await tx.objectStore("assets").get([id, assetId]);
+        if (metadata.kind !== "video" && !original)
+          throw new Error(`Ressource locale manquante : ${metadata.name}.`);
         Object.defineProperty(assets, assetId, {
-          value: { ...metadata, dataUrl: original.dataUrl },
+          value: metadata.kind === "video" ? metadata : { ...metadata, dataUrl: original!.dataUrl },
           enumerable: true,
           writable: true,
           configurable: true,
@@ -229,7 +278,11 @@ export class ProjectStore {
         ? {
             projectId: id,
             revision: record.assetsRevision,
-            urls: new Map(Object.values(project.assets).map((asset) => [asset.id, asset.dataUrl])),
+            urls: new Map(
+              Object.values(project.assets)
+                .filter((asset) => !isVideoAsset(asset))
+                .map((asset) => [asset.id, asset.dataUrl]),
+            ),
           }
         : undefined;
     if (options.observe !== false) this.observeWrite(id, writeRevision);
@@ -297,8 +350,8 @@ export class ProjectStore {
         const originalsMatch =
           record.storageVersion === 2
             ? record.assetsRevision === originalRevision
-            : Object.values(record.project.assets).every(
-                (asset) => asset.dataUrl === before.assets[asset.id]?.dataUrl,
+            : Object.values(record.project.assets).every((asset) =>
+                sameAssetOriginal(asset, before.assets[asset.id]),
               );
         if (expected !== actual || !originalsMatch) {
           await done;
@@ -386,6 +439,8 @@ export class ProjectStore {
       [
         "projects",
         "assets",
+        "mediaOriginals",
+        "mediaOriginalMeta",
         "preferences",
         "journalMeta",
         "journalBase",
@@ -409,6 +464,11 @@ export class ProjectStore {
         await tx.objectStore("thumbnails").delete(key);
       const assets = tx.objectStore("assets");
       for (const key of await assets.index("by-project").getAllKeys(id)) await assets.delete(key);
+      for (const name of ["mediaOriginals", "mediaOriginalMeta"] as const) {
+        const store = tx.objectStore(name);
+        for (const key of await store.index("by-project").getAllKeys(id)) await store.delete(key);
+      }
+      await tx.objectStore("preferences").delete(`media-original-bytes:${id}`);
       if ((await tx.objectStore("preferences").get("last-project")) === id)
         await tx.objectStore("preferences").delete("last-project");
       await done;

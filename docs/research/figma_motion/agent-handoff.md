@@ -15,7 +15,7 @@ Use this alongside [the build checklist](build-checklist.md), [requirements](req
 | Generated work          | Keep builds, reports, traces, video fixtures and captures in ignored `artifacts/`; use synthetic/public test fixtures with attribution when source fixtures must be committed. |
 | Heavy-check coordinator | Root/integration owns scheduling. One heavy compiler/build/coverage/browser/GPU/storage process at a time, bounded workers and low priority; see the performance protocol.     |
 
-## Current preparation ownership
+## Current implementation ownership
 
 | Agent                       | Owned documents                                                | Scope                                                                                                                 |
 | --------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -24,9 +24,15 @@ Use this alongside [the build checklist](build-checklist.md), [requirements](req
 | `motion_architecture`       | architecture.md, performance-and-verification.md               | Existing source seams, deterministic time/media/storage/export, measured performance strategy.                        |
 | `motion_requirements_audit` | requirements.md, decisions-and-open-questions.md               | Independent inventory, stable IDs, decisions and loss-of-scope audit.                                                 |
 
-Research is documentation-only. These owners do not edit production/test/configuration files, commit, or run heavy checks during preparation. Once the documentation milestone is verified, the implementation owner for each task is assigned explicitly rather than inferred from who researched it.
+The documentation-only preparation milestone is committed as `67dac3f`. Implementation was then explicitly requested in M21. Current source claims are: `motion_architecture` owns video-provider modules under `packages/render/src/sources/video/` and their native witness; `motion_requirements_audit` owns `components/motion/` timeline interactions/easing; `motion_ux_research` owns property authoring adapters/diamonds after completing Timelapse. Root owns core and App/transport/CLI integration. Agents do not commit or run simultaneous heavy cohorts; root schedules them. See the [implementation log](implementation-log.md) for actual results and remaining gaps.
 
 ## Confirmed product answers
+
+The preserved brief now includes **M1–M43** and both later MusArt defect screenshots, alongside the initial Figma references. The UI/templates agent updated the raw brief, requirement refinements, T19–T21, implementation record and [integration audit](integration-audit.md) under root's explicit documentation handoff. Root resumes integration/commit ownership after that update.
+
+Current later source scope: root owns App, PlaneResources scheduling/ownership and final native coordination; media owner owns binary import/storage/resolvers/providers/export adapters; timeline owner owns timeline controls, clipping, auto-follow and active-portal cleanup; UI/templates agent owns inspector authoring, Timelapse, headless templates/gallery loader, import-confirmation broker/host, MotionTimelineDock, then M41 CopyButton/EditorNotice. No agent touches main/6100 or launches a competing native cohort.
+
+Do not infer completion from branch contents. Two native UI cases passed per root, with zero production readbacks and unchanged major-root counters during playback/Dock toggle; this is not production performance or original-source Motion A/V export evidence. Native media/cover work is the current prioritized gate. The template metadata and command files exist; native WebP covers, proxy/audio pipeline and binary archive portability remain explicit gaps.
 
 | Question                    | Confirmed behavior                                                                                                                                | Source  |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
@@ -103,11 +109,11 @@ There are four concurrent agent slots including root. Use at most three active s
 
 ## Milestone log
 
-| Milestone                                  | State                | Evidence                                                                            |
-| ------------------------------------------ | -------------------- | ----------------------------------------------------------------------------------- |
-| Isolated branch/worktree and 6110          | Verified preparation | Worktree at base `7ae8814`, frozen dependency install, CLI bound to 6110, HTTP 200. |
-| Verbatim brief and supplied references     | Verified preparation | M1–M19 and unchanged source screenshot files.                                       |
-| Primary research and requirement contracts | Verified preparation | Agent-owned docs and source-linked acceptance matrices.                             |
-| Claimable build plan                       | Verified preparation | T00–T18 with owners, dependencies, requirements and evidence.                       |
-| Production Motion/video source             | Not started          | No production/test/config source edits in this preparation.                         |
-| Motion performance/export proof            | Not run              | Planned cohorts are not measured results.                                           |
+| Milestone                                  | State                | Evidence                                                                                                                                |
+| ------------------------------------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Isolated branch/worktree and 6110          | Verified preparation | Worktree at base `7ae8814`, frozen dependency install, CLI bound to 6110, HTTP 200.                                                     |
+| Verbatim brief and supplied references     | Verified preparation | M1–M43, unchanged Figma references and later MusArt defect screenshots.                                                                 |
+| Primary research and requirement contracts | Verified preparation | Agent-owned docs and source-linked acceptance matrices.                                                                                 |
+| Claimable build plan                       | Verified preparation | T00–T21 with owners, dependencies, requirements and evidence.                                                                           |
+| Production Motion/video source             | Active               | Core, transport, timeline/authoring and media-provider milestones are recorded separately.                                              |
+| Motion performance/export proof            | Partial diagnostics  | Core-only distributions and a Timelapse native witness exist; integrated Motion-video export and browser performance remain unverified. |

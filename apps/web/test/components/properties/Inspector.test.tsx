@@ -2,7 +2,9 @@ import { expect, test, vi } from "vitest";
 import { StrictMode } from "react";
 import { act, screen, fireEvent } from "@testing-library/react";
 import { choose } from "../../support/select";
-import { createLayer, createPage, createProject } from "@musart/core";
+import { createLayer, createPage, createProject, planMotionInitialization } from "@musart/core";
+import { createMotionTransport } from "../../../src/services/motion/transport";
+import { motionPropertyTrack } from "../../../src/state/session/motion-edit";
 import { Inspector } from "../../../src/components/properties/Inspector";
 import { previewAtom, useEngine } from "../../../src/state/session/editor";
 import { setup } from "../../support/ui";
@@ -43,6 +45,49 @@ function renderInspector(selection: "shape" | "text" | "image" | "multiple" | "n
   data.mount(<Live />);
   return data;
 }
+test("authors transform keys through the real inspector and keeps Static base edits separate", () => {
+  const previousUrl = location.href;
+  history.replaceState(null, "", "?automation=1");
+  try {
+    const d = renderInspector();
+    act(() =>
+      d.engine.execute({
+        type: "setCompositionMode",
+        mode: "motion",
+        plan: planMotionInitialization(d.engine.getSnapshot()),
+      }),
+    );
+    const target = { kind: "layer" as const, layerId: d.rectangle.id, property: "x" as const };
+    fireEvent.click(screen.getByRole("button", { name: "Ajouter une image clé · X" }));
+    const inspector = screen.getByRole("region", { name: "Propriétés" });
+    const renders = inspector.getAttribute("data-react-renders");
+    act(() => createMotionTransport(d.engine).seek({ value: 1, rate: 1 }));
+    expect(inspector).toHaveAttribute("data-react-renders", renders);
+    const input = screen.getByRole("textbox", { name: "X" }),
+      before = d.engine.getSnapshot();
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: "150" } });
+    expect(d.engine.getSnapshot()).toBe(before);
+    expect(inspector).toHaveAttribute("data-react-renders", renders);
+    fireEvent.blur(input);
+    let page = d.engine.getSnapshot().project.pages[0]!;
+    expect(page.layers[0]!.x).toBe(20);
+    expect(motionPropertyTrack(page, target)?.keyframes.map((key) => key.value)).toEqual([20, 150]);
+    act(() => d.engine.undo());
+    expect(d.engine.getSnapshot().project).toBe(before.project);
+    act(() => d.engine.redo());
+    act(() => d.engine.execute({ type: "setCompositionMode", mode: "static" }));
+    fireEvent.change(screen.getByLabelText("X"), { target: { value: "55" } });
+    fireEvent.blur(screen.getByLabelText("X"));
+    page = d.engine.getSnapshot().project.pages[0]!;
+    expect(page.layers[0]!.x).toBe(55);
+    expect(motionPropertyTrack(page, target)?.keyframes.map((key) => key.value)).toEqual([20, 150]);
+    act(() => d.engine.execute({ type: "setCompositionMode", mode: "motion" }));
+    expect(screen.getByLabelText("X")).toHaveValue("150");
+  } finally {
+    history.replaceState(null, "", previousUrl);
+  }
+});
 test("inherited locks explain the parent and disable layer properties until one undoable unlock", () => {
   const d = setup();
   d.engine.load(

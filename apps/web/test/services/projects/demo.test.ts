@@ -12,7 +12,7 @@ it("creates an editable portable example using original embedded artwork and loc
   expect(project.pages).toHaveLength(2);
   expect(project.pages[0]).toMatchObject({ width: 1080, height: 1350, background: "#f1eee7" });
   const image = project.pages[0]!.layers.find((layer) => layer.kind === "image")!;
-  const svg = atob(project.assets[image.assetId!]!.dataUrl.split(",")[1]!);
+  const svg = atob(project.assets[image.assetId!]!.dataUrl!.split(",")[1]!);
   expect(
     new DOMParser().parseFromString(svg, "image/svg+xml").querySelectorAll("circle"),
   ).toHaveLength(2);

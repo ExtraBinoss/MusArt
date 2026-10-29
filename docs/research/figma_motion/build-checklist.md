@@ -14,7 +14,7 @@ This is a claimable delivery plan, not a statement that Motion has been implemen
 | `user-deferred` | Explicitly scheduled by the user after the first stabilized video/timeline delivery.        |
 | `integrated`    | The verified milestone has its own deliberate commit on the feature branch.                 |
 
-Implementation tasks start `planned`, except the explicitly `user-deferred` camera phase T15. Only preparation has produced files so far. Do not mark an entire capability complete because a UI control or a mock exists.
+Implementation tasks started `planned`, except the explicitly `user-deferred` camera phase T15. Work is now active: see the [implementation log](implementation-log.md) for completed submilestones, actual focused/native checks and remaining scope. Do not mark an entire capability complete because a UI control or a mock exists.
 
 ## Dependency waves
 
@@ -209,7 +209,7 @@ Implementation tasks start `planned`, except the explicitly `user-deferred` came
 - [ ] Feed synchronized original-source audio into the same Mediabunny output; preview proxies never become the export's audio source.
 - [ ] Release audio contexts/nodes/decoders/PCM queues and reject stale work on source removal and teardown.
 
-**Checks:** audible native fixtures; source trim/offset; overlapping videos; mute/volume; loop/seek; sample timestamps; decoded A/V alignment; cancellation; cleanup and memory bounds. Separate imported audio-editor tracks are not the selected first-version requirement.
+**Checks:** audible native fixtures; source trim/offset; overlapping videos; mute/volume; loop/seek; sample timestamps; decoded A/V alignment; cancellation; cleanup and memory bounds. M12 initially selects source-video audio; M42 subsequently adds standalone audio import in T22.
 
 ## T13 — Deterministic original-source export through Mediabunny
 
@@ -291,6 +291,63 @@ Implementation tasks start `planned`, except the explicitly `user-deferred` came
 - [ ] Document concise executable API/CLI examples and errors, lifecycle ownership and extension rules. Keep public entry points short and code readable.
 
 **Checks:** no-DOM core suite/import boundary check; exact mirrored CLI/adapters tests; native headless media/GPU export/decoded pixels and A/V timing; malformed input and canceled/stale jobs; generic effect-catalog coverage and source/preview/export agreement.
+
+## T19 — Native UI refinements, isolated panel presence and import confirmation
+
+**Owner:** root UI integration + timeline owner + UI adapters agent. **Dependencies:** T08–T11. **Requirements:** UI-01–08, CMP-05/06, PERF-02/04/05. **Status:** active; a set of focused submilestones passes, full native UI parity does not.
+
+- [ ] Apply actual Converta Liquid Glass Slider/Switch components globally with provenance, narrower visual treatment, existing theme tokens and native interaction checks.
+- [ ] Keep Static/Motion below the artboard; verify icon-only legibility at extreme zoom and review all overlay target sizes.
+- [ ] Match responsive reference geometry, compact mode icons, Tooltip/Kbd conventions, neutral resize divider and accessible deliberate focus styling.
+- [x] Add an engine-only memoized MotionTimelineDock with local Jotai visibility, Motion transform/opacity presence, one intrinsic layout reservation, reduced motion and constant presence key.
+- [x] Key the inner panel by project+page, immediately make exits inert and return close-button focus to the persistent canvas toggle. Three focused Dock tests pass, including 60 seeks with no Dock commits and unchanged parent/sibling render counters.
+- [ ] Verify the actual App/Inspector/Canvas counters and layout changes in the native app during open/close; isolated-unit siblings are not a native root measurement.
+- [ ] Cancel drag/marquee/scrub/resize on `active=false`, close portalled menus and prevent late commits during the exit transition. Timeline-owner cases are being run separately.
+- [ ] Make ruler, keys and playhead share the same viewport, zoom origin and horizontal scroll. Clip the cursor to the time region, resize its visible height and provide smooth playback auto-follow.
+- [ ] Remove reported unwanted drag/ruler borders and stray slider underlays without removing intentional keyboard accessibility cues.
+- [ ] Implement and test the themed red duration-end marker with an accessible localized End tooltip; preserve half-open export semantics.
+- [x] Add the engine-scoped import-confirmation broker and genuine Radix host. Seven focused cases verify staged counts, boundary three/four, captured immutable plans, explicit answers, unavailable host, concurrent requests, stale project/page/revision and listener/unmount cleanup without document edits.
+- [ ] Exercise real video import through that host: decline/cancel leaves no assets, tracks or half-conversion; acceptance publishes the staged transaction once.
+- [ ] Capture real light/dark, narrow/wide, zoomed, resized, playing, scrolled, focused and popup screenshots. Resolve the user's M29/M35 references and preserve evidence before declaring completion.
+- [ ] Deliver UI-09: genuine reusable CopyButton, real Clipboard success/failure, Motion feedback and reduced motion; expiring EditorNotice with hover/focus pause, replacement timer reset, Close and copyable diagnostic details. Exact 4/8-second defaults remain engineering choices.
+
+## T20 — Headless-authored Motion gallery templates
+
+**Owner:** UI/templates agent; media owner supplies atomic binary install/render adapters. **Dependencies:** T01–T07, T14, T18. **Requirements:** TPL-01/02, MED-01/04, CMP-01/07, KEY-03/04, ENG-01/02. **Status:** CPU authoring/loader/gallery submilestone passes; native media rendering and reviewed covers remain pending.
+
+- [x] Preserve unchanged licensed stock sources and pinned provenance: three MDN CC0 photographs and the real flower MP4 with AAC audio.
+- [x] Generate In Bloom and Motion stress lab entirely through public core commands, with deterministic IDs/timestamps/seeds and replayable transaction batches.
+- [x] Include real isolated groups/mask, image/video overlays, effect animation, incoming easing families, source timing and audio metadata. The stress fixture has 50 image layers, 100 effects, five bounded groups and three clips sharing one video original.
+- [x] Keep each source original once; distinguish 50 image layers using three photo originals from the separate existing unique-image benchmark.
+- [x] Add genuine Motion/Static gallery filtering, mode icons, translated descriptions, honest preparation/cancel state and preserved Static entries.
+- [x] Verify bounded downloads, safe media paths, exact byte counts/SHA-256, fresh project IDs, captured origin/abort guards and the one atomic `openMediaProject` port. Unsupported install/storage failures stay failures.
+- [x] Run the real Bun generator and evaluator for both projects without a browser. Thirty-five focused cases cover factory/loader/gallery/dialog/script behavior; repeated generation is deterministic.
+- [ ] Render actual frames at explicit times through the existing Three graph with original resolvers. The native cover CLI exists and has validation tests; a written CLI is not a rendered cover.
+- [ ] Review real cover pixels, publish the two `.webp` gallery covers and prove gallery open → binary persistence → real reload → native rendering without UI authoring.
+- [ ] Run the stress template and original-source Mediabunny A/V export under T16, record hardware/backend/workload distributions, and fix failures before claiming fluid playback.
+
+## T21 — Resolve native media integration and error feedback
+
+**Owner:** media/platform agent + root renderer integration. **Dependencies:** T04–T07, T12–T14, T16. **Requirements:** ERR-01, MED-04, PERF-01–05, TIME-01–03. **Status:** active after the user's M38/M39 Play failure.
+
+- [ ] Reproduce the actual Play report with a captured stack and native frame/ready diagnostics; do not attribute it solely to background work without evidence.
+- [ ] Complete the resolver checklist in [integration-audit.md](integration-audit.md): per-request project identity plus active canvas, thumbnail, selection preview, image export, automation and history adapters.
+- [ ] Prevent late old-resource teardown from hiding a newer ready canvas; test delayed disposal and project/artboard/source replacement.
+- [ ] Separate playback coalescing/backpressure from superseded-seek cancellation so a slower frame cannot be aborted forever. Keep document/source stale guards and truthful presented timestamps.
+- [ ] Keep a bounded warm decoder path for forward playback; measure backend starts, correct source PTS, reads, uploads and completion barriers before asserting improvement.
+- [ ] Present media-specific contextual loading/errors/retry/cancel behavior rather than the existing generic error surface; do not simulate successful rendering.
+- [ ] Prove native frame determinism, zero production GPU pixel readbacks into JavaScript, source-audio alignment, original-only Mediabunny export and a stable resource plateau.
+
+## T22 — Standalone audio import and headless licensed sound demonstration
+
+**Owner:** audio import/templates agent with core/media/export owners. **Dependencies:** stabilize the current T21 native-video gate before changing frozen asset/track contracts; share T12/T13's audio pipeline. **Requirements:** AUDIO-02, TPL-02, ENG-01/02, TIME-01–03. **Status:** newly requested, contract planning; not implemented or audibly verified.
+
+- [ ] Freeze a genuine binary AudioAsset and nonvisual timeline-track contract with duration/first PTS/timebase, sample rate/channels and durable original identity. Do not invent image dimensions or wrap sound in a fake video.
+- [ ] Probe/import actual supported audio files with codec/error/cancel feedback, atomic original sidecars, stale guards and coherent duration/trim/undo behavior.
+- [ ] Expose source timing, mute and volume through the timeline/inspector using the shared command/registry model.
+- [ ] Reuse the real bounded preview/export audio mixer; align arbitrary seeks, looping, inactive artboards and exact original-source Mediabunny output.
+- [ ] Acquire real licensed music and SFX with provenance; extend the headless In Bloom recipe to demonstrate intentional plop/whoosh or music timing. No placeholder playback, UI authoring or generated success state.
+- [ ] Verify persisted reload, shared-original deduplication, error paths and native audible/decoded A/V synchronization before claiming completion.
 
 ## Required agent return format
 

@@ -10,6 +10,7 @@
     "**/dist/**",
     "coverage/**",
     "artifacts/**",
+    "apps/web/public/templates/motion/*.json",
     "PLAN_UNIVERSEL_EDITEUR_CREATIF.md"
   ]
 }

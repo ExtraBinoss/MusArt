@@ -1,5 +1,6 @@
 import {
   createId,
+  isVideoAsset,
   PRESETS,
   createLayer,
   createPage,
@@ -9,6 +10,7 @@ import {
   selectionComposition,
   type EnginePort,
   type Project,
+  type MotionInitializationPlan,
 } from "@musart/core";
 import type {
   EditorServices,
@@ -16,13 +18,17 @@ import type {
   ExportScope,
   NewProjectOptions,
 } from "../../state/contracts";
+import { getMotionConfirmation } from "../../state/session/motion-confirmation";
+import { createMotionTransport } from "../motion/transport";
 import { getAnimationSession } from "../animation/session";
 import type { ThumbnailPipeline } from "../projects/thumbnails";
 import { ProjectStore } from "../projects/storage";
 import { DeletedProjectError } from "../projects/lifecycle";
 import { StaleProjectWriteError } from "../projects/writes/revision";
+import { createMediaProjectOpener } from "./media-project";
 import { assertExportScope } from "./export-scope";
 import { createPreviewExport } from "./previews";
+import { importMediaFiles } from "../assets/media-import";
 import { importBatch, readDataUrl } from "../assets/imports";
 import { downloadBlob, safeName } from "../files/download";
 import { maskToDataUrl } from "../selection/pixel-selection";
@@ -36,6 +42,7 @@ import { isMusArtClipboardText } from "../clipboard/controller";
 import { freezeEffectPreviews } from "../../state/session/effect-preview";
 export interface ServiceDependencies {
   fonts?: FontLibraryPort;
+  confirmMotion?: (plan: MotionInitializationPlan) => Promise<boolean>;
   store: ProjectStore;
   thumbnails?: ThumbnailPipeline;
   selection: SelectionClient;
@@ -57,6 +64,18 @@ export function createEditorServices(
     pixels: async (asset) => (await renderer()).sourcePixels(asset),
     maskName: () => i18n.t("pixelSelection:maskName"),
   });
+  const mediaResolvers = new Map<string, import("@musart/render").MediaSourceResolver>();
+  const mediaResolverFor = (projectId: string) => {
+    let resolver = mediaResolvers.get(projectId);
+    if (!resolver) {
+      resolver = {
+        resolveOriginal: (asset, options) => store.loadMediaOriginal(projectId, asset, options),
+      };
+      mediaResolvers.set(projectId, resolver);
+      if (mediaResolvers.size > 64) mediaResolvers.delete(mediaResolvers.keys().next().value!);
+    }
+    return resolver;
+  };
   const activePage = () => {
     const snapshot = engine.getSnapshot();
     return snapshot.project.pages.find((p) => p.id === snapshot.pageId)!;
@@ -101,9 +120,15 @@ export function createEditorServices(
   };
   return {
     pixelSelection,
+    mediaResolverFor,
+    openMediaProject: createMediaProjectOpener(engine, {
+      store,
+      flush: switchReady,
+      schedule: (project) => thumbnails?.schedule(project),
+    }),
     ...(thumbnails
       ? {
-          previewExport: createPreviewExport(engine, thumbnails),
+          previewExport: createPreviewExport(engine, thumbnails, mediaResolverFor),
         }
       : {}),
     ...(dependencies.fonts ? { fonts: dependencies.fonts } : {}),
@@ -177,12 +202,34 @@ export function createEditorServices(
         createdAt: now,
         updatedAt: now,
       };
-      await store.save(duplicate, undefined, { remember: false });
+      const originals = await Promise.all(
+        [
+          ...new Map(
+            Object.values(source.assets)
+              .filter(isVideoAsset)
+              .map((asset) => [asset.originalId, asset]),
+          ).values(),
+        ].map(async (asset) => ({
+          originalId: asset.originalId,
+          contentRevision: asset.contentRevision,
+          blob: await store.loadMediaOriginal(id, asset),
+        })),
+      );
+      await store.save(duplicate, undefined, { remember: false, mediaOriginals: originals });
       for (const thumbnail of await store.thumbnails(id))
         await store.saveThumbnail({ ...thumbnail, projectId: duplicate.id, updatedAt: now });
       thumbnails?.schedule(duplicate);
     },
     async importFiles(files) {
+      if (files.some((file) => file.type.startsWith("video/"))) {
+        await importMediaFiles(engine, files, {
+          store,
+          flush: switchReady,
+          confirm: dependencies.confirmMotion ?? getMotionConfirmation(engine).request,
+          probe: async (file, options) => (await renderer()).probeVideoOriginal(file, options),
+        });
+        return;
+      }
       const snapshot = engine.getSnapshot();
       const command = await importBatch(files, activePage());
       const current = engine.getSnapshot();
@@ -222,6 +269,10 @@ export function createEditorServices(
     async exportProject() {
       freezeEffectPreviews(engine);
       const project = engine.getSnapshot().project;
+      if (Object.values(project.assets).some(isVideoAsset))
+        throw Error(
+          "Video projects require a binary portable archive; JSON export is unavailable until archive support is installed.",
+        );
       download(
         new Blob([serializeProject(project)], { type: "application/json" }),
         `${safeName(project.name)}.musart`,
@@ -232,22 +283,28 @@ export function createEditorServices(
       const snapshot = engine.getSnapshot(),
         { project } = snapshot;
       assertExportScope(snapshot, scope);
+      const transport = createMotionTransport(engine);
+      transport.pause();
+      const active = transport.readFrame() ?? activePage(),
+        motionFrame = transport.readFramePlan();
       const pages = options.allPages
         ? project.pages
         : [
             options.selectionOnly
-              ? selectionComposition(activePage(), snapshot.selection, [
+              ? selectionComposition(active, snapshot.selection, [
                   project.id,
                   ...project.pages.map((item) => item.id),
                   ...Object.keys(project.assets),
                 ])
-              : activePage(),
+              : active,
           ];
       const { exportComposition } = await renderer();
       const output: Record<string, Uint8Array> = {};
       for (const [index, page] of pages.entries()) {
         const blob = await exportComposition(page, project.assets, {
           ...options,
+          mediaResolver: mediaResolverFor(project.id),
+          ...(motionFrame && page.id === motionFrame.compositionId ? { motionFrame } : {}),
           ...(dependencies.fonts ? { fontResolver: dependencies.fonts.resolve } : {}),
         });
         const filename = `${safeName(page.name)}.${options.format === "jpeg" ? "jpg" : options.format}`;
@@ -276,7 +333,7 @@ export function createEditorServices(
         page = activePage(),
         layer = page.layers.find((layer) => layer.id === layerId);
       const asset = layer?.assetId ? snapshot.project.assets[layer.assetId] : undefined;
-      if (!layer || layer.kind !== "image" || !asset)
+      if (!layer || layer.kind !== "image" || !asset || isVideoAsset(asset))
         throw new Error("Sélectionnez un calque image.");
       if (layer.locked) throw new Error("Le calque est verrouillé.");
       const sx = Math.max(0, Math.min(asset.width - 1, (x / layer.width) * asset.width)),

@@ -1,0 +1,29 @@
+.motion-property-field {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+.motion-property-input {
+  flex: 1;
+  min-width: 0;
+}
+.motion-property-diamond {
+  flex: 0 0 19px;
+  width: 19px;
+  height: 24px;
+  padding: 0;
+  color: var(--muted-foreground);
+}
+.motion-property-diamond[hidden] {
+  display: none;
+}
+.motion-property-diamond[data-animated="true"] {
+  color: var(--action);
+}
+.motion-property-diamond[data-current="true"] svg {
+  fill: currentColor;
+}
+.motion-property-paint {
+  align-items: flex-start;
+}

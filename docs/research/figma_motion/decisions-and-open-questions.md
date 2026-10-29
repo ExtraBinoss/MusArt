@@ -33,6 +33,24 @@ The [verbatim brief](user-brief.fr.md) is authoritative. The [requirements inven
 | Documentation precedes implementation tasks  | DOC-01, DOC-02, DOC-03, DOC-04                 | Preserve exact user wording, research the reference and prepare traceable checklists first. M6's implementation authorization remains recorded.                                                                                                    |
 | Ask about unresolved choices                 | DOC-05                                         | M8 requests user questions where decisions remain. Pending answers are preserved explicitly.                                                                                                                                                       |
 
+## Later explicit refinements (M22–M41)
+
+| Decision                   | Contract / precedence                                                                                                                                                                                       | Trace         |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| Product colors             | Keep MusArt primary/theme tokens. A requested primary playhead does not mean importing Figma's fixed blue.                                                                                                  | M24, M29, M31 |
+| Resize divider             | Neutral divider matching Layers/Properties. This explicitly replaces M23's earlier blue-hover suggestion.                                                                                                   | M23, M25      |
+| Artboard mode placement    | Below its artboard, with legible two-icon fallback at low zoom; audit other overlays too.                                                                                                                   | M23, M28      |
+| UI components              | Actual Converta Liquid Glass sliders/switches, genuine themed Tooltip/Kbd and compact playback icons; narrow the glass treatment.                                                                           | M23, M31      |
+| Presence and time viewport | Local Jotai/Motion panel presence, no continuous root rerenders, clipped/resized playhead, working scroll/zoom and smooth playback auto-follow.                                                             | M27–37        |
+| End feedback               | Themed red end-of-composition marker with localized tooltip; no extra exported endpoint frame.                                                                                                              | M37           |
+| Demonstration projects     | Real showcase + stress templates, Motion/Static filter/icons, groups/images/videos/easing/effects authored headlessly through the same generic engine.                                                      | M24, M26      |
+| Native media pipeline      | Mediabunny may select/decode exact native media frames; Three.js owns VideoFrameTexture, GPU effects and composition. No production GPU pixel readback into JavaScript; no universal hardware-decode claim. | M39–40        |
+| Error/copy/notices         | Clear contextual errors, raw diagnostics copyable through a reusable UI component, Motion copied feedback around 1–2 seconds and notices that expire.                                                       | M38–41        |
+
+The proposed exact notice defaults (4-second success, 8-second error, pause on hover/focus; 1.5-second copied feedback) are implementation choices within M41, not additional user answers.
+
+**M42 extends audio scope:** standalone sound/music/SFX import is now requested, with a real licensed sound demonstration in In Bloom. Preserve M12's source-audio decision as history; its earlier absence of a separate audio-import selection is no longer a permanent exclusion. Schema changes are coordinated after the frozen native-video repair gate; exact AudioAsset/track interfaces remain engineering work, not an unanswered user decision.
+
 ## Proposed defaults to make the model coherent
 
 These are engineering/product proposals, not additional user quotations. Architecture and UX research must reconcile them before dependent tasks implement incompatible assumptions.

@@ -1,3 +1,5 @@
+import { isVideoAsset } from "@musart/core";
+import { mediaOriginalBytes } from "./media/persistence";
 import type { IDBPDatabase } from "idb";
 import type { ProjectUsage, OriginStorageEstimate } from "../../state/contracts";
 import type { ProjectBytes, StudioDatabase } from "./database";
@@ -9,7 +11,7 @@ export async function projectUsage(
   id: string,
 ): Promise<ProjectUsage> {
   const history = await new HistoryStore(async () => db).usage(id);
-  const tx = db.transaction(["projects", "assets", "thumbnails"], "readwrite"),
+  const tx = db.transaction(["projects", "assets", "thumbnails", "mediaOriginalMeta"], "readwrite"),
     done = tx.done;
   try {
     const record = await tx.objectStore("projects").get(id);
@@ -25,8 +27,15 @@ export async function projectUsage(
           cursor = await cursor.continue();
         }
       } else
-        for (const asset of Object.values(record.project.assets))
+        for (const asset of Object.values(record.project.assets).filter(
+          (asset) => !isVideoAsset(asset),
+        ))
           assets += logicalBytes({ projectId: id, assetId: asset.id, dataUrl: asset.dataUrl });
+      let media = await tx.objectStore("mediaOriginalMeta").index("by-project").openCursor(id);
+      while (media) {
+        assets += mediaOriginalBytes(media.value);
+        media = await media.continue();
+      }
       let thumbnails = legacyThumbnailBytes(record.thumbnail);
       let cursor = await tx.objectStore("thumbnails").index("by-project").openCursor(id);
       while (cursor) {

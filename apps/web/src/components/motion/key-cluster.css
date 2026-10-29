@@ -1,0 +1,65 @@
+.motion-key-cluster[data-slot] {
+  width: min(272px, calc(100vw - 24px));
+  padding: 9px;
+}
+.motion-key-cluster header {
+  display: grid;
+  gap: 3px;
+  margin: 2px 4px 9px;
+  font-size: 11px;
+}
+.motion-key-cluster header span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.motion-cluster-scroll {
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.motion-cluster-entry {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 28px;
+}
+.motion-cluster-entry button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  height: 28px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+}
+.motion-cluster-entry small {
+  margin-left: auto;
+  color: var(--muted-foreground);
+  font-size: 9px;
+}
+.motion-cluster-entry button:hover,
+.motion-cluster-entry button[aria-pressed="true"] {
+  background: var(--accent);
+}
+.motion-cluster-entry button[aria-pressed="true"] > svg {
+  fill: var(--primary);
+  stroke: var(--primary);
+}
+.motion-key-cluster footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  margin-top: 7px;
+}
+.motion-key-cluster footer button {
+  padding: 0 5px;
+  font-size: 10px;
+}

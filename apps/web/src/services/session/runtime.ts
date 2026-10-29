@@ -10,7 +10,8 @@ import { ThumbnailRenderer } from "../projects/thumbnails/renderer";
 import { FontLibrary } from "../fonts/library";
 import { ProjectWriteQueue } from "./project-write-queue";
 import { ThumbnailActivity } from "../projects/thumbnails/activity";
-import { effectPreviewActivity, freezeEffectPreviews } from "../../state/session/effect-preview";
+import { freezeEffectPreviews } from "../../state/session/effect-preview";
+import { createRenderActivity } from "./render-activity";
 export interface RuntimeOptions {
   store?: ProjectStore;
   project?: Project;
@@ -81,7 +82,7 @@ export async function createRuntime(
     options.thumbnails ??
     new ThumbnailPipeline(store, {
       onError,
-      activity: new ThumbnailActivity(600, window, effectPreviewActivity(engine)),
+      activity: new ThumbnailActivity(600, window, createRenderActivity(engine)),
       renderer: new ThumbnailRenderer(undefined, fonts?.resolve),
     });
   let stopThumbnails: (() => void) | undefined,

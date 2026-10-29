@@ -1,8 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useStore } from "jotai";
 import { useRenderMetrics } from "./state/session/render-metrics";
-import { createPortal } from "react-dom";
-import { X, AlertCircle, CheckCircle2, PenTool, Clapperboard } from "lucide-react";
+import { PenTool } from "lucide-react";
 import { MusArtLogo } from "./components/branding/MusArtLogo";
 import { useTranslation } from "react-i18next";
 import { layerSelection } from "./components/layers/menu/selection";
@@ -20,13 +19,16 @@ import { Inspector } from "./components/properties/Inspector";
 import { LayersPanel } from "./components/layers/LayersPanel";
 import { CanvasArea } from "./components/viewport/CanvasArea";
 import { ProjectDialog } from "./components/projects/ProjectDialog";
+import { MotionImportConfirmation } from "./components/motion-import/ConfirmationDialog";
+import { EditorNotice, type EditorNoticeValue } from "./components/notifications/EditorNotice";
+import { errorDiagnostics } from "./components/notifications/diagnostics";
 import { ProjectPill } from "./components/projects/ProjectPill";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "./components/ui/tabs";
-import { AnimatePanel } from "./components/animation/AnimatePanel";
 import { freezeEffectPreviews } from "./state/session/effect-preview";
-import { ExportPopover } from "./components/export/ExportPopover";
+import { ExportActions } from "./components/export/ExportActions";
 import { ToolSettings } from "./components/toolbar/ToolSettings";
-import type { PanelMode, ProjectView } from "./components/search/actions";
+import type { ProjectView } from "./components/search/actions";
+import { MotionTimelineDock } from "./components/motion-shell/MotionTimelineDock";
+import { createMotionTransport } from "./services/motion/transport";
 import {
   FontLibraryProvider,
   bundledFontLibrary,
@@ -49,12 +51,33 @@ export function App({ engine, services, welcome = false }: AppProps) {
   const choosingProject = welcomeProject === snapshot.project.id;
   const [projectMenu, setProjectMenu] = useState<ProjectView | null>(welcome ? "projects" : null);
   const [exportMenu, setExportMenu] = useState(false);
-  const [panelMode, setPanelMode] = useState<PanelMode>("design");
-  const [notice, setNotice] = useState<{ message: string; error: boolean } | null>(null);
+  const [timelapseMenu, setTimelapseMenu] = useState(false);
+  const motionTransport = useMemo(() => createMotionTransport(engine), [engine]);
+  const projectOrigin = useMemo(
+    () => ({
+      projectId: snapshot.project.id,
+      pageId: snapshot.pageId,
+      revision: snapshot.revision,
+    }),
+    [snapshot.project.id, snapshot.pageId, snapshot.revision],
+  );
+  const [notice, setNotice] = useState<EditorNoticeValue | null>(null);
   const [processing, setProcessing] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const store = useStore();
-  const onError = useCallback((message: string) => setNotice({ message, error: true }), []);
+  const onError = useCallback(
+    (message: string, details?: string) => {
+      // A failed frame cannot be repaired by requesting more frames from the same source.
+      motionTransport.pause();
+      setNotice((current) =>
+        current?.error && current.message === message && current.details === details
+          ? current
+          : { message, error: true, ...(details ? { details } : {}) },
+      );
+    },
+    [motionTransport],
+  );
+  const dismissNotice = useCallback(() => setNotice(null), []);
   const onTask = useCallback(
     async (task: () => void | Promise<void>, success?: string): Promise<boolean> => {
       try {
@@ -62,7 +85,7 @@ export function App({ engine, services, welcome = false }: AppProps) {
         if (success) setNotice({ message: success, error: false });
         return true;
       } catch (error) {
-        setNotice({ message: formatUiError(error), error: true });
+        setNotice({ message: formatUiError(error), details: errorDiagnostics(error), error: true });
         return false;
       }
     },
@@ -96,11 +119,19 @@ export function App({ engine, services, welcome = false }: AppProps) {
     if (open) freezeEffectPreviews(engine);
     setExportMenu(open);
   };
+  const showTimelapse = useCallback(
+    (open: boolean) => {
+      if (open) motionTransport.pause();
+      setTimelapseMenu(open);
+    },
+    [motionTransport],
+  );
   useShortcuts(engine, services, onTask, !choosingProject);
   return (
     <FontLibraryProvider library={services.fonts ?? bundledFontLibrary}>
       <TooltipProvider delayDuration={350}>
         <main className="musart-app" ref={element}>
+          <MotionImportConfirmation engine={engine} />
           {!choosingProject && (
             <>
               <ResizablePanelGroup orientation="horizontal" className="workspace-panels">
@@ -141,7 +172,9 @@ export function App({ engine, services, welcome = false }: AppProps) {
                     onTask={onTask}
                     onProjects={setProjectMenu}
                     onExport={() => showExport(true)}
-                    onPanelMode={setPanelMode}
+                    onPanelMode={(mode) => {
+                      if (mode === "animate") showTimelapse(true);
+                    }}
                     onImport={onImport}
                   />
                   <ToolSettings services={services} onTask={onTask} />
@@ -161,23 +194,16 @@ export function App({ engine, services, welcome = false }: AppProps) {
                 >
                   <ResizablePanelGroup orientation="vertical" className="sidebar-panels">
                     <ResizablePanel id="properties" defaultSize="63%" minSize="22%">
-                      <Tabs
-                        value={panelMode}
-                        onValueChange={(mode) => setPanelMode(mode as PanelMode)}
-                        className="inspector-tabs"
-                      >
+                      <div className="inspector-tabs">
                         <div className="inspector-header">
-                          <TabsList aria-label={t("panelMode")} className="inspector-mode">
-                            <TabsTrigger value="design">
-                              <PenTool aria-hidden />
-                              {t("design")}
-                            </TabsTrigger>
-                            <TabsTrigger value="animate">
-                              <Clapperboard aria-hidden />
-                              {t("animate")}
-                            </TabsTrigger>
-                          </TabsList>
-                          <ExportPopover
+                          <span className="inspector-design-label">
+                            <PenTool size={13} />
+                            {t("design")}
+                          </span>
+                          <ExportActions
+                            engine={engine}
+                            timelapseOpen={timelapseMenu}
+                            onTimelapseOpenChange={showTimelapse}
                             open={exportMenu}
                             onOpenChange={showExport}
                             page={page}
@@ -188,13 +214,8 @@ export function App({ engine, services, welcome = false }: AppProps) {
                             onTask={onTask}
                           />
                         </div>
-                        <TabsContent value="design">
-                          <Inspector engine={engine} page={page} selected={selected} run={run} />
-                        </TabsContent>
-                        <TabsContent value="animate">
-                          <AnimatePanel engine={engine} services={services} />
-                        </TabsContent>
-                      </Tabs>
+                        <Inspector engine={engine} page={page} selected={selected} run={run} />
+                      </div>
                     </ResizablePanel>
                     <ResizableHandle
                       aria-label={t("panelResize")}
@@ -214,11 +235,12 @@ export function App({ engine, services, welcome = false }: AppProps) {
                   </ResizablePanelGroup>
                 </ResizablePanel>
               </ResizablePanelGroup>
+              <MotionTimelineDock engine={engine} />
               <input
                 ref={input}
                 type="file"
                 multiple
-                accept="image/*,.svg"
+                accept="image/*,video/*,.svg"
                 className="sr-only"
                 aria-label={t("import")}
                 onChange={(event) => {
@@ -228,30 +250,10 @@ export function App({ engine, services, welcome = false }: AppProps) {
               />
             </>
           )}
-          {createPortal(
-            <div aria-live="polite" aria-atomic="true">
-              {notice && (
-                <div
-                  className={`editor-notice floating-panel ${notice.error ? "error-notice" : ""}`}
-                  role={notice.error ? "alert" : "status"}
-                >
-                  {notice.error ? <AlertCircle size={16} /> : <CheckCircle2 size={16} />}
-                  <span>{notice.message}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    aria-label={t("close")}
-                    onClick={() => setNotice(null)}
-                  >
-                    <X size={14} />
-                  </Button>
-                </div>
-              )}
-            </div>,
-            document.body,
-          )}
+          <EditorNotice notice={notice} onClose={dismissNotice} />
           {projectMenu && (
             <ProjectDialog
+              origin={projectOrigin}
               services={services}
               {...(choosingProject
                 ? { welcome: true }

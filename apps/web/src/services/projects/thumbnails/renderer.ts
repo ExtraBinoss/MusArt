@@ -1,13 +1,13 @@
 import { yieldThumbnailInput } from "./scheduling";
 import type { Asset, Composition } from "@musart/core";
-import type { FontResolver } from "@musart/render";
+import type { FontResolver, RenderOptions } from "@musart/render";
 import { MAX_THUMBNAIL_BYTES, THUMBNAIL_EDGE, THUMBNAIL_QUALITY } from "./model";
 export interface ThumbnailFrameSession {
   withCanvasFrame<T>(
     page: Composition,
     assets: Record<string, Asset>,
     consume: (canvas: HTMLCanvasElement) => T | Promise<T>,
-    options: { scale: number; canRender?: () => boolean },
+    options: RenderOptions & { scale: number },
   ): Promise<T>;
   dispose(): Promise<void>;
 }
@@ -35,6 +35,7 @@ export class ThumbnailRenderer {
     assets: Record<string, Asset>,
     canRender?: () => boolean,
     edge = THUMBNAIL_EDGE,
+    media: Pick<RenderOptions, "mediaResolver" | "motionFrame"> = {},
   ) {
     if (this.disposed) throw new Error("Thumbnail renderer is closed.");
     if (canRender && !canRender()) throw new DOMException("Rendering deferred.", "AbortError");
@@ -76,7 +77,12 @@ export class ThumbnailRenderer {
           );
           return { encoding, width, height };
         },
-        { scale, canRender: allowed },
+        {
+          scale,
+          canRender: allowed,
+          ...media,
+          ...(media.mediaResolver ? { signal: this.controller.signal } : {}),
+        },
       );
       const blob = await frame.encoding;
       this.controller.signal.throwIfAborted();

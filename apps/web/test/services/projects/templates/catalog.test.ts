@@ -4,6 +4,7 @@ import {
   TEMPLATE_CATALOG,
   createProjectFromTemplate,
 } from "../../../../src/services/projects/templates/catalog";
+import * as motion from "../../../../src/services/projects/templates/motion/loader";
 
 const ports = () => ({
   createProject: vi.fn<Parameters<typeof createProjectFromTemplate>[0]["createProject"]>(
@@ -14,7 +15,7 @@ const ports = () => ({
   ),
 });
 test("publishes exact canonical canvas formats and the editable artwork template", async () => {
-  expect(new Set(TEMPLATE_CATALOG.map((item) => item.id)).size).toBe(PRESETS.length + 1);
+  expect(new Set(TEMPLATE_CATALOG.map((item) => item.id)).size).toBe(PRESETS.length + 3);
   expect(Object.isFrozen(TEMPLATE_CATALOG)).toBe(true);
   const services = ports();
   for (const preset of PRESETS) {
@@ -37,6 +38,31 @@ test("publishes exact canonical canvas formats and the editable artwork template
   await expect(createProjectFromTemplate(services, "untrusted-template")).rejects.toThrow(
     "Unknown",
   );
+});
+test("routes Motion bundles to the binary-capable installation service and keeps blank video formats Static", async () => {
+  const services = ports();
+  const open = vi.spyOn(motion, "openMotionTemplate").mockResolvedValue(undefined);
+  const signal = new AbortController().signal;
+  const expectedOrigin = { projectId: "origin", pageId: "composition", revision: 3 };
+  for (const id of ["in-bloom", "motion-stress-lab"]) {
+    const template = TEMPLATE_CATALOG.find((item) => item.id === id)!;
+    expect(template.mode).toBe("motion");
+    expect(template.descriptionKey).toBeTruthy();
+    await createProjectFromTemplate(services, id, { signal, expectedOrigin });
+    expect(open).toHaveBeenLastCalledWith(services, id, { signal, expectedOrigin });
+  }
+  expect(
+    TEMPLATE_CATALOG.filter((item) => item.id.startsWith("preset:")).every(
+      (item) => item.mode === "static",
+    ),
+  ).toBe(true);
+  expect(services.openPortable).not.toHaveBeenCalled();
+  expect(services.createProject).not.toHaveBeenCalled();
+  const aborted = new AbortController();
+  aborted.abort();
+  await expect(
+    createProjectFromTemplate(services, "in-bloom", { signal: aborted.signal }),
+  ).rejects.toMatchObject({ name: "AbortError" });
 });
 test("creates fresh independent complete techno documents through the real portable boundary", async () => {
   const services = ports();

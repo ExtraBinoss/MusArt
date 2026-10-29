@@ -18,13 +18,14 @@ import type {
   PersistenceResult,
   PersistenceWorkerPort,
 } from "./model";
+import type { StoredMediaOriginal } from "../media/model";
 export interface PersistenceClientOptions {
   worker?: () => PersistenceWorkerPort | null;
   yieldTask?: (signal: AbortSignal, foreground: boolean) => Promise<void>;
   timeout?: number;
 }
 type PersistenceAction =
-  | { kind: "save"; frame: ProjectWriteFrame }
+  | { kind: "save"; frame: ProjectWriteFrame; mediaOriginals: readonly StoredMediaOriginal[] }
   | { kind: "thumbnail"; record: StoredThumbnail }
   | { kind: "info"; projectId: string }
   | { kind: "thumbnails"; projectId: string; pageIds?: readonly string[]; allowStale?: boolean };
@@ -81,9 +82,16 @@ export class PersistenceClient {
     void result.catch(() => undefined);
     return result;
   }
-  save(frame: ProjectWriteFrame): Promise<ProjectWriteResult> {
+  save(
+    frame: ProjectWriteFrame,
+    mediaOriginals: readonly StoredMediaOriginal[] = [],
+  ): Promise<ProjectWriteResult> {
     return this.enqueue(async () => {
-      const result = await this.perform({ kind: "save", frame });
+      const result = await this.perform({
+        kind: "save",
+        frame,
+        mediaOriginals: [...mediaOriginals],
+      });
       if (result.kind !== "save" || result.value.projectId !== frame.document.id)
         throw Error("Mismatched saved project response.");
       return result.value;
@@ -165,7 +173,12 @@ export class PersistenceClient {
       const db = await this.database();
       let result: PersistenceResult;
       if (action.kind === "save")
-        result = { kind: "save", value: await persistProjectWrite(db, action.frame) };
+        result = {
+          kind: "save",
+          value: await (action.mediaOriginals.length
+            ? persistProjectWrite(db, action.frame, action.mediaOriginals)
+            : persistProjectWrite(db, action.frame)),
+        };
       else if (action.kind === "thumbnail")
         result = { kind: "thumbnail", value: await persistThumbnail(db, action.record) };
       else if (action.kind === "info")
@@ -223,6 +236,11 @@ export class PersistenceClient {
     try {
       if (action.kind === "save") {
         worker.postMessage({ type: "begin", id, database: this.name });
+        for (const original of action.mediaOriginals) {
+          abort.signal.throwIfAborted();
+          worker.postMessage({ type: "media", id, original });
+          await (this.options.yieldTask ?? yieldFragmentTask)(abort.signal, this.closed);
+        }
         let parts = 0;
         for (const part of fragmentValue(action.frame)) {
           do {

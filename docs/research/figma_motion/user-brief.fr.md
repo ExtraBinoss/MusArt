@@ -162,6 +162,248 @@ et ducoup animate n'a pas tout ce qu'il y'a, genre juste timelapse va ouvrir un 
 oublie pas de pointer que tout le moteur de keyframes et tout, tout doit etre générique, genre tout le moteur d'animation etc, doit etre génériuqe, capable en headless d'exister etc, et aussi juste smooth, avec du beau code pas horrible à lire
 ```
 
+## M20
+
+```text
+alors je t'ai pas non plus demandé de faire muse art web motion jsp pk tu as fait ca la, j'ai demandé un worktree et une branche c'est tout
+```
+
+## M21
+
+```text
+ok ok c'est bon vasi continue, paske bon la ca fais deja 30 minutes tu tournes ta toujours pas posé une ligne de codé ou envoyé un sous agnet pour avancé
+```
+
+## M22
+
+```text
+oad /home/albi/Documents/Projects/Hackaton/MuseArtWeb-motion/packages/core/src/index.ts
+      5:45:36 PM [vite] (client) Pre-transform error: Failed to load url /src/components/animation/timelapse/use-timelapse-previe [ juste tu vois bien y'a ca comme soucis jsp si tu as vu  sinon ou ije te laisse fiare je suppose que c un résidu des agents
+```
+
+## M23
+
+```text
+pour les sliders utilise le meme type de slider qui ressemble à apple liquid glass et les switch ausis, recupère les de converta ../../Plinka/Converta genre récupère de sa svp tu remplaces ducoup tout nos switch et slider si y'a
+
+tout doit etre le meme layout que figma etc, responsiv eetc, verifie tout bien svp.
+
+
+pour le statique motion, je propose que ca soit en dessous de l'artboard, plutot que on top of truc, paske ducoup ca fais paramètresde statique/moiton alors que non ca rajoute juste un timeline.
+le truc du timeline je pense c'est pas la bonne icone ce que ta mis
+
+
+le resize doit aovir une barre bleu quand on hover tout sa propre et tout
+le truc de la loop, aller retour etc juste un logo suffira, oublie pas les tooltip provider et les tooltip genre tout court des buttons propres.
+la le layout est pas incr encore je vois  sur la page
+il faut les kdb pour les shortcut et tout faut les meme shortcut que figma, très smooth et tout svp tc
+```
+
+## M24
+
+```text
+garde notre color pirmary quand meme utilise pas le bleu figma lol faut que ca soit générique tout ce que tu fais
+
+et s'il te plait, il faut que tu crée une template de vidéo, une simple, et un stress test avec image/video etc.. tu chopes la vidéo sois sur unsplash soit jsp  un truc sympa ok, comme ça je pourrais ouvrir un projet faire en motion (les templates doivent avoir un filtre et icon motion ou statique)
+```
+
+## M25
+
+```text
+quoi que pas barre bleu mais barre grise fin la meme que  celle entre layer et properties svp
+```
+
+## M26
+
+```text
+il faut que les templates montrent toutes les choses possible avec le moteur de motion, les grouping de lyaers, les images, les vidéos, les easing mode, des trucs fous genre vraiment, et tu fais tout en headless ca prouvera que le moteur est bien générique quoi
+```
+
+## M27
+
+```text
+pour l'instant en hauteur et en largeur le timeline n'est pas bon genre il y'a clairement du progrès a faire, meme si c'est deja pas mal ce que t ufais mais continue bien svp, oublie pas ton objectif d'avoir tout comme figma. tu estimes encore combien de temps pour finir tout le coté ui + test unitaires  ?
+```
+
+## M28
+
+```text
+il faut que le mot statique et motion fonctionne. sois visible quand on dézoom trop faut que les deux icons et gardé qq chose de lisislbe. (pareil pour les autres boutons des overlays svp
+```
+
+## M29
+
+Attachment: [Image #1 — MusArt timeline dark-theme feedback](assets/musart-timeline-dark-feedback.png), original `/tmp/codex-clipboard-FZCdYv.png`.
+
+```text
+sans etre trop mechant jsp ce que tu fais mais t'en est ou ? [Image #1] paske la c'est pas responsive, y'a des bordures et tout c'est pas top, la plyahead doit etre bleu primary et tes tooltips osnt weird, pourquoi ils ne sont pas comme prévu, genre ils sont censé etre themed, tout doit etre themed properyl.. svp.
+```
+
+## M30
+
+```text
+mais tu vois aussi que la plyeahd et tout n'est pas resize en fonction de la hauteur du panneau right?? aussi l'apparation du panel doit pas déclencher re render etc.. ca doit etre smooth avec react motion. genre propre et gpu et tout pour pas causer des re render utilsie bien jotai etc
+```
+
+## M31
+
+```text
+j ene veux pas de border autour de la timeline quand je drag dedans pourquoi le slider de zoom est bleu dessous, il est censé etre themed properly, aussi pour le glass thing il est juste un peu trop large je trouve c un peu violent sur les sliders quoi.
+```
+
+## M32
+
+```text
+et quand je fais le zoom al a souris ouquoi ca doit pas lag non plus, audit tout etc
+```
+
+## M33
+
+```text
+j'ai l'impressio nque le play mode n'est pas sync avec le zoom,  correctement, aussi quand il est trop zoomé faut que ca avance automatiquement la timeline de manière smooth et pas que ca relance un playeahd au début avant les tags
+
+genre la si ca déborde puis "scroll" qui ne marche pas, le playeahd va au dessus des boutons play etc,. genre c'est très très chelou, tu dois correctement faire le frontend, la niveau UI il y'a beaucoup beaucoup de manquements
+```
+
+## M34
+
+```text
+je t'en prie genre fait des screenshots de l'ui tu verras que y'a des gros manquements. bref améliore tout, tu as des sous agents, tu es intelligent alors vasi
+```
+
+## M35
+
+Attachment: [Image #1 — MusArt playhead overlap report](assets/musart-playhead-overlap.png), original `/tmp/codex-clipboard-Ca1alu.png`.
+
+```text
+[Image #1] dans ce screen tu vois que le palyueahd n'a riena faire la, je comprend pas pourquoi ca fais sa quoi
+```
+
+## M36
+
+```text
+ok je crois tu l'as fix mais bon voila quoi tu dois pas faire ses erreurs la quoi
+```
+
+## M37
+
+```text
+ya tjr une border bottom quand je clique dans le playhead ruler
+aussi quand j'arrive au bout avec ma mouse, il faut que ca fasse genre playeahd rouge en mode end. tu vois avec un marker tooltip qui dit que c'est le end, pour indiquer à l'user quoi
+```
+
+## M38
+
+```text
+Video rendering requires an original media resolver. (n'utilise pas le truc d'ereru qu'on a deja dailleurs), et voila auss iducoup ca crash jsp pourquoi... ??? et c'est clairement pas performant et tout
+```
+
+## M39
+
+```text
+oui utilise mediabunny, dans l'engine tu as le droit etc t'en fais pas, l'erreur du video rendering requires machin, ca c'est qaund j'ai fait "play" dans le truc motion hien
+```
+
+## M40
+
+```text
+après je me dit, pk mediabunny ,y'a pas threejs avec les vidéos? ca serait pas plus performant ?? je veux pas de readback cpu on est daccord hein !!! et tout doit etre frame determinstic
+```
+
+## M41
+
+```text
+oublie pas rend le message d'erreur plus clair etc faut pas des erreurs générique, limite un ptit bouton copy en plus ca serait pas mauvais (avec un copy-button ui component car en gros faut que je clique et que ca valide en react motion que j'ai fait pendant genre 1 seconde tu vois ou 2
+
+le toast dailleurs il a pas de temps, il est toujours la, c'est chiant. voila juste ça ca serait cool de le rendre avec du temps quoi
+```
+
+## M42
+
+```text
+pour l'instant tout lag pour moi dans l'app la, genre la motion, la vidéo, ya rien en temps réel, le scrolling dans la timeline est pas top, pas de scrollsahdow avec notre truc générique, j'ai pas li'mpression que y'a une vlist.
+tu n'as pas aussi montrer la possibilité d'importer du son, peut etre une musique libre de droit juste histoire de montrer quoi avec des plop plop ou des whoosh. (dans in bloom là par exemple)
+ actuellement c'est vraiment vaiment pas fluide dutout. genre sans blague c'est vraiment très lent, je pense qu'il y'a un nombre de re render incalaculable.
+```
+
+Additional user messages forwarded with this context (kept separate rather than merged into M42):
+
+```text
+tu en est ou recap moi tout la
+```
+
+```text
+et y'a toujours ce foutu border de foucs sur le ruler -_-
+```
+
+## M43
+
+```text
+genre vraiment je te jure fait des perf trace car la c'est abusé le lag qu'il y'a, y'a rien d'utilisable à ce niveau.je t'assure. fait des perf trace de chaque element tu verras, le bouton pour la revleer et super lent, le bouton pour le caché et super dur, aucune animation. le playback est slow, le playeahd aussi, les changement de  de zoom n'en parlons pas; bref vraiment envoie une passe performance. investigue pourquoi, et regarde sur internet comment avec mediabunny et threejs rendre tout ca fluide, normalement ce n'est pas censé lag on utilsie webgpu et tthreejs il se passe rien gros.
+```
+
+## M44
+
+```text
+oui et oublie pas de tester le lag au niveau du hover, et des clics et tout, tout doit etre a 16ms  etc, donc profile bien touteeee la timeline motion identifie avec react 19 et le profiler chrome etc, tu dois vraiment investiguer avec juste je pense un agent ca suffira, fiare les changement nécessaire, fait ça proprement et tout svp, tout doit etre sur gpu, pas de readback pas de truc qui prend sur le main thread pour rien etc
+```
+
+## M45
+
+```text
+des que tu trouves qq chose, recap moi bien et dit moi ce que tu trouves etc
+```
+
+## M46 — Browser clarification
+
+Reply to “Sur quel navigateur constates-tu le lag de la version Motion sur localhost:6110 ? Cela permettra de vérifier aussi le même backend graphique.”:
+
+```text
+Chrome / Chromium
+```
+
+## M47
+
+```text
+chrome mais tfacon faut que ca marche bien sur chrome mais bon ca se repercutera sur firefox après
+```
+
+## M48
+
+```text
+run en headless chroem, ca suffit pas ? c'est la template in bloom que je teste
+```
+
+## M49
+
+```text
+mais faut que ca marche sur inbloom ou stress test
+```
+
+## M50
+
+```text
+ok améliore tout ça svp
+```
+
+## M51
+
+```text
+ok continue go
+```
+
+## M52
+
+```text
+calme toi sur gpu et cpu svp
+```
+
+## M53
+
+```text
+ok continue mais clamos sur cpu quand meme!!!! mais go
+```
+
 ## Reference handling
 
 The screenshots are user-supplied Figma UI references, not MusArt product assets. They document the requested appearance and interaction target; they do not grant a license to redistribute Figma code, brand assets or an external design system inside the application. Preserve MusArt branding and use the repository's genuine shadcn/Radix controls.

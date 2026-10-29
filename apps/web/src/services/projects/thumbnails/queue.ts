@@ -1,4 +1,10 @@
-import type { Asset, Composition, EnginePort, Project } from "@musart/core";
+import {
+  isVideoAsset,
+  type Asset,
+  type Composition,
+  type EnginePort,
+  type Project,
+} from "@musart/core";
 import type { ThumbnailStore, ThumbnailLease } from "./model";
 import { thumbnailRevision } from "./revision";
 import { hasThumbnailBudget } from "./scheduling";
@@ -188,14 +194,21 @@ export class ThumbnailPipeline {
       }
       let result;
       try {
-        result = await this.renderer.render(
-          page,
-          project.assets,
-          () =>
-            this.current(request) &&
-            !this.busy(request.visible?.has(page.id)) &&
-            !this.previews.hasPriority(),
-        );
+        const allowed = () =>
+          this.current(request) &&
+          !this.busy(request.visible?.has(page.id)) &&
+          !this.previews.hasPriority();
+        if (Object.values(project.assets).some(isVideoAsset)) {
+          result = await this.renderer.render(page, project.assets, allowed, undefined, {
+            mediaResolver: {
+              resolveOriginal: (asset, options) => {
+                if (!this.store.loadMediaOriginal)
+                  throw Error("Original video storage is unavailable for thumbnails.");
+                return this.store.loadMediaOriginal(project.id, asset, options);
+              },
+            },
+          });
+        } else result = await this.renderer.render(page, project.assets, allowed);
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {
           if (this.current(request)) this.pending.set(request.id, request);

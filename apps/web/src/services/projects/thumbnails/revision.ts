@@ -1,4 +1,9 @@
-import { isPublishedComposition, type Asset, type Composition } from "@musart/core";
+import {
+  assetOriginalIdentity,
+  isPublishedComposition,
+  type Asset,
+  type Composition,
+} from "@musart/core";
 import { computeCanonicalHash } from "../../serialization/hashing/compute";
 import type { ThumbnailHashJob } from "../../serialization/hashing/protocol";
 const originals = new Map<string, { source: string; bytes: number; digest: Promise<string> }>();
@@ -7,10 +12,11 @@ async function digest(value: string): Promise<string> {
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
-function original(asset: Pick<Asset, "id" | "dataUrl"> | undefined): Promise<string> {
+function original(asset: Asset | undefined): Promise<string> {
   if (!asset) return Promise.resolve("missing");
+  const source = assetOriginalIdentity(asset);
   const cached = originals.get(asset.id);
-  if (cached?.source === asset.dataUrl) {
+  if (cached?.source === source) {
     originals.delete(asset.id);
     originals.set(asset.id, cached);
     return cached.digest;
@@ -20,9 +26,9 @@ function original(asset: Pick<Asset, "id" | "dataUrl"> | undefined): Promise<str
     retainedBytes -= cached.bytes;
   }
   const entry = {
-    source: asset.dataUrl,
-    bytes: asset.dataUrl.length * 2,
-    digest: digest(asset.dataUrl),
+    source,
+    bytes: source.length * 2,
+    digest: digest(source),
   };
   originals.set(asset.id, entry);
   retainedBytes += entry.bytes;
@@ -55,7 +61,7 @@ export async function thumbnailRevision(
   ].sort();
   const pendingSources = ids.map((id) => {
     const asset = assets[id];
-    return [id, original(asset ? { id: asset.id, dataUrl: asset.dataUrl } : undefined)] as const;
+    return [id, original(asset)] as const;
   });
   const sources = await Promise.all(
     pendingSources.map(async ([id, digest]) => [id, await digest] as const),

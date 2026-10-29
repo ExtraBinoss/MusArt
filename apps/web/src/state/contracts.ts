@@ -1,4 +1,5 @@
-import type { Composition, EnginePort } from "@musart/core";
+import type { Composition, EnginePort, Project } from "@musart/core";
+import type { MediaOriginalInput } from "../services/projects/media/model";
 import type { FontLibraryPort } from "../services/fonts/model";
 import type { PixelSelectionPort } from "../services/selection/wand/model";
 
@@ -98,6 +99,7 @@ export interface ExportPreview {
   height: number;
 }
 export interface EditorServices {
+  mediaResolverFor?(this: void, projectId: string): import("@musart/render").MediaSourceResolver;
   segmentationModel?: import("../services/selection/model/contract").LocalModelPort;
   pixelSelection?: PixelSelectionPort;
   previewExport?(
@@ -126,6 +128,16 @@ export interface EditorServices {
   flushThumbnails(this: void): Promise<void>;
   importFiles(this: void, files: File[]): Promise<void>;
   openPortable(this: void, file: File): Promise<void>;
+  /** Installs a portable manifest and its deduplicated native originals atomically. */
+  openMediaProject?(
+    this: void,
+    project: Project,
+    originals: readonly MediaOriginalInput[],
+    options?: {
+      signal?: AbortSignal;
+      expectedOrigin?: { projectId: string; pageId: string; revision: number };
+    },
+  ): Promise<void>;
   exportProject(this: void): Promise<void>;
   exportImage(this: void, options: ExportOptions, scope?: ExportScope): Promise<void>;
   selectImagePoint(

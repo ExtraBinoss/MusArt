@@ -1,4 +1,11 @@
-import { createLayerGeometryIndex, type Asset, type Composition, type Layer } from "@musart/core";
+import {
+  assetOriginalIdentity,
+  isVideoAsset,
+  createLayerGeometryIndex,
+  type Asset,
+  type Composition,
+  type Layer,
+} from "@musart/core";
 
 interface AssetState {
   token: number;
@@ -8,6 +15,7 @@ interface AssetState {
   mime: string;
 }
 function assetData(asset: Asset): unknown {
+  if (isVideoAsset(asset)) return assetOriginalIdentity(asset);
   const descriptor = Object.getOwnPropertyDescriptor(asset, "dataUrl");
   if (!descriptor) return undefined;
   // Compare an opaque accessor's identity without calling or binding the original getter.

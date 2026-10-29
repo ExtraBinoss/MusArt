@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import type { EnginePort } from "@musart/core";
 import type { FontResolver } from "@musart/render";
 import type { ArtboardServices } from "../../canvas/artboards/use-previews";
-import type { PixelSelectionPort } from "../../services/selection/wand/model";
 import { toolAtom } from "../../state/session/editor";
 
 import { createPreviewSource } from "../../state/session/preview-source";
@@ -24,8 +23,9 @@ export const CanvasArea = memo(function CanvasArea({
 }: {
   engine: EnginePort;
   fontResolver?: FontResolver;
-  services?: ArtboardServices & { pixelSelection?: PixelSelectionPort };
-  onError(this: void, message: string): void;
+  services?: ArtboardServices &
+    Pick<import("../../state/contracts").EditorServices, "pixelSelection" | "mediaResolverFor">;
+  onError(this: void, message: string, details?: string): void;
   onDropFiles(this: void, files: File[]): void;
   onImagePoint(this: void, layerId: string, x: number, y: number): void;
 }) {

@@ -1,5 +1,10 @@
-import { GpuCompositor, type FontResolver, type FrameTexture } from "@musart/render";
-import type { Asset, Composition } from "@musart/core";
+import {
+  GpuCompositor,
+  type FontResolver,
+  type MediaSourceResolver,
+  type FrameTexture,
+} from "@musart/render";
+import type { Asset, Composition, MotionFramePlan } from "@musart/core";
 import {
   DataTexture,
   Mesh,
@@ -15,6 +20,8 @@ import {
 import { texture, uv } from "three/tsl";
 import { previewScale } from "./preview-quality";
 import { syncArtboardBackdrops } from "../artboards/backdrop-presentation";
+import { formatUiError } from "../../state/i18n/errors/format";
+import { errorDiagnostics } from "../../components/notifications/diagnostics";
 import type {
   CanonicalOrigin,
   PresentationPublisher,
@@ -32,9 +39,15 @@ interface PreviewRequest {
   revision: number;
   scale: number;
   ticket?: PresentationTicket;
+  motionFrame?: MotionFramePlan;
+  origin?: CanonicalOrigin;
+  mediaResolver?: MediaSourceResolver;
+  playback: boolean;
 }
+const canvasOwners = new WeakMap<HTMLCanvasElement, PlaneResources>();
 /** Owns one display plane and a latest-only queue. GPU allocation begins at activation. */
 export class PlaneResources {
+  private readonly profileVideo = new URLSearchParams(location.search).get("profileVideo") === "1";
   readonly placeholder = new DataTexture(new Uint8Array(4), 1, 1, RGBAFormat);
   readonly sample: TextureNode<"vec4">;
   readonly material = new MeshBasicNodeMaterial({
@@ -50,6 +63,9 @@ export class PlaneResources {
   private users = 0;
   private latest: PreviewRequest | null = null;
   private active: Promise<void> | null = null;
+  private activeAbort: AbortController | null = null;
+  private activeRequest: PreviewRequest | null = null;
+  private preparedRequest: PreviewRequest | null = null;
   private scheduled = 0;
   private revision = 0;
   private disposed = false;
@@ -58,12 +74,13 @@ export class PlaneResources {
   private prepared = false;
   private completed = 0;
   private preparedRevision = 0;
+  private presentedRevision = 0;
   private coalesced = 0;
   private frames = 0;
   private scene: Scene | null = null;
   private camera: OrthographicCamera | null = null;
   private invalidate: () => void = () => undefined;
-  private onError?: (message: string) => void;
+  private onError?: (message: string, details?: string) => void;
   private onScale?: (scale: number, width: number, height: number) => void;
   private density = 1;
   private presentationId: string | null = null;
@@ -72,6 +89,8 @@ export class PlaneResources {
     page: Composition;
     assets: Record<string, Asset>;
     presentation?: PresentationInput;
+    motionFrame?: MotionFramePlan;
+    playback: boolean;
   } | null = null;
   private deviceLost = false;
   private stopDeviceEvents: (() => void) | null = null;
@@ -83,6 +102,8 @@ export class PlaneResources {
   constructor(
     private readonly renderer: WebGPURenderer,
     private readonly fontResolver?: FontResolver,
+    private readonly mediaResolver?: MediaSourceResolver,
+    private readonly mediaResolverFor?: (projectId: string) => MediaSourceResolver,
   ) {
     this.placeholder.needsUpdate = true;
     this.sample = texture(this.placeholder, uv().flipY());
@@ -93,12 +114,13 @@ export class PlaneResources {
     scene: Scene,
     camera: OrthographicCamera,
     invalidate: () => void,
-    onError?: (message: string) => void,
+    onError?: (message: string, details?: string) => void,
     onScale?: (scale: number, width: number, height: number) => void,
     presenter?: PresentationPublisher,
   ): () => void {
     if (this.disposed) throw new Error("Aperçu GPU déjà libéré");
     this.users++;
+    canvasOwners.set(this.renderer.domElement, this);
     this.scene = scene;
     this.camera = camera;
     this.invalidate = invalidate;
@@ -139,6 +161,7 @@ export class PlaneResources {
       released = true;
       this.users--;
       if (this.users === 0) {
+        this.activeAbort?.abort();
         if (this.scheduled) {
           cancelAnimationFrame(this.scheduled);
           this.scheduled = 0;
@@ -149,19 +172,40 @@ export class PlaneResources {
       }
     };
   }
-  submit(page: Composition, assets: Record<string, Asset>, presentation?: PresentationInput) {
+  submit(
+    page: Composition,
+    assets: Record<string, Asset>,
+    presentation?: PresentationInput,
+    motionFrame?: MotionFramePlan,
+    playback = false,
+  ) {
     if (this.disposed || this.deviceLost) return;
-    this.current = { page, assets, ...(presentation ? { presentation } : {}) };
+    this.current = {
+      page,
+      assets,
+      ...(presentation ? { presentation } : {}),
+      ...(motionFrame ? { motionFrame } : {}),
+      playback,
+    };
     if (this.latest) this.coalesced++;
     this.latest = {
       page,
       assets,
       revision: ++this.revision,
       scale: previewScale(page, this.density),
+      playback,
+      ...(presentation ? { origin: presentation.origin } : {}),
+      mediaResolver:
+        presentation && this.mediaResolverFor
+          ? this.mediaResolverFor(presentation.origin.projectId)
+          : this.mediaResolver,
+      ...(motionFrame ? { motionFrame } : {}),
       ...(presentation && this.presenter
         ? { ticket: this.presenter.request(presentation.origin, presentation.canonical) }
         : {}),
     };
+    // Playback applies bounded backpressure. Scrubs, edits and navigation supersede immediately.
+    if (this.activeRequest && !this.canPresent(this.activeRequest)) this.activeAbort?.abort();
     this.renderer.domElement.dataset.rendererReady = "false";
     this.renderer.domElement.dataset.sceneRevision = String(this.revision);
     delete this.renderer.domElement.dataset.renderError;
@@ -173,6 +217,7 @@ export class PlaneResources {
       this.presentationProjectId = presentation?.origin.projectId;
       this.prepared = false;
       this.preparedTicket = undefined;
+      this.preparedRequest = null;
       this.renderer.domElement.dataset.compositionPrepared = "false";
       this.renderer.domElement.dataset.presentationReady = "false";
       // The stable destination backdrop stays visible until this canvas contains its own page.
@@ -184,8 +229,9 @@ export class PlaneResources {
     const retained =
       this.users > 0 &&
       this.compiled &&
-      this.compositor?.retainedFrame(page, assets, this.latest.scale);
+      this.compositor?.retainedFrame(page, assets, this.latest.scale, motionFrame);
     if (retained) {
+      this.activeAbort?.abort();
       const request = this.latest;
       this.latest = null;
       if (this.scheduled) cancelAnimationFrame(this.scheduled);
@@ -206,7 +252,13 @@ export class PlaneResources {
     const before = this.current ? previewScale(this.current.page, this.density) : 1;
     this.density = density;
     if (this.current && before !== previewScale(this.current.page, density))
-      this.submit(this.current.page, this.current.assets, this.current.presentation);
+      this.submit(
+        this.current.page,
+        this.current.assets,
+        this.current.presentation,
+        this.current.motionFrame,
+        this.current.playback,
+      );
   }
   private schedule() {
     if (
@@ -225,35 +277,56 @@ export class PlaneResources {
       this.latest = null;
       this.active = this.render(request).finally(() => {
         this.active = null;
+        this.activeRequest = null;
         this.publish();
         this.schedule();
       });
     });
   }
   private async render(request: PreviewRequest): Promise<void> {
+    const abort = new AbortController();
+    this.activeAbort = abort;
+    this.activeRequest = request;
     try {
       const result = await this.compositor!.render(request.page, request.assets, {
         scale: request.scale,
-        canRender: () =>
-          Boolean(
-            this.users && !this.disposed && !this.deviceLost && request.revision === this.revision,
-          ),
+        mediaResolver: request.mediaResolver,
+        motionFrame: request.motionFrame,
+        mediaMode: request.playback ? "playback" : "preview",
+        ...(this.profileVideo ? { profileVideo: true } : {}),
+        signal: abort.signal,
+        canRender: () => this.canPresent(request),
       });
-      if (!this.users || this.disposed || this.deviceLost || request.revision !== this.revision)
-        return;
+      if (!this.canPresent(request)) return;
       this.bindFrame(request, result);
       const camera = this.camera!;
       if (!this.compiled) {
         await this.renderer.compileAsync(this.scene!, camera);
         this.compiled = true;
       }
-      if (!this.users || this.disposed || this.deviceLost || request.revision !== this.revision)
-        return;
+      if (!this.canPresent(request)) return;
       this.preparedFrame(request, result);
     } catch (error) {
-      if (this.users && !this.disposed && !this.deviceLost && request.revision === this.revision)
-        this.report(error);
+      if (this.canPresent(request) && !abort.signal.aborted) this.report(error);
+    } finally {
+      if (this.activeAbort === abort) this.activeAbort = null;
     }
+  }
+  private canPresent(request: PreviewRequest): boolean {
+    if (!this.users || this.disposed || this.deviceLost || request.revision < this.preparedRevision)
+      return false;
+    if (request.revision === this.revision) return true;
+    const current = this.current;
+    return Boolean(
+      request.playback &&
+      current?.playback &&
+      request.page.id === current.page.id &&
+      request.assets === current.assets &&
+      request.origin &&
+      current.presentation &&
+      request.origin.projectId === current.presentation.origin.projectId &&
+      request.origin.revision === current.presentation.origin.revision,
+    );
   }
   private bindFrame(request: PreviewRequest, result: FrameTexture): void {
     this.sample.value = result.texture;
@@ -268,7 +341,11 @@ export class PlaneResources {
   }
   private preparedFrame(request: PreviewRequest, result: FrameTexture): void {
     this.completed++;
+    if (request.motionFrame)
+      this.renderer.domElement.dataset.motionTime = JSON.stringify(request.motionFrame.time);
+    else delete this.renderer.domElement.dataset.motionTime;
     this.preparedRevision = request.revision;
+    this.preparedRequest = request;
     this.preparedTicket = request.ticket;
     this.renderer.domElement.dataset.renderCount = String(this.completed);
     this.prepared = true;
@@ -291,15 +368,20 @@ export class PlaneResources {
     element.dataset.renderFrames = String(this.frames);
     if (
       this.prepared &&
-      this.preparedRevision === this.revision &&
-      element.dataset.rendererReady !== "true"
+      this.preparedRequest &&
+      this.canPresent(this.preparedRequest) &&
+      this.presentedRevision !== this.preparedRevision
     ) {
-      element.dataset.rendererReady = "true";
+      this.presentedRevision = this.preparedRevision;
+      element.dataset.rendererReady = String(this.preparedRevision === this.revision);
       element.dataset.presentationReady = "true";
       element.dataset.displayInitialized = "true";
       element.style.visibility = "visible";
       syncArtboardBackdrops(element.closest(".editor-canvas"));
       element.dataset.renderedRevision = String(this.preparedRevision);
+      if (this.preparedRequest.motionFrame)
+        element.dataset.presentedMotionTime = JSON.stringify(this.preparedRequest.motionFrame.time);
+      else delete element.dataset.presentedMotionTime;
       if (this.preparedTicket) {
         this.presenter?.present(this.preparedTicket);
         if (this.preparedTicket.canonical)
@@ -311,6 +393,7 @@ export class PlaneResources {
     }
   }
   private publish() {
+    if (canvasOwners.get(this.renderer.domElement) !== this) return;
     const memory = this.renderer.info?.memory;
     this.renderer.domElement.dataset.gpuStats = JSON.stringify({
       ...this.compositor?.stats(),
@@ -334,7 +417,7 @@ export class PlaneResources {
     const message = error instanceof Error ? error.message : String(error);
     this.renderer.domElement.dataset.renderError = message;
     this.presenter?.unavailable();
-    this.onError?.(message);
+    this.onError?.(formatUiError(error), errorDiagnostics(error));
   }
   private observeDevice(): () => void {
     const previous = this.renderer.onDeviceLost;
@@ -345,6 +428,7 @@ export class PlaneResources {
       } finally {
         if (!this.disposed && !this.deviceLost) {
           this.deviceLost = true;
+          this.activeAbort?.abort();
           this.latest = null;
           if (this.scheduled) cancelAnimationFrame(this.scheduled);
           this.scheduled = 0;
@@ -365,6 +449,7 @@ export class PlaneResources {
   dispose(): Promise<void> {
     if (this.disposal) return this.disposal;
     this.disposed = true;
+    this.activeAbort?.abort();
     this.stopDeviceEvents?.();
     this.stopDeviceEvents = null;
     this.stopSceneEvents?.();
@@ -389,9 +474,12 @@ export class PlaneResources {
         this.geometry.dispose();
         this.placeholder.dispose();
         this.mesh.visible = false;
-        this.renderer.domElement.style.visibility = "hidden";
-        this.renderer.domElement.dataset.rendererReady = "false";
-        syncArtboardBackdrops(this.renderer.domElement.closest(".editor-canvas"));
+        if (canvasOwners.get(this.renderer.domElement) === this) {
+          canvasOwners.delete(this.renderer.domElement);
+          this.renderer.domElement.style.visibility = "hidden";
+          this.renderer.domElement.dataset.rendererReady = "false";
+          syncArtboardBackdrops(this.renderer.domElement.closest(".editor-canvas"));
+        }
       }
     })();
     return this.disposal;

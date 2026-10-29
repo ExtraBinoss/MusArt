@@ -9,6 +9,12 @@ import {
 } from "../writes/revision";
 import type { ProjectWriteFrame, ProjectWriteResult } from "./model";
 import { validateProjectWrite } from "./validate";
+import {
+  PROJECT_WRITE_STORES,
+  persistMediaOriginals,
+  retainedMediaBytes,
+} from "../media/persistence";
+import type { StoredMediaOriginal } from "../media/model";
 export class AssetBasisMismatchError extends Error {
   readonly code = "ASSET_BASIS_MISMATCH";
   constructor() {
@@ -20,10 +26,11 @@ export class AssetBasisMismatchError extends Error {
 export async function persistProjectWrite(
   db: IDBPDatabase<StudioDatabase>,
   frame: ProjectWriteFrame,
+  mediaOriginals: readonly StoredMediaOriginal[] = [],
 ): Promise<ProjectWriteResult> {
   validateProjectWrite(frame);
   const id = frame.document.id;
-  const tx = db.transaction(["projects", "assets", "preferences", "thumbnails"], "readwrite"),
+  const tx = db.transaction(PROJECT_WRITE_STORES, "readwrite"),
     done = tx.done;
   try {
     await assertProjectWriteRevision(tx.objectStore("preferences"), id, frame.expectedRevision);
@@ -58,7 +65,13 @@ export async function persistProjectWrite(
           0,
         ),
       changed = false;
+    if (previous?.storageVersion !== 2 || previous.bytes?.assets === undefined)
+      assetsBytes += await retainedMediaBytes(tx, id);
+    const media = await persistMediaOriginals(tx, id, frame.descriptions, mediaOriginals);
+    assetsBytes += media.bytes;
+    changed ||= media.changed;
     for (const description of frame.descriptions) {
+      if (description.kind === "video") continue;
       const original = incoming.get(description.id);
       if (!original) {
         if (

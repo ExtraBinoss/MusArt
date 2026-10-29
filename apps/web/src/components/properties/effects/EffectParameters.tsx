@@ -1,7 +1,7 @@
 import "./gradient-messages";
 import "./messages";
 import "./library-messages";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState, useSyncExternalStore } from "react";
 import { RotateCcw } from "lucide-react";
 import {
   getEffectDefinition,
@@ -11,9 +11,14 @@ import {
   GRADIENT_PRESETS,
   type Effect,
   type EnginePort,
+  type MotionPropertyTarget,
 } from "@musart/core";
 import { useTranslation } from "react-i18next";
-import { NumberInput } from "../../shared/NumberInput";
+import { MotionNumberInput as NumberInput } from "../motion/MotionNumberInput";
+import { MotionField } from "../motion/MotionField";
+import { MotionValueField } from "../motion/MotionValueField";
+import { createMotionTransport } from "../../../services/motion/transport";
+import { motionTimeChanges } from "../../../state/session/motion-edit";
 import { SelectField } from "../../shared/SelectField";
 import { Switch } from "../../ui/switch";
 import { EffectPlayback } from "./EffectPlayback";
@@ -24,6 +29,7 @@ import { useResetFeedback } from "../../shared/use-reset-feedback";
 export function EffectParameters({
   effect,
   engine,
+  layerId,
   disabled = false,
   onChange,
   onStart,
@@ -31,6 +37,7 @@ export function EffectParameters({
 }: {
   effect: Effect;
   engine?: EnginePort;
+  layerId?: string;
   disabled?: boolean;
   onChange: (patch: Partial<Effect>, preview?: boolean) => void;
   onStart?: () => void;
@@ -38,6 +45,31 @@ export function EffectParameters({
 }) {
   const { t } = useTranslation();
   const definition = getEffectDefinition(effect.type);
+  const snapshot = engine?.getSnapshot();
+  const ownerPage = snapshot
+    ? snapshot.project.pages.find((page) => page.id === snapshot.pageId)
+    : undefined;
+  const ownLayerId =
+    layerId ??
+    ownerPage?.layers.find((layer) => layer.effects.some((item) => item.id === effect.id))?.id;
+  const transport = engine ? createMotionTransport(engine) : null;
+  const displayed = useCallback(
+    () =>
+      transport
+        ?.readFrame()
+        ?.layers.find((layer) => layer.id === ownLayerId)
+        ?.effects.find((item) => item.id === effect.id) ?? effect,
+    [transport, ownLayerId, effect],
+  );
+  const shape = useCallback(
+    () =>
+      definition.parameters
+        .filter((parameter) => isEffectParameterVisible(displayed(), parameter))
+        .map((parameter) => `${parameter.scope}:${parameter.key}`)
+        .join("|"),
+    [definition, displayed],
+  );
+  useSyncExternalStore(transport?.subscribe ?? noSubscription, shape, shape);
   const owner = `${effect.id}:${effect.type}`;
   const [colorOwner, setColorOwner] = useState(owner);
   const [openColorKey, setOpenColorKey] = useState<string | null>(null);
@@ -67,16 +99,17 @@ export function EffectParameters({
             const changed =
               definition.parameters.some(
                 (parameter) =>
-                  getEffectParameter(effect, parameter) !== getEffectParameter(defaults, parameter),
+                  getEffectParameter(displayed(), parameter) !==
+                  getEffectParameter(defaults, parameter),
               ) ||
-              (effect.opacity ?? 1) !== 1 ||
-              (effect.blendMode ?? "normal") !== "normal" ||
-              effect.composite !== undefined;
+              (displayed().opacity ?? 1) !== 1 ||
+              (displayed().blendMode ?? "normal") !== "normal" ||
+              displayed().composite !== undefined;
             if (changed)
               onChange(
                 {
                   ...definition.defaults,
-                  enabled: effect.enabled,
+                  enabled: displayed().enabled,
                   settings: defaults.settings ? { ...defaults.settings } : undefined,
                   time: defaults.time,
                   opacity: 1,
@@ -105,86 +138,143 @@ export function EffectParameters({
           />
         )}
       {getEffectDefinition(effect.type)
-        .parameters.filter((parameter) => isEffectParameterVisible(effect, parameter))
+        .parameters.filter((parameter) => isEffectParameterVisible(displayed(), parameter))
         .map((parameter) => {
           const label = t(parameter.labelKey);
           const value = getEffectParameter(effect, parameter);
+          const target: MotionPropertyTarget | undefined = ownLayerId
+            ? parameter.scope === "settings"
+              ? {
+                  kind: "effectSetting",
+                  layerId: ownLayerId,
+                  effectId: effect.id,
+                  property: parameter.key,
+                }
+              : {
+                  kind: "effect",
+                  layerId: ownLayerId,
+                  effectId: effect.id,
+                  property: parameter.key as Extract<
+                    MotionPropertyTarget,
+                    { kind: "effect" }
+                  >["property"],
+                }
+            : undefined;
           const change = (next: number | boolean | string, preview = false) =>
             onChange(patchEffectParameter(effect, parameter, next), preview);
           if (parameter.kind === "boolean")
             return (
-              <label className="switch-row" key={`${parameter.key}:${resetVersion}`}>
-                <span>{label}</span>
-                <Switch
-                  disabled={disabled}
-                  checked={Boolean(value)}
-                  aria-label={label}
-                  onCheckedChange={(next) => change(next)}
-                />
-              </label>
+              <MotionField
+                engine={engine}
+                target={target}
+                label={label}
+                disabled={disabled}
+                key={`${parameter.key}:${resetVersion}`}
+              >
+                <MotionValueField engine={engine} target={target} fallback={value}>
+                  {(live) => (
+                    <label className="switch-row">
+                      <span>{label}</span>
+                      <Switch
+                        disabled={disabled}
+                        checked={Boolean(live)}
+                        aria-label={label}
+                        onCheckedChange={(next) => change(next)}
+                      />
+                    </label>
+                  )}
+                </MotionValueField>
+              </MotionField>
             );
           if (parameter.kind === "select")
             return (
-              <label className="effect-select-field" key={`${parameter.key}:${resetVersion}`}>
-                <span>{label}</span>
-                <SelectField
-                  label={label}
-                  value={String(value)}
-                  disabled={disabled}
-                  onValueChange={(next) => change(next)}
-                  options={parameter.options.map((option) => {
-                    const preset =
-                      parameter.key === "preset"
-                        ? GRADIENT_PRESETS.find((item) => item.id === option.value)
-                        : undefined;
-                    return {
-                      value: option.value,
-                      label: preset ? (
-                        <span className="effect-preset-choice">
-                          <span
-                            aria-hidden="true"
-                            className="effect-preset-swatch"
-                            style={{
-                              background: `linear-gradient(100deg, ${preset.colors.join(",")})`,
-                            }}
-                          />
-                          {t(option.labelKey)}
-                        </span>
-                      ) : (
-                        t(option.labelKey)
-                      ),
-                    };
-                  })}
-                />
-              </label>
+              <MotionField
+                engine={engine}
+                target={target}
+                label={label}
+                disabled={disabled}
+                key={`${parameter.key}:${resetVersion}`}
+              >
+                <MotionValueField engine={engine} target={target} fallback={value}>
+                  {(live) => (
+                    <label className="effect-select-field">
+                      <span>{label}</span>
+                      <SelectField
+                        label={label}
+                        value={String(live)}
+                        disabled={disabled}
+                        onValueChange={(next) => change(next)}
+                        options={parameter.options.map((option) => {
+                          const preset =
+                            parameter.key === "preset"
+                              ? GRADIENT_PRESETS.find((item) => item.id === option.value)
+                              : undefined;
+                          return {
+                            value: option.value,
+                            label: preset ? (
+                              <span className="effect-preset-choice">
+                                <span
+                                  aria-hidden="true"
+                                  className="effect-preset-swatch"
+                                  style={{
+                                    background: `linear-gradient(100deg, ${preset.colors.join(",")})`,
+                                  }}
+                                />
+                                {t(option.labelKey)}
+                              </span>
+                            ) : (
+                              t(option.labelKey)
+                            ),
+                          };
+                        })}
+                      />
+                    </label>
+                  )}
+                </MotionValueField>
+              </MotionField>
             );
           if (parameter.kind === "color")
             return (
-              <EffectColor
-                key={`${parameter.key}:${resetVersion}`}
-                identity={`${effect.id}:${effect.type}:${parameter.key}`}
+              <MotionField
+                engine={engine}
+                target={target}
                 label={label}
-                value={String(value)}
-                open={openColorKey === parameter.key}
-                onOpenChange={(open) =>
-                  setOpenColorKey((current) =>
-                    open ? parameter.key : current === parameter.key ? null : current,
-                  )
-                }
-                resetValue={String(getEffectParameter(defaults, parameter))}
-                onReset={() => {
-                  onCancel?.();
-                  change(getEffectParameter(defaults, parameter));
-                }}
                 disabled={disabled}
-                onStart={onStart}
-                onPreview={(next) => change(next, true)}
-                onCommit={(next) => change(next)}
-                onCancel={onCancel}
-              />
+                key={`${parameter.key}:${resetVersion}`}
+              >
+                <MotionValueField engine={engine} target={target} fallback={value}>
+                  {(live) => (
+                    <EffectColor
+                      invalidation={engine ? motionTimeChanges(engine) : undefined}
+                      identity={`${effect.id}:${effect.type}:${parameter.key}`}
+                      label={label}
+                      value={String(live)}
+                      open={openColorKey === parameter.key}
+                      onOpenChange={(open) =>
+                        setOpenColorKey((current) =>
+                          open ? parameter.key : current === parameter.key ? null : current,
+                        )
+                      }
+                      resetValue={String(getEffectParameter(defaults, parameter))}
+                      onReset={() => {
+                        onCancel?.();
+                        change(getEffectParameter(defaults, parameter));
+                      }}
+                      disabled={disabled}
+                      onStart={onStart}
+                      onPreview={(next) => change(next, true)}
+                      onCommit={(next) => change(next)}
+                      onCancel={onCancel}
+                    />
+                  )}
+                </MotionValueField>
+              </MotionField>
             );
           return (
             <NumberInput
+              engine={engine}
+              target={target}
+              displayScale={parameter.displayScale}
               key={`${parameter.key}:${resetVersion}`}
               identity={effect}
               label={label}
@@ -215,4 +305,7 @@ export function EffectParameters({
         })}
     </div>
   );
+}
+function noSubscription() {
+  return () => {};
 }

@@ -18,6 +18,7 @@ export function EffectColor({
   onPreview,
   onCommit,
   onCancel,
+  invalidation,
 }: {
   label: string;
   value: string;
@@ -31,6 +32,7 @@ export function EffectColor({
   onPreview: (color: string) => void;
   onCommit: (color: string) => void;
   onCancel?: () => void;
+  invalidation?: { subscribe(listener: () => void): () => void };
 }) {
   const { t } = useTranslation();
   const [localOpen, setLocalOpen] = useState(false);
@@ -125,6 +127,7 @@ export function EffectColor({
           }}
         >
           <ColorControl
+            invalidation={invalidation}
             value={value}
             identity={identity}
             alpha={false}

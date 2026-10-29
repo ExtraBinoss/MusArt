@@ -2,6 +2,7 @@ import type { Project } from "@musart/core";
 import type { AssetMetadata, StoredAsset, StoredThumbnail, ThumbnailInfo } from "../database";
 import type { ThumbnailRead } from "../thumbnails/model";
 import type { FragmentPart } from "../../serialization/fragments/model";
+import type { StoredMediaOriginal } from "../media/model";
 export interface ProjectWriteFrame {
   document: Omit<Project, "assets">;
   descriptions: AssetMetadata[];
@@ -28,6 +29,7 @@ export type PersistenceResult =
 export type PersistenceRequest =
   | { type: "begin"; id: number; database: string }
   | { type: "part"; id: number; part: FragmentPart }
+  | { type: "media"; id: number; original: StoredMediaOriginal }
   | { type: "finish"; id: number; parts: number }
   | { type: "thumbnail"; id: number; database: string; record: StoredThumbnail }
   | { type: "info"; id: number; database: string; projectId: string }

@@ -7,7 +7,8 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { useStore } from "jotai";
-import type { FontResolver } from "@musart/render";
+import type { EditorCanvasProps } from "./session/canvas-contracts";
+export type { EditorCanvasProps } from "./session/canvas-contracts";
 import { shapeChoiceAtom } from "../components/assets/selection";
 import { createArtworkLayer } from "./interaction/shapes";
 import { completeDrawing, resizeDrawing } from "./interaction/drawing";
@@ -17,14 +18,13 @@ import {
   createLayerGeometryIndex,
   invertMatrix,
   transformPoint,
-  type EnginePort,
   type Layer,
 } from "@musart/core";
 import { EditorScene } from "./render/EditorScene";
 import { SceneController } from "./session/scene-controller";
 import { createCanvasView } from "./session/view-state";
 import { useRenderMetrics } from "../state/session/render-metrics";
-import { EMPTY_PREVIEW_SOURCE, type PreviewSource } from "../state/session/preview-source";
+import { EMPTY_PREVIEW_SOURCE } from "../state/session/preview-source";
 import {
   boxSelection,
   clickSelection,
@@ -32,7 +32,6 @@ import {
   selectedRoots,
   type Handle,
   type LayerPatch,
-  type Tool,
 } from "./interaction/gestures";
 import { clientToPage, type Point, type View } from "./viewport/view";
 import { useViewport } from "./viewport/use-viewport";
@@ -41,8 +40,8 @@ import { createWorkspace, createArtboardView } from "./artboards/workspace";
 import { artboardAt, viewForArtboard } from "./artboards/layout";
 import { artboardStyle } from "./artboards/presentation";
 import { ArtboardHeadings } from "./artboards/ArtboardHeadings";
+import { ArtboardModeFooter } from "./artboards/ArtboardModeFooter";
 import { InactiveArtboards } from "./artboards/InactiveArtboards";
-import type { ArtboardServices } from "./artboards/use-previews";
 import { captureGestureOrigin, isGestureOriginCurrent } from "./interaction/gesture-origin";
 import "./artboards/artboards.css";
 import { QuickAdd } from "./quick-add/QuickAdd";
@@ -56,7 +55,6 @@ import { GuideOverlay } from "./guides/GuideOverlay";
 import { Measurements } from "./guides/Measurements";
 import { useWand } from "./interaction/use-wand";
 import { PixelSelectionOverlay, PixelSelectionToolbar } from "./selection/PixelSelectionOverlay";
-import type { PixelSelectionPort } from "../services/selection/wand/model";
 import { attachmentSelection } from "../state/selection/attachments";
 import {
   useTransformSnapping,
@@ -66,16 +64,6 @@ import { EffectGizmo } from "./effects/EffectGizmo";
 import "./canvas.css";
 export type { Tool } from "./interaction/gestures";
 
-export interface EditorCanvasProps {
-  fontResolver?: FontResolver;
-  services?: ArtboardServices & { pixelSelection?: PixelSelectionPort };
-  engine: EnginePort;
-  tool: Tool;
-  previewSource?: PreviewSource;
-  onError?: (message: string) => void;
-  onDropFiles?: (files: File[]) => void;
-  onImagePoint?: (layerId: string, x: number, y: number) => void;
-}
 interface Gesture extends TransformGesture, marqueeScope.MarqueeScope {
   pointerId: number;
   mode: "pan" | "move" | "resize" | "box" | "draw";
@@ -519,6 +507,7 @@ export function EditorCanvas({
             onError={onError}
             zoom={view.zoom}
             fontResolver={fontResolver}
+            mediaResolverFor={services?.mediaResolverFor}
           />
           <GuideOverlay
             controller={controller}
@@ -563,6 +552,7 @@ export function EditorCanvas({
           view={shown}
           onError={onError}
         />
+        <ArtboardModeFooter engine={engine} workspace={layout} view={shown} />
       </div>
       <Rulers
         controller={controller}
@@ -572,7 +562,7 @@ export function EditorCanvas({
         viewSource={pageViewSource}
         viewport={viewport}
       />
-      <ViewportControls view={shown} actions={viewportActions} />
+      <ViewportControls engine={engine} view={shown} actions={viewportActions} />
       <PixelSelectionToolbar port={services?.pixelSelection} onError={onError} />
       <QuickAdd
         engine={engine}

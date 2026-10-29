@@ -5,6 +5,7 @@ import { SceneController } from "../../../src/canvas/session/scene-controller";
 import { createPreviewSource } from "../../../src/state/session/preview-source";
 import { previewAtom } from "../../../src/state/session/editor";
 import { createPlaybackSource } from "../../../src/canvas/session/playback-source";
+import { createMotionTransport } from "../../../src/services/motion/transport";
 function fixture() {
   const layer = createLayer("rectangle", { width: 80, height: 60, fill: "#3366ff" });
   const engine = new EditorEngine(
@@ -15,6 +16,43 @@ function fixture() {
   return { layer, engine, store, controller };
 }
 describe("stable imperative scene controller", () => {
+  test("presents Motion imperatively, acknowledges a paused revision and preserves property previews", () => {
+    const d = fixture();
+    d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+    d.engine.transaction([
+      {
+        type: "upsertMotionKeyframe",
+        target: { kind: "layer", layerId: d.layer.id, property: "x" },
+        time: { value: 0, rate: 1 },
+        value: 0,
+      },
+      {
+        type: "upsertMotionKeyframe",
+        target: { kind: "layer", layerId: d.layer.id, property: "x" },
+        time: { value: 2, rate: 1 },
+        value: 200,
+      },
+    ]);
+    const motion = createMotionTransport(d.engine);
+    const changed = vi.fn();
+    const stop = d.controller.subscribe(changed);
+    const before = d.engine.getSnapshot();
+    motion.seek({ value: 1, rate: 1 });
+    expect(d.controller.read().page.layers[0]!.x).toBe(100);
+    expect(d.controller.read().presentation).toEqual({
+      origin: { projectId: before.project.id, revision: before.revision },
+      canonical: true,
+    });
+    d.store.set(previewAtom, { target: "layer", layerId: d.layer.id, patch: { x: 120 } });
+    expect(d.controller.read().page.layers[0]!.x).toBe(120);
+    expect(d.controller.read().presentation?.canonical).toBe(false);
+    d.store.set(previewAtom, null);
+    expect(d.controller.read().page.layers[0]!.x).toBe(100);
+    expect(d.engine.getSnapshot()).toBe(before);
+    expect(changed).toHaveBeenCalled();
+    stop();
+    motion.dispose();
+  });
   test("caches coherent page/assets and ignores session-only selection events", () => {
     const d = fixture();
     const listener = vi.fn();

@@ -1,0 +1,538 @@
+.motion-mode {
+  display: grid;
+  gap: 5px;
+}
+.motion-confirm-hint {
+  margin: 2px 0 0;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.motion-error {
+  margin: 0;
+  color: var(--destructive);
+  font-size: 11px;
+}
+.motion-timeline {
+  --motion-gutter: 244px;
+  --motion-accent: var(--primary);
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  min-height: 164px;
+  max-height: 65vh;
+  min-width: 0;
+  border-top: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 11px;
+  isolation: isolate;
+}
+.motion-timeline > .motion-resize {
+  position: absolute;
+  inset: -3px 0 auto;
+  height: 6px;
+  cursor: ns-resize;
+  z-index: 10;
+  touch-action: none;
+}
+.motion-resize:focus-visible {
+  outline: 2px solid var(--motion-accent);
+  outline-offset: 0;
+}
+.motion-transport {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 2px;
+}
+.motion-time-field {
+  position: relative;
+}
+.motion-time-field > input[data-slot] {
+  width: 50px;
+  height: 25px;
+  padding: 0 5px;
+  border-color: transparent;
+  border-radius: 4px;
+  box-shadow: none;
+  text-align: right;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+}
+.motion-time-field > input::-webkit-inner-spin-button {
+  appearance: none;
+}
+.motion-time-field > input {
+  -moz-appearance: textfield;
+}
+.motion-time-field > input:hover {
+  background: var(--muted);
+}
+.motion-time-field > input:focus-visible {
+  border-color: var(--motion-accent);
+  box-shadow: 0 0 0 1px var(--motion-accent);
+}
+.motion-time-divider,
+.motion-unit {
+  color: var(--muted-foreground);
+}
+.motion-unit[data-slot] {
+  min-width: 22px;
+  padding: 0 3px;
+  font-size: 10px;
+}
+.motion-field-error {
+  position: absolute;
+  left: 0;
+  top: 30px;
+  z-index: 8;
+  min-width: 190px;
+  max-width: 250px;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--background);
+  color: var(--destructive);
+  box-shadow: 0 4px 12px #0001;
+  font-size: 11px;
+}
+.motion-timeline-actions {
+  position: sticky;
+  right: 0;
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 112px;
+  max-width: calc(100vw - var(--motion-gutter));
+  z-index: 7;
+  height: 31px;
+  padding: 0 8px;
+  background: var(--background);
+}
+.motion-zoom[data-slot="slider"] {
+  width: 64px;
+  min-width: 0;
+  height: 24px;
+}
+.motion-ruler {
+  grid-column: 2;
+  grid-row: 1;
+}
+.motion-ruler > span.is-after-end {
+  opacity: 0.5;
+}
+.motion-control-tooltip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.motion-playback-options[data-slot] {
+  width: auto;
+  padding: 5px;
+}
+.motion-playback-options [role="radiogroup"] {
+  display: flex;
+  gap: 3px;
+}
+.motion-playback-option {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted-foreground);
+}
+.motion-playback-option:hover,
+.motion-playback-option[data-state="checked"] {
+  color: var(--primary);
+  background: var(--accent);
+}
+.motion-playback-option:focus-visible {
+  outline: 1px solid var(--primary);
+}
+@media (max-width: 420px) {
+  .motion-timeline-actions {
+    gap: 5px;
+    padding: 0 4px;
+  }
+  .motion-zoom[data-slot="slider"] {
+    width: 38px;
+  }
+}
+.motion-scroll-shadow {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+}
+.motion-scroll-shadow::before {
+  top: 32px;
+}
+.motion-timeline-scroll {
+  position: relative;
+  overflow: auto;
+  flex: 1 1 0;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.motion-timeline-content {
+  position: relative;
+}
+.motion-ruler-line {
+  position: sticky;
+  top: 0;
+  display: grid;
+  grid-template-columns: var(--motion-gutter) minmax(0, 1fr);
+  height: 32px;
+  z-index: 4;
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+}
+.motion-ruler-label {
+  position: sticky;
+  left: 0;
+  width: var(--motion-gutter);
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  padding: 0 3px;
+  border-right: 1px solid var(--border);
+  background: var(--background);
+}
+.motion-ruler {
+  position: relative;
+  height: 32px;
+  overflow: hidden;
+  outline-offset: -2px;
+  cursor: ew-resize;
+  user-select: none;
+  touch-action: none;
+}
+.motion-ruler:focus,
+.motion-ruler:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.motion-ruler[data-scrubbing] {
+  outline: none;
+  box-shadow: none;
+}
+.motion-end-marker {
+  position: absolute;
+  top: 17px;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 14px;
+  padding: 0;
+  border: 0;
+  background: var(--background);
+  color: var(--muted-foreground);
+  transform: translateX(-50%);
+}
+.motion-end-marker[data-at-end="true"],
+.motion-end-marker:hover {
+  color: var(--destructive);
+}
+.motion-ruler > span {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  padding: 10px 0 0 5px;
+  border-left: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.motion-row-space {
+  position: relative;
+  touch-action: none;
+  outline: none;
+}
+.motion-marquee {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  border: 1px solid var(--motion-accent);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--motion-accent) 10%, transparent);
+}
+.motion-key[data-key-preview="selected"] > svg {
+  fill: var(--motion-accent);
+  stroke: var(--motion-accent);
+}
+.motion-key[data-key-preview="empty"] > svg {
+  fill: var(--background);
+  stroke: var(--muted-foreground);
+}
+.motion-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: var(--motion-gutter) minmax(0, 1fr);
+  align-items: stretch;
+}
+.motion-row-label {
+  position: sticky;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding-right: 8px;
+  z-index: 2;
+  border-right: 1px solid var(--border);
+  background: var(--background);
+}
+.motion-row-label > svg {
+  flex: 0 0 auto;
+  color: var(--muted-foreground);
+}
+.motion-row.is-selected {
+  background: color-mix(in srgb, var(--motion-accent) 8%, transparent);
+}
+.motion-row.is-selected .motion-row-label {
+  background: color-mix(in srgb, var(--motion-accent) 8%, var(--background));
+}
+.motion-row-expand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 15px;
+  width: 15px;
+  height: 22px;
+  border: 0;
+  border-radius: 3px;
+  padding: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+}
+button.motion-row-expand:hover {
+  background: var(--accent);
+}
+.motion-row-name {
+  display: block;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 0;
+  padding: 3px 0;
+  text-align: left;
+  color: inherit;
+  font-size: 11px;
+  background: transparent;
+}
+.motion-row.is-property .motion-row-name {
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.motion-row-time {
+  position: relative;
+  min-width: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 30%, transparent);
+}
+.motion-track-wrap {
+  position: absolute;
+  top: 3px;
+  height: 18px;
+  transform: translateX(var(--motion-drag-x, 0px));
+}
+.motion-trim-handle {
+  position: absolute;
+  top: 0;
+  width: 9px;
+  height: 18px;
+  border: 0;
+  background: transparent;
+  cursor: ew-resize;
+  touch-action: none;
+}
+.motion-trim-handle.is-start {
+  left: -2px;
+}
+.motion-trim-handle.is-end {
+  right: -2px;
+}
+.motion-track {
+  cursor: grab;
+  touch-action: none;
+}
+.motion-track:active {
+  cursor: grabbing;
+}
+.motion-key {
+  touch-action: none;
+  cursor: grab;
+}
+.motion-key.is-key-selected > svg {
+  fill: var(--motion-accent);
+  stroke: var(--motion-accent);
+}
+.motion-auto-key.is-active {
+  color: var(--destructive);
+  background: color-mix(in srgb, var(--destructive) 8%, transparent);
+}
+.motion-auto-key.is-active > svg {
+  fill: currentColor;
+}
+.motion-gesture-feedback {
+  position: absolute;
+  bottom: 10px;
+  right: 18px;
+  z-index: 8;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--background);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.motion-gesture-feedback:empty {
+  display: none;
+}
+.motion-gesture-error {
+  position: absolute;
+  right: 12px;
+  bottom: 7px;
+  z-index: 9;
+  max-width: 340px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--background);
+  color: var(--destructive);
+  font-size: 11px;
+}
+.motion-track {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 2px;
+  padding: 0 4px;
+  border: 1px solid color-mix(in srgb, var(--foreground) 9%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--muted-foreground) 24%, var(--background));
+}
+.motion-track > i {
+  display: block;
+  height: 9px;
+  width: 1px;
+  background: color-mix(in srgb, var(--foreground) 24%, transparent);
+}
+.motion-row.is-selected .motion-track {
+  border-color: var(--motion-accent);
+  background: color-mix(in srgb, var(--motion-accent) 83%, var(--background));
+}
+.motion-row.is-selected .motion-track > i {
+  background: color-mix(in srgb, var(--primary-foreground) 60%, transparent);
+}
+.motion-key {
+  position: absolute;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  width: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  transform: translateX(calc(-50% + var(--motion-drag-x, 0px)));
+}
+.motion-key > svg {
+  fill: var(--background);
+  stroke-width: 1.6;
+}
+.motion-row.is-selected .motion-key {
+  color: var(--motion-accent);
+}
+.motion-key:hover > svg,
+.motion-key:focus-visible > svg {
+  fill: currentColor;
+}
+.motion-key.is-bundle > svg {
+  filter: drop-shadow(3px 0 currentColor);
+}
+.motion-playhead-clip {
+  position: absolute;
+  top: 32px;
+  bottom: 0;
+  left: var(--motion-gutter);
+  overflow: hidden;
+  z-index: 3;
+  pointer-events: none;
+}
+.motion-playhead,
+.motion-ruler-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--motion-accent);
+  pointer-events: none;
+  will-change: transform;
+}
+.motion-ruler-playhead::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -5px;
+  width: 11px;
+  height: 10px;
+  background: inherit;
+  clip-path: polygon(0 0, 100% 0, 100% 55%, 50% 100%, 0 55%);
+}
+.motion-playhead[data-at-end="true"],
+.motion-ruler-playhead[data-at-end="true"] {
+  background: var(--destructive);
+}
+.motion-empty {
+  position: sticky;
+  left: var(--motion-gutter);
+  top: 45px;
+  width: min(360px, calc(100% - var(--motion-gutter) - 20px));
+  margin: -110px 0 0 calc(var(--motion-gutter) + 25px);
+  display: grid;
+  justify-items: start;
+  gap: 5px;
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+.motion-empty p {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 12px;
+}
+.motion-empty span {
+  font-size: 11px;
+  line-height: 1.5;
+}
+.motion-row button:focus-visible {
+  outline: 1px solid var(--motion-accent);
+  outline-offset: -1px;
+  border-radius: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-timeline *,
+  .motion-mode * {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
+}

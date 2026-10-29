@@ -13,6 +13,7 @@ import { PreferencesDialog } from "./preferences/PreferencesDialog";
 import { ProjectGallery } from "./gallery/ProjectGallery";
 import { TemplateGallery } from "./templates/TemplateGallery";
 import { createProjectFromTemplate } from "../../services/projects/templates/catalog";
+import type { TemplateLoadOptions } from "../../services/projects/templates/motion/loader";
 import { hasCompletedOnboarding } from "../../state/onboarding/preferences";
 import { OnboardingDialog } from "../onboarding/OnboardingDialog";
 import "./dashboard/messages";
@@ -24,6 +25,7 @@ export interface ProjectDialogProps {
   projectName?: string;
   welcome?: boolean;
   projectId?: string;
+  origin?: TemplateLoadOptions["expectedOrigin"];
   onClose: () => void;
   onTask: TaskRunner;
   initialView?: "projects" | "templates" | "newProject" | "settings" | "settingsEditor";
@@ -47,6 +49,7 @@ function ProjectDashboard({
   services,
   projectName,
   projectId,
+  origin,
   onClose,
   onTask,
   initialView = "projects",
@@ -56,16 +59,23 @@ function ProjectDashboard({
   const [view, setView] = useState(initialView === "projects" ? "projects" : "templates");
   const [creating, setCreating] = useState(initialView === "newProject");
   const [busy, setBusy] = useState(false);
+  const [templateLoading, setTemplateLoading] = useState(false);
   const [preferences, setPreferences] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const scope = useRef({ alive: true, pending: false });
+  const templateRequest = useRef<AbortController | null>(null);
   useEffect(() => {
     const current = scope.current;
     current.alive = true;
     return () => {
       current.alive = false;
+      templateRequest.current?.abort();
     };
   }, []);
+  useEffect(
+    () => () => templateRequest.current?.abort(),
+    [origin?.projectId, origin?.pageId, origin?.revision, projectId, welcome],
+  );
   const perform = useCallback(
     async (task: () => void | Promise<void>, success?: string) => {
       const current = scope.current;
@@ -88,6 +98,26 @@ function ProjectDashboard({
   function custom() {
     setView("templates");
     setCreating(true);
+  }
+  function chooseTemplate(id: string) {
+    if (scope.current.pending || !scope.current.alive) return;
+    const request = new AbortController();
+    templateRequest.current?.abort();
+    templateRequest.current = request;
+    setTemplateLoading(id === "in-bloom" || id === "motion-stress-lab");
+    complete(async () => {
+      try {
+        await createProjectFromTemplate(services, id, {
+          signal: request.signal,
+          expectedOrigin: origin,
+        });
+      } finally {
+        if (templateRequest.current === request) {
+          templateRequest.current = null;
+          if (scope.current.alive) setTemplateLoading(false);
+        }
+      }
+    });
   }
   return (
     <Dialog
@@ -212,7 +242,8 @@ function ProjectDashboard({
                 </div>
                 <TemplateGallery
                   busy={busy}
-                  onChoose={(id) => complete(() => createProjectFromTemplate(services, id))}
+                  onChoose={chooseTemplate}
+                  onCancel={templateLoading ? () => templateRequest.current?.abort() : undefined}
                 />
               </>
             )}

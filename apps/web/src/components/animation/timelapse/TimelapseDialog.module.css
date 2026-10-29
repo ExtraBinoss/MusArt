@@ -1,0 +1,113 @@
+.dialog {
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  gap: 18px;
+}
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 24px;
+}
+.heading > svg {
+  color: var(--muted-foreground);
+}
+.preview {
+  height: 220px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--muted);
+  overflow: hidden;
+}
+.surface {
+  position: absolute;
+  inset: 12px;
+  display: grid;
+  place-items: center;
+}
+.surface canvas {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.preview p {
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 85%;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  text-align: center;
+}
+.player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.player [data-slot="slider"] {
+  flex: 1;
+  min-width: 0;
+}
+.player output {
+  min-width: 78px;
+  text-align: right;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.duration {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  gap: 8px 16px;
+  align-items: center;
+}
+.duration > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.duration input {
+  text-align: right;
+  padding: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.duration p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+.error,
+.duration .error {
+  color: var(--destructive);
+  font-size: 12px;
+  margin: 0;
+}
+.saved {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.dialog progress {
+  width: 100%;
+  height: 6px;
+  accent-color: var(--primary);
+}
+.exportButton {
+  background: var(--action);
+  color: var(--action-foreground);
+}
+.exportButton:hover {
+  background: color-mix(in srgb, var(--action) 90%, #000);
+}
+@media (max-height: 650px) {
+  .preview {
+    height: 150px;
+  }
+}

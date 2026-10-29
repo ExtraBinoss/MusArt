@@ -42,6 +42,31 @@ test("uses real controlled Radix tabs with one instance-scoped active indicator"
   );
   expect(screen.getByRole("tab", { name: "All" })).toBeDisabled();
 });
+
+test("tooltips preserve genuine radio data-state and keyboard choice semantics", () => {
+  function Picker() {
+    const [value, setValue] = useState("static");
+    return (
+      <SegmentedTabs
+        mode="choice"
+        value={value}
+        onValueChange={setValue}
+        tooltips
+        label="Composition mode"
+        items={[
+          { value: "static", label: "Static" },
+          { value: "motion", label: "Motion" },
+        ]}
+      />
+    );
+  }
+  setup().mount(<Picker />);
+  const current = screen.getByRole("radio", { name: "Static" });
+  expect(current).toHaveAttribute("data-state", "checked");
+  fireEvent.click(screen.getByRole("radio", { name: "Motion" }));
+  expect(current).toHaveAttribute("data-state", "unchecked");
+  expect(screen.getByRole("radio", { name: "Motion" })).toHaveAttribute("data-state", "checked");
+});
 test("value choices reuse the surface with genuine radio semantics and a single controlled selection", () => {
   function Picker() {
     const [value, setValue] = useState("light");

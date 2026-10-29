@@ -1,5 +1,6 @@
 import { openDB, type DBSchema } from "idb";
-import type { Asset, Project } from "@musart/core";
+import type { ImageAsset, VideoAsset, Project } from "@musart/core";
+import type { StoredMediaHeader, StoredMediaOriginal } from "./media/model";
 import type {
   HistoryMetadata,
   HistoryBase,
@@ -7,7 +8,7 @@ import type {
   StoredHistoryAsset,
 } from "../history/model";
 
-export type AssetMetadata = Omit<Asset, "dataUrl">;
+export type AssetMetadata = Omit<ImageAsset, "dataUrl"> | VideoAsset;
 type ProjectManifest = Omit<Project, "assets"> & { assets: Record<string, AssetMetadata> };
 export interface ProjectBytes {
   manifest: number;
@@ -66,11 +67,21 @@ export interface StudioDatabase extends DBSchema {
     indexes: { "by-project": string };
   };
   assets: { key: [string, string]; value: StoredAsset; indexes: { "by-project": string } };
+  mediaOriginals: {
+    key: [string, string];
+    value: StoredMediaOriginal;
+    indexes: { "by-project": string };
+  };
+  mediaOriginalMeta: {
+    key: [string, string];
+    value: StoredMediaHeader;
+    indexes: { "by-project": string };
+  };
 }
 
 /** One versioned connection schema; history records never enter project manifests. */
 export function openStudioDatabase(name: string) {
-  const opening = openDB<StudioDatabase>(name, 6, {
+  const opening = openDB<StudioDatabase>(name, 7, {
     upgrade(db, previousVersion, _newVersion, transaction) {
       if (previousVersion < 1) {
         db.createObjectStore("projects", { keyPath: "id" });
@@ -106,6 +117,12 @@ export function openStudioDatabase(name: string) {
         transaction
           .objectStore("journalEvents")
           .createIndex("by-operation", ["projectId", "operationId"], { unique: true });
+      if (previousVersion < 7) {
+        for (const name of ["mediaOriginals", "mediaOriginalMeta"] as const) {
+          const originals = db.createObjectStore(name, { keyPath: ["projectId", "originalId"] });
+          originals.createIndex("by-project", "projectId");
+        }
+      }
     },
     blocking() {
       void opening.then((db) => db.close());

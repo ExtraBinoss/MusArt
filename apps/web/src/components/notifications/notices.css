@@ -1,0 +1,48 @@
+.editor-notice.notice-card {
+  left: auto;
+  right: 16px;
+  bottom: 16px;
+  max-width: min(540px, calc(100vw - 32px));
+  max-height: min(50dvh, 420px);
+  transform: none;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  overflow: auto;
+}
+.notice-card > svg {
+  margin-top: 3px;
+}
+.notice-content {
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.notice-content p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+.notice-content details {
+  margin-top: 8px;
+  font-size: 11px;
+}
+.notice-content summary {
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.notice-content pre {
+  max-height: 180px;
+  margin: 8px 0 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-size: 10px;
+}
+.notice-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.editor-notice.notice-card button {
+  margin-left: 0;
+}

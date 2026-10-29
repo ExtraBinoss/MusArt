@@ -29,8 +29,8 @@
   --foreground: #24252b;
   --card: #ffffff;
   --popover: #ffffff;
-  --primary: #262626;
-  --primary-foreground: #ffffff;
+  --primary: var(--action);
+  --primary-foreground: var(--action-foreground);
   --action: #2563eb;
   --action-foreground: #ffffff;
   --secondary: #eceef3;
@@ -56,8 +56,8 @@
   --foreground: #e8e8e8;
   --card: #262626;
   --popover: #2a2a2a;
-  --primary: #e5e5e5;
-  --primary-foreground: #171717;
+  --primary: var(--action);
+  --primary-foreground: var(--action-foreground);
   --action: #2563eb;
   --action-foreground: #ffffff;
   --secondary: #353535;
@@ -116,13 +116,16 @@ svg {
   flex-shrink: 0;
 }
 .musart-app {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100dvh;
   min-height: 360px;
 }
 .workspace-panels {
   width: 100%;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
 }
 .workspace {
   position: relative;

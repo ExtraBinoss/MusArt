@@ -67,3 +67,76 @@ test("localizes journal backpressure while preserving its diagnostic for trouble
   );
   expect(error.message).toBe("pending history admission limit exceeded");
 });
+
+test("classifies only named video-source codes, keeps HDR explicit and preserves original diagnostics", async () => {
+  const hdr = Object.assign(
+    new Error("Native format rejected", { cause: new Error("HDR color conversion unavailable") }),
+    { name: "VideoSourceError", code: "unsupported" },
+  );
+  expect(formatUiError(hdr)).toContain("vidéo HDR");
+  expect(hdr.cause).toBeInstanceOf(Error);
+  expect(hdr.message).toBe("Native format rejected");
+  await changeLanguage("en");
+  expect(formatUiError(hdr)).toContain("HDR video needs color conversion");
+  for (const [code, phrase] of Object.entries({
+    closed: "source was closed",
+    superseded: "newer seek",
+    aborted: "was canceled",
+    unsupported: "browser-supported codec",
+    budgetExceeded: "memory or decoder limit",
+    decodeFailed: "could not be decoded",
+    busy: "finishing another request",
+  }))
+    expect(formatUiError({ name: "VideoSourceError", code, message: "raw" })).toContain(phrase);
+  expect(
+    formatUiError({
+      name: "StorageError",
+      code: "busy",
+      message: "actual unrelated busy diagnostic",
+    }),
+  ).toBe("actual unrelated busy diagnostic");
+  expect(
+    formatUiError({ name: "VideoSourceError", code: "unknown", message: "future diagnostic" }),
+  ).toBe("future diagnostic");
+});
+
+test("translates precise media-original/storage/install failures in each language", async () => {
+  for (const language of ["fr", "en"] as const) {
+    await changeLanguage(language);
+    for (const code of [
+      "VIDEO_ORIGINAL_MISSING",
+      "VIDEO_STORAGE_LIMIT",
+      "VIDEO_IMPORT_UNAVAILABLE",
+    ]) {
+      const error = Object.assign(new Error("raw diagnostic"), { code });
+      expect(formatUiError(error)).not.toBe("raw diagnostic");
+      expect(formatUiError(error)).not.toContain("errors:");
+      expect(error.message).toBe("raw diagnostic");
+    }
+  }
+});
+
+test("explains transparent-video limitations independently from browser codecs or HDR", async () => {
+  const error = Object.assign(new Error("GPU alpha adapter unavailable"), {
+    name: "VideoSourceError",
+    code: "alphaUnsupported",
+  });
+  expect(formatUiError(error)).toContain("vidéos avec transparence");
+  await changeLanguage("en");
+  expect(formatUiError(error)).toContain("Transparent video is not supported yet");
+  expect(error.message).toBe("GPU alpha adapter unavailable");
+  expect(
+    formatUiError({ name: "OtherError", code: "alphaUnsupported", message: "unrelated" }),
+  ).toBe("unrelated");
+});
+
+test("distinguishes transparent export capability from transparent source import", async () => {
+  const error = Object.assign(new Error("GPU alpha encoding adapter unavailable"), {
+    name: "MotionExportError",
+    code: "alphaUnsupported",
+  });
+  expect(formatUiError(error)).toContain("L’export vidéo avec transparence");
+  await changeLanguage("en");
+  expect(formatUiError(error)).toContain("Transparent video export is not supported yet");
+  expect(error.message).toBe("GPU alpha encoding adapter unavailable");
+});

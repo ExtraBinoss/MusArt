@@ -10,13 +10,19 @@ import type {
   PersistenceResponse,
   PersistenceResult,
 } from "./model";
+import type { StoredMediaOriginal } from "../media/model";
 /** The complete record is assembled and cloned by IndexedDB here, never on the UI thread. */
 export function createPersistenceHost(
   post: (message: PersistenceResponse) => void,
   open: (name: string) => Promise<IDBPDatabase<StudioDatabase>> = openStudioDatabase,
 ) {
-  let active: { id: number; database: string; assembly: FragmentAssembly; parts: number } | null =
-      null,
+  let active: {
+      id: number;
+      database: string;
+      assembly: FragmentAssembly;
+      parts: number;
+      media: StoredMediaOriginal[];
+    } | null = null,
     busy = false,
     closed = false,
     connection: Promise<IDBPDatabase<StudioDatabase>> | undefined,
@@ -113,11 +119,24 @@ export function createPersistenceHost(
             }
             return;
           }
-          active = { id, database: message.database, assembly: new FragmentAssembly(), parts: 0 };
+          active = {
+            id,
+            database: message.database,
+            assembly: new FragmentAssembly(),
+            parts: 0,
+            media: [],
+          };
           return;
         }
         if (!active || active.id !== id || busy)
           throw Error("Unknown project persistence request.");
+        if (message.type === "media") {
+          const original = message.original;
+          if (!original || !(original.blob instanceof Blob) || active.media.length >= 100)
+            throw Error("Invalid binary media side channel.");
+          active.media.push(original);
+          return;
+        }
         if (message.type === "part") {
           active.assembly.add(message.part!);
           active.parts++;
@@ -133,7 +152,9 @@ export function createPersistenceHost(
         const job = active;
         run(id, job.database, async (db) => ({
           kind: "save",
-          value: await persistProjectWrite(db, frame),
+          value: await (job.media.length
+            ? persistProjectWrite(db, frame, job.media)
+            : persistProjectWrite(db, frame)),
         }));
       } catch (error) {
         if (active?.id === id && !busy) active = null;

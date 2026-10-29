@@ -51,10 +51,24 @@ export async function projectForJournal(
   const incoming = new Map(frame.assets.map((asset) => [asset.id, asset])),
     descriptions = new Map(frame.descriptions.map((asset) => [asset.id, asset])),
     pool: Record<string, Asset> = {};
-  const tx = db.transaction(["journalAssets", "assets"], "readonly");
+  const tx = db.transaction(["journalAssets", "assets", "mediaOriginalMeta"], "readonly");
   for (const id of frame.state.assetIds) {
     const asset =
       incoming.get(id) ?? (await tx.objectStore("journalAssets").get([frame.state.id, id]))?.asset;
+    const description = descriptions.get(id)!;
+    if (description.kind === "video") {
+      const header = await tx
+        .objectStore("mediaOriginalMeta")
+        .get([frame.state.id, description.originalId]);
+      if (
+        !header ||
+        header.contentRevision !== description.contentRevision ||
+        header.byteLength !== description.byteLength
+      )
+        throw Error(`Journal video original is missing: ${id}`);
+      Object.defineProperty(pool, id, { value: description, enumerable: true });
+      continue;
+    }
     const dataUrl =
       asset?.dataUrl ?? (await tx.objectStore("assets").get([frame.state.id, id]))?.dataUrl;
     if (!dataUrl) throw Error(`Journal original is missing: ${id}`);

@@ -247,6 +247,16 @@ test("legacy adapters can show original images while vector/text layers retain h
   );
   expect(screen.getByRole("presentation")).toHaveAttribute("src", "data:image/png;base64,AAAA");
 });
+test("video rows keep their media-kind placeholder until a genuine rendered preview arrives", () => {
+  const video = createLayer("video", { id: "video", assetId: "video-original" });
+  const view = render(<LayerThumbnail layer={video} previewKey="video-original" />);
+  expect(view.container.querySelector("svg")).not.toBeNull();
+  expect(screen.queryByRole("presentation")).toBeNull();
+  expect(view.container.querySelector(".layer-thumbnail")).toHaveAttribute(
+    "data-preview-ready",
+    "false",
+  );
+});
 test("requests an inactive artboard preview explicitly without changing the active page", async () => {
   const layer = createLayer("text"),
     previewExport = vi.fn(async () => ({ blob: new Blob(["thumbnail"]), width: 96, height: 96 }));

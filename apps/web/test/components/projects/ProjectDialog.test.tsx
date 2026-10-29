@@ -4,6 +4,7 @@ import { ProjectDialog } from "../../../src/components/projects/ProjectDialog";
 import { setup } from "../../support/ui";
 import { projectSummary } from "../../support/projects";
 import { ONBOARDING_STORAGE_KEY } from "../../../src/state/onboarding/preferences";
+import * as templates from "../../../src/services/projects/templates/catalog";
 test("new-project creation focuses its name so one Escape dismisses the dashboard", async () => {
   const d = setup(),
     close = vi.fn();
@@ -135,6 +136,48 @@ test("late work cannot dismiss a replacement dashboard after unmount", async () 
   fireEvent.click(screen.getByRole("button", { name: "Créer" }));
   view.unmount();
   await act(async () => resolve());
+  expect(close).not.toHaveBeenCalled();
+});
+test("captures template origin before download, prevents duplicate opening, and aborts on scope replacement or unmount", async () => {
+  const d = setup(),
+    close = vi.fn();
+  let finish!: () => void;
+  const create = vi
+    .spyOn(templates, "createProjectFromTemplate")
+    .mockImplementation(async (_services, _id, options) => {
+      await new Promise<void>((resolve) => {
+        finish = resolve;
+      });
+      options?.signal?.throwIfAborted();
+    });
+  const first = { projectId: "origin", pageId: "page", revision: 3 };
+  const props = {
+    services: d.services,
+    initialView: "templates" as const,
+    onClose: close,
+    onTask: d.onTask,
+  };
+  const view = d.mount(<ProjectDialog {...props} origin={first} />);
+  const card = screen.getByRole("button", { name: /In Bloom/ });
+  fireEvent.click(card);
+  fireEvent.click(card);
+  expect(create).toHaveBeenCalledOnce();
+  const options = create.mock.calls[0]![2]!;
+  expect(options.expectedOrigin).toBe(first);
+  expect(options.signal!.aborted).toBe(false);
+  expect(screen.getByRole("status")).toHaveTextContent("Préparation du modèle");
+  view.rerender(<ProjectDialog {...props} origin={{ ...first, revision: 4 }} />);
+  expect(options.signal!.aborted).toBe(true);
+  await act(async () => finish());
+  expect(close).not.toHaveBeenCalled();
+  expect(card).not.toBeDisabled();
+  fireEvent.click(card);
+  const second = create.mock.calls[1]![2]!.signal!;
+  fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
+  expect(second.aborted).toBe(true);
+  view.unmount();
+  expect(second.aborted).toBe(true);
+  await act(async () => finish());
   expect(close).not.toHaveBeenCalled();
 });
 test("preferences requested by search open in a separate dialog rather than a dashboard tab", () => {

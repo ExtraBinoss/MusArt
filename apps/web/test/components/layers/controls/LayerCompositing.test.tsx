@@ -5,6 +5,9 @@ import { useEngine, previewAtom } from "../../../../src/state/session/editor";
 import { setup } from "../../../support/ui";
 import { choose } from "../../../support/select";
 import { i18n } from "../../../../src/state/i18n";
+import { planMotionInitialization } from "@musart/core";
+import { createMotionTransport } from "../../../../src/services/motion/transport";
+import { motionPropertyTrack } from "../../../../src/state/session/motion-edit";
 function fixture(selection: "none" | "single" | "mixed") {
   const d = setup();
   if (selection === "mixed")
@@ -38,6 +41,37 @@ test("disables empty selection and presents mixed values until one absolute edit
   fixture("none");
   expect(screen.getByRole("textbox", { name: "Opacité" })).toBeDisabled();
   expect(screen.getByRole("combobox", { name: "Fusion" })).toBeDisabled();
+});
+test("a mixed selection keys every selected owner and an absolute opacity edit has one undo", () => {
+  const d = fixture("mixed");
+  act(() =>
+    d.engine.execute({
+      type: "setCompositionMode",
+      mode: "motion",
+      plan: planMotionInitialization(d.engine.getSnapshot()),
+    }),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Ajouter une image clé · Opacité" }));
+  act(() => createMotionTransport(d.engine).seek({ value: 1, rate: 1 }));
+  const field = screen.getByRole("textbox", { name: "Opacité" }),
+    before = d.engine.getSnapshot();
+  expect(field).toHaveValue("");
+  fireEvent.focus(field);
+  fireEvent.change(field, { target: { value: "50" } });
+  fireEvent.blur(field);
+  const page = d.engine.getSnapshot().project.pages[0]!;
+  expect(page.layers.slice(0, 2).map((layer) => layer.opacity)).toEqual([1, 0.4]);
+  for (const layer of page.layers.slice(0, 2))
+    expect(
+      motionPropertyTrack(page, {
+        kind: "layer",
+        layerId: layer.id,
+        property: "opacity",
+      })?.keyframes.at(-1)?.value,
+    ).toBe(0.5);
+  expect(field).toHaveValue("50");
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project).toBe(before.project);
 });
 
 test("stable virtual-window parent props skip compositing renders while selected paint and language rebind", async () => {

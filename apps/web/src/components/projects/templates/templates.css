@@ -5,6 +5,39 @@
 .template-search {
   position: relative;
   max-width: 360px;
+  flex: 1;
+  min-width: min(100%, 220px);
+}
+.template-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.template-loading button {
+  margin-left: auto;
+}
+.template-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.template-mode-filter {
+  width: 170px;
+}
+.template-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+.template-mode[data-mode="motion"] {
+  color: var(--primary);
 }
 .template-search > svg {
   position: absolute;

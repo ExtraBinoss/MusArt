@@ -270,6 +270,7 @@ test("50 real image layers retain all eleven effects through preview, canonical 
       const page = project.pages[0]!;
       const originals = await Promise.all(
         Object.values(project.assets)
+          .filter((asset) => asset.kind !== "video")
           .filter((asset) => asset.mime === "image/jpeg")
           .map(async (asset) => {
             const data = await (await fetch(asset.dataUrl)).arrayBuffer();

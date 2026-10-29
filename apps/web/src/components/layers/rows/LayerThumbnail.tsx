@@ -1,11 +1,12 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { Image, Type, Shapes, Folder, Square, Circle } from "lucide-react";
-import type { Layer, Asset } from "@musart/core";
+import { Image, Type, Shapes, Folder, Square, Circle, Clapperboard } from "lucide-react";
+import { isImageAsset, type Layer, type Asset } from "@musart/core";
 import { scheduleLayerThumbnail } from "./thumbnail-idle";
 import { observeLayerThumbnail } from "./thumbnail-visibility";
 import type { EditorServices, LayerPreviewVariant } from "../../../state/contracts";
 const icons = {
   image: Image,
+  video: Clapperboard,
   text: Type,
   vector: Shapes,
   group: Folder,
@@ -114,7 +115,9 @@ export const LayerThumbnail = memo(function LayerThumbnail({
     value?.key === key && value.exporter === previewExport
       ? value.url
       : !services?.previewExport && !requestVariant
-        ? asset?.dataUrl
+        ? asset && isImageAsset(asset)
+          ? asset.dataUrl
+          : undefined
         : undefined;
   return (
     <span

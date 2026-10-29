@@ -1,4 +1,9 @@
-import { stateFromProject, type Asset, type SessionSnapshot } from "@musart/core";
+import {
+  sameAssetOriginal,
+  stateFromProject,
+  type Asset,
+  type SessionSnapshot,
+} from "@musart/core";
 import { snapshotProject } from "../../projects/writes/snapshot";
 import type { JournalFrame } from "./model";
 
@@ -13,7 +18,7 @@ export function captureJournalFrame(
     state: stateFromProject(project),
     descriptions: assets.map(({ dataUrl: _dataUrl, ...description }) => description),
     assets: assets.filter(
-      (asset) => !previousAssets || previousAssets[asset.id]?.dataUrl !== asset.dataUrl,
+      (asset) => !previousAssets || !sameAssetOriginal(previousAssets[asset.id], asset),
     ),
     pageId: snapshot.pageId,
     revision: snapshot.revision,

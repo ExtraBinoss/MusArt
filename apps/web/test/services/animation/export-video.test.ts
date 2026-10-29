@@ -77,7 +77,7 @@ function replay() {
   engine.execute({ type: "updateLayers", ids: [shape.id], patch: { x: 16 } });
   return recording.stop();
 }
-const options = { duration: 0.2, fps: 10, scale: 1, container: "auto" as const };
+const options = { duration: 1, fps: 2, scale: 1, container: "auto" as const };
 beforeEach(() => {
   vi.clearAllMocks();
   probe.frames = [];
@@ -99,8 +99,8 @@ describe("native canvas video export", () => {
     expect(probe.contexts).toBe(1);
     expect(probe.sourceCanvases).toHaveLength(1);
     expect(probe.add.mock.calls.map((args) => args.slice(0, 2))).toEqual([
-      [0, 0.1],
-      [0.1, 0.1],
+      [0, 0.5],
+      [0.5, 0.5],
     ]);
     expect(progress.mock.calls.map(([fraction]) => fraction)).toEqual([0.5, 1]);
     expect(probe.start).toHaveBeenCalledOnce();
@@ -134,7 +134,9 @@ describe("native canvas video export", () => {
   it("rejects invalid options, missing pages and pre-cancelled work before creating a GPU context", async () => {
     for (const invalid of [
       { duration: NaN },
-      { duration: 121 },
+      { duration: 0.9 },
+      { duration: 30.1 },
+      { duration: 1, fps: 1 },
       { fps: 1.5 },
       { fps: 0 },
       { scale: 5 },
@@ -153,6 +155,17 @@ describe("native canvas video export", () => {
       exportReplayVideo(replay(), { ...options, signal: controller.signal }),
     ).rejects.toThrow();
     expect(probe.contexts).toBe(0);
+  });
+  it("rejects empty history and preserves a fractional final duration without FPS snapping", async () => {
+    await expect(exportReplayVideo({ ...replay(), events: [] }, options)).rejects.toMatchObject({
+      code: "emptyHistory",
+    });
+    expect(probe.contexts).toBe(0);
+    await exportReplayVideo(replay(), { ...options, duration: 1.01, fps: 2 });
+    expect(probe.frames).toHaveLength(3);
+    expect(probe.add.mock.calls[2]![0]).toBe(1);
+    expect(probe.add.mock.calls[2]![1]).toBeCloseTo(0.01);
+    expect(probe.frames[2]).toMatchObject({ layers: [{ x: 16 }] });
   });
   it("cancels and releases every resource on encoder failure, GPU failure or user cancellation", async () => {
     probe.add.mockRejectedValueOnce(new Error("encode failed"));

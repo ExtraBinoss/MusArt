@@ -143,6 +143,9 @@ export function AnimatePanel({
         pageId: snapshot.pageId,
         signal: controller.signal,
         onProgress: setProgress,
+        ...(services.mediaResolverFor
+          ? { mediaResolver: services.mediaResolverFor(spec.initial.id) }
+          : {}),
         ...(services.fonts ? { fontResolver: services.fonts.resolve } : {}),
       });
       downloadBlob(
@@ -227,8 +230,8 @@ export function AnimatePanel({
                 label={t("duration")}
                 value={duration}
                 resetValue={8}
-                min={0.1}
-                max={120}
+                min={1}
+                max={30}
                 step={0.1}
                 unit="s"
                 onCommit={setDuration}

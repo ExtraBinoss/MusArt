@@ -9,6 +9,7 @@ import { THUMBNAIL_RENDER_VERSION } from "../projects/thumbnails/model";
 export function createPreviewExport(
   engine: EnginePort,
   thumbnails: Pick<ThumbnailPipeline, "preview">,
+  mediaResolverFor?: (projectId: string) => import("@musart/render").MediaSourceResolver,
 ) {
   const previewIdentities = new WeakMap<object, number>();
   const selectedPreviewIdentity = new SelectionPreviewIdentity();
@@ -66,6 +67,7 @@ export function createPreviewExport(
     ]);
     return thumbnails.preview(key, page, snapshot.project.assets, {
       edge,
+      ...(mediaResolverFor ? { mediaResolver: mediaResolverFor(snapshot.project.id) } : {}),
       ...(options.priority ? { priority: options.priority } : {}),
       ...(signal ? { signal } : {}),
       isCurrent: () => {

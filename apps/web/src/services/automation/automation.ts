@@ -1,5 +1,6 @@
 import type { Command, EnginePort, Project, ReplaySpec } from "@musart/core";
 import type { EditorServices } from "../../state/contracts";
+import { createMotionTransport } from "../motion/transport";
 import { getAnimationSession, type AnimationState } from "../animation/session";
 import type { HistoryPage } from "../history/model";
 import { readDataUrl } from "../assets/imports";
@@ -58,10 +59,19 @@ export function attachAutomation(engine: EnginePort, services: EditorServices) {
     flushThumbnails: () => services.flushThumbnails(),
     async render(options = {}) {
       const { project, pageId } = engine.getSnapshot();
-      const page = project.pages.find((page) => page.id === pageId)!;
+      const transport = createMotionTransport(engine);
+      const page = transport.readFrame() ?? project.pages.find((page) => page.id === pageId)!;
+      const motionFrame = transport.readFramePlan();
+      const media = {
+        ...(services.mediaResolverFor
+          ? { mediaResolver: services.mediaResolverFor(project.id) }
+          : {}),
+        ...(motionFrame ? { motionFrame } : {}),
+      };
       const { renderComposition, exportComposition } = await import("@musart/render");
       if (options.forceWebGL) {
         const canvas = await renderComposition(page, project.assets, {
+          ...media,
           scale: options.scale,
           forceWebGL: true,
           ...(services.fonts ? { fontResolver: services.fonts.resolve } : {}),
@@ -70,6 +80,7 @@ export function attachAutomation(engine: EnginePort, services: EditorServices) {
       }
       return readDataUrl(
         await exportComposition(page, project.assets, {
+          ...media,
           ...options,
           ...(services.fonts ? { fontResolver: services.fonts.resolve } : {}),
         }),

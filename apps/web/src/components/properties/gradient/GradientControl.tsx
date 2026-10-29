@@ -1,10 +1,13 @@
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Plus, Minus } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { sampleGradientColor, type FillGradient, type Layer } from "@musart/core";
+import { sampleGradientColor, type EnginePort, type FillGradient, type Layer } from "@musart/core";
 import type { PropertyActions } from "../TextProperties";
 import { ColorControl } from "../ColorControl";
-import { NumberInput } from "../../shared/NumberInput";
+import { MotionNumberInput as NumberInput } from "../motion/MotionNumberInput";
+import { MotionField } from "../motion/MotionField";
+import { MotionValueField } from "../motion/MotionValueField";
+import { createMotionTransport } from "../../../services/motion/transport";
 import { SelectField } from "../../shared/SelectField";
 import { IconButton } from "../../shared/IconButton";
 import { ButtonGroup } from "../../ui/button-group";
@@ -21,10 +24,11 @@ function cssPaint(gradient: FillGradient) {
 /** Only this control changes selection; paint gestures publish imperative preview patches. */
 export function GradientControl({
   layer,
+  engine,
   patch,
   preview,
   cancel,
-}: PropertyActions & { layer: Layer }) {
+}: PropertyActions & { layer: Layer; engine?: EnginePort }) {
   const { t } = useTranslation("gradient");
   const [selected, setSelected] = useState(0);
   const bar = useRef<HTMLDivElement>(null);
@@ -32,6 +36,19 @@ export function GradientControl({
   const index = Math.min(selected, (gradient?.stops.length ?? 1) - 1);
   const stop = gradient?.stops[index];
   const endpoint = index === 0 || index === (gradient?.stops.length ?? 1) - 1;
+  useLayoutEffect(() => {
+    if (!engine || !gradient) return;
+    const transport = createMotionTransport(engine);
+    const update = () => {
+      const paint =
+        transport.readFrame()?.layers.find((item) => item.id === layer.id)?.fillGradient ??
+        gradient;
+      if (bar.current) bar.current.style.background = cssPaint(paint);
+    };
+    const stop = transport.subscribe(update);
+    update();
+    return stop;
+  }, [engine, layer.id, gradient]);
 
   function previewPaint(next: FillGradient) {
     if (layer.locked) return;
@@ -77,28 +94,43 @@ export function GradientControl({
   }
   return (
     <div className={styles.control} aria-disabled={layer.locked || undefined}>
-      <SelectField
+      <MotionField
+        engine={gradient ? engine : undefined}
+        target={{ kind: "layer", layerId: layer.id, property: "fillGradient.kind" }}
         label={t("type")}
-        value={gradient?.kind ?? "solid"}
         disabled={layer.locked}
-        options={(["solid", "linear", "radial"] as const).map((value) => ({
-          value,
-          label: t(value),
-        }))}
-        onValueChange={(kind) => {
-          if (layer.locked) return;
-          if (kind === "solid") patch({ fillGradient: undefined });
-          else
-            commitPaint({
-              kind: kind as FillGradient["kind"],
-              angle: gradient?.angle ?? 0,
-              stops: gradient?.stops ?? [
-                { offset: 0, color: layer.fill },
-                { offset: 1, color: "#ffffff" },
-              ],
-            });
-        }}
-      />
+      >
+        <MotionValueField
+          engine={engine}
+          target={{ kind: "layer", layerId: layer.id, property: "fillGradient.kind" }}
+          fallback={gradient?.kind ?? "solid"}
+        >
+          {(kind) => (
+            <SelectField
+              label={t("type")}
+              value={String(kind)}
+              disabled={layer.locked}
+              options={(["solid", "linear", "radial"] as const).map((value) => ({
+                value,
+                label: t(value),
+              }))}
+              onValueChange={(kind) => {
+                if (layer.locked) return;
+                if (kind === "solid") patch({ fillGradient: undefined });
+                else
+                  commitPaint({
+                    kind: kind as FillGradient["kind"],
+                    angle: gradient?.angle ?? 0,
+                    stops: gradient?.stops ?? [
+                      { offset: 0, color: layer.fill },
+                      { offset: 1, color: "#ffffff" },
+                    ],
+                  });
+              }}
+            />
+          )}
+        </MotionValueField>
+      </MotionField>
       {gradient && stop && (
         <div className={styles.editor} inert={layer.locked || undefined}>
           <div
@@ -135,6 +167,8 @@ export function GradientControl({
           </div>
           {gradient.kind === "linear" && (
             <NumberInput
+              engine={engine}
+              target={{ kind: "layer", layerId: layer.id, property: "fillGradient.angle" }}
               identity={layer}
               label={t("angle")}
               value={gradient.angle}

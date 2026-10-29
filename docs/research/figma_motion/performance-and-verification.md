@@ -182,3 +182,7 @@ Suggested report fields: `sourceCommit`, `workingDiffHash`, `buildHash`, `fixtur
 - [ ] Fifty-image/effect plus media cohorts record true hardware/backend, p50/p95/p99/max and every missed target.
 - [ ] Long-run and adversarial cleanup show bounded resources, no stale adoption and no deleted-data resurrection.
 - [ ] Measured supported device/workload envelope and unresolved performance limits are documented before any “smooth” or “instant” claim.
+
+## Implementation investigation
+
+See the [measured investigation log](performance-investigation.md) for preserved failures, bounded-source and shader/text corrections, consecutive production evidence, and acceptance gates that still fail. Small native witnesses establish correctness and cleanup for their declared workloads; they do not replace In Bloom or the required mixed stress composition.

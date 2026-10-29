@@ -1,3 +1,4 @@
+import { sameAssetOriginal } from "@musart/core";
 import type { Asset, ReplayEvent, ReplayState } from "@musart/core";
 import type { HistoryWrite } from "./transactions";
 import { pruneHistory } from "./retention";
@@ -53,7 +54,7 @@ export async function appendInTransaction(tx: HistoryWrite, options: AppendHisto
   });
   for (const asset of Object.values(assets)) {
     const stored = await tx.objectStore("journalAssets").get([projectId, asset.id]);
-    if (stored && stored.asset.dataUrl !== asset.dataUrl)
+    if (stored && !sameAssetOriginal(stored.asset, asset))
       throw new Error("An original asset ID cannot be replaced inside a journal.");
     if (!stored) {
       const record = { projectId, assetId: asset.id, asset };

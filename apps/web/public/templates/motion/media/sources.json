@@ -1,0 +1,64 @@
+{
+  "provenance": "Original MDN interactive-examples CC0 media; downloaded unchanged on 2026-10-29.",
+  "media": [
+    {
+      "id": "flower",
+      "file": "flower.mp4",
+      "source": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+      "license": "CC0-1.0",
+      "licenseSource": "https://github.com/mdn/interactive-examples/blob/main/LICENSE",
+      "sha256": "0cd83d944a6ca7822b4a8306cecc60a36e859b041f6702c6a1ad9ead78924451",
+      "bytes": 1128375,
+      "width": 960,
+      "height": 540,
+      "videoFrameRate": "30000/1001",
+      "containerDuration": "5.055000",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 960,
+          "height": 540,
+          "r_frame_rate": "30000/1001"
+        },
+        {
+          "codec_name": "aac",
+          "sample_rate": "48000",
+          "r_frame_rate": "0/0"
+        }
+      ]
+    },
+    {
+      "id": "grapefruit-slice-332-332",
+      "file": "grapefruit-slice-332-332.jpg",
+      "source": "https://interactive-examples.mdn.mozilla.net/media/cc0-images/grapefruit-slice-332-332.jpg",
+      "license": "CC0-1.0",
+      "licenseSource": "https://github.com/mdn/interactive-examples/blob/main/LICENSE",
+      "sha256": "d67ab36d79bb8103c204c40a9ba0559238b03c7a7f1d7e85b7f98636c4c8ae52",
+      "bytes": 18122,
+      "width": 332,
+      "height": 332
+    },
+    {
+      "id": "painted-hand-298-332",
+      "file": "painted-hand-298-332.jpg",
+      "source": "https://interactive-examples.mdn.mozilla.net/media/cc0-images/painted-hand-298-332.jpg",
+      "license": "CC0-1.0",
+      "licenseSource": "https://github.com/mdn/interactive-examples/blob/main/LICENSE",
+      "sha256": "6c60544bcf3cad38dcb3015e79a377d3fbe443b42e0fdf95a35e85f366cf152c",
+      "bytes": 12108,
+      "width": 298,
+      "height": 332
+    },
+    {
+      "id": "surfer-240-200",
+      "file": "surfer-240-200.jpg",
+      "source": "https://interactive-examples.mdn.mozilla.net/media/cc0-images/surfer-240-200.jpg",
+      "license": "CC0-1.0",
+      "licenseSource": "https://github.com/mdn/interactive-examples/blob/main/LICENSE",
+      "sha256": "42906375209bd031d3e26170c62ee7c466d7334e0fec5a312f0606a0f17f69ff",
+      "bytes": 9819,
+      "width": 240,
+      "height": 200
+    }
+  ]
+}

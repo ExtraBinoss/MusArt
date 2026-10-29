@@ -61,16 +61,16 @@ Static base edits must remain distinct from Motion edits to an existing key. Ret
 
 ## Workspace structure
 
-| Region               | Intended MusArt behavior                                                                                                                   | Status                                                                               |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| Artboard controls    | Place a clearly named Static/Motion mode selector with artboard properties. Make the current artboard explicit when several are visible.   | Mode is required; exact selector placement proposed.                                 |
-| Bottom panel         | Motion reveals a docked timeline across the editor width, with hierarchy gutter, control strip, ruler and tracks.                          | Required appearance target, informed by supplied reference.                          |
-| Bottom-right control | Replace the current Recenter button with a timeline open/collapse toggle in Motion. Preserve the open state without changing the document. | Required.                                                                            |
-| Canvas zoom          | Move +/− to the top-right with Design-related controls. Keep canvas percentage/100% and Fit reachable.                                     | Relocation required; repository mandates zoom/reset/fit access.                      |
-| Temporal zoom        | Keep timeline scale controls inside the timeline.                                                                                          | Proposed to avoid ambiguity with canvas zoom.                                        |
-| Panel height         | Resize using the top boundary; collapse to restore workspace. Retain a usable canvas viewport.                                             | Figma-style proposal, not a measured Figma token.                                    |
-| Inspector            | Put keyframe diamonds beside supported properties and effect parameters.                                                                   | Required.                                                                            |
-| Timelapse            | Place the Timelapse action in the dropdown of an Export split button, reached with its small down-chevron.                                 | Confirmed user placement; open the simple 1–30-second replay dialog described below. |
+| Region               | Intended MusArt behavior                                                                                                                          | Status                                                                               |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Artboard controls    | Place Static/Motion **below its artboard**. Collapse readable labels to two recognizable icons at low zoom; preserve usable overlay target sizes. | Explicit M23/M28 refinement, replacing the earlier proposed placement.               |
+| Bottom panel         | Motion reveals a docked timeline across the editor width, with hierarchy gutter, control strip, ruler and tracks.                                 | Required appearance target, informed by supplied reference.                          |
+| Bottom-right control | Replace the current Recenter button with a timeline open/collapse toggle in Motion. Preserve the open state without changing the document.        | Required.                                                                            |
+| Canvas zoom          | Move +/− to the top-right with Design-related controls. Keep canvas percentage/100% and Fit reachable.                                            | Relocation required; repository mandates zoom/reset/fit access.                      |
+| Temporal zoom        | Keep timeline scale controls inside the timeline.                                                                                                 | Proposed to avoid ambiguity with canvas zoom.                                        |
+| Panel height         | Resize from the top boundary; use the same neutral divider treatment as Layers/Properties, per M25. Keep a usable canvas viewport.                | M25 supersedes M23's tentative blue resize bar.                                      |
+| Inspector            | Put keyframe diamonds beside supported properties and effect parameters.                                                                          | Required.                                                                            |
+| Timelapse            | Place the Timelapse action in the dropdown of an Export split button, reached with its small down-chevron.                                        | Confirmed user placement; open the simple 1–30-second replay dialog described below. |
 
 ### Export split button and Timelapse
 

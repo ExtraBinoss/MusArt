@@ -1,4 +1,4 @@
-import type { Asset, Composition, Project } from "@musart/core";
+import type { Asset, Composition, Project, VideoAsset } from "@musart/core";
 export interface StoredThumbnail {
   projectId: string;
   pageId: string;
@@ -21,6 +21,11 @@ export interface ThumbnailStore {
   saveThumbnail(record: StoredThumbnail): Promise<boolean>;
   load(projectId: string, options?: { observe?: boolean }): Promise<Project>;
   thumbnailRevision?(page: Composition, assets: Record<string, Asset>): Promise<string>;
+  loadMediaOriginal?(
+    projectId: string,
+    asset: VideoAsset,
+    options?: { signal?: AbortSignal },
+  ): Promise<Blob>;
 }
 export interface ThumbnailView {
   pageId: string;

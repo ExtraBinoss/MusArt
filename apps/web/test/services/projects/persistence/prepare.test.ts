@@ -11,7 +11,7 @@ it("captures only changed originals while preserving the full document and exact
     basis = {
       projectId: input.id,
       revision: "assets:1",
-      urls: new Map([["photo", input.assets.photo!.dataUrl]]),
+      urls: new Map([["photo", input.assets.photo!.dataUrl!]]),
     };
   const value = prepareProjectWrite(
     input,
@@ -33,10 +33,10 @@ it("captures only changed originals while preserving the full document and exact
   });
   expect(value.frame.document).not.toHaveProperty("assets");
   expect(value.frame.descriptions[0]).not.toHaveProperty("dataUrl");
-  expect(value.urls.get("photo")).toBe(input.assets.photo!.dataUrl);
+  expect(value.urls.get("photo")).toBe(input.assets.photo!.dataUrl!);
   expect(withFullOriginals(value.frame, input)).not.toHaveProperty("basis");
   expect(withFullOriginals(value.frame, input).originals).toHaveLength(1);
-  input.assets.photo!.dataUrl = "data:image/png;base64,BBBB";
+  input.assets.photo!.dataUrl! = "data:image/png;base64,BBBB";
   expect(
     prepareProjectWrite(
       input,
@@ -46,7 +46,7 @@ it("captures only changed originals while preserving the full document and exact
       undefined,
       basis,
     ).frame,
-  ).toMatchObject({ originals: [{ dataUrl: input.assets.photo!.dataUrl }] });
+  ).toMatchObject({ originals: [{ dataUrl: input.assets.photo!.dataUrl! }] });
   expect(
     prepareProjectWrite(
       input,
@@ -69,7 +69,7 @@ it("captures full original strings once while reusing certified immutable docume
     remember: true,
     requireAbsent: false,
     expectedRevision: "before",
-    originals: [{ projectId: "project", assetId: "photo", dataUrl: input.assets.photo!.dataUrl }],
+    originals: [{ projectId: "project", assetId: "photo", dataUrl: input.assets.photo!.dataUrl! }],
   });
   expect(value.frame).not.toHaveProperty("basis");
   expect(value.frame).not.toHaveProperty("thumbnail");
@@ -80,7 +80,7 @@ it("captures full original strings once while reusing certified immutable docume
 });
 it("keeps a complete current asset manifest while transmitting only changed and new originals", () => {
   const input = project(),
-    previousUrl = input.assets.photo!.dataUrl,
+    previousUrl = input.assets.photo!.dataUrl!,
     basis = {
       projectId: input.id,
       revision: "assets:before",
@@ -89,7 +89,7 @@ it("keeps a complete current asset manifest while transmitting only changed and 
         ["removed", "data:image/png;base64,REMOVED"],
       ]),
     };
-  input.assets.photo!.dataUrl = "data:image/png;base64,CHANGED";
+  input.assets.photo!.dataUrl! = "data:image/png;base64,CHANGED";
   input.assets.new = { ...input.assets.photo!, id: "new", name: "New" };
   const value = prepareProjectWrite(
     input,

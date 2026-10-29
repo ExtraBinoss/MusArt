@@ -16,10 +16,12 @@ export function ColorControl({
   disabled = false,
   alpha = true,
   identity,
+  invalidation,
 }: {
   disabled?: boolean;
   alpha?: boolean;
   identity?: string;
+  invalidation?: { subscribe(listener: () => void): () => void };
   value: string;
   onPreview: (value: string) => void;
   onCommit: (value: string) => void;
@@ -42,6 +44,7 @@ export function ColorControl({
   const gesture = useRef(false),
     blockedGesture = useRef(false),
     pointer = useRef<number | null>(null);
+  const cancelFromClock = useRef<() => void>(() => {});
   const busy = !disabled && pending?.value === value && pending.commit === onCommit;
   const paletteValue = !disabled && override?.base === value ? override.hex : value;
 
@@ -125,6 +128,17 @@ export function ColorControl({
     setOverride(null);
     setReset((current) => current + 1);
   }
+  useLayoutEffect(() => {
+    cancelFromClock.current = () => cancel(gesture.current);
+  });
+  useEffect(
+    () =>
+      invalidation?.subscribe(() => {
+        if (gesture.current || session.current.request || draft.current !== committed.current)
+          cancelFromClock.current();
+      }),
+    [invalidation],
+  );
   function commit(color = draft.current) {
     if (disabled || blockedGesture.current) return;
     const normalized = normalizeHex(alpha ? color : color.slice(0, 7));

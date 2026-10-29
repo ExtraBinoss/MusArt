@@ -1,6 +1,8 @@
 import { expect, test } from "vitest";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react";
-import { createEffect, createProject } from "@musart/core";
+import { createEffect, createProject, planMotionInitialization } from "@musart/core";
+import { createMotionTransport } from "../../../../src/services/motion/transport";
+import { motionPropertyTrack } from "../../../../src/state/session/motion-edit";
 import { EffectPopover } from "../../../../src/components/layers/attachments/EffectPopover";
 import { previewAtom, useEngine } from "../../../../src/state/session/editor";
 import { setup } from "../../../support/ui";
@@ -26,6 +28,59 @@ function fixture() {
   d.mount(<Live />);
   return d;
 }
+test("real effect fields key their own values and retain other evaluated effect settings during drafts", () => {
+  const d = fixture();
+  const base = d.engine.getSnapshot().project.pages[0]!.layers[0]!;
+  const first = base.effects[0]!,
+    second = base.effects[1]!;
+  act(() => {
+    d.engine.execute({
+      type: "setCompositionMode",
+      mode: "motion",
+      plan: planMotionInitialization(d.engine.getSnapshot()),
+    });
+    d.engine.transaction([
+      {
+        type: "upsertMotionKeyframe",
+        target: { kind: "effect", layerId: base.id, effectId: second.id, property: "amount" },
+        time: { value: 0, rate: 1 },
+        value: second.amount,
+      },
+      {
+        type: "upsertMotionKeyframe",
+        target: { kind: "effect", layerId: base.id, effectId: second.id, property: "amount" },
+        time: { value: 1, rate: 1 },
+        value: 0.8,
+      },
+    ]);
+  });
+  fireEvent.click(screen.getByRole("button", { name: "FX" }));
+  fireEvent.click(screen.getAllByRole("button", { name: "Ajouter une image clé · Intensité" })[0]!);
+  act(() => createMotionTransport(d.engine).seek({ value: 1, rate: 1 }));
+  const input = screen.getAllByLabelText("Intensité")[0]!,
+    before = d.engine.getSnapshot();
+  fireEvent.focus(input);
+  fireEvent.change(input, { target: { value: "30" } });
+  expect(d.store.get(previewAtom)).toMatchObject({
+    patch: {
+      effects: [expect.objectContaining({ amount: 0.3 }), expect.objectContaining({ amount: 0.8 })],
+    },
+  });
+  expect(d.engine.getSnapshot()).toBe(before);
+  fireEvent.blur(input);
+  const page = d.engine.getSnapshot().project.pages[0]!;
+  expect(page.layers[0]!.effects[0]!.amount).toBe(first.amount);
+  expect(
+    motionPropertyTrack(page, {
+      kind: "effect",
+      layerId: base.id,
+      effectId: first.id,
+      property: "amount",
+    })?.keyframes.map((key) => key.value),
+  ).toEqual([first.amount, 0.3]);
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project).toBe(before.project);
+});
 test("locked FX show an actionable notice and preserve the effect while unlocking once", () => {
   const d = fixture();
   act(() => {

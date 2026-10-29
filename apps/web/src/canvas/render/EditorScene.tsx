@@ -9,7 +9,7 @@ import {
 } from "three/webgpu";
 import { useTranslation } from "react-i18next";
 import type { SceneController } from "../session/scene-controller";
-import type { FontResolver } from "@musart/render";
+import type { FontResolver, MediaSourceResolver } from "@musart/render";
 import { useRenderMetrics } from "../../state/session/render-metrics";
 import { PlaneResources } from "./plane-resources";
 import { FiberTimerClock } from "./fiber-timer";
@@ -19,9 +19,10 @@ import "./loading.css";
 
 export interface SceneProps {
   controller: SceneController;
-  onError?: (message: string) => void;
+  onError?: (message: string, details?: string) => void;
   zoom?: number;
   fontResolver?: FontResolver;
+  mediaResolverFor?: (projectId: string) => MediaSourceResolver;
 }
 export async function makeRenderer(
   canvas: HTMLCanvasElement | OffscreenCanvas,
@@ -59,6 +60,7 @@ export function CompositionPlane({
   onError,
   zoom = 1,
   fontResolver,
+  mediaResolverFor,
   density: suppliedDensity,
 }: SceneProps & { density?: DrawingDensity }) {
   const density = useMemo(() => suppliedDensity ?? new DrawingDensity(), [suppliedDensity]);
@@ -74,8 +76,8 @@ export function CompositionPlane({
   const scene = useThree((state) => state.scene);
   const camera = useThree((state) => state.camera) as OrthographicCamera;
   const resources = useMemo(
-    () => new PlaneResources(renderer, fontResolver),
-    [renderer, fontResolver],
+    () => new PlaneResources(renderer, fontResolver, undefined, mediaResolverFor),
+    [renderer, fontResolver, mediaResolverFor],
   );
   useFrame(() => density.prepare(renderer), -1);
   useEffect(() => {
@@ -94,15 +96,15 @@ export function CompositionPlane({
       }
     };
     const update = () => {
-      const { page, assets, presentation } = controller.read();
-      resources.submit(page, assets, presentation);
+      const { page, assets, presentation, motionFrame, playback } = controller.read();
+      resources.submit(page, assets, presentation, motionFrame, playback);
     };
     try {
       release = resources.activate(
         scene,
         camera,
         invalidate,
-        (message) => onErrorRef.current?.(message),
+        (message, details) => onErrorRef.current?.(message, details),
         (scale, width, height) => density.apply(scale, setDpr, width, height),
         presenter,
       );
@@ -127,7 +129,7 @@ export function CompositionPlane({
 class GpuBoundary extends Component<
   {
     children: ReactNode;
-    onError?: (message: string) => void;
+    onError?: (message: string, details?: string) => void;
     fallback: string;
     describeError: (message: string) => string;
   },
@@ -155,6 +157,7 @@ export const EditorScene = memo(function EditorScene({
   onError,
   zoom = 1,
   fontResolver,
+  mediaResolverFor,
 }: SceneProps) {
   const [{ page }] = useState(() => controller.read());
   const density = useMemo(() => new DrawingDensity(), []);
@@ -195,6 +198,7 @@ export const EditorScene = memo(function EditorScene({
             onError={onError}
             zoom={zoom}
             fontResolver={fontResolver}
+            mediaResolverFor={mediaResolverFor}
             density={density}
           />
         </Canvas>

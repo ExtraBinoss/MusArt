@@ -25,6 +25,8 @@ export interface NumberInputProps {
   decimalScale?: number;
   snapPoints?: readonly number[];
   snapThreshold?: number;
+  /** Imperative animated values; null means the selected owners have mixed values. */
+  presentation?: { read(): number | null; subscribe(listener: () => void): () => void };
 }
 /** A single field with a scrub handle, native number editing and a quiet unit. */
 export function NumberInput({
@@ -46,6 +48,7 @@ export function NumberInput({
   decimalScale = 2,
   snapPoints,
   snapThreshold = 2,
+  presentation,
 }: NumberInputProps) {
   const { t } = useTranslation();
   const id = useId();
@@ -98,6 +101,33 @@ export function NumberInput({
     if ((!gesture.current || gesture.current.origin !== origin) && field.current)
       field.current.value = mixed ? "" : String(Math.round(value * precision) / precision);
   }, [value, mixed, precision, origin]);
+  useLayoutEffect(() => {
+    if (!presentation) return;
+    const update = () => {
+      const next = presentation.read();
+      if (next !== null && !Number.isFinite(next)) return;
+      const active = gesture.current;
+      if (active || heldKey.current || typing.current) {
+        gesture.current = null;
+        if (heldKey.current) blockedKey.current = true;
+        heldKey.current = null;
+        typing.current = false;
+        active?.handle.parentElement?.removeAttribute("data-dragging");
+        if (active?.handle.hasPointerCapture(active.pointerId))
+          active.handle.releasePointerCapture(active.pointerId);
+        cancelRef.current?.();
+      }
+      if (next !== null) committed.current = next;
+      if (field.current) {
+        field.current.value = next === null ? "" : String(Math.round(next * precision) / precision);
+        field.current.placeholder =
+          next === null ? t("layerControls:mixed", { defaultValue: "—" }) : "";
+      }
+    };
+    const stop = presentation.subscribe(update);
+    update();
+    return stop;
+  }, [presentation, precision, t]);
   function bounded(next: number) {
     return Math.round(Math.min(max, Math.max(min, next)) * precision) / precision;
   }

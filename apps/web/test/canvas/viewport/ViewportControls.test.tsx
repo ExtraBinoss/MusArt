@@ -1,10 +1,14 @@
 import { expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render as baseRender, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
+import { TooltipProvider } from "../../../src/components/ui/tooltip";
 import { ViewportControls } from "../../../src/canvas/viewport/ViewportControls";
 import { createViewportActions } from "../../../src/canvas/session/viewport-actions";
 import { EditorEngine } from "@musart/core";
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
-it("keeps essential controls compact, exposes conditional recenter and leaves fit in shared actions", () => {
+const render = (node: ReactNode) =>
+  baseRender(node, { wrapper: ({ children }) => <TooltipProvider>{children}</TooltipProvider> });
+it("keeps zoom controls and toggles the Motion timeline while recenter remains a shared action", () => {
   const actions = createViewportActions(new EditorEngine()),
     listener = vi.fn(),
     stop = actions.subscribe(listener);
@@ -17,10 +21,24 @@ it("keeps essential controls compact, exposes conditional recenter and leaves fi
   fireEvent.click(screen.getByLabelText("resetView"));
   fireEvent.click(screen.getByLabelText("zoomIn"));
   expect(listener.mock.calls.map(([action]) => action)).toEqual(["zoomOut", "reset", "zoomIn"]);
-  rerender(<ViewportControls actions={actions} view={{ x: 81, y: 0, zoom: 1 }} />);
-  fireEvent.click(screen.getByText("recenterView"));
-  rerender(<ViewportControls actions={actions} view={{ x: 0, y: -81, zoom: 1 }} />);
-  expect(screen.getByText("recenterView")).toHaveClass("floating-panel");
+  rerender(<ViewportControls actions={actions} view={{ x: 81, y: 0, zoom: 1 }} motionEnabled />);
+  const timeline = screen.getByRole("button", { name: "motion:timeline" });
+  expect(timeline).toHaveAttribute("aria-pressed", "true");
+  fireEvent.click(timeline);
+  expect(timeline).toHaveAttribute("aria-pressed", "false");
+  expect(screen.queryByText("recenterView")).toBeNull();
+  actions.run("recenter");
   expect(listener).toHaveBeenLastCalledWith("recenter");
   stop();
+});
+
+it("observes mode changes independently from the canvas geometry subscription", () => {
+  const engine = new EditorEngine();
+  const actions = createViewportActions(engine);
+  render(<ViewportControls engine={engine} actions={actions} view={{ x: 0, y: 0, zoom: 1 }} />);
+  expect(screen.queryByRole("button", { name: "motion:timeline" })).toBeNull();
+  act(() => engine.execute({ type: "setCompositionMode", mode: "motion" }));
+  expect(screen.getByRole("button", { name: "motion:timeline" })).toBeVisible();
+  act(() => engine.execute({ type: "setCompositionMode", mode: "static" }));
+  expect(screen.queryByRole("button", { name: "motion:timeline" })).toBeNull();
 });

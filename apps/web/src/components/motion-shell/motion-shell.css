@@ -1,0 +1,22 @@
+.motion-timeline-dock {
+  /* Intrinsic final panel height is reserved once. Animation never changes layout dimensions. */
+  position: relative;
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  isolation: isolate;
+  will-change: transform, opacity;
+}
+.motion-timeline-dock[data-motion-presence="exiting"] {
+  pointer-events: none;
+  user-select: none;
+}
+.motion-timeline-dock[data-motion-presence="hidden"] {
+  will-change: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-timeline-dock {
+    will-change: auto;
+  }
+}

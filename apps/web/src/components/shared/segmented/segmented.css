@@ -76,3 +76,8 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.segmented-tab-tooltip {
+  display: inline-flex;
+  flex: 1;
+  min-width: 0;
+}

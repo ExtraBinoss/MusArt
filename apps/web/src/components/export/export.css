@@ -4,6 +4,27 @@
   overflow-y: auto;
   padding: 16px;
 }
+.export-actions {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex-shrink: 0;
+}
+.export-actions .export-trigger {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.export-actions .export-options {
+  width: 26px;
+  height: 32px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  background: var(--action);
+  color: var(--action-foreground);
+}
+.export-actions .export-options:hover {
+  background: color-mix(in srgb, var(--action) 90%, #000);
+}
 .export-settings-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -119,6 +140,19 @@
   border: 0;
   background: var(--muted);
   height: 32px;
+}
+.inspector-header .motion-mode {
+  flex: 1;
+  min-width: 0;
+}
+.inspector-design-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--muted-foreground);
 }
 .inspector-header .export-trigger {
   position: static;

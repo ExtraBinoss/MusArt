@@ -4,6 +4,7 @@ import { App } from "../src/App";
 import { setup } from "./support/ui";
 import { toolAtom } from "../src/state/session/editor";
 import { createProject } from "@musart/core";
+import { createMotionTransport } from "../src/services/motion/transport";
 vi.mock("../src/canvas/EditorCanvas", () => ({
   EditorCanvas: ({
     onError,
@@ -50,8 +51,8 @@ test("assembles the pinned inspector, layers, project menu, export and import ac
   fireEvent.click(screen.getByRole("button", { name: "Actions du projet" }));
   fireEvent.click(screen.getByRole("button", { name: /^Enregistrer/ }));
   await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Projet enregistré"));
-  fireEvent.click(screen.getByRole("button", { name: "Fermer" }));
-  expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Fermer la notification" }));
+  await waitFor(() => expect(screen.queryByRole("status")).not.toBeInTheDocument());
   const projectName = screen.getByLabelText("Nom du projet");
   fireEvent.change(projectName, { target: { value: "Collection" } });
   fireEvent.blur(projectName);
@@ -69,7 +70,7 @@ test("surfaces renderer and service errors and routes local image selection usin
   await screen.findByTestId("canvas");
   fireEvent.click(screen.getByText("Canvas error"));
   expect(screen.getByRole("alert")).toHaveTextContent("Renderer unavailable");
-  fireEvent.click(screen.getByRole("button", { name: "Fermer" }));
+  fireEvent.click(screen.getByRole("button", { name: "Fermer la notification" }));
   fireEvent.click(screen.getByText("Image point"));
   expect(d.services.selectImagePoint).not.toHaveBeenCalled();
   act(() => d.store.set(toolAtom, "wand"));
@@ -80,7 +81,7 @@ test("surfaces renderer and service errors and routes local image selection usin
   vi.mocked(d.services.importFiles).mockRejectedValueOnce("Import failed");
   fireEvent.click(screen.getByText("Drop image"));
   await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Import failed"));
-  fireEvent.click(screen.getByRole("button", { name: "Fermer" }));
+  fireEvent.click(screen.getByRole("button", { name: "Fermer la notification" }));
   vi.mocked(d.services.saveProject).mockRejectedValueOnce(new Error("Quota exceeded"));
   fireEvent.keyDown(document, { key: "s", ctrlKey: true });
   await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Quota exceeded"));
@@ -94,7 +95,36 @@ test("localizes stale project-write failures at the editor task boundary", async
   await screen.findByTestId("canvas");
   fireEvent.keyDown(document, { key: "s", ctrlKey: true });
   await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Ce projet a changé"));
-  expect(screen.getByRole("alert")).not.toHaveTextContent("raw storage diagnostic");
+  const notice = screen.getByRole("alert");
+  expect(notice.querySelector(".notice-content > p")).not.toHaveTextContent(
+    "raw storage diagnostic",
+  );
+  expect(notice.querySelector("details")).not.toHaveAttribute("open");
+  expect(notice.querySelector("pre")).toHaveTextContent(
+    "Error [STALE_PROJECT_WRITE]: raw storage diagnostic",
+  );
+});
+test("pauses failed Motion playback without changing the document or preventing a retry", async () => {
+  const d = setup();
+  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  d.mount(<App engine={d.engine} services={d.services} />);
+  await screen.findByTestId("canvas");
+  const transport = createMotionTransport(d.engine),
+    before = d.engine.getSnapshot();
+  act(() => {
+    transport.seek({ value: 1, rate: 2 });
+    transport.play();
+  });
+  expect(transport.read().playing).toBe(true);
+  fireEvent.click(screen.getByText("Canvas error"));
+  expect(transport.read()).toMatchObject({ playing: false, time: { value: 1, rate: 2 } });
+  expect(screen.getByRole("alert")).toHaveTextContent("Renderer unavailable");
+  for (let i = 0; i < 4; i++) fireEvent.click(screen.getByText("Canvas error"));
+  expect(screen.getAllByRole("alert")).toHaveLength(1);
+  expect(d.engine.getSnapshot()).toBe(before);
+  act(() => transport.play());
+  expect(transport.read().playing).toBe(true);
+  act(() => transport.pause());
 });
 test("opens the real project/export dialogs and switches panel modes through command search", async () => {
   const d = setup();
@@ -112,10 +142,10 @@ test("opens the real project/export dialogs and switches panel modes through com
     await screen.findByRole("heading", { name: "Quel projet voulez-vous créer ?" }),
   ).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "Fermer" }));
-  await search("animate", /Ouvrir Animate/);
-  await waitFor(() =>
-    expect(screen.getByRole("tab", { name: "Animation" })).toHaveAttribute("aria-selected", "true"),
-  );
+  await search("animate", /Exporter un timelapse/);
+  expect(await screen.findByRole("dialog", { name: "Timelapse" })).toBeVisible();
+  expect(screen.queryByRole("tab", { name: "Animation" })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
   await search("png", /Exporter/);
   expect(await screen.findByRole("dialog", { name: "Exporter la composition" })).toBeVisible();
 });

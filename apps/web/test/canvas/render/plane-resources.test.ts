@@ -143,7 +143,10 @@ describe("direct GPU preview ownership and scheduling", () => {
     d.resources.present();
     expect(d.renderer.domElement.dataset.rendererReady).toBe("false");
     expect(d.renderer.domElement.dataset.presentationReady).toBe("false");
-    expect(d.error).toHaveBeenCalledWith("destination font failed");
+    expect(d.error).toHaveBeenCalledWith(
+      "destination font failed",
+      "Error: destination font failed",
+    );
     d.resources.submit(destination, {});
     await frame();
     d.resources.present();
@@ -285,7 +288,14 @@ describe("direct GPU preview ownership and scheduling", () => {
     expect(gpu.render).toHaveBeenLastCalledWith(
       page,
       {},
-      { scale: 0.5, canRender: expect.any(Function) },
+      {
+        scale: 0.5,
+        canRender: expect.any(Function),
+        mediaResolver: undefined,
+        motionFrame: undefined,
+        mediaMode: "preview",
+        signal: expect.any(AbortSignal),
+      },
     );
     expect(density).toHaveBeenLastCalledWith(0.5, 96, 70);
     d.resources.setDensity(0.50000000001);
@@ -296,7 +306,14 @@ describe("direct GPU preview ownership and scheduling", () => {
     expect(gpu.render).toHaveBeenLastCalledWith(
       page,
       {},
-      { scale: 4, canRender: expect.any(Function) },
+      {
+        scale: 4,
+        canRender: expect.any(Function),
+        mediaResolver: undefined,
+        motionFrame: undefined,
+        mediaMode: "preview",
+        signal: expect.any(AbortSignal),
+      },
     );
     expect(density).toHaveBeenLastCalledWith(4, 768, 560);
     d.resources.setDensity(4);
@@ -322,7 +339,14 @@ describe("direct GPU preview ownership and scheduling", () => {
     expect(gpu.render).toHaveBeenCalledWith(
       page,
       {},
-      { scale: 1, canRender: expect.any(Function) },
+      {
+        scale: 1,
+        canRender: expect.any(Function),
+        mediaResolver: undefined,
+        motionFrame: undefined,
+        mediaMode: "preview",
+        signal: expect.any(AbortSignal),
+      },
     );
     expect(d.renderer.domElement.dataset.rendererReady).toBe("true");
     expect(d.renderer.domElement.dataset.backend).toBe("webgpu");
@@ -425,11 +449,11 @@ describe("direct GPU preview ownership and scheduling", () => {
     gpu.render.mockRejectedValueOnce(new Error("device lost"));
     d.resources.submit(createPage(), {});
     await frame();
-    expect(d.error).toHaveBeenCalledWith("device lost");
+    expect(d.error).toHaveBeenCalledWith("device lost", "Error: device lost");
     vi.mocked(d.renderer.compileAsync).mockRejectedValueOnce("compile failure");
     d.resources.submit(createPage(), {});
     await frame();
-    expect(d.error).toHaveBeenCalledWith("compile failure");
+    expect(d.error).toHaveBeenCalledWith("compile failure", "compile failure");
     d.resources.submit(createPage(), {});
     await frame();
     d.resources.present();
@@ -491,7 +515,10 @@ describe("direct GPU preview ownership and scheduling", () => {
     handler(info);
     expect(nativeLoss).toHaveBeenCalledWith(info);
     expect(nativeLoss.mock.contexts[0]).toBe(d.renderer);
-    expect(d.error).toHaveBeenCalledWith("WebGPU device lost: Lost test device");
+    expect(d.error).toHaveBeenCalledWith(
+      "WebGPU device lost: Lost test device",
+      "Error: WebGPU device lost: Lost test device",
+    );
     expect(d.renderer.domElement.dataset.deviceLost).toBe("true");
     expect(d.renderer.domElement.dataset.rendererReady).toBe("false");
     d.resources.submit({ ...page, background: "#00ff00" }, {});

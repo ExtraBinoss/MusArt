@@ -211,7 +211,7 @@ describe("R3F direct WebGPU scene lifetime", () => {
     gpu.render.mockRejectedValueOnce("pipeline lost");
     const onError = vi.fn();
     render(<CompositionPlane controller={source().controller} onError={onError} />);
-    await waitFor(() => expect(onError).toHaveBeenCalledWith("pipeline lost"));
+    await waitFor(() => expect(onError).toHaveBeenCalledWith("pipeline lost", "pipeline lost"));
     cleanup();
     vi.mocked(Canvas).mockImplementation(() => {
       throw new Error("device lost");

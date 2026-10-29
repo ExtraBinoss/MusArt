@@ -60,7 +60,8 @@ export const messages = {
     cancel: "Cancel export",
     recordFailed: "Recording is unavailable for this engine.",
     exportFailed: "The video could not be exported.",
-    invalidOptions: "Choose 0.1–120 seconds, 1–60 fps, and a resolution scale from 0.1 to 4.",
+    invalidOptions: "Choose 1–30 seconds, 1–60 fps, and a resolution scale from 0.1 to 4.",
+    emptyHistory: "Make a few edits first to replay your creation.",
     missingPage: "The selected page is absent from this recording.",
     noCodec:
       "This browser cannot encode the selected format at this resolution. Try WebM or a lower resolution.",
@@ -130,7 +131,8 @@ export const messages = {
     cancel: "Annuler l’export",
     recordFailed: "L’enregistrement est indisponible avec ce moteur.",
     exportFailed: "Impossible d’exporter cette vidéo.",
-    invalidOptions: "Choisissez 0,1–120 secondes, 1–60 images/s et une résolution de 0,1 à 4.",
+    invalidOptions: "Choisissez 1–30 secondes, 1–60 images/s et une résolution de 0,1 à 4.",
+    emptyHistory: "Faites quelques modifications pour pouvoir rejouer votre création.",
     missingPage: "La page sélectionnée est absente de cet enregistrement.",
     noCodec:
       "Ce navigateur ne peut pas encoder ce format à cette résolution. Essayez WebM ou une résolution plus petite.",

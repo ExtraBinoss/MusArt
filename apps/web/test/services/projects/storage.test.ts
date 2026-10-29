@@ -196,7 +196,7 @@ describe("separate immutable originals and lightweight manifests", () => {
     const loaded = await db.load(project.id);
     expect(loaded).toEqual(project);
     const connection = await openDB(name);
-    expect(connection.version).toBe(6);
+    expect(connection.version).toBe(7);
     expect(await connection.count("assets")).toBe(0);
     expect((await connection.get("projects", project.id)).storageVersion).toBeUndefined();
     await db.save(loaded);
@@ -260,7 +260,11 @@ describe("separate immutable originals and lightweight manifests", () => {
       ...project,
       name: "Changed",
       assets: {
-        original: { ...project.assets.original!, dataUrl: "data:image/png;base64,updated" },
+        original: {
+          ...project.assets.original!,
+          kind: "image" as const,
+          dataUrl: "data:image/png;base64,updated",
+        },
       },
     };
     const originalPut = IDBObjectStore.prototype.put;
@@ -307,7 +311,11 @@ describe("original revision cache validation", () => {
     await second.save({
       ...project,
       assets: {
-        original: { ...project.assets.original!, dataUrl: "data:image/png;base64,second" },
+        original: {
+          ...project.assets.original!,
+          kind: "image" as const,
+          dataUrl: "data:image/png;base64,second",
+        },
       },
     });
     const final = { ...project, name: "First session commits its complete document" };

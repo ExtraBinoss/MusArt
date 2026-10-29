@@ -10,12 +10,13 @@ export function useVirtualList(
   useLayoutEffect(() => {
     const node = viewport.current;
     if (!node) return;
-    const measure = () =>
+    const measure = () => {
+      const height = node.clientHeight || 220,
+        top = node.scrollTop;
       setPosition((current) => {
-        const height = node.clientHeight || 220,
-          top = node.scrollTop;
         return current.height === height && current.top === top ? current : { height, top };
       });
+    };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(node);
@@ -28,7 +29,11 @@ export function useVirtualList(
   );
   const onScroll = useCallback((event: { currentTarget: HTMLElement }) => {
     const node = event.currentTarget;
-    setPosition({ top: node.scrollTop, height: node.clientHeight || 220 });
+    const top = node.scrollTop,
+      height = node.clientHeight || 220;
+    setPosition((current) =>
+      current.top === top && current.height === height ? current : { top, height },
+    );
   }, []);
   return {
     first,

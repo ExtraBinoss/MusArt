@@ -1,6 +1,6 @@
 .color-control .color-channels {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 14px 14px;
+  grid-template-columns: minmax(0, 1fr) 24px 24px;
   gap: 10px;
   height: 132px;
 }
@@ -25,14 +25,14 @@
 .color-control .color-channel[data-orientation="vertical"] {
   min-height: 0;
   height: 100%;
-  width: 14px;
+  width: 24px;
 }
 .color-control .color-channel [data-slot="slider-track"] {
   width: 8px;
   border-radius: 5px;
   box-shadow: inset 0 0 0 1px #0000000d;
 }
-.color-hue [data-slot="slider-track"] {
+.color-control .color-hue [data-slot="slider-track"] {
   background: linear-gradient(
     to bottom,
     #f00,
@@ -44,23 +44,13 @@
     #f00
   );
 }
-.color-alpha [data-slot="slider-track"] {
+.color-control .color-alpha [data-slot="slider-track"] {
   background:
     linear-gradient(to top, transparent, var(--color-channel-fill)),
     repeating-conic-gradient(#fff 0% 25%, #c9c9c9 0% 50%) 50% / 6px 6px;
 }
 .color-control .color-channel [data-slot="slider-range"] {
   background: transparent;
-}
-.color-control .color-channel [data-slot="slider-thumb"] {
-  width: 14px;
-  height: 7px;
-  border: 2px solid white;
-  border-radius: 3px;
-  background: transparent;
-  box-shadow:
-    0 0 0 1px #00000059,
-    0 1px 3px #00000033;
 }
 .color-control .color-eyedropper {
   height: 28px;
@@ -76,5 +66,5 @@
 }
 
 .color-control .color-channels[data-alpha="false"] {
-  grid-template-columns: minmax(0, 1fr) 14px;
+  grid-template-columns: minmax(0, 1fr) 24px;
 }

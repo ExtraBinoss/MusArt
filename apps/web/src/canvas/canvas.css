@@ -35,9 +35,8 @@
 }
 .canvas-controls {
   position: absolute;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 18px;
+  right: 18px;
   display: flex;
   align-items: center;
   gap: 2px;
@@ -73,12 +72,13 @@
   pointer-events: none;
   opacity: 0.8;
 }
-.canvas-recenter {
+.canvas-timeline-toggle {
   position: absolute;
   right: 20px;
   bottom: 24px;
   height: 40px;
-  padding-inline: 12px;
+  width: 40px;
+  padding: 0;
   border-radius: 12px;
   font-size: 11px;
   z-index: 5;
@@ -201,10 +201,11 @@
     display: none;
   }
   .canvas-controls {
-    bottom: 15px;
+    top: 12px;
+    right: 12px;
   }
-  .canvas-recenter {
-    bottom: 65px;
+  .canvas-timeline-toggle {
+    bottom: 15px;
     right: 12px;
   }
 }

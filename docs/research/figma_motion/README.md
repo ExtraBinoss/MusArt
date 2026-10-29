@@ -6,15 +6,18 @@ This directory preserves the user's request and the evidence used to plan the wo
 
 | Document                                                        | Purpose                                                                                          |
 | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| [Verbatim brief](user-brief.fr.md)                              | Every user message in the Motion discussion, unchanged, with the two supplied screenshots.       |
+| [Verbatim brief](user-brief.fr.md)                              | M1–M53 unchanged, with supplied Figma references and later MusArt defect screenshots.            |
 | [Requirements](requirements.md)                                 | Stable requirement IDs, acceptance criteria and links back to the brief.                         |
 | [Figma reference](figma-reference.md)                           | Primary Figma sources, verified interactions and screenshot observations.                        |
 | [UI and UX specification](ui-ux-spec.md)                        | The intended MusArt workflow, visual structure and interaction rules.                            |
 | [Architecture](architecture.md)                                 | Portable temporal model, evaluation, media adapters, composition, storage and export boundaries. |
 | [Performance and verification](performance-and-verification.md) | Workloads, measurement boundaries, proposed budgets and failure/cleanup checks.                  |
+| [Performance investigation](performance-follow-up.md)           | Confirmed causes, native evidence, failed budgets and outstanding acceptance work.               |
 | [Decisions and open questions](decisions-and-open-questions.md) | User choices, engineering proposals and remaining ambiguities.                                   |
 | [Build checklist](build-checklist.md)                           | Sequenced tasks, dependencies, agent ownership and required evidence.                            |
 | [Agent handoff](agent-handoff.md)                               | Delegation protocol, shared contracts and the current handoff state.                             |
+| [Implementation record](implementation-log.md)                  | Implemented submilestones, actual focused/native evidence and remaining integration gaps.        |
+| [Integration audit](integration-audit.md)                       | Source-inspected resolver, lifetime and playback-backpressure findings; no timing claims.        |
 
 ## Isolated workspace
 
@@ -43,8 +46,14 @@ Start this branch with `bun run dev -- --port 6110 --strictPort`. Use a separate
 - Export's split-button menu opens a simple Timelapse dialog with preview and a final duration of 1–30 seconds; the full creation replay is automatically retimed. This limit does not cap Motion exports.
 - Performance targets must be measured on declared workloads, devices and backends. A 16 ms target is a frame-time budget, not a guarantee for arbitrary media, layer counts or hardware.
 
-## Preparation status
+## Later UI and template clarifications
 
-The isolated worktree and 6110 server are ready. Three agents researched UX, architecture/performance and requirement completeness. The source brief preserves M1–M19, including all eight answered questions; 56 stable requirement/guardrail IDs map to acceptance criteria and the T00–T18 build plan. Research distinguishes verified Figma behavior, screenshot observations, MusArt adaptations and engineering proposals.
+M22–M41 refine the same feature. Use MusArt primary tokens, the actual Converta Liquid Glass Slider/Switch controls, a neutral resize divider, themed Tooltip/Kbd components and compact icon controls. Static/Motion moves below its artboard and stays legible when zoomed out. Panel presence uses local Jotai subscriptions and Motion; playhead/zoom/scroll/auto-follow share a clipped time viewport. An explicit end marker uses the themed red state. The two real image/video templates must be authored headlessly through the generic engine and exposed with gallery mode filters/icons.
 
-This milestone delivers research and preparation. Production Motion/video code is not implemented, and its performance/export checks have not run. Final integration contracts listed in T00 must be settled before dependent source changes. The main worktree and its 6100 server remain outside this branch's changes.
+M38/M39 report a real Play failure and request dedicated media error feedback. M40 reiterates frame determinism and no CPU readback: Mediabunny/native frame selection feeds Three.js VideoFrameTexture/effects/composition. This is not a claim that every native codec decodes on the GPU.
+
+## Implementation status
+
+The isolated worktree and 6110 server are ready. Three agents initially researched and implemented separate domains. M44 centralizes the current performance investigation in one dedicated agent, with parent coordination and the others idle. M52/M53 require restrained CPU/GPU use while continuing: short serial checks, one CPU core, low priority and no repeated heavy cohorts. The source brief preserves M1–M53, including the eight initial answered questions and subsequent interaction, audio and performance requests. Stable requirement IDs map to acceptance criteria and the build checklist. Research distinguishes verified Figma behavior, screenshot observations, MusArt adaptations and engineering proposals.
+
+Implementation is now active. The branch contains a pure temporal model, validated authoring commands, typed property/easing registries, compiled evaluation and an imperative editor transport. The bottom timeline, property authoring and native video-source work are being integrated. The simplified Timelapse dialog has a passing native GPU/encoded-video witness. See the [implementation log](implementation-log.md) for exact verification scope and remaining gaps; these do not yet constitute a completed video editor or a passing browser-performance budget. The main worktree and its 6100 server remain outside this branch's changes.

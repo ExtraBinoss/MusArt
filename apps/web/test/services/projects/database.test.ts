@@ -16,7 +16,7 @@ it("migrates v2 with independent compound-key journal stores while preserving ma
   await old.put("preferences", "preserved", "test");
   old.close();
   const db = await openStudioDatabase(name);
-  expect(db.version).toBe(6);
+  expect(db.version).toBe(7);
   expect(await db.get("preferences", "test")).toBe("preserved");
   expect([...db.objectStoreNames]).toContain("journalEvents");
   db.close();
@@ -64,7 +64,7 @@ it("upgrades v5 with one unique operation index, preserves unindexed legacy rows
     cursor = vi.spyOn(IDBObjectStore.prototype, "openCursor");
   const db = await openStudioDatabase(name);
   try {
-    expect(db.version).toBe(6);
+    expect(db.version).toBe(7);
     expect(
       read.mock.contexts.filter((store) => (store as IDBObjectStore).name === "journalEvents"),
     ).toHaveLength(0);
