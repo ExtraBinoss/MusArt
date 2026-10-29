@@ -123,10 +123,10 @@ native drag tests; the Mini controls commit synchronously and restore `none`.
 The first passing production stress run records:
 
 | Layers | Effect instances | AFTERHOURS compositions | Forward p95 | Reverse p95 | Mounted rows |
-| --- | --- | --- | --- | --- | --- |
-| 300 | 100 | 2 | 16.8 ms | 16.7 ms | 17 |
-| 1500 | 300 | 10 | 16.7 ms | 16.7 ms | 17 |
-| 10000 | 1000 | 67 | 16.8 ms | 16.7 ms | 17 |
+| ------ | ---------------- | ----------------------- | ----------- | ----------- | ------------ |
+| 300    | 100              | 2                       | 16.8 ms     | 16.7 ms     | 17           |
+| 1500   | 300              | 10                      | 16.7 ms     | 16.7 ms     | 17           |
+| 10000  | 1000             | 67                      | 16.8 ms     | 16.7 ms     | 17           |
 
 All three cases report zero delivered-burst LongTasks, GPU submissions, native
 encodings and production JavaScript pixel readbacks. The 1000 instances vary the

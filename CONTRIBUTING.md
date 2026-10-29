@@ -8,6 +8,10 @@ Use Bun 1.4.2 and Node.js 22.12 or newer. Run `bun install --frozen-lockfile`, t
 
 ## Make a change
 
+Fork the repository and create a branch for one focused change. Open a pull request against `main`, describe the user-visible result, and include the relevant verification. For substantial features, open an issue first to agree on scope.
+
+`main` is protected: contributions require a pull request, a passing `verify` check, resolved review conversations and review by `@ExtraBinoss`. The owner can bypass these rules when necessary. GitHub Pages publication is reserved to `ExtraBinoss`; contributor pull requests run validation only. Repository administrators configure these controls in GitHub, separately from the files in a pull request.
+
 - Keep document logic in the pure core, GPU work in the renderer, and platform/UI behavior in the app.
 - Organize features in focused subdirectories. Each effect owns its own folder and TSL implementation.
 - Keep code and style files at or below 600 lines. Extract cohesive behavior rather than empty wrappers.
@@ -19,8 +23,6 @@ Use Bun 1.4.2 and Node.js 22.12 or newer. Run `bun install --frozen-lockfile`, t
 The development loop is: implement the feature, run its focused code tests, and finish. Pass a test file or directory to `bun run test -- <path>`, use `bun run test:related -- <source-path>` to select dependent tests, or use `bun run test:watch -- <path>` while editing. These commands do not collect coverage. Add a focused browser check for rendering/native interactions and a benchmark for performance-sensitive work; do not run the full GPU/storage suites for unrelated changes.
 
 For focused coverage, use `bun run test:coverage:changed -- <source-paths>`. Without paths it selects staged, unstaged and untracked executable sources from Git. Only their exact mirrored tests run, only those sources are instrumented, and partial reports go to `artifacts/coverage-related/`. Use `test:coverage:related` to include dependent consumers as well; shared barrel imports can make that selection broad. The full `coverage/` report and CI thresholds remain unchanged. Pure core tests use a shared Node worker; DOM tests use isolated VM contexts, while native storage and external animation-clock integration tests retain fresh Node realms.
-
-On the October 29 workstation, focused coverage of `use-row-slots.ts` passes three tests with 100% coverage in 1.79 seconds. The complete non-coverage suite passes 2,024 tests across 569 files in 300.75 seconds with one worker and a 200% CPU cap. These are different workloads; the focused result is not a claimed speedup for full coverage. Raw logs remain under `artifacts/layer-scroll-2026-10-29/`.
 
 Run relevant static checks and `bun run check:rules` before committing. After a fix, rerun affected checks rather than starting the complete gate again. `bun run check` remains the complete CI/release gate, including repository-wide coverage and browser scenarios. Reports, captures, dependencies, builds, local projects, and secrets do not belong in commits.
 
@@ -34,7 +36,7 @@ A review should explain the concrete behavior, why it changed, what was tested, 
 
 ## Prepare a release
 
-The root and every workspace share one Semantic Versioning release number. `bun run version:check` detects mismatches and runs as part of the quality gate. After validation, run `bun run release -- patch`, `minor`, `major`, or an explicit `X.Y.Z` to synchronize the manifests and move `Unreleased` notes into a dated release. The first release may use the current version, for example `bun run release -- 0.1.0`.
+The root and every workspace share one Semantic Versioning release number. `bun run version:check` detects mismatches and runs as part of the quality gate. After validation, run `bun run release -- patch`, `minor`, `major`, or an explicit `X.Y.Z` to synchronize the manifests and move `Unreleased` notes into a dated release.
 
 The script requires release notes and refuses invalid versions, downgrades and duplicate releases. Review the generated diff, run `bun install` if versions changed, verify the frozen installation and quality gate, then commit the notes, manifests and any lockfile change together. This command prepares local files; it does not create a Git tag, publish packages or push commits.
 
@@ -42,4 +44,6 @@ The script requires release notes and refuses invalid versions, downgrades and d
 
 Include a minimal reproduction, expected and observed behavior, browser version, rendering backend, and relevant console errors. A synthetic `.musart` project is preferable to private artwork. For performance issues, state the image/layer count and whether the delay occurs during import, the first effect compilation, an interaction, saving, or export.
 
-Third-party assets and code must retain their provenance and compatible license notices. Do not add application screenshots or branding to the README until project artwork is supplied by the maintainer.
+Report security vulnerabilities privately using [the security policy](SECURITY.md). Keep private artwork, credentials and personal data out of public issues and pull requests.
+
+Third-party assets and code must retain their provenance and compatible license notices. Use the supplied MusArt branding without recoloring it.

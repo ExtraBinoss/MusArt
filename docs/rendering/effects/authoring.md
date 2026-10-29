@@ -11,3 +11,13 @@ An optional radial gizmo describes normalized center keys, an outer radius, an o
 Effects with a top-level `time` parameter receive explicit live playback controls. Playback publishes at most thirty phase previews per second through the existing imperative preview adapter. It creates no per-frame App, Inspector or canvas React state. Pause commits the most recently requested phase once; Escape cancels. Outside input, hiding the tab and window blur stop playback. Unmount releases listeners and the pending RAF and cancels an unfinished preview. Export opening and native image/project export freeze active phases for that engine before capturing the canonical project. Other editor instances are isolated.
 
 The live control does not invent simulation history. A shader with explicit phase can be deterministic and animated; a static photographic approximation such as compression-style Datamosh is documented as such. GPU output, resource bounds, actual decoded exports and real input gestures must be verified separately from graph topology tests.
+
+## Delivery checklist
+
+1. Record primary visual and algorithm references, the intended appearance and deliberate limitations in the effect's own documentation.
+2. Define bounded metadata, strict imported-setting validation and stable GPU uniforms in the appropriate core/render directories.
+3. Register creation, search, menus, English/French controls and serialization through the shared catalogs.
+4. Verify real photographs and calibration scenes on both WebGPU and Three's WebGL2 backend. Inspect decoded exports for alpha, color space, masks, nested groups, deterministic seeds/time and extreme settings.
+5. Check preview/export agreement across zoom levels. For spatial or animated effects, verify native gestures, cancellation, one-entry undo/redo, phase capture and cleanup.
+6. Measure resource bounds and instrument production pixel-read APIs. Keep generated captures and reports in ignored `artifacts/`, with the measured build and environment identified.
+7. Run the focused checks required by [AGENTS.md](../../../AGENTS.md), document actual results and request an independent audit when the task requires one. Release-wide gates belong to release preparation.

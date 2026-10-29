@@ -8,10 +8,9 @@ pass. Earlier measurements retain their original build attribution.
 
 ## Review the effects
 
-The [implementation and acceptance checklist](../effects-expansion-checklist.json)
-records each effect's primary visual/algorithm references and evidence paths.
-Each linked note explains its controls, native photograph/calibration witnesses,
-alpha behavior and visual inspection.
+Each linked note records its primary visual/algorithm references, controls,
+native photograph/calibration witnesses, alpha behavior and visual inspection.
+Use the [authoring checklist](authoring.md#delivery-checklist) when adding an effect.
 
 | Effect         | Reference and verification notes      | Deliberate procedural limit                                                                                           |
 | -------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
