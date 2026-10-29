@@ -1,13 +1,26 @@
 import type { Composition } from "../document/model";
 import { assertList, assertRecord, assertUniqueId } from "../document/guards";
 import { ensure } from "../errors";
-import { compareMotionTime, validateMotionTime, validateMotionFrameRate } from "./time";
+import {
+  addMotionTime,
+  subtractMotionTime,
+  compareMotionTime,
+  validateMotionTime,
+  validateMotionFrameRate,
+  type MotionTime,
+} from "./time";
+import type { Asset } from "../assets/model";
+import { isVideoAsset } from "../assets/identity";
 import { validateMotionEasing } from "./easing";
 import { resolveMotionProperty, validateMotionValue } from "./properties/registry";
 import type { MotionPropertyTarget } from "./properties/model";
 
 /** Called after the canonical layer graph is validated. Portable data stays inert. */
-export function validateCompositionMotion(page: Composition, ids: Set<string>): void {
+export function validateCompositionMotion(
+  page: Composition,
+  ids: Set<string>,
+  assets?: Readonly<Record<string, Asset>>,
+): void {
   const motion: unknown = page.motion;
   if (motion === undefined) return;
   assertRecord(motion);
@@ -40,6 +53,24 @@ export function validateCompositionMotion(page: Composition, ids: Set<string>): 
     );
     tracked.add(track.layerId);
     validateMotionTime(track.start);
+    let sourceIn: MotionTime = { value: 0, rate: 1 };
+    if (track.media !== undefined) {
+      const layer = page.layers.find((item) => item.id === track.layerId);
+      ensure(layer?.kind === "video", "INVALID_DOCUMENT", "Media settings require a video track");
+      assertRecord(track.media);
+      validateMotionTime(track.media.sourceIn);
+      sourceIn = track.media.sourceIn;
+      ensure(
+        track.media.sourceIn.value >= 0 &&
+          typeof track.media.mute === "boolean" &&
+          typeof track.media.volume === "number" &&
+          Number.isFinite(track.media.volume) &&
+          track.media.volume >= 0 &&
+          track.media.volume <= 2,
+        "INVALID_DOCUMENT",
+        "Invalid video source/audio settings",
+      );
+    }
     if (track.end !== null) {
       validateMotionTime(track.end);
       ensure(
@@ -47,6 +78,25 @@ export function validateCompositionMotion(page: Composition, ids: Set<string>): 
         "INVALID_DOCUMENT",
         "Invalid Motion interval",
       );
+    }
+    const boundLayer = page.layers.find((item) => item.id === track.layerId);
+    const asset = boundLayer?.assetId ? assets?.[boundLayer.assetId] : undefined;
+    if (asset && isVideoAsset(asset)) {
+      ensure(
+        compareMotionTime(sourceIn, asset.duration) < 0,
+        "INVALID_DOCUMENT",
+        "Video source in-point is outside its original",
+      );
+      const end = track.end ?? motion.duration;
+      if (compareMotionTime(end, track.start) > 0)
+        ensure(
+          compareMotionTime(
+            addMotionTime(sourceIn, subtractMotionTime(end, track.start)),
+            asset.duration,
+          ) <= 0,
+          "INVALID_DOCUMENT",
+          "Video trim exceeds the original source range",
+        );
     }
     assertList(track.properties, 1024);
     const addresses = new Set<string>();

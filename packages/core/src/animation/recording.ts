@@ -1,3 +1,4 @@
+import { sameAssetOriginal } from "../assets/identity";
 import { freezeValue } from "../document/immutable";
 import type { Asset, EnginePort } from "../document/model";
 import type {
@@ -45,7 +46,7 @@ export function observeReplay(engine: EnginePort, options: ReplayObserveOptions)
         try {
           const addedAssets: Record<string, Asset> = Object.fromEntries(
             Object.entries(snapshot.project.assets).filter(
-              ([id, asset]) => beforeAssets[id]?.dataUrl !== asset.dataUrl,
+              ([id, asset]) => !sameAssetOriginal(beforeAssets[id], asset),
             ),
           );
           const commands = summary

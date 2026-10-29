@@ -1,4 +1,13 @@
+export { validateAssetDescription } from "./assets/validation";
 export { FORMAT_VERSION } from "./document/model";
+export type { PreparedEngineTransaction } from "./session/reservation";
+export type { ImageAsset, VideoAsset } from "./assets/model";
+export {
+  isImageAsset,
+  isVideoAsset,
+  assetOriginalIdentity,
+  sameAssetOriginal,
+} from "./assets/identity";
 export type {
   Asset,
   Command,
@@ -165,7 +174,11 @@ export { applyMotionValue, applyMotionValues } from "./motion/properties/apply";
 export { compileMotion } from "./motion/compile";
 export type { MotionProgram } from "./motion/compile";
 export { evaluateMotion } from "./motion/evaluate";
-export type { MotionFramePlan, MotionEvaluationOptions } from "./motion/evaluate";
+export type {
+  MotionFramePlan,
+  MotionFrameMediaRequest,
+  MotionEvaluationOptions,
+} from "./motion/evaluate";
 export { applyMotionFrame } from "./motion/frame";
 export { validateMotionTime } from "./motion/time";
 export { createLayerGeometryIndex, LayerGeometryIndex } from "./layers/geometry-index";

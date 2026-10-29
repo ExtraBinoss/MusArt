@@ -1,6 +1,8 @@
 import type { MotionProgram, CompiledMotionProperty, CompiledMotionLayer } from "./compile";
 import type { MotionPropertyTarget, MotionValue } from "./properties/model";
 import {
+  addMotionTime,
+  subtractMotionTime,
   compareMotionTime,
   motionTimeProgress,
   normalizeMotionTime,
@@ -12,6 +14,15 @@ export interface MotionFrameValue {
   readonly value: MotionValue;
 }
 
+export interface MotionFrameMediaRequest {
+  readonly layerId: string;
+  readonly assetId: string;
+  /** Explicit source presentation time; firstTimestamp is added exactly once at compilation. */
+  readonly sourceTime: MotionTime;
+  readonly mute: boolean;
+  readonly volume: number;
+}
+
 export interface MotionFramePlan {
   readonly compositionId: string;
   readonly mode: "static" | "motion";
@@ -21,6 +32,7 @@ export interface MotionFramePlan {
   readonly values: readonly MotionFrameValue[];
   /** Temporal presence only. Ordinary visibility and mask-source paint rules remain in the renderer. */
   readonly activeLayerIds: readonly string[];
+  readonly mediaRequests: readonly MotionFrameMediaRequest[];
 }
 
 export interface MotionEvaluationOptions {
@@ -71,9 +83,28 @@ export function evaluateMotion(
     compareMotionTime(sampledTime, program.duration) === 0;
   const values: MotionFrameValue[] = [];
   const activeLayerIds: string[] = [];
+  const mediaRequests: MotionFrameMediaRequest[] = [];
   for (const layer of program.layers) {
-    if (program.mode === "static" || activeAt(layer, sampledTime, terminalPreview))
+    if (program.mode === "static" || activeAt(layer, sampledTime, terminalPreview)) {
       activeLayerIds.push(layer.id);
+      if (layer.media)
+        mediaRequests.push(
+          Object.freeze({
+            layerId: layer.id,
+            assetId: layer.media.assetId,
+            sourceTime: Object.freeze(
+              program.mode === "motion"
+                ? addMotionTime(
+                    layer.media.sourceStart,
+                    subtractMotionTime(sampledTime, layer.media.timelineStart),
+                  )
+                : layer.media.sourceStart,
+            ),
+            mute: layer.media.mute,
+            volume: layer.media.volume,
+          }),
+        );
+    }
     for (const property of layer.properties)
       values.push(
         Object.freeze({ target: property.target, value: propertyValue(property, sampledTime) }),
@@ -86,6 +117,7 @@ export function evaluateMotion(
     terminalPreview,
     values: Object.freeze(values),
     activeLayerIds: Object.freeze(activeLayerIds),
+    mediaRequests: Object.freeze(mediaRequests),
   });
   issuedPlans.set(plan, program);
   return plan;

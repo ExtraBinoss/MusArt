@@ -4,7 +4,7 @@ import type { CompositionMotion, MotionPropertyTrack } from "./model";
 import type { Composition } from "../document/model";
 import type { MotionPropertyTarget } from "./properties/model";
 import { resolveMotionProperty, validateMotionValue } from "./properties/registry";
-import { compareMotionTime, validateMotionTime } from "./time";
+import { addMotionTime, subtractMotionTime, compareMotionTime, validateMotionTime } from "./time";
 import { createMotionLayerTrack } from "./initialization";
 import { assertEditable, getLayer } from "../layers/access";
 
@@ -36,7 +36,7 @@ function findKey(page: Composition, id: string): { property: MotionPropertyTrack
 }
 
 export const setCompositionMode: CommandHandler<"setCompositionMode"> = (
-  { page, pageId, revision, nextId },
+  { project, page, pageId, revision, nextId },
   command,
 ) => {
   ensure(
@@ -74,7 +74,13 @@ export const setCompositionMode: CommandHandler<"setCompositionMode"> = (
     mode: "motion",
     duration: command.plan?.duration ?? { value: 2, rate: 1 },
     frameRate: command.plan?.frameRate ?? { numerator: 30, denominator: 1 },
-    tracks: page.layers.map((layer) => createMotionLayerTrack(layer.id, nextId)),
+    tracks: page.layers.map((layer) =>
+      createMotionLayerTrack(
+        layer.id,
+        nextId,
+        layer.assetId ? project.assets[layer.assetId] : undefined,
+      ),
+    ),
   };
   return { pageId };
 };
@@ -96,9 +102,39 @@ export const setMotionTrackRange: CommandHandler<"setMotionTrackRange"> = (
 ) => {
   const track = editableMotion(page).tracks.find((item) => item.id === command.trackId);
   ensure(track, "NOT_FOUND", "Track not found");
-  assertEditable(page, getLayer(page, track.layerId));
+  const layer = getLayer(page, track.layerId);
+  assertEditable(page, layer);
+  // Trimming preserves the source frame at every remaining composition time. Placement has
+  // its own command and deliberately keeps the source in-point while shifting animation.
+  if (layer.kind === "video" && compareMotionTime(command.start, track.start) !== 0) {
+    track.media = {
+      mute: false,
+      volume: 1,
+      ...track.media,
+      sourceIn: addMotionTime(
+        track.media?.sourceIn ?? { value: 0, rate: 1 },
+        subtractMotionTime(command.start, track.start),
+      ),
+    };
+  }
   track.start = command.start;
   track.end = command.end;
+  return { pageId };
+};
+
+export const setMotionMedia: CommandHandler<"setMotionMedia"> = ({ page, pageId }, command) => {
+  const track = editableMotion(page).tracks.find((item) => item.id === command.trackId);
+  ensure(track, "NOT_FOUND", "Track not found");
+  const layer = getLayer(page, track.layerId);
+  assertEditable(page, layer);
+  ensure(layer.kind === "video", "INVALID_COMMAND", "Media settings require a video layer");
+  track.media = {
+    sourceIn: { value: 0, rate: 1 },
+    mute: false,
+    volume: 1,
+    ...track.media,
+    ...command.patch,
+  };
   return { pageId };
 };
 

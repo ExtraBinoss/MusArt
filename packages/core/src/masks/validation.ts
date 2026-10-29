@@ -8,6 +8,11 @@ export function validateMaskSource(mask: unknown, assets: Record<string, unknown
   if (asset) {
     assertText(mask.assetId);
     ensure(Object.hasOwn(assets, mask.assetId), "INVALID_DOCUMENT", "Mask asset is missing");
+    ensure(
+      (assets[mask.assetId] as { kind?: unknown })?.kind !== "video",
+      "INVALID_DOCUMENT",
+      "A timed video mask must reference its video layer",
+    );
   }
   if (layer) assertText(mask.layerId);
   if (mask.mode !== undefined)

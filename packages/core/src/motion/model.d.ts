@@ -24,6 +24,8 @@ export interface MotionLayerTrack {
   /** null follows the composition end; an explicit trim remains fixed. */
   end: MotionTime | null;
   properties: MotionPropertyTrack[];
+  /** Source in-point is relative to the video's first PTS; audio shares this same placement. */
+  media?: { sourceIn: MotionTime; mute: boolean; volume: number };
 }
 
 export interface CompositionMotion {
@@ -54,6 +56,11 @@ export type MotionCommand =
     }
   | { type: "setMotionDuration"; duration: MotionTime }
   | { type: "setMotionTrackRange"; trackId: string; start: MotionTime; end: MotionTime | null }
+  | {
+      type: "setMotionMedia";
+      trackId: string;
+      patch: Partial<NonNullable<MotionLayerTrack["media"]>>;
+    }
   | {
       type: "upsertMotionKeyframe";
       target: MotionPropertyTarget;

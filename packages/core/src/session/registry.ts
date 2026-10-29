@@ -43,6 +43,7 @@ export const COMMAND_HANDLERS: CommandHandlers = Object.freeze({
   setCompositionMode: motion.setCompositionMode,
   setMotionDuration: motion.setMotionDuration,
   setMotionTrackRange: motion.setMotionTrackRange,
+  setMotionMedia: motion.setMotionMedia,
   upsertMotionKeyframe: motion.upsertMotionKeyframe,
   moveMotionKeyframe: motion.moveMotionKeyframe,
   deleteMotionKeyframe: motion.deleteMotionKeyframe,

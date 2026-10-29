@@ -36,7 +36,7 @@ export function applyCommand(
     structural && page.motion ? new Set(page.layers.map((layer) => layer.id)) : undefined;
   const result = handler({ project, pageId, page, nextId, revision }, command);
   // Reconcile only structural operations; parameter previews retain their shallow draft path.
-  if (previousLayerIds) reconcileMotionLayers(page, nextId, previousLayerIds);
+  if (previousLayerIds) reconcileMotionLayers(page, nextId, previousLayerIds, project.assets);
   if (page.motion && (command.type === "updateLayers" || command.type === "updateLayerPatches"))
     pruneMotionProperties(page);
   return result;

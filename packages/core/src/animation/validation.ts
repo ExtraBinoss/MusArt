@@ -1,3 +1,4 @@
+import { sameAssetOriginal } from "../assets/identity";
 import { ensure } from "../errors";
 import { assertList, assertNumber, assertRecord, assertText } from "../document/guards";
 import { validateProject } from "../document/validation";
@@ -78,7 +79,7 @@ export function validateReplaySpec(value: unknown): asserts value is ReplaySpec 
     const existing = pool[id];
     ensure(
       !existing ||
-        (existing.dataUrl === asset.dataUrl &&
+        (sameAssetOriginal(existing, asset as unknown as Asset) &&
           existing.mime === asset.mime &&
           existing.width === asset.width &&
           existing.height === asset.height),

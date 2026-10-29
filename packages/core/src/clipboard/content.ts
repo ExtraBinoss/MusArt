@@ -1,3 +1,4 @@
+import { assetOriginalIdentity, isVideoAsset } from "../assets/identity";
 import type { Asset, Project, SessionSnapshot } from "../document/model";
 import { createProject } from "../document/factories";
 import { validateProject } from "../document/validation";
@@ -61,10 +62,10 @@ export function copyContent(
     references:
       options.includeImages === false
         ? Object.fromEntries(
-            Object.entries(assets).map(([id, { dataUrl, ...asset }]) => [
-              id,
-              { ...asset, fingerprint: fingerprint(dataUrl) },
-            ]),
+            Object.entries(assets).map(([id, original]) => {
+              const { dataUrl: _dataUrl, ...asset } = original;
+              return [id, { ...asset, fingerprint: fingerprint(assetOriginalIdentity(original)) }];
+            }),
           )
         : {},
   };
@@ -107,7 +108,7 @@ export function parseClipboard(text: string, destination: Project): ClipboardCon
       metadata.mime !== original.mime ||
       metadata.width !== original.width ||
       metadata.height !== original.height ||
-      metadata.fingerprint !== fingerprint(original.dataUrl) ||
+      metadata.fingerprint !== fingerprint(assetOriginalIdentity(original)) ||
       Object.hasOwn(assets, id)
     )
       throw new Error("Clipboard originals are missing. Copy again with images included.");
@@ -118,6 +119,8 @@ export function parseClipboard(text: string, destination: Project): ClipboardCon
       writable: true,
     });
   }
+  if (value.sourceProjectId !== destination.id && Object.values(assets).some(isVideoAsset))
+    throw Error("Video clipboard references require a binary media transfer between projects.");
   const document = { ...value.document, assets };
   validateProject(document);
   if (

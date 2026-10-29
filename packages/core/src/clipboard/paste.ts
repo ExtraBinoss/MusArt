@@ -1,3 +1,4 @@
+import { sameAssetOriginal } from "../assets/identity";
 import type { Asset, Command, Composition, Project } from "../document/model";
 import type { Point } from "../layers/geometry";
 import type { ClipboardContent } from "./model";
@@ -48,7 +49,7 @@ export function pasteContent(
       candidate.mime === asset.mime &&
       candidate.width === asset.width &&
       candidate.height === asset.height &&
-      candidate.dataUrl === asset.dataUrl
+      sameAssetOriginal(candidate, asset)
         ? candidate
         : undefined;
     const identity = existing?.id ?? allocate();

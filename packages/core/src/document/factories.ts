@@ -77,6 +77,7 @@ export function createLayer(kind: LayerKind, patch: Partial<Layer> = {}): Layer 
     ellipse: "Ellipse",
     text: "Texte",
     image: "Image",
+    video: "Video",
     vector: "Vector",
     group: "Groupe",
   };

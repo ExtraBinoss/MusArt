@@ -3,6 +3,9 @@ import { EditorEngine } from "../../src/session/engine";
 import { createLayer, createPage, createProject } from "../../src/document/factories";
 import { planMotionInitialization } from "../../src/motion/initialization";
 import { parseProject, serializeProject } from "../../src/document/serialization";
+import { compileMotion } from "../../src/motion/compile";
+import { evaluateMotion } from "../../src/motion/evaluate";
+import { video } from "../assets/fixtures";
 
 const time = (value: number, rate = 1) => ({ value, rate });
 function setup(count = 1) {
@@ -215,4 +218,119 @@ describe("Motion authoring transactions", () => {
     expect(page().motion!.duration).toEqual(time(2));
     expect(engine.getSnapshot().project.pages[1]!.motion!.duration).toEqual(time(90));
   });
+});
+
+it("authors video source trims/audio with validated commands and preserves them through Static toggles", () => {
+  const asset = video(),
+    layer = createLayer("video", { id: "clip", assetId: asset.id });
+  const engine = new EditorEngine(
+    createProject({ assets: { [asset.id]: asset }, pages: [createPage({ layers: [layer] })] }),
+  );
+  engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const track = engine.getSnapshot().project.pages[0]!.motion!.tracks[0]!;
+  expect(track.end).toEqual(asset.duration);
+  expect(track.media).toEqual({ sourceIn: time(0), mute: false, volume: 1 });
+  engine.transaction([
+    { type: "setMotionTrackRange", trackId: track.id, start: time(1), end: time(4) },
+    {
+      type: "setMotionMedia",
+      trackId: track.id,
+      patch: { sourceIn: time(2), mute: true, volume: 0.5 },
+    },
+  ]);
+  const authored = engine.getSnapshot().project.pages[0]!.motion!.tracks[0]!;
+  engine.execute({ type: "setCompositionMode", mode: "static" });
+  engine.execute({ type: "setCompositionMode", mode: "motion" });
+  expect(engine.getSnapshot().project.pages[0]!.motion!.tracks[0]).toEqual(authored);
+  for (const patch of [{ volume: -1 }, { volume: Infinity }, { sourceIn: time(3) }]) {
+    const before = engine.getSnapshot();
+    expect(() => engine.execute({ type: "setMotionMedia", trackId: track.id, patch })).toThrow();
+    expect(engine.getSnapshot()).toBe(before);
+  }
+});
+
+it("trims a video without changing the source PTS or property keys at remaining times", () => {
+  const asset = video(),
+    layer = createLayer("video", { id: "clip", assetId: asset.id });
+  const engine = new EditorEngine(
+    createProject({
+      assets: { [asset.id]: asset },
+      pages: [createPage({ id: "page", layers: [layer] })],
+    }),
+  );
+  engine.execute({ type: "setCompositionMode", mode: "motion" });
+  engine.execute({
+    type: "upsertMotionKeyframe",
+    target: { kind: "layer", layerId: layer.id, property: "x" },
+    time: time(1),
+    value: 10,
+  });
+  const before = engine.getSnapshot();
+  const track = before.project.pages[0]!.motion!.tracks[0]!;
+  const sourceAt = (value: number, rate: number) =>
+    evaluateMotion(
+      compileMotion(engine.getSnapshot().project, { compositionId: "page" }),
+      time(value, rate),
+    ).mediaRequests[0]!.sourceTime;
+  const source = sourceAt(3, 4);
+  expect(source).toEqual(time(1, 4));
+  engine.transaction([
+    { type: "setMotionTrackRange", trackId: track.id, start: time(1, 2), end: track.end },
+  ]);
+  const trimmed = engine.getSnapshot().project.pages[0]!.motion!.tracks[0]!;
+  expect(trimmed.media).toEqual({ sourceIn: time(1, 2), mute: false, volume: 1 });
+  expect(trimmed.properties).toEqual(track.properties);
+  expect(sourceAt(3, 4)).toEqual(source);
+  engine.undo();
+  expect(engine.getSnapshot().project).toEqual(before.project);
+  engine.redo();
+  expect(sourceAt(3, 4)).toEqual(source);
+  engine.execute({ type: "moveMotionTrack", trackId: track.id, delta: time(1) });
+  const moved = engine.getSnapshot().project.pages[0]!.motion!.tracks[0]!;
+  expect(moved.media).toEqual(trimmed.media);
+  expect(moved.properties[0]!.keyframes[0]!.time).toEqual(time(2));
+  expect(sourceAt(7, 4)).toEqual(source);
+});
+
+it("extends a video trim only within its source and keeps group trimming independent", () => {
+  const asset = video(),
+    group = createLayer("group", { id: "group" });
+  const layer = createLayer("video", { id: "clip", parentId: group.id, assetId: asset.id });
+  const engine = new EditorEngine(
+    createProject({
+      assets: { [asset.id]: asset },
+      pages: [createPage({ layers: [group, layer] })],
+    }),
+  );
+  engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const tracks = () => engine.getSnapshot().project.pages[0]!.motion!.tracks;
+  const clip = tracks().find((track) => track.layerId === layer.id)!,
+    parent = tracks().find((track) => track.layerId === group.id)!;
+  engine.execute({ type: "setMotionTrackRange", trackId: clip.id, start: time(1), end: clip.end });
+  engine.execute({
+    type: "setMotionTrackRange",
+    trackId: clip.id,
+    start: time(1, 2),
+    end: clip.end,
+  });
+  expect(tracks().find((track) => track.id === clip.id)!.media!.sourceIn).toEqual(time(1, 2));
+  const before = engine.getSnapshot();
+  expect(() =>
+    engine.execute({
+      type: "setMotionTrackRange",
+      trackId: clip.id,
+      start: time(-1, 2),
+      end: clip.end,
+    }),
+  ).toThrow();
+  expect(engine.getSnapshot()).toBe(before);
+  engine.execute({
+    type: "setMotionTrackRange",
+    trackId: parent.id,
+    start: time(3, 2),
+    end: time(2),
+  });
+  expect(tracks().find((track) => track.id === clip.id)).toEqual(
+    before.project.pages[0]!.motion!.tracks.find((track) => track.id === clip.id),
+  );
 });

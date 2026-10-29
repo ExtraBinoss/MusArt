@@ -6,6 +6,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Added
 
+- Added pure TypeScript video asset descriptions, source in-points and per-track audio settings to Motion frame plans. Prepared engine transactions validate before persistence, reject stale publication and publish one undoable change only after a successful commit.
 - Added the renderer-free Motion foundation: independent per-composition timelines, one-time counted initialization, reversible Static/base editing, exact rational time, validated key/track commands, typed properties derived from the effect catalog, deterministic easing and compiled arbitrary-time evaluation. Immutable frame materialization shares the same semantics for interactive and headless adapters; unsupported animated hierarchy rewrites fail explicitly rather than discard motion.
 - Added headless `evaluate` reports with exact decimal or tick/rate times, plus artboard selection for command application. Creation, authoring and evaluation run without a browser; media rendering and encoding remain separate platform adapters.
 
@@ -29,6 +30,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
+- Video start trims now advance the source in-point atomically, preserving the source frame at every remaining composition time. Moving a clip retains its source in-point; group trims and property key times remain independent, with invalid source extensions rejected and undo/redo preserved.
 - Browser-test discovery declares the JSON import type explicitly, allowing Node.js 24 to load effect labels during CI.
 - Popover entrances temporarily defer optional thumbnail work through their actual CSS animation start, with bounded window-scoped leases and explicit cleanup. Property selectors avoid redundant Radix value registration, and closed effect menus defer catalogue construction. Native headless checks cover 150-layer Lock/Receipt interactions; no verified lock-latency improvement is claimed.
 - Virtual layer rows reuse bounded presentation slots and closed attachment popovers. Rebinding rejects old visibility/open callbacks, cancels renamed-owner drafts, closes old editors and preserves focus on retained rows; native drags keep canonical DOM order and never reuse a retired drag key.

@@ -467,3 +467,74 @@ describe("immutable document session", () => {
     expect(engine.getSnapshot().project.name).toBe("Still valid");
   });
 });
+
+describe("prepared durable transactions", () => {
+  it("publishes only after commit, locks mutations and retains a single undo boundary", () => {
+    const layer = createLayer("rectangle", { id: "prepared-layer" });
+    const engine = new EditorEngine(createProject({ pages: [createPage({ layers: [layer] })] }));
+    const before = engine.getSnapshot(),
+      events = vi.fn();
+    engine.subscribeCommands(events);
+    const pending = engine.reserveTransaction([{ type: "renameProject", name: "Durable" }]);
+    expect(engine.getSnapshot()).toBe(before);
+    expect(events).not.toHaveBeenCalled();
+    expect(pending.project.name).toBe("Durable");
+    for (const mutate of [
+      () => engine.execute({ type: "renameProject", name: "Concurrent" }),
+      () => engine.undo(),
+      () => engine.redo(),
+      () => engine.load(createProject()),
+      () => engine.setPage(before.pageId),
+    ])
+      expect(mutate).toThrow("busy");
+    engine.select([layer.id]);
+    pending.commit();
+    expect(engine.getSnapshot().selection).toEqual([layer.id]);
+    expect(events).toHaveBeenCalledTimes(1);
+    expect(() => pending.commit()).toThrow("no longer active");
+    engine.undo();
+    expect(engine.getSnapshot().project).toBe(before.project);
+    expect(engine.getSnapshot().selection).toEqual([layer.id]);
+    engine.redo();
+    expect(engine.getSnapshot().project.name).toBe("Durable");
+  });
+  it("cancels without publication or consuming generated IDs and rejects stale deferred preparations", () => {
+    const project = createProject({
+      pages: [createPage({ layers: [createLayer("rectangle", { id: "item" })] })],
+    });
+    const engine = new EditorEngine(project),
+      control = new EditorEngine(project);
+    const command = { type: "setCompositionMode", mode: "motion" } as const;
+    const first = engine.reserveTransaction([command]);
+    const candidate = first.project.pages[0]!.motion;
+    first.cancel();
+    first.cancel();
+    expect(engine.getSnapshot().canUndo).toBe(false);
+    engine.execute(command);
+    control.execute(command);
+    expect(engine.getSnapshot().project.pages[0]!.motion).toEqual(candidate);
+    expect(engine.getSnapshot().project).toEqual(control.getSnapshot().project);
+    const stale = engine.reserveTransaction([{ type: "renameProject", name: "Stale" }], {
+      deferLock: true,
+    });
+    engine.execute({ type: "renameProject", name: "Current" });
+    expect(() => stale.lock()).toThrow("stale");
+    stale.cancel();
+    expect(engine.getSnapshot().project.name).toBe("Current");
+  });
+  it("releases before notifying reentrant subscribers and never locks failed validation", () => {
+    const engine = new EditorEngine();
+    expect(() => engine.reserveTransaction([{ type: "renameProject", name: "" }])).toThrow();
+    const unsubscribe = engine.subscribe(() => {
+      if (engine.getSnapshot().project.name === "First")
+        engine.execute({ type: "renameProject", name: "Second" });
+    });
+    engine.reserveTransaction([{ type: "renameProject", name: "First" }]).commit();
+    expect(engine.getSnapshot().project.name).toBe("Second");
+    const empty = engine.reserveTransaction([]);
+    empty.commit();
+    unsubscribe();
+    engine.undo();
+    expect(engine.getSnapshot().project.name).toBe("First");
+  });
+});

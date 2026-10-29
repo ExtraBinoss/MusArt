@@ -20,8 +20,10 @@ import { validateFillGradient } from "../paint/gradient";
 import { validateEffectExtensions } from "../effects/validation";
 import { validateCompositionMotion } from "../motion/validation";
 import type { Composition } from "./model";
+import { validateAssetDescription } from "../assets/validation";
+import type { Asset } from "../assets/model";
 
-const kinds = ["rectangle", "ellipse", "text", "image", "group", "vector"];
+const kinds = ["rectangle", "ellipse", "text", "image", "video", "group", "vector"];
 const effectTypes = Object.keys(EFFECT_CATALOG);
 
 function validateEffect(value: unknown, ids: Set<string>): void {
@@ -102,8 +104,15 @@ function validateLayer(value: unknown, ids: Set<string>, assets: Record<string, 
     "INVALID_DOCUMENT",
     "Ressource manquante",
   );
-  if (value.kind === "image")
+  if (value.kind === "image" || value.kind === "video") {
     ensure(value.assetId !== null, "INVALID_DOCUMENT", "Image sans ressource");
+    const asset = assets[value.assetId as string] as { kind?: unknown };
+    ensure(
+      (asset.kind === "video") === (value.kind === "video"),
+      "INVALID_DOCUMENT",
+      "Layer and original media kinds do not match",
+    );
+  }
   if (value.mask !== null) validateMaskSource(value.mask, assets);
   if (value.maskSource !== undefined) assertBoolean(value.maskSource);
   if (value.kind === "vector") validateVector(value.vector);
@@ -167,21 +176,7 @@ export function validateProject(value: unknown): asserts value is Project {
     assertRecord(asset);
     assertUniqueId(asset.id, ids);
     ensure(key === asset.id, "INVALID_DOCUMENT", "Clé de ressource incohérente");
-    assertText(asset.name);
-    assertText(asset.mime, 128);
-    ensure(
-      /^image\/(png|jpeg|webp|gif|svg\+xml|avif)$/.test(asset.mime),
-      "INVALID_DOCUMENT",
-      "Format de ressource non pris en charge",
-    );
-    assertNumber(asset.width, 1, 32768);
-    assertNumber(asset.height, 1, 32768);
-    assertText(asset.dataUrl, 200_000_000);
-    ensure(
-      /^data:image\/(?:png|jpeg|webp|gif|svg\+xml|avif)(?:;[^,]*)?,/.test(asset.dataUrl),
-      "INVALID_DOCUMENT",
-      "Ressource non intégrée",
-    );
+    validateAssetDescription(asset);
   }
   assertList(value.pages, 100);
   ensure(value.pages.length > 0, "INVALID_DOCUMENT", "Un projet doit contenir une composition");
@@ -198,7 +193,11 @@ export function validateProject(value: unknown): asserts value is Project {
     validateHierarchy(page.layers);
     validateMaskGraph(page.layers);
     validatePageLayout(page);
-    validateCompositionMotion(page as unknown as Composition, ids);
+    validateCompositionMotion(
+      page as unknown as Composition,
+      ids,
+      value.assets as unknown as Record<string, Asset>,
+    );
     for (const guide of page.guides) {
       assertRecord(guide);
       assertUniqueId(guide.id, ids);

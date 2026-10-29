@@ -3,6 +3,8 @@ import { ensure } from "../errors";
 import type { MotionInitializationPlan, MotionLayerTrack } from "./model";
 import { validateMotionTime, validateMotionFrameRate, compareMotionTime } from "./time";
 import type { MotionTime, MotionFrameRate } from "./time";
+import type { Asset } from "../assets/model";
+import { isVideoAsset } from "../assets/identity";
 
 /** Pure planning: browser dialogs and noninteractive callers inspect the same set. */
 export function planMotionInitialization(
@@ -34,8 +36,18 @@ export function planMotionInitialization(
 export function createMotionLayerTrack(
   layerId: string,
   nextId: (prefix: string) => string,
+  asset?: Asset,
 ): MotionLayerTrack {
-  return { id: nextId("track"), layerId, start: { value: 0, rate: 1 }, end: null, properties: [] };
+  return {
+    id: nextId("track"),
+    layerId,
+    start: { value: 0, rate: 1 },
+    end: asset && isVideoAsset(asset) ? { ...asset.duration } : null,
+    properties: [],
+    ...(asset && isVideoAsset(asset)
+      ? { media: { sourceIn: { value: 0, rate: 1 }, mute: false, volume: 1 } }
+      : {}),
+  };
 }
 
 /** Keep structural commands coherent, including edits made while Motion is dormant. */
@@ -43,6 +55,7 @@ export function reconcileMotionLayers(
   page: Composition,
   nextId: (prefix: string) => string,
   previousLayerIds: ReadonlySet<string>,
+  assets: Readonly<Record<string, Asset>> = {},
 ): void {
   if (!page.motion) return;
   const layers = new Map(page.layers.map((layer) => [layer.id, layer]));
@@ -50,7 +63,9 @@ export function reconcileMotionLayers(
   const tracked = new Set(page.motion.tracks.map((track) => track.layerId));
   for (const layer of page.layers) {
     if (!tracked.has(layer.id) && !previousLayerIds.has(layer.id))
-      page.motion.tracks.push(createMotionLayerTrack(layer.id, nextId));
+      page.motion.tracks.push(
+        createMotionLayerTrack(layer.id, nextId, layer.assetId ? assets[layer.assetId] : undefined),
+      );
   }
   for (const track of page.motion.tracks) {
     const layer = layers.get(track.layerId)!;

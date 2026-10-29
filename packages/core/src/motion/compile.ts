@@ -1,3 +1,4 @@
+import { isVideoAsset } from "../assets/identity";
 import type { Composition, Project } from "../document/model";
 import { cloneValue, freezeValue } from "../document/immutable";
 import { validateProject } from "../document/validation";
@@ -6,7 +7,7 @@ import { compileMotionInterpolator } from "./interpolation";
 import type { MotionPropertyTrack } from "./model";
 import type { MotionPropertyTarget, MotionValue } from "./properties/model";
 import { resolveMotionProperty } from "./properties/registry";
-import { compareMotionTime, type MotionTime } from "./time";
+import { addMotionTime, compareMotionTime, type MotionTime } from "./time";
 
 export interface CompiledMotionProperty {
   readonly target: MotionPropertyTarget;
@@ -20,6 +21,13 @@ export interface CompiledMotionLayer {
   readonly start: MotionTime;
   readonly end: MotionTime | null;
   readonly properties: readonly CompiledMotionProperty[];
+  readonly media?: {
+    readonly assetId: string;
+    readonly sourceStart: MotionTime;
+    readonly timelineStart: MotionTime;
+    readonly mute: boolean;
+    readonly volume: number;
+  };
 }
 
 export interface MotionProgram {
@@ -79,8 +87,24 @@ export function compileMotion(
         current = current.parentId === null ? undefined : byId.get(current.parentId);
       }
     }
+    const track = tracks.get(layer.id);
+    const asset = layer.assetId ? project.assets[layer.assetId] : undefined;
+    const media =
+      layer.kind === "video" && asset && isVideoAsset(asset)
+        ? {
+            assetId: asset.id,
+            sourceStart:
+              mode === "motion"
+                ? addMotionTime(asset.firstTimestamp, track?.media?.sourceIn ?? zero)
+                : cloneValue(asset.firstTimestamp),
+            timelineStart: mode === "motion" ? (track?.start ?? zero) : zero,
+            mute: mode === "motion" ? (track?.media?.mute ?? false) : true,
+            volume: mode === "motion" ? (track?.media?.volume ?? 1) : 0,
+          }
+        : undefined;
     return {
       id: layer.id,
+      ...(media ? { media } : {}),
       start,
       end,
       properties:

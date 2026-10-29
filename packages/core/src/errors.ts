@@ -4,7 +4,8 @@ export type EngineErrorCode =
   | "NOT_FOUND"
   | "LOCKED"
   | "INVALID_HIERARCHY"
-  | "LAST_PAGE";
+  | "LAST_PAGE"
+  | "BUSY";
 
 export class EngineError extends Error {
   constructor(

@@ -186,3 +186,68 @@ test("initialized empty timelines do not manufacture tracks or suppress canonica
   expect(frame.activeLayerIds).toEqual(["hero", "group", "solo", "later"]);
   expect(program.composition.motion!.tracks).toEqual([]);
 });
+
+test("compiles video source offsets once and samples exact local clip PTS independently of parent intersections", async () => {
+  const { video } = await import("../assets/fixtures");
+  const asset = video(),
+    group = createLayer("group", { id: "media-parent" }),
+    clip = createLayer("video", { id: "media-clip", parentId: group.id, assetId: asset.id });
+  const page = createPage({
+    id: "media-page",
+    layers: [group, clip],
+    motion: {
+      version: 1,
+      initialized: true,
+      mode: "motion",
+      duration: { value: 4, rate: 1 },
+      frameRate: { numerator: 30, denominator: 1 },
+      tracks: [
+        {
+          id: "parent-track",
+          layerId: group.id,
+          start: { value: 2, rate: 1 },
+          end: { value: 4, rate: 1 },
+          properties: [],
+        },
+        {
+          id: "clip-track",
+          layerId: clip.id,
+          start: { value: 1, rate: 1 },
+          end: { value: 4, rate: 1 },
+          properties: [],
+          media: { sourceIn: { value: 2, rate: 1 }, mute: false, volume: 0.5 },
+        },
+      ],
+    },
+  });
+  const project = createProject({ assets: { [asset.id]: asset }, pages: [page] }),
+    program = compileMotion(project, { compositionId: page.id });
+  for (const value of [3, 2, 3, 2]) {
+    const plan = evaluateMotion(program, { value, rate: 1 });
+    expect(plan.mediaRequests).toEqual([
+      {
+        layerId: clip.id,
+        assetId: asset.id,
+        sourceTime: { value: value * 2 + 1, rate: 2 },
+        mute: false,
+        volume: 0.5,
+      },
+    ]);
+  }
+  expect(evaluateMotion(program, { value: 1, rate: 1 }).mediaRequests).toEqual([]);
+  expect(evaluateMotion(program, { value: 4, rate: 1 }).mediaRequests).toEqual([]);
+  expect(
+    evaluateMotion(program, { value: 4, rate: 1 }, { terminalPreview: true }).mediaRequests[0]!
+      .sourceTime,
+  ).toEqual({ value: 9, rate: 2 });
+  page.motion!.mode = "static";
+  const still = evaluateMotion(compileMotion(project, { compositionId: page.id }), {
+    value: 3,
+    rate: 1,
+  });
+  expect(still.mediaRequests[0]).toMatchObject({
+    sourceTime: asset.firstTimestamp,
+    mute: true,
+    volume: 0,
+  });
+});

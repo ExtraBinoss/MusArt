@@ -9,6 +9,7 @@ import { markPublishedProject } from "../document/published";
 import type { CommandCommit, CommandCommitInfo } from "../animation/model";
 import { createLayerGeometryIndex } from "../layers/geometry-index";
 import { createCommandDraft } from "./drafts";
+import type { PreparedEngineTransaction } from "./reservation";
 
 function collectExplicitIds(value: unknown, occupied: Set<string>): void {
   if (Array.isArray(value)) {
@@ -48,6 +49,50 @@ export class EditorEngine implements EnginePort {
   private sequence = 0;
   private historyLimit: number;
   private now: (() => string) | undefined;
+  private reservation: symbol | null = null;
+
+  private assertUnlocked(): void {
+    ensure(this.reservation === null, "BUSY", "Document is busy committing a prepared change.");
+  }
+
+  private prepared(
+    before: SessionSnapshot,
+    project: Project,
+    publish: () => void,
+    deferLock: boolean,
+  ): PreparedEngineTransaction {
+    const token = Symbol("prepared-transaction");
+    let active = true;
+    const lock = () => {
+      ensure(active, "INVALID_COMMAND", "Prepared transaction is no longer active.");
+      if (this.reservation === token) return;
+      this.assertUnlocked();
+      ensure(
+        this.snapshot.project === before.project &&
+          this.snapshot.pageId === before.pageId &&
+          this.snapshot.revision === before.revision,
+        "INVALID_COMMAND",
+        "Prepared transaction is stale.",
+      );
+      this.reservation = token;
+    };
+    if (!deferLock) lock();
+    return Object.freeze({
+      project: freeze(project),
+      lock,
+      commit: () => {
+        lock();
+        active = false;
+        this.reservation = null;
+        publish();
+      },
+      cancel: () => {
+        if (!active) return;
+        active = false;
+        if (this.reservation === token) this.reservation = null;
+      },
+    });
+  }
 
   constructor(project: Project = createProject(), options: EngineOptions = {}) {
     const copy = clone(project);
@@ -171,6 +216,7 @@ export class EditorEngine implements EnginePort {
     this.publish({ ...this.snapshot, selection });
   };
   setPage = (id: string): void => {
+    this.assertUnlocked();
     currentPage(this.snapshot.project, id);
     if (id === this.snapshot.pageId) return;
     this.publish({ ...this.snapshot, pageId: id, selection: [] });
@@ -179,16 +225,30 @@ export class EditorEngine implements EnginePort {
     this.transaction([command]);
   };
   transaction = (commands: Command[]): void => {
+    this.prepareTransaction(commands, {}, this.commandListeners.size > 0).commit();
+  };
+  reserveTransaction = (
+    commands: Command[],
+    options: { deferLock?: boolean } = {},
+  ): PreparedEngineTransaction => this.prepareTransaction(commands, options, true);
+  private prepareTransaction(
+    commands: Command[],
+    options: { deferLock?: boolean },
+    captureCommands: boolean,
+  ): PreparedEngineTransaction {
+    this.assertUnlocked();
     ensure(
       Array.isArray(commands) && commands.length <= 1000,
       "INVALID_COMMAND",
       "Transaction invalide ou trop longue",
     );
-    if (commands.length === 0) return;
     const before = this.snapshot;
+    if (commands.length === 0)
+      return this.prepared(before, before.project, () => {}, options.deferLock ?? false);
     let project: Project;
     let pageId = before.pageId;
     let selection = before.selection;
+    let selectionChanged = false;
     let sequence = this.sequence;
     let detailedCommands: readonly Command[] | undefined;
     const occupied = new Set<string>([before.project.id, ...Object.keys(before.project.assets)]);
@@ -221,11 +281,14 @@ export class EditorEngine implements EnginePort {
       project = createCommandDraft(before.project, before.pageId, commands);
       // Reserve explicit IDs from the entire batch before generating any IDs.
       collectExplicitIds(commands, occupied);
-      if (this.commandListeners.size) detailedCommands = freeze(clone(commands));
+      if (captureCommands) detailedCommands = freeze(clone(commands));
       for (const command of clone(commands)) {
         const result = applyCommand(project, pageId, command, nextId, before.revision);
         pageId = result.pageId;
-        if (result.selection) selection = result.selection;
+        if (result.selection) {
+          selection = result.selection;
+          selectionChanged = true;
+        }
       }
       if (this.now) project.updatedAt = this.now();
       validateProject(project);
@@ -239,26 +302,37 @@ export class EditorEngine implements EnginePort {
     const page = currentPage(project, pageId);
     const remainingIds = new Set(page.layers.map((layer) => layer.id));
     selection = selection.filter((id) => remainingIds.has(id));
-    this.past.push(before);
-    if (this.past.length > this.historyLimit) this.past.shift();
-    this.future = [];
-    this.sequence = sequence;
-    reserveProjectIds(project);
-    this.publish(
-      {
-        project,
-        pageId,
-        selection,
-        revision: before.revision + 1,
-        canUndo: true,
-        canRedo: false,
+    return this.prepared(
+      before,
+      project,
+      () => {
+        this.past.push(this.snapshot);
+        if (this.past.length > this.historyLimit) this.past.shift();
+        this.future = [];
+        this.sequence = sequence;
+        reserveProjectIds(project);
+        const committedSelection = selectionChanged
+          ? selection
+          : this.snapshot.selection.filter((id) => remainingIds.has(id));
+        this.publish(
+          {
+            project,
+            pageId,
+            selection: committedSelection,
+            revision: before.revision + 1,
+            canUndo: true,
+            canRedo: false,
+          },
+          "commit",
+          detailedCommands ?? commands,
+          this.commandListeners.size ? detailedCommands : undefined,
+        );
       },
-      "commit",
-      commands,
-      detailedCommands,
+      options.deferLock ?? false,
     );
-  };
+  }
   undo = (): void => {
+    this.assertUnlocked();
     const previous = this.past.pop();
     if (!previous) return;
     this.future.push(this.snapshot);
@@ -273,6 +347,7 @@ export class EditorEngine implements EnginePort {
     );
   };
   redo = (): void => {
+    this.assertUnlocked();
     const next = this.future.pop();
     if (!next) return;
     this.past.push(this.snapshot);
@@ -287,6 +362,7 @@ export class EditorEngine implements EnginePort {
     );
   };
   load = (project: Project): void => {
+    this.assertUnlocked();
     const copy = clone(project);
     validateProject(copy);
     reserveProjectIds(copy);

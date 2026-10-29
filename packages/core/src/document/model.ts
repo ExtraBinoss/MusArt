@@ -4,10 +4,13 @@ import type { Insets, WorkingColorSpace, Alignment, LayoutReference } from "../l
 import type { ReplaySpec } from "../animation/model";
 import type { FillGradient } from "../paint/gradient";
 import type { EffectCompositeMode } from "../effects/compositing";
+import type { Asset } from "../assets/model";
+import type { PreparedEngineTransaction } from "../session/reservation";
+export type { Asset, ImageAsset, VideoAsset } from "../assets/model";
 import type { CompositionMotion, MotionCommand } from "../motion/model";
 /** Portable document contract. No browser, React or renderer dependencies. */
 export const FORMAT_VERSION = 1 as const;
-export type LayerKind = "rectangle" | "ellipse" | "text" | "image" | "group" | "vector";
+export type LayerKind = "rectangle" | "ellipse" | "text" | "image" | "video" | "group" | "vector";
 export type EffectType =
   | "dither"
   | "ascii"
@@ -121,14 +124,6 @@ export interface Composition {
   colorSpace?: WorkingColorSpace;
   motion?: CompositionMotion;
 }
-export interface Asset {
-  id: string;
-  name: string;
-  mime: string;
-  width: number;
-  height: number;
-  dataUrl: string;
-}
 export interface Project {
   version: typeof FORMAT_VERSION;
   id: string;
@@ -197,4 +192,8 @@ export interface EnginePort {
   redo: () => void;
   load: (project: Project) => void;
   transaction: (commands: Command[]) => void;
+  reserveTransaction?: (
+    commands: Command[],
+    options?: { deferLock?: boolean },
+  ) => PreparedEngineTransaction;
 }
