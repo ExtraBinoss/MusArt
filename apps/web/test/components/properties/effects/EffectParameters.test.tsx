@@ -14,6 +14,7 @@ import { i18n } from "../../../../src/state/i18n";
 import { setup } from "../../../support/ui";
 import { choose } from "../../../support/select";
 import type { NumberInputProps } from "../../../../src/components/shared/NumberInput";
+import userEvent from "@testing-library/user-event";
 
 const fields = vi.hoisted(() => ({ render: vi.fn() }));
 vi.mock("../../../../src/components/shared/NumberInput", async (original) => {
@@ -127,16 +128,18 @@ test("the icon resets every parameter and effect composition together, preservin
   expect(change).not.toHaveBeenCalled();
 });
 test("effect colors share one active picker and cancel the preceding color draft", async () => {
+  const user = userEvent.setup();
   const d = setup(),
     cancel = vi.fn(),
     change = vi.fn(),
     effect = createEffect("pink-phosphor");
   d.mount(<EffectParameters effect={effect} onChange={change} onCancel={cancel} />);
   const colors = getEffectDefinition(effect.type).parameters.filter((p) => p.kind === "color");
-  fireEvent.click(screen.getByRole("button", { name: i18n.t(colors[0]!.labelKey) }));
+  await user.click(screen.getByRole("button", { name: i18n.t(colors[0]!.labelKey) }));
   const first = await screen.findByRole("textbox", { name: "Couleur hexadécimale" });
+  await user.click(first);
   fireEvent.change(first, { target: { value: "#123456" } });
-  fireEvent.click(screen.getByRole("button", { name: i18n.t(colors[1]!.labelKey) }));
+  await user.click(screen.getByRole("button", { name: i18n.t(colors[1]!.labelKey) }));
   expect(document.querySelectorAll('.effect-color-popover[data-state="open"]')).toHaveLength(1);
   expect(screen.getAllByRole("textbox", { name: "Couleur hexadécimale" })).toHaveLength(1);
   expect(cancel).toHaveBeenCalled();

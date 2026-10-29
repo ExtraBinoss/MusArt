@@ -3,7 +3,56 @@ import { act, fireEvent, screen } from "@testing-library/react";
 import { AddEffect } from "../../../../src/components/layers/menu/AddEffect";
 import { setup } from "../../../support/ui";
 import { i18n } from "../../../../src/state/i18n";
-import { createLayer, createPage, createProject, getEffectDefinition } from "@musart/core";
+import {
+  createLayer,
+  createPage,
+  createProject,
+  getEffectDefinition,
+  EFFECT_CATALOG,
+} from "@musart/core";
+
+test.each(["effect", "adjustment"] as const)(
+  "%s menu sorts localized labels and updates its order while open",
+  async (category) => {
+    const d = setup();
+    d.engine.select([d.rectangle.id]);
+    d.mount(
+      <AddEffect
+        engine={d.engine}
+        page={d.page}
+        selection={[d.rectangle.id]}
+        run={d.run}
+        category={category}
+      />,
+    );
+    fireEvent.pointerDown(
+      screen.getByLabelText(i18n.t(category === "effect" ? "addEffect" : "addAdjustment")),
+      { button: 0, ctrlKey: false },
+    );
+    try {
+      for (const language of ["fr", "en"]) {
+        await act(async () => {
+          await i18n.changeLanguage(language);
+        });
+        const items = await screen.findAllByRole("menuitem");
+        const labels = items.map((node) => node.textContent!.trim());
+        expect(labels).toHaveLength(
+          Object.values(EFFECT_CATALOG).filter((e) => e.category === category).length,
+        );
+        expect(labels).toEqual(
+          [...labels].sort((a, b) =>
+            a.localeCompare(b, language, { sensitivity: "base", numeric: true }),
+          ),
+        );
+      }
+      expect(d.engine.getSnapshot().canUndo).toBe(false);
+    } finally {
+      await act(async () => {
+        await i18n.changeLanguage("fr");
+      });
+    }
+  },
+);
 test("visible effect and correction buttons list real categories and apply to actual selection", async () => {
   const d = setup();
   d.engine.select([d.rectangle.id, d.text.id]);

@@ -1,8 +1,25 @@
 import { expect, test, vi } from "vitest";
 import { act, fireEvent, screen } from "@testing-library/react";
-import { createLayer, createPage, createProject } from "@musart/core";
+import { createEffect, createLayer, createPage, createProject } from "@musart/core";
 import { LayerRow } from "../../../../src/components/layers/rows/LayerRow";
 import { setup } from "../../../support/ui";
+import { attachmentSelection } from "../../../../src/state/selection/attachments";
+
+test("a context menu in an effect portal preserves its attachment instead of selecting the host row", () => {
+  const d = fixture(),
+    effect = createEffect("dither");
+  d.engine.execute({ type: "updateLayers", ids: [d.rectangle.id], patch: { effects: [effect] } });
+  const page = d.engine.getSnapshot().project.pages[0]!;
+  const { container } = d.mount(<LayerRow {...d.props} page={page} layer={page.layers[0]!} />);
+  fireEvent.click(container.querySelector(`[data-attachment-effect-id="${effect.id}"]`)!);
+  const attachment = attachmentSelection(d.engine),
+    target = attachment.read();
+  const clear = vi.spyOn(attachment, "clear");
+  fireEvent.contextMenu(screen.getByRole("dialog").querySelector("input")!);
+  expect(clear).not.toHaveBeenCalled();
+  expect(attachment.read()).toBe(target);
+  expect(d.engine.getSnapshot().selection).toEqual([d.rectangle.id]);
+});
 function fixture() {
   const d = setup(),
     page = d.engine.getSnapshot().project.pages[0]!,

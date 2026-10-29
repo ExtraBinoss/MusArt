@@ -64,6 +64,10 @@ checks outer React commits and actual readback APIs, and verifies one commit and
 undo of a real Receipt setting. Run it serially with the cold-opening witness;
 development diagnostic timings are not production latency claims.
 
+The subsequent [complete effect-control investigation](effect-controls.md)
+covers all 32 effects, conditional parameters, portaled row-selection events and
+the selected-indicator style flush found in a focused production profile.
+
 The 2026-10-29 frozen Receipt comparison uses Chrome 154.0.8037.97 on Linux,
 1600 × 1000 at DPR 1, native Intel Xe-LPG WebGPU, one foreground browser at a
 time and a 400% CPU / 3000 MiB memory-high / 4000 MiB memory-max scope without

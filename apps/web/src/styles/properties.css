@@ -243,7 +243,8 @@
   width: 26px;
   height: 26px;
 }
-.effect-controls > .number-field {
+.effect-controls > .number-field,
+.effect-parameter-row > .number-field {
   height: var(--effect-control-height);
 }
 .effect-playback {

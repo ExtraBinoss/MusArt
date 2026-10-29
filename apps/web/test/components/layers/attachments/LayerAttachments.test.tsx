@@ -66,6 +66,23 @@ function transfer() {
     dropEffect: "",
   };
 }
+
+test("portaled effect fields do not run the expanded row's click and context-menu selection handlers", () => {
+  const d = fixture();
+  const row = document.querySelector(`[data-effect-id="${d.first.id}"]`)!;
+  fireEvent.click(row.querySelector('[data-slot="popover-trigger"]')!);
+  const select = vi.spyOn(attachmentSelection(d.engine), "select");
+  const input = screen.getByRole("dialog").querySelector("input")!;
+  const before = d.engine.getSnapshot();
+  fireEvent.click(input);
+  fireEvent.contextMenu(input);
+  expect(select).not.toHaveBeenCalled();
+  expect(d.engine.getSnapshot()).toBe(before);
+  expect(attachmentSelection(d.engine).read()).toMatchObject({
+    kind: "effect",
+    effectId: d.first.id,
+  });
+});
 test("virtual children toggle/remove their exact effect and mask with semantic commands", () => {
   const d = fixture();
   const row = screen.getByText("Dither").closest('[role="treeitem"]')!;

@@ -63,8 +63,13 @@ export const LayerAttachments = memo(function LayerAttachments({
     );
   }
   function captureAttachment(event: MouseEvent<HTMLElement>) {
+    if (!event.currentTarget.contains(event.target as Node)) return;
     if ((event.target as Element).closest(".attachment-actions")) return;
     selectAttachment();
+  }
+  function contextAttachment(event: MouseEvent<HTMLElement>) {
+    if (event.currentTarget.contains(event.target as Node)) selectAttachment();
+    else event.stopPropagation();
   }
   const style = {
     position: "absolute" as const,
@@ -85,7 +90,7 @@ export const LayerAttachments = memo(function LayerAttachments({
           className={`layer-attachment-row ${selected ? "is-selected" : ""} ${mask.enabled ? "" : "is-hidden"}`}
           style={style}
           onClickCapture={captureAttachment}
-          onContextMenu={selectAttachment}
+          onContextMenu={contextAttachment}
         >
           <MaskPopover engine={engine} page={page} layer={layer} run={run}>
             <Button variant="ghost" className="attachment-name">
@@ -137,7 +142,7 @@ export const LayerAttachments = memo(function LayerAttachments({
       className={`layer-attachment-row ${selected ? "is-selected" : ""} ${effect.enabled ? "" : "is-hidden"}`}
       style={style}
       onClickCapture={captureAttachment}
-      onContextMenu={selectAttachment}
+      onContextMenu={contextAttachment}
       draggable={!disabled}
       onDragStart={(event) => {
         event.stopPropagation();

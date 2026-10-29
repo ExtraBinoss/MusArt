@@ -3,6 +3,63 @@ import { expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { SelectField } from "../../../src/components/shared/SelectField";
 import { choose } from "../../support/select";
+import { getUiPresentation } from "../../../src/state/session/ui-presentation";
+
+test("controlled checkmarks follow the canonical value while Radix owns keyboard focus and choice", () => {
+  function Field() {
+    const [value, setValue] = useState("one");
+    return (
+      <SelectField
+        label="Checked mode"
+        value={value}
+        options={[
+          { value: "one", label: "One" },
+          { value: "two", label: "Two" },
+        ]}
+        onValueChange={setValue}
+      />
+    );
+  }
+  render(<Field />);
+  const trigger = screen.getByRole("combobox");
+  fireEvent.keyDown(trigger, { key: "ArrowDown" });
+  expect(screen.getByRole("option", { name: "One" }).querySelector("svg")).not.toBeNull();
+  expect(screen.getByRole("option", { name: "Two" }).querySelector("svg")).toBeNull();
+  fireEvent.click(screen.getByRole("option", { name: "Two" }));
+  expect(trigger).toHaveTextContent("Two");
+  fireEvent.keyDown(trigger, { key: "ArrowDown" });
+  expect(screen.getByRole("option", { name: "One" }).querySelector("svg")).toBeNull();
+  expect(screen.getByRole("option", { name: "Two" }).querySelector("svg")).not.toBeNull();
+  expect(screen.getByRole("option", { name: "Two" })).toHaveAttribute("data-state", "checked");
+});
+
+test("only actual open menus pause optional GPU work; closing, disabling and unmount release the entrance", () => {
+  const props = {
+    label: "Menu entrance",
+    value: "one",
+    options: [{ value: "one", label: "One" }],
+    onValueChange: vi.fn(),
+  };
+  const presentation = getUiPresentation();
+  const view = render(<SelectField {...props} />);
+  const trigger = screen.getByRole("combobox");
+  fireEvent.focus(trigger);
+  expect(presentation.busy()).toBe(false);
+  const open = () => fireEvent.keyDown(trigger, { key: "ArrowDown" });
+  open();
+  expect(presentation.busy()).toBe(true);
+  fireEvent.keyDown(screen.getByRole("listbox"), { key: "Escape" });
+  expect(presentation.busy()).toBe(false);
+  open();
+  expect(presentation.busy()).toBe(true);
+  view.rerender(<SelectField {...props} disabled />);
+  expect(presentation.busy()).toBe(false);
+  view.rerender(<SelectField {...props} />);
+  open();
+  expect(presentation.busy()).toBe(true);
+  view.unmount();
+  expect(presentation.busy()).toBe(false);
+});
 test("explicit selected labels update without a value portal and keep the empty placeholder", () => {
   const props = {
     label: "Current mode",

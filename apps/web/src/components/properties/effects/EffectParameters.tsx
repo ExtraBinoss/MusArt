@@ -129,7 +129,15 @@ export function EffectParameters({
         className={`effect-parameter-list ${window.virtual ? "is-virtual" : ""}`}
         style={window.virtual ? { height: window.height } : undefined}
         onFocusCapture={window.remember}
-        onPointerDownCapture={window.remember}
+        onPointerDownCapture={(event) => {
+          window.remember(event);
+          if (event.button !== 0 || !openColorKey) return;
+          const trigger = (event.target as Element).closest('[data-slot="popover-trigger"]');
+          const row = trigger?.closest<HTMLElement>("[data-parameter-index]");
+          const parameter = row && parameters[Number(row.dataset.parameterIndex)];
+          // React's discrete pointer event closes the old editor before native focus/blur can commit it.
+          if (parameter?.kind === "color" && parameter.key !== openColorKey) setOpenColorKey(null);
+        }}
         onKeyDownCapture={window.keyDown}
       >
         {window.indices.map((index) => {

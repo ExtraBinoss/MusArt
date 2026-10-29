@@ -164,8 +164,15 @@ export const LayerRow = memo(function LayerRow({
       data-lock-inherited={parentLocked || undefined}
       className={`layer-row ${selected && !attachmentTarget ? "selected" : ""} ${locked ? "is-locked" : ""} ${!layer.visible ? "is-hidden" : ""} ${drop ? `drop-${drop}` : ""}`}
       style={{ position: "absolute", left: 0, right: 0, top, paddingLeft: 12 + depth * 16 }}
-      onClick={(event) => select(event.shiftKey || event.metaKey || event.ctrlKey)}
+      onClick={(event) => {
+        if (event.currentTarget.contains(event.target as Node))
+          select(event.shiftKey || event.metaKey || event.ctrlKey);
+      }}
       onContextMenu={(event) => {
+        if (!event.currentTarget.contains(event.target as Node)) {
+          event.stopPropagation();
+          return;
+        }
         if ((event.target as Element).closest("[data-attachment-target]")) return;
         if (!resolveLayerPage(engine, page)) return;
         attachmentSelection(engine).clear();

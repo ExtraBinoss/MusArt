@@ -1,9 +1,13 @@
 import { expect, test, type Locator } from "@playwright/test";
 import { createEffect, getEffectDefinition, getEffectParameter } from "@musart/core";
 import { mkdir } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import labels from "../../apps/web/src/components/properties/effects/library/pink-phosphor/messages.json" with { type: "json" };
 import { i18n } from "../../apps/web/src/state/i18n";
 import { photographicEffect } from "./support/photographic-effect";
+
+// Keep byte-exact PNG comparisons without formatting enormous Buffer diffs on an interim frame.
+const digest = (image: Buffer) => createHash("sha256").update(image).digest("hex");
 
 async function settled(node: Locator) {
   await node.evaluate(async (element) => {
@@ -123,7 +127,7 @@ test("effect controls reset once, share feedback and keep one photographic color
     });
     const canvas = page.locator(".editor-gpu-scene canvas");
     await s.ready(projectId);
-    const canonical = await canvas.screenshot(),
+    const canonical = digest(await canvas.screenshot()),
       untouched = await effect();
     await firstTrigger.click();
     const picker = page.locator('.effect-color-popover[data-state="open"]');
@@ -133,7 +137,7 @@ test("effect controls reset once, share feedback and keep one photographic color
         ((await picker.boundingBox())!.x + (await picker.boundingBox())!.width),
     ).toBeCloseTo(12, 0);
     await picker.getByRole("textbox").fill("#abcdef");
-    await expect.poll(() => canvas.screenshot()).not.toEqual(canonical);
+    await expect.poll(async () => digest(await canvas.screenshot())).not.toBe(canonical);
     expect(await effect()).toEqual(untouched);
     await secondTrigger.click();
     await expect(picker).toHaveCount(1);
@@ -141,11 +145,14 @@ test("effect controls reset once, share feedback and keep one photographic color
     await expect(picker.getByRole("textbox")).toHaveValue(
       String(defaults.settings!.phosphor).toUpperCase(),
     );
-    await expect.poll(() => canvas.screenshot()).toEqual(canonical);
+    await expect.poll(async () => digest(await canvas.screenshot())).toBe(canonical);
     expect(await effect()).toEqual(untouched);
+    expect((await read()).revision).toBe(noOpRevision);
     await picker.getByRole("textbox").fill("#aabbcc");
     await picker.getByRole("textbox").press("Enter");
     expect((await effect()).settings!.phosphor).toBe("#aabbcc");
+    await page.keyboard.press("Escape");
+    await expect(picker).toHaveCount(0);
     const colorLabel = second.locator(".effect-color-label");
     await colorLabel.dblclick();
     expect((await effect()).settings!.phosphor).toBe(defaults.settings!.phosphor);

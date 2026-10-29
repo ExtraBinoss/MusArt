@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { getUiPresentation } from "../../state/session/ui-presentation";
 export interface SelectOption {
   value: string;
   label: ReactNode;
@@ -74,6 +75,9 @@ export function SelectField({
       session.current.cancel?.();
     }
   }, [disabled]);
+  useLayoutEffect(() => {
+    if (open && !disabled) return getUiPresentation().hold();
+  }, [open, disabled]);
   function owned() {
     return !disabled && current.current === owner.token;
   }
