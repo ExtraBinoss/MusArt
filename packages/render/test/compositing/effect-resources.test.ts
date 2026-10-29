@@ -69,3 +69,22 @@ it("passes logical layer dimensions through the shared operator without changing
   source.dispose();
   output.dispose();
 });
+
+it("compiles present effect stages once without applying pixels or allocating image-sized scratch", async () => {
+  const { renderer, fake } = makeGpuRenderer(),
+    effects = new EffectResources(renderer),
+    target = new RenderTarget(1, 1);
+  const stack = [createEffect("grain"), createEffect("vignette")];
+  await effects.prepare(stack, target, 1920, 1080);
+  expect(fake.compileAsync).toHaveBeenCalledTimes(2);
+  expect(effects.stats()).toMatchObject({ passes: 0, bytes: 0, materials: 2 });
+  await effects.prepare(
+    stack.map((effect) => ({ ...effect, amount: 0.5 })),
+    target,
+    1920,
+    1080,
+  );
+  expect(fake.compileAsync).toHaveBeenCalledTimes(2);
+  effects.dispose();
+  target.dispose();
+});

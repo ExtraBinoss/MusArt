@@ -93,3 +93,18 @@ describe("GPU-only compositing operators", () => {
     passes.dispose();
   });
 });
+
+it("prepares reusable pass materials asynchronously without drawing or retaining render state", async () => {
+  const { renderer, fake } = makeGpuRenderer(),
+    passes = new GpuPasses(renderer),
+    target = new RenderTarget(1, 1);
+  await passes.prepare(target);
+  const count = fake.compileAsync.mock.calls.length;
+  expect(count).toBe(5);
+  expect(fake.render).not.toHaveBeenCalled();
+  await passes.prepare(target);
+  expect(fake.compileAsync).toHaveBeenCalledTimes(count);
+  expect(fake.getRenderTarget()).toBeNull();
+  passes.dispose();
+  target.dispose();
+});

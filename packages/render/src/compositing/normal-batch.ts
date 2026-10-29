@@ -1,3 +1,5 @@
+import { compileGpuScene } from "./compile";
+import { isInstancedPrimitive } from "./primitives/eligibility";
 import type { Bounds, Layer } from "@musart/core";
 import { sourcePlacement } from "./group-viewport";
 import {
@@ -21,12 +23,49 @@ interface Item {
 /** Normal source-over layers share one GPU render pass and use hardware alpha blending. */
 export class NormalBatch {
   passes = 0;
+  private readonly compiled = new WeakSet<Item>();
   private readonly scene = new Scene();
   private readonly camera = new OrthographicCamera(0, 1, 0, 1, 0, 10);
   private readonly geometry = new PlaneGeometry(1, 1);
   private readonly items = new Map<string, Item>();
   constructor(private readonly renderer: WebGPURenderer) {
     this.camera.position.z = 1;
+  }
+  private item(layerId: string): Item {
+    let item = this.items.get(layerId);
+    if (!item) {
+      const controls = sourceControls();
+      const material = new MeshBasicNodeMaterial({
+        transparent: true,
+        premultipliedAlpha: true,
+        blending: NormalBlending,
+        depthTest: false,
+        depthWrite: false,
+        toneMapped: false,
+        side: DoubleSide,
+      });
+      material.fragmentNode = normalNode(controls);
+      item = { mesh: new Mesh(this.geometry, material), controls };
+      this.items.set(layerId, item);
+    }
+    return item;
+  }
+  async prepare(
+    layers: readonly Layer[],
+    target: RenderTarget,
+    canContinue?: () => boolean,
+  ): Promise<void> {
+    for (const layer of layers) {
+      if (layer.maskSource || layer.blendMode !== "normal" || isInstancedPrimitive(layer)) continue;
+      const item = this.item(layer.id);
+      if (this.compiled.has(item)) continue;
+      this.scene.clear();
+      item.controls.source.value = target.texture;
+      this.scene.add(item.mesh);
+      await compileGpuScene(this.renderer, this.scene, this.camera, target, canContinue);
+      this.compiled.add(item);
+    }
+    this.scene.clear();
   }
   draw(
     layers: readonly { layer: Layer; source: FrameTexture }[],
@@ -43,22 +82,7 @@ export class NormalBatch {
     for (let index = 0; index < layers.length; index++) {
       const { layer, source } = layers[index]!;
       const placed = sourcePlacement(layer, source.bounds, origin);
-      let item = this.items.get(layer.id);
-      if (!item) {
-        const controls = sourceControls();
-        const material = new MeshBasicNodeMaterial({
-          transparent: true,
-          premultipliedAlpha: true,
-          blending: NormalBlending,
-          depthTest: false,
-          depthWrite: false,
-          toneMapped: false,
-          side: DoubleSide,
-        });
-        material.fragmentNode = normalNode(controls);
-        item = { mesh: new Mesh(this.geometry, material), controls };
-        this.items.set(layer.id, item);
-      }
+      const item = this.item(layer.id);
       item.controls.source.value = source.texture;
       item.controls.flipY.value = textureFlip(source.texture);
       item.controls.opacity.value = layer.opacity;

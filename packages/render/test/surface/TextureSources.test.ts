@@ -1,5 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createLayer, createPage, type Asset } from "@musart/core";
+import {
+  createLayer,
+  createPage,
+  createProject,
+  EditorEngine,
+  type Asset,
+  type VideoAsset,
+} from "@musart/core";
+import { MediaVideoSources } from "../../src/sources/media/video-sources";
+import { makeGpuRenderer } from "../gpu-fixture";
 import { Texture } from "three/webgpu";
 import { TextureSources } from "../../src/surface/TextureSources";
 import { GpuResourceCache } from "../../src/cache/GpuResourceCache";
@@ -164,4 +173,50 @@ it("reports original decode failures and can prepare a corrected source without 
   expect(context.drawImage).not.toHaveBeenCalled();
   expect(context.getImageData).not.toHaveBeenCalled();
   cache.clear();
+});
+
+it("prepares at most four real video posters before opacity-keyed Motion appearances without changing layers", async () => {
+  const engine = new EditorEngine(createProject());
+  engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const motion = engine.getSnapshot().project.pages[0]!.motion!;
+  const video: VideoAsset = {
+    id: "video",
+    kind: "video",
+    name: "Video",
+    mime: "video/mp4",
+    width: 2,
+    height: 2,
+    byteLength: 1,
+    originalId: "original",
+    contentRevision: "revision",
+    duration: { value: 2, rate: 1 },
+    firstTimestamp: { value: 0, rate: 1 },
+    timeResolution: 1000,
+    orientation: { rotation: 0, flip: false, pixelAspectRatio: { numerator: 1, denominator: 1 } },
+  };
+  const group = createLayer("group", { id: "group", opacity: 0 });
+  const live = createLayer("video", { id: "live", assetId: "video" });
+  const page = createPage({
+    motion,
+    layers: [
+      group,
+      live,
+      ...Array.from({ length: 6 }, (_, i) =>
+        createLayer("video", { id: `future-${i}`, parentId: "group", assetId: "video" }),
+      ),
+      createLayer("image", { opacity: 0, assetId: "unloaded" }),
+    ],
+  });
+  const original = structuredClone(page),
+    { renderer } = makeGpuRenderer(),
+    sources = new TextureSources(new GpuResourceCache(), 64, renderer);
+  const prepare = vi.spyOn(MediaVideoSources.prototype, "prepare").mockResolvedValue();
+  await sources.prepare(page, { video });
+  const staged = prepare.mock.calls[0]![1].filter((layer) => layer.kind === "video");
+  expect(staged).toHaveLength(4);
+  expect(staged).toContain(live);
+  expect(page).toEqual(original);
+  await sources.prepare({ ...page, motion: { ...motion, mode: "static" } }, { video });
+  expect(prepare.mock.calls[1]![1].filter((layer) => layer.kind === "video")).toEqual([live]);
+  await sources.dispose();
 });

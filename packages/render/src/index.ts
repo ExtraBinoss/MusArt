@@ -12,3 +12,7 @@ export { createRenderSession } from "./export/standalone";
 export { RENDER_CAPABILITIES } from "./color/capabilities";
 export type { FontResolver } from "./surface/text/fonts";
 export { MAX_FONT_BYTES } from "./surface/text/fonts";
+
+export type { MediaSourceResolver } from "./sources/media/model";
+export { probeVideoOriginal } from "./sources/video/probe";
+export type { VideoOriginalProbe } from "./sources/video/probe";

@@ -13,6 +13,8 @@ export class GpuResourceCache {
   private readonly entries = new Map<string, Entry>();
   private readonly pinned = new Set<string>();
   private usedBytes = 0;
+  private externalBytes = 0;
+  private readonly external = new Map<string, number>();
   constructor(readonly maxBytes = 384 * 1024 * 1024) {}
 
   beginFrame(retain?: string): void {
@@ -29,7 +31,7 @@ export class GpuResourceCache {
   }
   set(key: string, resource: GpuResource): void {
     const old = this.entries.get(key);
-    const required = this.usedBytes - (old?.bytes ?? 0) + resource.bytes;
+    const required = this.usedBytes - (old?.bytes ?? 0) + resource.bytes + this.externalBytes;
     try {
       this.makeRoom(required, key);
     } catch (error) {
@@ -48,7 +50,20 @@ export class GpuResourceCache {
     this.pinned.add(key);
   }
   ensureCapacity(key: string, bytes: number): void {
-    this.makeRoom(this.usedBytes - (this.entries.get(key)?.bytes ?? 0) + bytes, key);
+    this.makeRoom(
+      this.usedBytes - (this.entries.get(key)?.bytes ?? 0) + bytes + this.externalBytes,
+      key,
+    );
+  }
+  /** In-flight texture owners remain non-evictable until their native GPU acknowledgement. */
+  reserveExternal(key: string, bytes: number): void {
+    if (!key || !Number.isSafeInteger(bytes) || bytes < 0)
+      throw new RangeError("Invalid external GPU reservation.");
+    const next = this.externalBytes - (this.external.get(key) ?? 0) + bytes;
+    this.makeRoom(this.usedBytes + next, "");
+    if (bytes) this.external.set(key, bytes);
+    else this.external.delete(key);
+    this.externalBytes = next;
   }
   synchronize(key: string): void {
     const entry = this.entries.get(key);
@@ -69,13 +84,14 @@ export class GpuResourceCache {
   }
   stats() {
     return {
-      cacheBytes: this.usedBytes,
+      cacheBytes: this.usedBytes + this.externalBytes,
       targets: [...this.entries.values()].reduce((sum, entry) => sum + entry.resource.targets, 0),
       entries: this.entries.size,
       maxBytes: this.maxBytes,
     };
   }
   clear(): void {
+    if (this.externalBytes) throw new Error("GPU resources still have active external owners.");
     for (const { resource } of this.entries.values()) resource.dispose();
     this.entries.clear();
     this.pinned.clear();

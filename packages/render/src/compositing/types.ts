@@ -1,11 +1,19 @@
 import type { Texture } from "three/webgpu";
-import type { Bounds, Composition } from "@musart/core";
+import type { Bounds, Composition, MotionFramePlan } from "@musart/core";
+import type { MediaSourceResolver } from "../sources/media/model";
 import type { FontResolver } from "../surface/text/fonts";
 export interface RenderOptions {
   scale?: number;
   forceWebGL?: boolean;
   canRender?: () => boolean;
   fontResolver?: FontResolver;
+  mediaResolver?: MediaSourceResolver;
+  motionFrame?: MotionFramePlan;
+  /** Dedicated export jobs always request exact samples from original files. */
+  mediaMode?: "preview" | "playback" | "exact";
+  signal?: AbortSignal;
+  /** Explicit diagnostics opt-in. Runtime marker/sample buffers stay disabled by default. */
+  profileVideo?: boolean;
 }
 export interface FrameTexture {
   texture: Texture;
@@ -16,8 +24,11 @@ export interface FrameTexture {
   bounds?: Bounds;
 }
 export interface GpuStats {
+  /** Opt-in CPU wall time, including native/queue waits; never a GPU-duration measurement. */
+  profile?: Record<"pipeline" | "sources" | "text" | "compose", readonly number[]> | null;
   passes: number;
   readbacks: number;
+  video?: ReturnType<import("../sources/media/video-sources").MediaVideoSources["stats"]> | null;
   uploads: number;
   targets: number;
   cacheBytes: number;

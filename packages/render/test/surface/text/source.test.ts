@@ -1,6 +1,7 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { createLayer, createPage } from "@musart/core";
+import { createLayer, createPage, createProject, EditorEngine } from "@musart/core";
 import {
+  type BufferAttribute,
   CustomBlending,
   MaxEquation,
   MeshBasicNodeMaterial,
@@ -8,7 +9,12 @@ import {
   RenderTarget,
 } from "three/webgpu";
 import { GpuResourceCache } from "../../../src/cache/GpuResourceCache";
-import { TextResource, TextSources, textGeometryKey } from "../../../src/surface/text/source";
+import {
+  TextResource,
+  TextSources,
+  textGeometryKey,
+  textResourceKey,
+} from "../../../src/surface/text/source";
 import { FontRepository, type FontLease } from "../../../src/surface/text/fonts";
 import * as atlasModule from "../../../src/surface/text/atlas";
 import * as geometryModule from "../../../src/surface/text/geometry";
@@ -35,7 +41,7 @@ it("reuses curve geometry and resources during paint/gradient/position edits, an
   expect(fake.getRenderTarget()).toBe(null);
   expect(fake.autoClear).toBe(true);
   expect(textGeometryKey({ ...layer, fill: "#00ff00" })).toBe(textGeometryKey(layer));
-  const resource = cache.get<TextResource>(`text:${textGeometryKey(layer)}`)!;
+  const resource = cache.get<TextResource>(`text:${textResourceKey(layer)}`)!;
   expect(resource.paint.solid.value.x).toBe(1);
   expect(resource.material).toMatchObject({
     blending: CustomBlending,
@@ -146,9 +152,9 @@ it("skips text inside hidden or transparent ancestor branches", async () => {
   );
   expect(load).toHaveBeenCalledOnce();
   expect(sources.parses).toBe(1);
-  expect(cache.get(`text:${textGeometryKey(hiddenText)}`)).toBeUndefined();
-  expect(cache.get(`text:${textGeometryKey(transparentText)}`)).toBeUndefined();
-  expect(cache.get(`text:${textGeometryKey(visibleText)}`)).toBeDefined();
+  expect(cache.get(`text:${textResourceKey(hiddenText)}`)).toBeUndefined();
+  expect(cache.get(`text:${textResourceKey(transparentText)}`)).toBeUndefined();
+  expect(cache.get(`text:${textResourceKey(visibleText)}`)).toBeDefined();
   cache.clear();
   sources.dispose();
 });
@@ -234,4 +240,95 @@ it("disposes material, geometry and atlas after a paint-node construction failur
   expect(atlasDispose).toHaveBeenCalledOnce();
   expect(geometryDispose).toHaveBeenCalledOnce();
   expect(materialDispose).toHaveBeenCalledOnce();
+});
+
+it("prepares zero-opacity Motion text and its actual shader before first visible draw", async () => {
+  const face = lease();
+  vi.spyOn(FontRepository.prototype, "acquire").mockResolvedValue(face);
+  const { renderer, fake } = makeGpuRenderer(),
+    cache = new GpuResourceCache(),
+    sources = new TextSources(renderer, cache),
+    target = new RenderTarget(1, 1);
+  const engine = new EditorEngine(
+    createProject({
+      pages: [createPage({ layers: [createLayer("text", { text: "A", opacity: 0 })] })],
+    }),
+  );
+  engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const page = engine.getSnapshot().project.pages[0]!;
+  await sources.prepare(page, { target });
+  expect(sources.parses).toBe(1);
+  expect(fake.compileAsync).toHaveBeenCalledTimes(1);
+  expect(fake.render).not.toHaveBeenCalled();
+  await sources.prepare(page, { target });
+  expect(fake.compileAsync).toHaveBeenCalledTimes(1);
+  sources.dispose();
+  cache.clear();
+  target.dispose();
+});
+
+it("retains atlas, material and GPU buffers across continuous layout animation", async () => {
+  const face = lease();
+  vi.spyOn(FontRepository.prototype, "acquire").mockResolvedValue(face);
+  const build = vi.spyOn(atlasModule, "buildCurveAtlas");
+  const { renderer, fake } = makeGpuRenderer(),
+    cache = new GpuResourceCache(),
+    sources = new TextSources(renderer, cache),
+    target = new RenderTarget(1, 1);
+  const base = createLayer("text", {
+    id: "animated",
+    text: "AV AV",
+    fontSize: 40,
+    width: 1000,
+    height: 200,
+  });
+  await sources.prepare(createPage({ layers: [base] }), { target });
+  const resource = cache.get<TextResource>(`text:${textResourceKey(base)}`)!;
+  const { geometry, atlas, material } = resource;
+  for (let index = 0; index < 30; index++) {
+    const layer = {
+      ...base,
+      letterSpacing: index / 3,
+      fontSize: 40 + index / 10,
+      textAlign: index % 2 ? ("center" as const) : ("left" as const),
+    };
+    await sources.prepare(createPage({ layers: [layer] }), { target });
+    sources.render(layer, target);
+    expect(cache.get(`text:${textResourceKey(layer)}`)).toBe(resource);
+  }
+  expect(resource.geometry).toBe(geometry);
+  expect(resource.atlas).toBe(atlas);
+  expect(resource.material).toBe(material);
+  expect(sources.parses).toBe(1);
+  expect(build).toHaveBeenCalledTimes(1);
+  expect(fake.compileAsync).toHaveBeenCalledTimes(1);
+  expect((geometry.getAttribute("glyphPosition") as BufferAttribute).version).toBeGreaterThan(1);
+  sources.dispose();
+  cache.clear();
+  target.dispose();
+});
+
+it("rebuilds and retires the old outline resource when wrapping changes visible glyph topology", async () => {
+  const face = lease();
+  vi.spyOn(FontRepository.prototype, "acquire").mockResolvedValue(face);
+  const { renderer } = makeGpuRenderer(),
+    cache = new GpuResourceCache(),
+    sources = new TextSources(renderer, cache);
+  const layer = createLayer("text", {
+    id: "wrap",
+    text: "A A A A",
+    fontSize: 40,
+    width: 600,
+    height: 160,
+  });
+  await sources.prepare(createPage({ layers: [layer] }));
+  const previous = cache.get<TextResource>(`text:${textResourceKey(layer)}`)!;
+  const dispose = vi.spyOn(previous, "dispose");
+  const clipped = { ...layer, width: 30, height: 40 };
+  await sources.prepare(createPage({ layers: [clipped] }));
+  expect(cache.get(`text:${textResourceKey(clipped)}`)).not.toBe(previous);
+  expect(dispose).toHaveBeenCalledTimes(1);
+  expect(sources.parses).toBe(2);
+  sources.dispose();
+  cache.clear();
 });

@@ -49,3 +49,23 @@ describe("GPU allocation budget", () => {
   it("uses a bounded default budget", () =>
     expect(new GpuResourceCache().stats().maxBytes).toBe(384 * 1024 * 1024));
 });
+it("accounts non-evictable in-flight texture reservations until their actual owner releases them", () => {
+  const cache = new GpuResourceCache(100),
+    displayed = resource(50),
+    old = resource(30);
+  cache.set("displayed", displayed);
+  cache.set("old", old);
+  cache.beginFrame("displayed");
+  cache.reserveExternal("native-video", 40);
+  expect(old.dispose).toHaveBeenCalledTimes(1);
+  expect(cache.stats().cacheBytes).toBe(90);
+  expect(() => cache.ensureCapacity("displayed", 70)).toThrow("Budget");
+  expect(() => cache.reserveExternal("native-video", 60)).toThrow("Budget");
+  expect(cache.stats().cacheBytes).toBe(90);
+  expect(() => cache.clear()).toThrow("external");
+  cache.reserveExternal("native-video", 0);
+  cache.clear();
+  expect(cache.stats().cacheBytes).toBe(0);
+  for (const bytes of [-1, NaN, 1.5])
+    expect(() => cache.reserveExternal("video", bytes)).toThrow("Invalid");
+});

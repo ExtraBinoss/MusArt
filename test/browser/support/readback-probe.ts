@@ -3,9 +3,11 @@ export interface ReadbackCounts {
   gpu: number;
   webgl: number;
   canvas: number;
+  videoFrame: number;
   gpuHook: boolean;
   webglHook: boolean;
   canvasHook: boolean;
+  videoFrameHook: boolean;
 }
 declare global {
   interface Window {
@@ -19,9 +21,11 @@ export async function installReadbackProbe(page: Page) {
       gpu: 0,
       webgl: 0,
       canvas: 0,
+      videoFrame: 0,
       gpuHook: false,
       webglHook: false,
       canvasHook: false,
+      videoFrameHook: false,
     };
     window.__musartVideoReadbacks = probe;
     if (typeof GPUBuffer !== "undefined") {
@@ -43,6 +47,28 @@ export async function installReadbackProbe(page: Page) {
         return Reflect.apply(original, this, args);
       };
       probe.webglHook = true;
+    }
+    if (typeof VideoFrame !== "undefined") {
+      // Reach the native owner even when a lifetime probe wraps the exposed constructor.
+      let prototype: object | null = VideoFrame.prototype,
+        owner: object | null = null;
+      while (prototype && prototype !== Object.prototype) {
+        if (Object.hasOwn(prototype, "copyTo")) owner = prototype;
+        prototype = Object.getPrototypeOf(prototype) as object | null;
+      }
+      const copy = owner && Reflect.get(owner, "copyTo");
+      if (owner && typeof copy === "function") {
+        Object.defineProperty(owner, "copyTo", {
+          configurable: true,
+          writable: true,
+          value: function (this: VideoFrame, ...args: Parameters<VideoFrame["copyTo"]>) {
+            probe.videoFrame++;
+            return Reflect.apply(copy, this, args);
+          },
+        });
+        probe.videoFrameHook = true;
+      }
+      // allocationSize() only computes a byte count; it does not copy pixels.
     }
     const original = CanvasRenderingContext2D.prototype.getImageData;
     CanvasRenderingContext2D.prototype.getImageData = function (

@@ -113,3 +113,24 @@ it("places a cropped transport quad within the current parent viewport", () => {
   target.dispose();
   texture.dispose();
 });
+
+it("prepares actual layer materials once and rebuilds only after a layer is retired", async () => {
+  const { renderer, fake } = makeGpuRenderer(),
+    batch = new NormalBatch(renderer),
+    target = new RenderTarget(1, 1);
+  const layers = [
+    createLayer("image", { id: "image" }),
+    createLayer("rectangle", { id: "primitive" }),
+  ];
+  await batch.prepare(layers, target);
+  expect(fake.compileAsync).toHaveBeenCalledTimes(1);
+  await batch.prepare(layers, target);
+  expect(fake.compileAsync).toHaveBeenCalledTimes(1);
+  expect(batch.passes).toBe(0);
+  batch.retain(new Set());
+  await batch.prepare(layers, target);
+  expect(fake.compileAsync).toHaveBeenCalledTimes(2);
+  expect(fake.getRenderTarget()).toBeNull();
+  batch.dispose();
+  target.dispose();
+});

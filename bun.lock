@@ -85,6 +85,7 @@
         "@musart/assets": "workspace:*",
         "@musart/core": "workspace:*",
         "harfbuzzjs": "0.4.15",
+        "mediabunny": "1.62.1",
         "opentype.js": "2.0.0",
         "three": "0.186.1",
       },

@@ -6,12 +6,14 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Added
 
+- Added original-backed video layers and deterministic Mediabunny frame providers, with bounded random/exact decoding, retained forward cursors and native Three.js VideoFrameTexture ownership. Preview and exact work have separate admission, stale requests are rejected, and leases remain alive until real GPU consumption acknowledges them.
 - Added pure TypeScript video asset descriptions, source in-points and per-track audio settings to Motion frame plans. Prepared engine transactions validate before persistence, reject stale publication and publish one undoable change only after a successful commit.
 - Added the renderer-free Motion foundation: independent per-composition timelines, one-time counted initialization, reversible Static/base editing, exact rational time, validated key/track commands, typed properties derived from the effect catalog, deterministic easing and compiled arbitrary-time evaluation. Immutable frame materialization shares the same semantics for interactive and headless adapters; unsupported animated hierarchy rewrites fail explicitly rather than discard motion.
 - Added headless `evaluate` reports with exact decimal or tick/rate times, plus artboard selection for command application. Creation, authoring and evaluation run without a browser; media rendering and encoding remain separate platform adapters.
 
 ### Changed
 
+- Prepare the same Three.js compositing/effect/text pipelines asynchronously before drawing, including bounded Motion sources that first appear from zero opacity. Reuse analytical text outlines, materials and placement buffers across continuous layout animation when glyph identity is unchanged. WebGPU/WebGL pixel-equivalence witnesses pass; full-template performance acceptance remains unfinished.
 - Prepared the isolated Motion/video workstream with a verbatim request record, supplied Figma references, primary-source UX research, traceable requirements and dependency-ordered agent checklists. The proposed architecture preserves per-artboard layers and deterministic time, requires a generic headless-capable animation engine and Mediabunny export, and separates the simplified 1–30-second Timelapse workflow. This milestone documents the plan; Motion/video implementation and performance validation remain pending.
 - Added a required three-step first-visit welcome with English/French explanations of creative tools, local saving, editable backups and sharing. Its interactive artwork reuses the real GPU Gradient effect with three palettes, bounded playback, pause, reduced-motion/visibility handling and explicit renderer cleanup. Completion is remembered per browser without creating a project; blocked preference storage remains visible and permits session-only continuation.
 - Reorganized seventeen dense guides, architecture/rendering references and performance reports into topic tables and shorter sections. Preserved the original contracts, commands, measurements, environment details and verification caveats.
@@ -30,6 +32,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
+- Reject unsupported transparent video sources before Mediabunny's JavaScript pixel-copy alpha merger. Opaque VP9 stays supported, and readback instrumentation includes actual VideoFrame.copyTo calls.
+- Preserve original track ticks and rational source requests at NTSC frame boundaries instead of rounding logical selection to microseconds. A short native H.264 witness verifies exact random, sequential and playback sampling at 30000/1001 FPS, with zero retained frames/decoders after cleanup.
 - Video start trims now advance the source in-point atomically, preserving the source frame at every remaining composition time. Moving a clip retains its source in-point; group trims and property key times remain independent, with invalid source extensions rejected and undo/redo preserved.
 - Browser-test discovery declares the JSON import type explicitly, allowing Node.js 24 to load effect labels during CI.
 - Popover entrances temporarily defer optional thumbnail work through their actual CSS animation start, with bounded window-scoped leases and explicit cleanup. Property selectors avoid redundant Radix value registration, and closed effect menus defer catalogue construction. Native headless checks cover 150-layer Lock/Receipt interactions; no verified lock-latency improvement is claimed.

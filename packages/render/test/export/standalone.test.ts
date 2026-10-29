@@ -222,7 +222,7 @@ it("holds a retained native GPU canvas inside the atomic consumer queue without 
   expect(gpu.init).toHaveBeenCalledOnce();
   expect(gpu.compositorConstructors).toHaveBeenCalledWith({ maxBytes: 1024, fontResolver });
   expect(createImageBitmap).not.toHaveBeenCalled();
-  expect(session.stats()).toMatchObject({ readbacks: 0 });
+  expect(session.stats()).toMatchObject({ readbacks: 0, backend: null });
   await session.dispose();
   await expect(session.render(createPage(), {})).rejects.toThrow("fermé");
 });
@@ -244,4 +244,13 @@ it("does not create a background context when the activity gate has become busy"
   ).rejects.toMatchObject({ name: "AbortError" });
   expect(gpu.init).not.toHaveBeenCalled();
   await session.dispose();
+});
+it("releases the presentation and renderer even if a native compositor cleanup failed", async () => {
+  const session = createRenderSession();
+  await session.render(createPage(), {});
+  gpu.compositorDispose.mockRejectedValueOnce(Error("native close rejected"));
+  await expect(session.dispose()).rejects.toThrow("cleanup failed");
+  expect(gpu.presentationDispose).toHaveBeenCalledTimes(1);
+  expect(gpu.dispose).toHaveBeenCalledTimes(1);
+  expect(session.stats()).toBeNull();
 });

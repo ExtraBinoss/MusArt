@@ -29,7 +29,11 @@ export function createSourceKeys(
   page: Composition,
   assets: Record<string, Asset>,
   scale: number,
-  options: { trail?: ReadonlySet<string>; geometry?: LayerGeometryIndex } = {},
+  options: {
+    trail?: ReadonlySet<string>;
+    geometry?: LayerGeometryIndex;
+    videoStamp?: (layerId: string) => string | null;
+  } = {},
 ): (layer: Layer) => string {
   const geometry = options.geometry ?? createLayerGeometryIndex(page);
   const keys = new WeakMap<Layer, string>();
@@ -89,6 +93,7 @@ export function createSourceKeys(
           page.colorSpace ?? "srgb",
           maskKey,
           assetIdentity(layer.assetId ? assets[layer.assetId] : undefined),
+          layer.kind === "video" ? (options.videoStamp?.(layer.id) ?? null) : null,
           assetIdentity(layer.mask?.assetId ? assets[layer.mask.assetId] : undefined),
           children,
         ]),

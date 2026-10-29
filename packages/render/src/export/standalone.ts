@@ -18,6 +18,10 @@ export class StandaloneRenderer {
     private readonly forceWebGL?: boolean,
     private readonly maxBytes?: number,
     private readonly fontResolver?: FontResolver,
+    private readonly mediaDefaults: Pick<
+      RenderOptions,
+      "mediaResolver" | "mediaMode" | "signal"
+    > = {},
   ) {}
   private async init(): Promise<void> {
     if (this.renderer) return;
@@ -60,7 +64,12 @@ export class StandaloneRenderer {
       if (options.canRender && !options.canRender())
         throw new DOMException("Rendering deferred.", "AbortError");
       await this.init();
-      const frame = await this.compositor!.render(page, assets, options);
+      const frame = await this.compositor!.render(page, assets, {
+        mediaMode: "exact",
+        ...this.mediaDefaults,
+        ...options,
+      });
+      if (page.layers.some((layer) => layer.kind === "video")) await this.compositor!.settleMedia();
       this.presentation!.render(frame);
       return consume(this.renderer!.domElement);
     });
@@ -103,18 +112,41 @@ export class StandaloneRenderer {
     );
   }
   stats() {
-    return this.compositor?.stats() ?? null;
+    const stats = this.compositor?.stats();
+    if (!stats) return null;
+    const backend = this.renderer?.backend;
+    const kind: "webgpu" | "webgl" | null = !backend
+      ? null
+      : "isWebGLBackend" in backend && backend.isWebGLBackend
+        ? "webgl"
+        : "webgpu";
+    return { ...stats, backend: kind };
   }
   dispose(): Promise<void> {
     if (this.disposal) return this.disposal;
     this.disposed = true;
     this.disposal = this.queue.then(async () => {
-      await this.compositor?.dispose();
-      this.presentation?.dispose();
-      await this.renderer?.dispose();
+      const failures: unknown[] = [];
+      try {
+        await this.compositor?.dispose();
+      } catch (error) {
+        failures.push(error);
+      }
+      try {
+        this.presentation?.dispose();
+      } catch (error) {
+        failures.push(error);
+      }
+      try {
+        await this.renderer?.dispose();
+      } catch (error) {
+        failures.push(error);
+      }
       this.renderer = null;
       this.compositor = null;
       this.presentation = null;
+      if (failures.length)
+        throw new AggregateError(failures, "Standalone renderer cleanup failed.");
     });
     return this.disposal;
   }
@@ -189,5 +221,10 @@ export async function disposeExportRenderers(): Promise<void> {
 
 /** Reuses one context, shader graph, geometry and asset cache for an entire video/export job. */
 export function createRenderSession(options: RenderOptions & { maxBytes?: number } = {}) {
-  return new StandaloneRenderer(options.forceWebGL, options.maxBytes, options.fontResolver);
+  return new StandaloneRenderer(
+    options.forceWebGL,
+    options.maxBytes,
+    options.fontResolver,
+    options,
+  );
 }

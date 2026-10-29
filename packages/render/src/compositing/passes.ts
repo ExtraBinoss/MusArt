@@ -1,3 +1,4 @@
+import { compileGpuScene } from "./compile";
 import type { Bounds, Layer } from "@musart/core";
 import { sourcePlacement } from "./group-viewport";
 import { invertMatrix, layerTransform } from "@musart/core";
@@ -41,6 +42,7 @@ function material() {
 }
 export class GpuPasses {
   passes = 0;
+  private readonly compiled = new WeakSet<MeshBasicNodeMaterial>();
   private readonly scene = new Scene();
   private readonly camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
   private readonly geometry = new PlaneGeometry(2, 2);
@@ -63,6 +65,27 @@ export class GpuPasses {
     this.maskMaterial.fragmentNode = maskNode(this.mask);
     this.blendMaterial.fragmentNode = blendNode(this.blend);
     this.shapeMaterial.fragmentNode = shapeNode(this.shape);
+  }
+  async prepare(target: RenderTarget, canContinue?: () => boolean): Promise<void> {
+    const previous = this.mesh.material;
+    this.copy.source.value = this.mask.source.value = this.mask.mask.value = target.texture;
+    this.blend.source.value = this.blend.backdrop.value = target.texture;
+    try {
+      for (const material of [
+        this.clearMaterial,
+        this.copyMaterial,
+        this.maskMaterial,
+        this.blendMaterial,
+        this.shapeMaterial,
+      ]) {
+        if (this.compiled.has(material)) continue;
+        this.mesh.material = material;
+        await compileGpuScene(this.renderer, this.scene, this.camera, target, canContinue);
+        this.compiled.add(material);
+      }
+    } finally {
+      this.mesh.material = previous;
+    }
   }
   private draw(material: MeshBasicNodeMaterial, target: RenderTarget | null): void {
     const before = this.renderer.getRenderTarget();

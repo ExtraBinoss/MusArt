@@ -16,6 +16,24 @@ export function glyphGeometry(
   );
   geometry.setAttribute("uv", new BufferAttribute(new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]), 2));
   geometry.setIndex([0, 1, 2, 0, 2, 3]);
+  const { positions, bounds, bands, ranges } = glyphAttributes(layer, layout, atlas, unitsPerEm);
+  geometry.setAttribute(
+    "glyphPosition",
+    new InstancedBufferAttribute(new Float32Array(positions), 4),
+  );
+  geometry.setAttribute("glyphBounds", new InstancedBufferAttribute(new Float32Array(bounds), 4));
+  geometry.setAttribute("glyphBands", new InstancedBufferAttribute(new Float32Array(bands), 2));
+  geometry.setAttribute("glyphRange", new InstancedBufferAttribute(new Float32Array(ranges), 4));
+  geometry.instanceCount = positions.length / 4;
+  return geometry;
+}
+
+function glyphAttributes(
+  layer: Layer,
+  layout: PlacedGlyph[],
+  atlas: CurveAtlas,
+  unitsPerEm: number,
+) {
   const positions: number[] = [],
     bounds: number[] = [],
     bands: number[] = [],
@@ -36,13 +54,32 @@ export function glyphGeometry(
     bands.push(record.header, record.bands);
     ranges.push(gx, gy, width, height);
   }
-  geometry.setAttribute(
-    "glyphPosition",
-    new InstancedBufferAttribute(new Float32Array(positions), 4),
-  );
-  geometry.setAttribute("glyphBounds", new InstancedBufferAttribute(new Float32Array(bounds), 4));
-  geometry.setAttribute("glyphBands", new InstancedBufferAttribute(new Float32Array(bands), 2));
-  geometry.setAttribute("glyphRange", new InstancedBufferAttribute(new Float32Array(ranges), 4));
-  geometry.instanceCount = positions.length / 4;
-  return geometry;
+  return { positions, bounds, bands, ranges };
+}
+
+/** Layout changes retain the same buffers, atlas, material and shader when glyph identity is stable. */
+export function updateGlyphGeometry(
+  geometry: InstancedBufferGeometry,
+  layer: Layer,
+  layout: PlacedGlyph[],
+  atlas: CurveAtlas,
+  unitsPerEm: number,
+): void {
+  const { positions, bounds, bands, ranges } = glyphAttributes(layer, layout, atlas, unitsPerEm);
+  const attributes = [
+    ["glyphPosition", positions],
+    ["glyphBounds", bounds],
+    ["glyphBands", bands],
+    ["glyphRange", ranges],
+  ] as const;
+  for (const [name, values] of attributes)
+    if (geometry.getAttribute(name).array.length !== values.length)
+      throw new Error("Text layout changed its glyph topology.");
+  for (const [name, values] of attributes) {
+    const attribute = geometry.getAttribute(name);
+    if (values.some((value, index) => Math.fround(value) !== attribute.array[index])) {
+      attribute.array.set(values);
+      attribute.needsUpdate = true;
+    }
+  }
 }

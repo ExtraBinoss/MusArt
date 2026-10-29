@@ -1,3 +1,4 @@
+import { compileGpuScene } from "../compositing/compile";
 import { resolveGradientSettings, type Effect } from "@musart/core";
 import {
   Mesh,
@@ -24,6 +25,11 @@ import { sampleEffect, type EffectDimensions } from "./shared/context";
 import { EFFECT_NODES } from "./registry";
 import { createEffectUniforms, updateEffectUniforms, type EffectUniforms } from "./shared/uniforms";
 
+function effectPassKey(effect: Effect, stage: EffectStage): string {
+  const advanced =
+    stage.final && Boolean(effect.composite || (effect.blendMode && effect.blendMode !== "normal"));
+  return stage.key + (advanced ? ":composite" : "");
+}
 interface EffectPass {
   readonly material: MeshBasicNodeMaterial;
   readonly source: TextureNode<"vec4">;
@@ -45,6 +51,7 @@ export class GpuEffects {
   private readonly camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
   private readonly geometry = new PlaneGeometry(2, 2);
   private readonly passes = new Map<string, EffectPass>();
+  private readonly compiled = new WeakSet<EffectPass>();
   private mesh: Mesh<PlaneGeometry, MeshBasicNodeMaterial> | null = null;
   private atlas: CanvasTexture | null = null;
   private scratch: RenderTarget | null = null;
@@ -71,7 +78,7 @@ export class GpuEffects {
     const advanced =
       stage.final &&
       Boolean(effect.composite || (effect.blendMode && effect.blendMode !== "normal"));
-    const passKey = stage.key + (advanced ? ":composite" : "");
+    const passKey = effectPassKey(effect, stage);
     let pass = this.passes.get(passKey);
     if (!pass) {
       const source = texture(input),
@@ -105,6 +112,35 @@ export class GpuEffects {
       pass.controls.scale.value = resolveGradientSettings(effect.settings).size;
     }
     return pass;
+  }
+  async prepare(
+    effects: readonly Effect[],
+    target: RenderTarget,
+    width: number,
+    height: number,
+    canContinue?: () => boolean,
+  ): Promise<void> {
+    for (const effect of effects) {
+      const stages =
+        effect.type === "gradient"
+          ? gradientStages(effect)
+          : [{ key: effect.type, builder: EFFECT_NODES[effect.type], final: true }];
+      for (const stage of stages) {
+        const existing = this.passes.get(effectPassKey(effect, stage));
+        if (existing && this.compiled.has(existing)) continue;
+        const pass = this.getPass(effect, stage, target.texture, target.texture, width, height, {
+          width,
+          height,
+        });
+        if (this.compiled.has(pass)) continue;
+        if (!this.mesh) {
+          this.mesh = new Mesh(this.geometry, pass.material);
+          this.scene.add(this.mesh);
+        } else this.mesh.material = pass.material;
+        await compileGpuScene(this.renderer, this.scene, this.camera, target, canContinue);
+        this.compiled.add(pass);
+      }
+    }
   }
   private draw(pass: EffectPass, target: RenderTarget): void {
     if (!this.mesh) {

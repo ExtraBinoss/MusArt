@@ -1,3 +1,4 @@
+import { compileGpuScene } from "../../compositing/compile";
 import type { Composition, Layer } from "@musart/core";
 import {
   DoubleSide,
@@ -16,8 +17,8 @@ import { vec4 } from "three/tsl";
 import { GpuResourceCache, type GpuResource } from "../../cache/GpuResourceCache";
 import { FontRepository, normalizeFontFamily, type FontResolver, type OutlineFont } from "./fonts";
 import { buildCurveAtlas, type CurveAtlas } from "./atlas";
-import { layoutText } from "./layout";
-import { glyphGeometry } from "./geometry";
+import { layoutText, type PlacedGlyph } from "./layout";
+import { glyphGeometry, updateGlyphGeometry } from "./geometry";
 import { glyphCoverage, glyphPosition } from "./coverage";
 import { textPaint, textPaintNode, updateTextPaint } from "./paint";
 
@@ -35,6 +36,16 @@ export function textGeometryKey(layer: Layer): string {
   ]);
 }
 
+/** Per-layer outline identity excludes continuous layout; document edits still invalidate pixels. */
+export function textResourceKey(layer: Layer): string {
+  return JSON.stringify([
+    layer.id,
+    normalizeFontFamily(layer.fontFamily),
+    layer.fontWeight,
+    layer.text,
+  ]);
+}
+
 export class TextResource implements GpuResource {
   readonly targets = 0;
   readonly scene = new Scene();
@@ -45,13 +56,17 @@ export class TextResource implements GpuResource {
   readonly material: MeshBasicNodeMaterial;
   readonly bytes: number;
   private closed = false;
+  private compiled = false;
+  private layoutKey: string;
+  private readonly glyphIds: readonly number[];
 
-  constructor(layer: Layer, font: OutlineFont) {
+  constructor(layer: Layer, font: OutlineFont, layout: PlacedGlyph[] = layoutText(layer, font)) {
+    this.layoutKey = textGeometryKey(layer);
+    this.glyphIds = layout.map((item) => item.glyph.index);
     let atlas: CurveAtlas | undefined,
       geometry: InstancedBufferGeometry | undefined,
       material: MeshBasicNodeMaterial | undefined;
     try {
-      const layout = layoutText(layer, font);
       atlas = buildCurveAtlas(
         layout.map(({ glyph }) => glyph),
         font.unitsPerEm,
@@ -99,6 +114,32 @@ export class TextResource implements GpuResource {
       throw error;
     }
   }
+  matchesLayout(layer: Layer): boolean {
+    return this.layoutKey === textGeometryKey(layer);
+  }
+  canUpdateLayout(layout: PlacedGlyph[]): boolean {
+    return (
+      layout.length === this.glyphIds.length &&
+      layout.every((item, index) => item.glyph.index === this.glyphIds[index])
+    );
+  }
+  updateLayout(layer: Layer, layout: PlacedGlyph[], unitsPerEm: number): void {
+    if (!this.canUpdateLayout(layout)) throw new Error("Text layout changed its glyph topology.");
+    updateGlyphGeometry(this.geometry, layer, layout, this.atlas, unitsPerEm);
+    this.camera.right = layer.width;
+    this.camera.bottom = layer.height;
+    this.camera.updateProjectionMatrix();
+    this.layoutKey = textGeometryKey(layer);
+  }
+  async prepare(
+    renderer: WebGPURenderer,
+    target: RenderTarget,
+    canContinue?: () => boolean,
+  ): Promise<void> {
+    if (this.compiled) return;
+    await compileGpuScene(renderer, this.scene, this.camera, target, canContinue);
+    this.compiled = true;
+  }
   dispose(): void {
     if (this.closed) return;
     this.closed = true;
@@ -124,7 +165,10 @@ export class TextSources {
   ) {
     this.fonts = new FontRepository({ resolver: options.fontResolver });
   }
-  async prepare(page: Composition): Promise<void> {
+  async prepare(
+    page: Composition,
+    options: { target?: RenderTarget; canContinue?: () => boolean } = {},
+  ): Promise<void> {
     this.assertOpen();
     const byParent = new Map<string | null, Layer[]>();
     for (const layer of page.layers) {
@@ -135,12 +179,17 @@ export class TextSources {
     const parents: (string | null)[] = [null];
     while (parents.length) {
       for (const layer of byParent.get(parents.pop()!) ?? []) {
-        if (!layer.visible || layer.opacity === 0) continue;
+        if (!layer.visible || (layer.opacity === 0 && page.motion?.mode !== "motion")) continue;
         if (layer.kind === "group") parents.push(layer.id);
         if (layer.kind !== "text") continue;
         this.assertOpen();
-        const key = `text:${textGeometryKey(layer)}`;
-        if (this.cache.get<TextResource>(key)) continue;
+        const key = `text:${textResourceKey(layer)}`;
+        let resource = this.cache.get<TextResource>(key);
+        if (resource?.matchesLayout(layer)) {
+          if (options.target)
+            await resource.prepare(this.renderer, options.target, options.canContinue);
+          continue;
+        }
         let job = this.pending.get(key);
         if (!job) {
           job = this.prepareLayer(layer, key).finally(() => {
@@ -149,6 +198,9 @@ export class TextSources {
           this.pending.set(key, job);
         }
         await job;
+        resource = this.cache.get<TextResource>(key);
+        if (options.target && resource)
+          await resource.prepare(this.renderer, options.target, options.canContinue);
       }
     }
     this.assertOpen();
@@ -157,7 +209,13 @@ export class TextSources {
     const lease = await this.fonts.acquire(layer.fontFamily, layer.fontWeight);
     try {
       this.assertOpen();
-      const resource = new TextResource(layer, lease.font);
+      const layout = layoutText(layer, lease.font);
+      const existing = this.cache.get<TextResource>(key);
+      if (existing?.canUpdateLayout(layout)) {
+        existing.updateLayout(layer, layout, lease.font.unitsPerEm);
+        return;
+      }
+      const resource = new TextResource(layer, lease.font, layout);
       // The GPU resource contains copied curves and no longer depends on its font face.
       this.cache.set(key, resource);
       this.parses++;
@@ -170,8 +228,8 @@ export class TextSources {
   }
   render(layer: Layer, target: RenderTarget): void {
     this.assertOpen();
-    const resource = this.cache.get<TextResource>(`text:${textGeometryKey(layer)}`);
-    if (!resource) throw new Error("Text outline source was not prepared.");
+    const resource = this.cache.get<TextResource>(`text:${textResourceKey(layer)}`);
+    if (!resource?.matchesLayout(layer)) throw new Error("Text outline source was not prepared.");
     updateTextPaint(resource.paint, layer);
     const previous = this.renderer.getRenderTarget(),
       auto = this.renderer.autoClear;

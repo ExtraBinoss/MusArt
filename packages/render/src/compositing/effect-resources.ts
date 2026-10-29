@@ -23,6 +23,15 @@ export class EffectResources implements GpuResource {
   ): Texture {
     return this.operator.apply(source, width, height, effects, output, logical);
   }
+  prepare(
+    effects: readonly Effect[],
+    target: RenderTarget,
+    width: number,
+    height: number,
+    canContinue?: () => boolean,
+  ): Promise<void> {
+    return this.operator.prepare(effects, target, width, height, canContinue);
+  }
   get bytes(): number {
     return this.operator.stats().bytes;
   }

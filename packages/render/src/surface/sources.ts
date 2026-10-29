@@ -1,4 +1,4 @@
-import type { Asset } from "@musart/core";
+import { isVideoAsset, type Asset } from "@musart/core";
 
 const images = new Map<string, Promise<HTMLImageElement>>();
 
@@ -19,6 +19,8 @@ export function context2d(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
 }
 
 export function loadAsset(asset: Asset): Promise<HTMLImageElement> {
+  if (isVideoAsset(asset))
+    return Promise.reject(Error("A video requires an explicit timed frame source."));
   const key = asset.id + ":" + asset.dataUrl;
   const existing = images.get(key);
   if (existing) return existing;

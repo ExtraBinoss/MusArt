@@ -412,7 +412,7 @@ it("composes ten thousand plain primitives with two document targets and one bou
     cold = graph.stats();
   expect(cold).toMatchObject({
     passes: 3,
-    targets: 2,
+    targets: 3, // Includes the accounted 1px pipeline preparation target.
     uploads: 0,
     primitiveDraws: 1,
     primitiveInstances: 10_000,
@@ -429,7 +429,7 @@ it("composes ten thousand plain primitives with two document targets and one bou
     {},
   );
   expect(graph.stats().passes - cold.passes).toBe(3);
-  expect(graph.stats().targets).toBe(2);
+  expect(graph.stats().targets).toBe(3);
   expect(graph.stats().primitiveBytes).toBe(cold.primitiveBytes);
   expect(fake.readRenderTargetPixelsAsync).not.toHaveBeenCalled();
   await graph.dispose();
@@ -560,5 +560,31 @@ it("retains cached descendant materials without churn and prunes removed IDs eve
   await graph.render(removed, { image: asset });
   expect(graph.stats().passes).toBe(passes);
   expect(disposeForeign).toHaveBeenCalledOnce();
+  await graph.dispose();
+});
+it("disposes the remaining GPU graph when source cleanup reports a real failure", async () => {
+  const { TextureSources } = await import("../../src/surface/TextureSources");
+  const { renderer } = makeGpuRenderer(),
+    graph = new GpuCompositor(renderer);
+  await graph.render(createPage(), {});
+  vi.spyOn(TextureSources.prototype, "dispose").mockRejectedValueOnce(
+    Error("decoder close rejected"),
+  );
+  await expect(graph.dispose()).rejects.toThrow("cleanup failed");
+  expect(graph.stats().cacheBytes).toBe(0);
+});
+
+it("keeps CPU phase profiling opt-in and bounded without browser tracing", async () => {
+  const { renderer } = makeGpuRenderer();
+  const graph = new GpuCompositor(renderer),
+    page = createPage({ width: 16, height: 16 });
+  await graph.render(page, {});
+  expect(graph.stats().profile).toBeNull();
+  for (let i = 0; i < 260; i++) await graph.render(page, {}, { profileVideo: true });
+  const profile = graph.stats().profile!;
+  expect(profile.sources).toHaveLength(256);
+  expect(profile.text).toHaveLength(256);
+  expect(profile.compose).toHaveLength(256);
+  expect(profile.compose.every((ms) => ms >= 0)).toBe(true);
   await graph.dispose();
 });
