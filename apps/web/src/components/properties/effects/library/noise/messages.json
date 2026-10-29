@@ -1,6 +1,6 @@
 {
   "en": {
-    "name": "GPU Noise",
+    "name": "Noise",
     "parameter": {
       "algorithm": "Algorithm",
       "scale": "Cell size",
@@ -33,7 +33,7 @@
     "mode": { "replace": "Replace color", "add": "Add variation", "multiply": "Multiply" }
   },
   "fr": {
-    "name": "Bruit GPU",
+    "name": "Bruit",
     "parameter": {
       "algorithm": "Algorithme",
       "scale": "Taille des cellules",
