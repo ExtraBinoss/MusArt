@@ -43,6 +43,7 @@ interface Gesture {
   stopEngine: () => void;
   scrollLoop: ReturnType<typeof createTimelineAutoScroll> | null;
   point: { x: number; y: number; shift: boolean };
+  preview: ReturnType<NonNullable<TimelineTransport["beginKeyframePreview"]>>;
 }
 
 /** Pointer publication is DOM-only. Commands run once, after ownership is rechecked. */
@@ -95,8 +96,10 @@ export function createTimelineGestures(options: {
   }
   function clear(gesture: Gesture) {
     active = null;
+    delete gesture.node.dataset.dragging;
     gesture.stopEngine();
     gesture.scrollLoop?.stop();
+    gesture.preview?.clear();
     gesture.node.removeEventListener("pointermove", move);
     gesture.node.removeEventListener("pointerup", finish);
     gesture.node.removeEventListener("pointercancel", cancelEvent);
@@ -135,6 +138,7 @@ export function createTimelineGestures(options: {
     if (!root) return;
     const px = motionTimeToSeconds(gesture.delta) * (surface?.scale ?? 1);
     if (gesture.action === "keys") {
+      gesture.preview?.update(gesture.delta);
       const ids = new Set(gesture.keyIds);
       for (const node of root.querySelectorAll<HTMLElement>(".motion-key[data-key-id]")) {
         if (!ids.has(node.dataset.keyId!)) continue;
@@ -174,8 +178,11 @@ export function createTimelineGestures(options: {
     const gesture = active;
     if (!gesture) return;
     const dx = gesture.point.x - gesture.x + (surface?.viewport?.scrollLeft ?? 0) - gesture.scroll;
-    gesture.dirty ||= Math.abs(dx) >= 3;
-    if (!gesture.dirty) return;
+    if (!gesture.dirty) {
+      if (Math.abs(dx) < 3) return;
+      gesture.dirty = true;
+      gesture.node.dataset.dragging = "true";
+    }
     let delta = timelineTime(dx / (surface?.scale ?? 1));
     gesture.snapped = null;
     if (gesture.point.shift) {
@@ -293,6 +300,15 @@ export function createTimelineGestures(options: {
     event.stopPropagation();
     event.currentTarget.focus();
     transport.pause();
+    let keyPreview: Gesture["preview"];
+    if (data.action === "keys") {
+      try {
+        keyPreview = transport.beginKeyframePreview?.(data.keyIds ?? []);
+      } catch {
+        options.onError("gestureFailed");
+        return;
+      }
+    }
     const originalLayers = [...snapshot.selection];
     engine.select(
       event.shiftKey ? [...new Set([...snapshot.selection, data.layerId])] : [data.layerId],
@@ -346,6 +362,7 @@ export function createTimelineGestures(options: {
       stopEngine: () => {},
       scrollLoop: null,
       point: { x: event.clientX, y: event.clientY, shift: event.shiftKey },
+      preview: keyPreview,
     };
     active = gesture;
     if (surface)

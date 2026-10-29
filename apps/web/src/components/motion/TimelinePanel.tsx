@@ -289,6 +289,7 @@ export function TimelinePanel({
         data-keybinding-capture
         data-document-shortcuts
         onKeyDown={(event) => {
+          if (!event.currentTarget.contains(event.target as Node)) return;
           gestures.keyDown(event);
           if (
             event.defaultPrevented ||

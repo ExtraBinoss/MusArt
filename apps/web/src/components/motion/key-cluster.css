@@ -50,8 +50,8 @@
   background: var(--accent);
 }
 .motion-cluster-entry button[aria-pressed="true"] > svg {
-  fill: var(--primary);
-  stroke: var(--primary);
+  fill: var(--foreground);
+  stroke: var(--foreground);
 }
 .motion-key-cluster footer {
   display: flex;

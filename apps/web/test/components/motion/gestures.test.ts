@@ -50,6 +50,8 @@ function fixture() {
   const runtime = makeTransport(page()),
     onSelection = vi.fn(),
     onError = vi.fn();
+  const draft = { update: vi.fn(), clear: vi.fn() };
+  runtime.transport.beginKeyframePreview = vi.fn(() => draft);
   const controls = createTimelineGestures({
     engine,
     transport: runtime.transport,
@@ -92,6 +94,7 @@ function fixture() {
     keys,
     keyButtons,
     runtime,
+    draft,
     controls,
     event,
     send,
@@ -106,13 +109,18 @@ it("publishes track drags only to DOM and commits one complete undoable transact
     before = d.engine.getSnapshot().project;
   const transactions = vi.spyOn(d.engine, "transaction");
   d.controls.beginTrack(d.event(), d.track(), "move");
+  expect(d.body).not.toHaveAttribute("data-dragging");
+  d.send(d.body, "pointermove", 102);
+  expect(d.body).not.toHaveAttribute("data-dragging");
   const changes = d.onSelection.mock.calls.length;
   for (const x of [110, 120, 130, 150]) d.send(d.body, "pointermove", x);
+  expect(d.body).toHaveAttribute("data-dragging", "true");
   expect(d.row.style.getPropertyValue("--motion-drag-x")).toBe("50px");
   expect(d.onSelection.mock.calls.length).toBe(changes);
   expect(d.engine.getSnapshot().project).toBe(before);
   expect(transactions).not.toHaveBeenCalled();
   d.send(d.body, "pointerup", 150);
+  expect(d.body).not.toHaveAttribute("data-dragging");
   expect(transactions).toHaveBeenCalledOnce();
   expect(d.track().start).toEqual({ value: 1, rate: 2 });
   expect(d.track().properties[0]!.keyframes.map((key) => key.time)).toEqual([
@@ -191,8 +199,10 @@ it("moves a Shift-selected key set atomically, snaps to exact playhead time and 
   d.runtime.update({ time: { value: 1, rate: 2 } });
   d.controls.beginKey(d.event(d.keyButtons[0]), "a", first);
   d.send(d.keyButtons[0]!, "pointermove", 146, true);
+  expect(d.draft.update).toHaveBeenLastCalledWith({ value: 1, rate: 2 });
   expect(d.keyButtons[0]!.style.getPropertyValue("--motion-drag-x")).toBe("50px");
   d.send(d.keyButtons[0]!, "pointerup", 146, true);
+  expect(d.draft.clear).toHaveBeenCalledOnce();
   expect(d.track().properties[0]!.keyframes[0]!.time).toEqual({ value: 1, rate: 2 });
   expect(
     d.page().motion!.tracks.find((track) => track.layerId === "b")!.properties[0]!.keyframes[0]!

@@ -15,6 +15,27 @@ export interface SceneFrame {
   motionFrame?: MotionFramePlan;
   presentation?: { origin: CanonicalOrigin; canonical: boolean };
 }
+
+/** Issued plans share compiled target identities. The transport owns the advancing UI clock. */
+function sameMotionPose(before: MotionFramePlan | null, after: MotionFramePlan | null): boolean {
+  if (before === after) return true;
+  if (
+    !before ||
+    !after ||
+    before.mode !== after.mode ||
+    before.compositionId !== after.compositionId
+  )
+    return false;
+  return (
+    before.activeLayerIds.length === after.activeLayerIds.length &&
+    before.values.length === after.values.length &&
+    before.activeLayerIds.every((id, index) => id === after.activeLayerIds[index]) &&
+    before.values.every((value, index) => {
+      const next = after.values[index]!;
+      return value.target === next.target && Object.is(value.value, next.value);
+    })
+  );
+}
 /** Stable imperative port shared by the GPU adapter and geometry overlays. */
 export class SceneController {
   readonly presentation: ReturnType<typeof getCanonicalPresentation>;
@@ -27,6 +48,7 @@ export class SceneController {
   private cachedMotion: Composition | null = null;
   private cachedMotionPlan: MotionFramePlan | null = null;
   private cachedMotionPlaying = false;
+  private cachedMotionPreviewing = false;
   private cachedPlayback: { source: PlaybackFrame; frame: SceneFrame } | null = null;
   private stopPreview: (() => void) | null = null;
   private patches: LayerPatch[] = [];
@@ -72,14 +94,21 @@ export class SceneController {
     const motionFrame = this.motion.readFrame();
     const motionPlan = this.motion.readFramePlan();
     const motionPlaying = motionFrame !== null && this.motion.read().playing;
+    const motionPreviewing = this.motion.isPreviewing();
+    // Property/presence changes are already represented by the materialized page. Only
+    // requested media additionally depends on the plan clock; a still needs no new GPU draw.
+    const mediaTimeChanged =
+      this.cachedMotionPlan !== motionPlan &&
+      Boolean(this.cachedMotionPlan?.mediaRequests.length || motionPlan?.mediaRequests.length);
     if (
       this.cached &&
       this.cachedProject === snapshot.project &&
       this.cachedPageId === snapshot.pageId &&
       this.cachedPreview === preview &&
-      this.cachedMotion === motionFrame &&
-      this.cachedMotionPlan === motionPlan &&
+      !mediaTimeChanged &&
+      (this.cachedMotion === motionFrame || sameMotionPose(this.cachedMotionPlan, motionPlan)) &&
       this.cachedMotionPlaying === motionPlaying &&
+      this.cachedMotionPreviewing === motionPreviewing &&
       this.cachedGesture === this.gestureRevision
     )
       return this.cached;
@@ -106,6 +135,7 @@ export class SceneController {
     this.cachedMotion = motionFrame;
     this.cachedMotionPlan = motionPlan;
     this.cachedMotionPlaying = motionPlaying;
+    this.cachedMotionPreviewing = motionPreviewing;
     this.cachedGesture = this.gestureRevision;
     this.cached = {
       page: this.draft ? { ...next, layers: [...next.layers, this.draft] } : next,
@@ -116,7 +146,8 @@ export class SceneController {
         origin: { projectId: snapshot.project.id, revision: snapshot.revision },
         // A paused evaluated frame acknowledges the committed revision just like a still.
         // Playback/gesture drafts must not admit background journal/thumbnail GPU work.
-        canonical: !motionPlaying && !preview && !this.patches.length && !this.draft,
+        canonical:
+          !motionPlaying && !motionPreviewing && !preview && !this.patches.length && !this.draft,
       },
     };
     return this.cached;

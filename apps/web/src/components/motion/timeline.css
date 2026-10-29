@@ -29,6 +29,9 @@
   font-size: 11px;
   isolation: isolate;
 }
+.motion-timeline :where(button) {
+  cursor: default;
+}
 .motion-timeline > .motion-resize {
   position: absolute;
   inset: -3px 0 auto;
@@ -38,7 +41,7 @@
   touch-action: none;
 }
 .motion-resize:focus-visible {
-  outline: 2px solid var(--motion-accent);
+  outline: 2px solid var(--muted-foreground);
   outline-offset: 0;
 }
 .motion-transport {
@@ -72,8 +75,8 @@
   background: var(--muted);
 }
 .motion-time-field > input:focus-visible {
-  border-color: var(--motion-accent);
-  box-shadow: 0 0 0 1px var(--motion-accent);
+  border-color: var(--ring);
+  box-shadow: 0 0 0 1px var(--ring);
 }
 .motion-time-divider,
 .motion-unit {
@@ -151,14 +154,15 @@
   border-radius: 5px;
   background: transparent;
   color: var(--muted-foreground);
+  cursor: default;
 }
 .motion-playback-option:hover,
 .motion-playback-option[data-state="checked"] {
-  color: var(--primary);
+  color: var(--foreground);
   background: var(--accent);
 }
 .motion-playback-option:focus-visible {
-  outline: 1px solid var(--primary);
+  outline: 1px solid var(--muted-foreground);
 }
 @media (max-width: 420px) {
   .motion-timeline-actions {
@@ -214,7 +218,7 @@
   height: 32px;
   overflow: hidden;
   outline-offset: -2px;
-  cursor: ew-resize;
+  cursor: default;
   user-select: none;
   touch-action: none;
 }
@@ -224,6 +228,7 @@
   box-shadow: none;
 }
 .motion-ruler[data-scrubbing] {
+  cursor: ew-resize;
   outline: none;
   box-shadow: none;
 }
@@ -263,25 +268,32 @@
   position: absolute;
   z-index: 3;
   pointer-events: none;
-  border: 1px solid var(--motion-accent);
+  border: 1px solid var(--muted-foreground);
   border-radius: 2px;
-  background: color-mix(in srgb, var(--motion-accent) 10%, transparent);
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
 }
 .motion-key[data-key-preview="selected"] > svg {
-  fill: var(--motion-accent);
-  stroke: var(--motion-accent);
+  fill: var(--foreground);
+  stroke: var(--foreground);
 }
 .motion-key[data-key-preview="empty"] > svg {
   fill: var(--background);
   stroke: var(--muted-foreground);
 }
 .motion-row {
+  --motion-track-color: var(--media-image);
   position: absolute;
   left: 0;
   right: 0;
   display: grid;
   grid-template-columns: var(--motion-gutter) minmax(0, 1fr);
   align-items: stretch;
+}
+.motion-row[data-layer-kind="video"] {
+  --motion-track-color: var(--media-video);
+}
+.motion-row[data-layer-kind="audio"] {
+  --motion-track-color: var(--media-audio);
 }
 .motion-row-label {
   position: sticky;
@@ -300,10 +312,16 @@
   color: var(--muted-foreground);
 }
 .motion-row.is-selected {
-  background: color-mix(in srgb, var(--motion-accent) 8%, transparent);
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
 }
 .motion-row.is-selected .motion-row-label {
-  background: color-mix(in srgb, var(--motion-accent) 8%, var(--background));
+  background: color-mix(in srgb, var(--foreground) 8%, var(--background));
+}
+.motion-row:not(.is-selected):hover {
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+.motion-row:not(.is-selected):hover .motion-row-label {
+  background: color-mix(in srgb, var(--foreground) 4%, var(--background));
 }
 .motion-row-expand {
   display: inline-flex;
@@ -367,19 +385,20 @@ button.motion-row-expand:hover {
   right: -2px;
 }
 .motion-track {
-  cursor: grab;
+  cursor: default;
   touch-action: none;
 }
-.motion-track:active {
+.motion-track[data-dragging="true"],
+.motion-key[data-dragging="true"] {
   cursor: grabbing;
 }
 .motion-key {
   touch-action: none;
-  cursor: grab;
+  cursor: default;
 }
 .motion-key.is-key-selected > svg {
-  fill: var(--motion-accent);
-  stroke: var(--motion-accent);
+  fill: var(--motion-track-color);
+  stroke: var(--motion-track-color);
 }
 .motion-auto-key.is-active {
   color: var(--destructive);
@@ -425,9 +444,9 @@ button.motion-row-expand:hover {
   align-items: center;
   min-width: 2px;
   padding: 0 4px;
-  border: 1px solid color-mix(in srgb, var(--foreground) 9%, transparent);
+  border: 1px solid color-mix(in srgb, var(--motion-track-color) 40%, transparent);
   border-radius: 4px;
-  background: color-mix(in srgb, var(--muted-foreground) 24%, var(--background));
+  background: color-mix(in srgb, var(--motion-track-color) 28%, var(--background));
 }
 .motion-track > i {
   display: block;
@@ -436,11 +455,26 @@ button.motion-row-expand:hover {
   background: color-mix(in srgb, var(--foreground) 24%, transparent);
 }
 .motion-row.is-selected .motion-track {
-  border-color: var(--motion-accent);
-  background: color-mix(in srgb, var(--motion-accent) 83%, var(--background));
+  border-color: var(--motion-track-color);
+  background: color-mix(in srgb, var(--motion-track-color) 72%, var(--background));
 }
 .motion-row.is-selected .motion-track > i {
-  background: color-mix(in srgb, var(--primary-foreground) 60%, transparent);
+  background: color-mix(in srgb, var(--foreground) 65%, transparent);
+}
+.motion-track:hover {
+  border-color: color-mix(in srgb, var(--motion-track-color) 65%, transparent);
+  background: color-mix(in srgb, var(--motion-track-color) 38%, var(--background));
+}
+.motion-row.is-selected .motion-track:hover {
+  border-color: var(--motion-track-color);
+  background: color-mix(in srgb, var(--motion-track-color) 82%, var(--background));
+}
+.motion-trim-handle:hover::after {
+  content: "";
+  position: absolute;
+  inset: 3px 3px;
+  border-radius: 1px;
+  background: var(--foreground);
 }
 .motion-key {
   position: absolute;
@@ -461,7 +495,12 @@ button.motion-row-expand:hover {
   stroke-width: 1.6;
 }
 .motion-row.is-selected .motion-key {
-  color: var(--motion-accent);
+  color: var(--motion-track-color);
+}
+.motion-key:hover {
+  border-radius: 4px;
+  background: var(--accent);
+  color: var(--foreground);
 }
 .motion-key:hover > svg,
 .motion-key:focus-visible > svg {
@@ -525,7 +564,7 @@ button.motion-row-expand:hover {
   line-height: 1.5;
 }
 .motion-row button:focus-visible {
-  outline: 1px solid var(--motion-accent);
+  outline: 1px solid var(--muted-foreground);
   outline-offset: -1px;
   border-radius: 3px;
 }

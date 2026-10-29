@@ -39,7 +39,7 @@
   content: "";
   position: absolute;
   left: 0;
-  right: 0;
+  right: var(--scroll-shadow-scrollbar-right, 0px);
   height: 12px;
   z-index: 8;
   pointer-events: none;
@@ -55,7 +55,7 @@
   );
 }
 .scroll-shadow::after {
-  bottom: 0;
+  bottom: var(--scroll-shadow-scrollbar-bottom, 0px);
   background: linear-gradient(to top, var(--scroll-shadow-surface, var(--background)), transparent);
 }
 .scroll-shadow[data-overflow-top]::before,

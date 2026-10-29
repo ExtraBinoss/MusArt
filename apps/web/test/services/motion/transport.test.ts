@@ -61,6 +61,57 @@ function setup() {
 }
 
 describe("imperative Motion transport", () => {
+  it("coalesces key timing drafts, updates the current pose and restores it without authoring edits", () => {
+    const { engine, source, timer } = setup();
+    source.seek({ value: 1, rate: 2 });
+    const before = engine.getSnapshot();
+    const id = before.project.pages[0]!.motion!.tracks[0]!.properties[0]!.keyframes[1]!.id;
+    const draft = source.beginKeyframePreview([id])!;
+    for (const value of [-1, -2, -3]) draft.update({ value, rate: 4 });
+    expect(timer.pending.size).toBe(1);
+    expect(source.readFrame()!.layers[0]!.x).toBe(50);
+    timer.advance(16);
+    expect(source.readFrame()!.layers[0]!.x).toBe(80);
+    expect(source.isPreviewing()).toBe(true);
+    expect(engine.getSnapshot()).toBe(before);
+    draft.update({ value: -2, rate: 1 });
+    timer.advance(16);
+    expect(source.readFrame()!.layers[0]!.x).toBe(50);
+    expect(source.isPreviewing()).toBe(false);
+    draft.update({ value: -1, rate: 1 });
+    draft.clear();
+    timer.advance(16);
+    expect(timer.pending.size).toBe(0);
+    expect(source.readFrame()!.layers[0]!.x).toBe(50);
+    expect(engine.getSnapshot()).toBe(before);
+    source.dispose();
+  });
+
+  it("retires drafts after replacement, canonical changes, last unsubscribe and disposal", () => {
+    const { engine, source, timer } = setup();
+    const stop = source.subscribe(() => {});
+    const id =
+      engine.getSnapshot().project.pages[0]!.motion!.tracks[0]!.properties[0]!.keyframes[1]!.id;
+    const old = source.beginKeyframePreview([id])!,
+      next = source.beginKeyframePreview([id])!;
+    old.update({ value: -1, rate: 1 });
+    old.clear();
+    expect(timer.pending.size).toBe(0);
+    next.update({ value: -1, rate: 1 });
+    engine.execute({ type: "renameProject", name: "Changed" });
+    expect(timer.pending.size).toBe(0);
+    next.update({ value: -1, rate: 1 });
+    expect(timer.pending.size).toBe(0);
+    source.beginKeyframePreview([id])!.update({ value: -1, rate: 1 });
+    stop();
+    expect(timer.pending.size).toBe(0);
+    const disposed = source.beginKeyframePreview([id])!;
+    disposed.update({ value: -1, rate: 1 });
+    source.dispose();
+    disposed.update({ value: -1, rate: 1 });
+    expect(timer.pending.size).toBe(0);
+    expect(source.readFrame()).toBeNull();
+  });
   it("does not schedule twice when a frame listener restarts playback", () => {
     const { source, timer } = setup();
     let restarted = false;

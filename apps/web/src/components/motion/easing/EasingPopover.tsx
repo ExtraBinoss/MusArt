@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type ReactElement } from "react";
+import { useEffect, useId, useMemo, useState, type ReactElement } from "react";
 import { useTranslation } from "react-i18next";
 import {
   createMotionEasingPreset,
@@ -16,7 +16,13 @@ import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import { SelectField } from "../../shared/SelectField";
 import { CurveGraph } from "./CurveGraph";
-import { captureEasingOrigin, commitEasing, identifyEasing, type EasingOrigin } from "./model";
+import {
+  captureEasingOrigin,
+  commitEasing,
+  easingGraph,
+  identifyEasing,
+  type EasingOrigin,
+} from "./model";
 import "./messages";
 import "./easing.css";
 
@@ -49,6 +55,40 @@ function candidateCurve(base: MotionEasing, fields: Record<string, string>): Mot
   return isMotionEasing(value) ? value : null;
 }
 
+function presetCurve(value: string): MotionEasing {
+  return value === "customBezier"
+    ? { type: "cubicBezier", x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 }
+    : value === "customSpring"
+      ? { type: "spring", bounce: 0.5, response: 12 }
+      : createMotionEasingPreset(value as MotionEasingPreset);
+}
+
+function PresetLabel({
+  value,
+  label,
+  easing,
+}: {
+  value: string;
+  label: string;
+  easing?: MotionEasing;
+}) {
+  const graph = easingGraph(easing ?? presetCurve(value), 24);
+  return (
+    <span className="motion-easing-preset-label">
+      <svg className="motion-easing-preset-curve size-auto" viewBox="10 0 224 140" aria-hidden>
+        <path
+          d={graph.path}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.3}
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+      <span>{label}</span>
+    </span>
+  );
+}
+
 /** All changes are local drafts until Apply; dismissal never manufactures undo entries. */
 export function EasingPopover({
   engine,
@@ -71,7 +111,19 @@ export function EasingPopover({
   const [fields, setFields] = useState<Record<string, string>>(() => curveFields(draft));
   const [stale, setStale] = useState(false);
   const [error, setError] = useState("");
+  const [preview, setPreview] = useState<MotionEasing | null>(null);
+  const presets = useMemo(
+    () =>
+      open
+        ? [...MOTION_EASING_PRESETS, "customBezier", "customSpring"].map((value) => ({
+            value,
+            label: <PresetLabel value={value} label={t(value)} />,
+          }))
+        : [],
+    [open, t],
+  );
   const candidate = candidateCurve(draft, fields);
+  const selectedPreset = open ? identifyEasing(draft) : "linear";
   useEffect(() => {
     if (!open || !origin) return;
     return engine.subscribe(() => {
@@ -83,6 +135,7 @@ export function EasingPopover({
       ) {
         setStale(true);
         setError("changed");
+        setPreview(null);
       }
     });
   }, [engine, open, origin]);
@@ -90,9 +143,11 @@ export function EasingPopover({
     if (stale || !isMotionEasing(value)) return;
     setDraft(value);
     setFields(curveFields(value));
+    setPreview(null);
     setError("");
   }
   function changeOpen(next: boolean) {
+    setPreview(null);
     if (next) {
       try {
         const value = captureEasingOrigin(engine, compositionId, property.id, destination.id);
@@ -137,23 +192,22 @@ export function EasingPopover({
           </header>
           <SelectField
             label={t("preset")}
-            value={identifyEasing(draft)}
+            value={selectedPreset}
             disabled={stale}
-            options={[...MOTION_EASING_PRESETS, "customBezier", "customSpring"].map((value) => ({
-              value,
-              label: t(value),
-            }))}
-            onValueChange={(value) =>
-              setCurve(
-                value === "customBezier"
-                  ? { type: "cubicBezier", x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 }
-                  : value === "customSpring"
-                    ? { type: "spring", bounce: 0.5, response: 12 }
-                    : createMotionEasingPreset(value as MotionEasingPreset),
-              )
+            side="right"
+            options={presets}
+            selectedLabel={
+              <PresetLabel value={selectedPreset} label={t(selectedPreset)} easing={draft} />
             }
+            onPreview={(value) => setPreview(presetCurve(value))}
+            onPreviewCancel={() => setPreview(null)}
+            onValueChange={(value) => setCurve(presetCurve(value))}
           />
-          <CurveGraph easing={draft} onChange={setCurve} />
+          <CurveGraph
+            easing={preview ?? draft}
+            onChange={setCurve}
+            disabled={stale || preview !== null}
+          />
           {draft.type === "hold" && <p className="motion-easing-hint">{t("holdHint")}</p>}
           {(draft.type === "cubicBezier" || draft.type === "spring") && (
             <div className={`motion-easing-fields ${draft.type === "spring" ? "is-spring" : ""}`}>

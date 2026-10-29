@@ -16,6 +16,8 @@ export function SelectField({
   id,
   disabled,
   className,
+  side = "bottom",
+  selectedLabel,
 }: {
   label: string;
   value: string;
@@ -26,6 +28,8 @@ export function SelectField({
   id?: string;
   disabled?: boolean;
   className?: string;
+  side?: "top" | "right" | "bottom" | "left";
+  selectedLabel?: ReactNode;
 }) {
   const session = useRef<{ open: boolean; last: string | null }>({ open: false, last: null });
   const [mounted, setMounted] = useState(false);
@@ -90,11 +94,13 @@ export function SelectField({
         }}
       >
         <span data-slot="select-value" style={{ pointerEvents: "none" }}>
-          {value === "" ? "" : (options.find((option) => option.value === value)?.label ?? value)}
+          {value === ""
+            ? ""
+            : (selectedLabel ?? options.find((option) => option.value === value)?.label ?? value)}
         </span>
       </SelectTrigger>
       {mounted && (
-        <SelectContent position="popper" className="property-select-menu">
+        <SelectContent position="popper" side={side} className="property-select-menu">
           {options.map((option) => (
             <SelectItem
               key={option.value}

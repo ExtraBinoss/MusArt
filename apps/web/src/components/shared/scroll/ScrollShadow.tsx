@@ -19,13 +19,35 @@ export function ScrollShadow({
     const wrapper = root.current,
       viewport = wrapper?.firstElementChild;
     if (!(viewport instanceof HTMLElement) || !wrapper) return;
+    let maximumTop = 0,
+      bottomGutter = -1,
+      rightGutter = -1;
+    function paint() {
+      if (!wrapper || !(viewport instanceof HTMLElement)) return;
+      const top = viewport.scrollTop;
+      wrapper.toggleAttribute("data-overflow-top", top > 1);
+      wrapper.toggleAttribute("data-overflow-bottom", maximumTop - top > 1);
+    }
     function measure() {
       if (!wrapper || !(viewport instanceof HTMLElement)) return;
-      wrapper.toggleAttribute("data-overflow-top", viewport.scrollTop > 1);
-      wrapper.toggleAttribute(
-        "data-overflow-bottom",
-        viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop > 1,
-      );
+      const height = viewport.clientHeight,
+        width = viewport.clientWidth;
+      maximumTop = Math.max(0, viewport.scrollHeight - height);
+      // Overlay scrollbars occupy no layout gutter. Keep the shared six-pixel bar clear too.
+      const bottom = Math.max(
+          viewport.offsetHeight - height,
+          viewport.scrollWidth > width + 1 ? 6 : 0,
+        ),
+        right = Math.max(viewport.offsetWidth - width, maximumTop > 1 ? 6 : 0);
+      if (bottom !== bottomGutter) {
+        bottomGutter = bottom;
+        wrapper.style.setProperty("--scroll-shadow-scrollbar-bottom", `${bottom}px`);
+      }
+      if (right !== rightGutter) {
+        rightGutter = right;
+        wrapper.style.setProperty("--scroll-shadow-scrollbar-right", `${right}px`);
+      }
+      paint();
     }
     const resize = new ResizeObserver(measure);
     function observeChildren() {
@@ -37,10 +59,10 @@ export function ScrollShadow({
     }
     const childrenObserver = new MutationObserver(observeChildren);
     childrenObserver.observe(viewport, { childList: true });
-    viewport.addEventListener("scroll", measure, { passive: true });
+    viewport.addEventListener("scroll", paint, { passive: true });
     observeChildren();
     return () => {
-      viewport.removeEventListener("scroll", measure);
+      viewport.removeEventListener("scroll", paint);
       resize.disconnect();
       childrenObserver.disconnect();
     };

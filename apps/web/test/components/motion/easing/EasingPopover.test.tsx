@@ -83,6 +83,23 @@ it("validates custom Bézier/spring controls and refuses stale commits", async (
   expect(d.current().easing).toBeUndefined();
 });
 
+it("previews hovered presets without selecting them or changing history, then restores the selected curve", async () => {
+  const d = fixture(),
+    before = d.engine.getSnapshot();
+  fireEvent.click(screen.getByRole("button", { name: "Courbe" }));
+  const original = document.querySelector(".motion-easing-curve")!.getAttribute("d");
+  const select = screen.getByRole("combobox", { name: "Courbe d’interpolation" });
+  fireEvent.pointerDown(select, { button: 0, ctrlKey: false, pointerType: "mouse" });
+  const item = await screen.findByRole("option", { name: "Accélération" });
+  fireEvent.pointerMove(item, { pointerType: "mouse" });
+  expect(document.querySelector(".motion-easing-curve")!.getAttribute("d")).not.toBe(original);
+  expect(select).toHaveTextContent("Linéaire");
+  expect(d.engine.getSnapshot()).toBe(before);
+  fireEvent.keyDown(item, { key: "Escape" });
+  expect(document.querySelector(".motion-easing-curve")!.getAttribute("d")).toBe(original);
+  expect(screen.getByRole("dialog", { name: "Interpolation" })).toBeVisible();
+});
+
 it("does not build translated preset/field content for closed timeline connectors", () => {
   const translate = vi.spyOn(i18n, "t");
   fixture();

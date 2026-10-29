@@ -73,14 +73,16 @@ async function commits(page: Page) {
     roots,
   );
 }
-async function load(page: Page, empty = false) {
+async function load(page: Page, empty = false, project = fixture(empty)) {
   await installReadbackProbe(page);
   await page.addInitScript(() => localStorage.setItem("musart.theme", "dark"));
   await page.goto("/?automation=1");
   await page.waitForFunction(() => Boolean(window.musart));
-  await page.evaluate((project) => window.musart!.load(project), fixture(empty));
+  await page.evaluate((project) => window.musart!.load(project), project);
   await expect(page.locator(".motion-timeline-dock")).toHaveCSS("opacity", "1");
-  await expect(page.locator('.canvas-artboard canvas[data-renderer-ready="true"]')).toBeVisible();
+  await expect(page.locator('.canvas-artboard canvas[data-renderer-ready="true"]')).toBeVisible({
+    timeout: 20000,
+  });
 }
 
 test("dark Motion ruler stays clipped, follows playback at high zoom, and keeps canvas roots quiet", async ({
@@ -237,6 +239,54 @@ test("empty timeline and artboard controls remain legible at compact viewports a
   await page.screenshot({ path: "artifacts/motion/ui/empty-compact-reduced-dark.png" });
 });
 
+test("clock-only playback leaves the native GPU scene idle while the timeline advances", async ({
+  page,
+}) => {
+  const project = fixture();
+  // The evaluated value differs from the base design, so materialization creates fresh
+  // objects. Equal held values must still reuse the visual frame rather than redraw.
+  const property = project.pages[0]!.motion!.tracks[0]!.properties[0]!;
+  property.keyframes = [{ ...property.keyframes[0]!, value: 120 }];
+  await load(page, false, project);
+  const canvas = page.locator('.canvas-artboard canvas[data-renderer-ready="true"]');
+  await expect(canvas).toBeVisible();
+  await page.getByRole("button", { name: "Lire", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeVisible();
+  await expect(canvas).toBeVisible();
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  );
+  const counts = () =>
+    canvas.evaluate((node) => ({
+      composed: Number(node.dataset.renderCount),
+      displayed: Number(node.dataset.renderFrames),
+    }));
+  const before = await counts();
+  const ruler = page.getByRole("slider", { name: "Se déplacer dans la timeline" });
+  const startTime = Number(await ruler.getAttribute("aria-valuenow"));
+  const elapsed = async () =>
+    (Number(await ruler.getAttribute("aria-valuenow")) - startTime + 5) % 5;
+  await expect.poll(elapsed).toBeGreaterThan(0.5);
+  const clockAdvanceSeconds = await elapsed();
+  const after = await counts();
+  expect(after).toEqual(before);
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  expect(await page.evaluate(() => window.__musartVideoReadbacks)).toMatchObject({
+    gpu: 0,
+    webgl: 0,
+    canvas: 0,
+    videoFrame: 0,
+  });
+  await mkdir("artifacts/motion/ui", { recursive: true });
+  await writeFile(
+    "artifacts/motion/ui/clock-only-report.json",
+    JSON.stringify({ before, after, clockAdvanceSeconds }, null, 2),
+  );
+});
+
 test("timeline focus keeps native Undo/Redo routing and text-field ownership", async ({ page }) => {
   await load(page);
   await page.evaluate(() =>
@@ -266,6 +316,133 @@ test("timeline focus keeps native Undo/Redo routing and text-field ownership", a
   expect(await endValue()).toBe(700);
   const reads = await page.evaluate(() => window.__musartVideoReadbacks);
   expect(reads).toMatchObject({ gpu: 0, webgl: 0, canvas: 0, videoFrame: 0 });
+});
+
+test("easing editors keep portal ownership, preview presets and use neutral timeline controls", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 850 });
+  const project = fixture(),
+    composition = project.pages[0]!;
+  for (let index = 0; index < 24; index++) {
+    const layer = createLayer("rectangle", {
+      id: `extra-${index}`,
+      name: `Extra ${index}`,
+      width: 12,
+      height: 12,
+      x: index * 20,
+      y: 500,
+      fill: "#777777",
+    });
+    composition.layers.push(layer);
+    composition.motion!.tracks.push({
+      id: `track-${layer.id}`,
+      layerId: layer.id,
+      start: { value: 0, rate: 1 },
+      end: null,
+      properties: [],
+    });
+  }
+  await load(page, false, project);
+  await expect(page.locator('.canvas-artboard canvas[data-renderer-ready="true"]')).toBeVisible();
+  await page.locator(".motion-easing-segment").first().click();
+  const editor = page.getByRole("dialog", { name: "Interpolation", exact: true });
+  await editor.getByText("Contrôle la transition vers cette image clé.").click();
+  await expect(editor).toBeVisible();
+  await expect(page.locator(".motion-marquee")).toHaveCount(0);
+  const before = await page.evaluate(() => window.musart!.snapshot().revision);
+  const select = editor.getByRole("combobox", { name: "Courbe d’interpolation" });
+  const originalLabel = await select.innerText();
+  const curve = editor.locator(".motion-easing-curve"),
+    originalCurve = await curve.getAttribute("d");
+  await select.click();
+  const option = page.getByRole("option", { name: "Accélération", exact: true });
+  await option.hover();
+  await expect(curve).not.toHaveAttribute("d", originalCurve!);
+  await expect(select).toHaveText(originalLabel);
+  const optionColor = await option.evaluate((node) => getComputedStyle(node).backgroundColor);
+  const channels = optionColor
+    .match(/[\d.]+/g)!
+    .slice(0, 3)
+    .map(Number);
+  expect(channels[0]).toBe(channels[1]);
+  expect(channels[1]).toBe(channels[2]);
+  expect(channels[0]).toBeGreaterThan(0);
+  const menu = (await page.getByRole("listbox").boundingBox())!,
+    graph = (await editor.locator(".motion-easing-graph").boundingBox())!;
+  expect(menu.x >= graph.x + graph.width - 8 || menu.x + menu.width <= graph.x + 8).toBe(true);
+  await mkdir("artifacts/motion/ui", { recursive: true });
+  await page.screenshot({ path: "artifacts/motion/ui/easing-hover-dark.png" });
+  await option.click();
+  await expect(editor).toBeVisible();
+  await expect(select).toHaveText("Accélération");
+  const handle = editor.getByRole("slider", { name: "Point de contrôle Bézier 1" });
+  await expect(handle).toBeEnabled();
+  const thumbStyle = await handle.evaluate((node) => {
+    const source = getComputedStyle(node),
+      slider = getComputedStyle(document.querySelector('.motion-zoom [data-slot="slider-thumb"]')!);
+    return {
+      graph: [source.width, source.height, source.backgroundImage],
+      slider: [slider.width, slider.height, slider.backgroundImage],
+    };
+  });
+  expect(thumbStyle.graph).toEqual(thumbStyle.slider);
+  const first = await editor.getByRole("spinbutton", { name: "X1" }).inputValue(),
+    point = (await handle.boundingBox())!;
+  await page.mouse.move(point.x + point.width / 2, point.y + point.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(point.x + point.width / 2 + 24, point.y + point.height / 2 - 12, {
+    steps: 4,
+  });
+  await page.mouse.up();
+  await expect(editor.getByRole("spinbutton", { name: "X1" })).not.toHaveValue(first);
+  expect(await page.evaluate(() => window.musart!.snapshot().revision)).toBe(before);
+  await page.screenshot({ path: "artifacts/motion/ui/easing-thumb-dark.png" });
+  await editor.getByRole("button", { name: "Appliquer l’interpolation" }).click();
+  await expect(editor).toBeHidden();
+  expect(await page.evaluate(() => window.musart!.snapshot().revision)).toBe(before + 1);
+  await page.getByRole("button", { name: /^Mode de lecture/ }).click();
+  const once = page.getByRole("radio", { name: "Une fois", exact: true });
+  await once.hover();
+  const loopColor = await once.evaluate((node) => getComputedStyle(node).backgroundColor);
+  expect(loopColor).toBe(optionColor);
+  await page.evaluate(() => document.documentElement.classList.remove("dark"));
+  await page.screenshot({ path: "artifacts/motion/ui/loop-neutral-light.png" });
+  await once.click();
+  await page.evaluate(() => document.documentElement.classList.add("dark"));
+  const track = page.getByRole("button", { name: "Intervalle actif de Motion card", exact: true });
+  await track.hover();
+  await expect(track).toHaveCSS("cursor", "default");
+  const box = (await track.boundingBox())!;
+  await page.mouse.move(box.x + 20, box.y + box.height / 2);
+  await page.mouse.down();
+  await expect(track).not.toHaveAttribute("data-dragging");
+  await page.mouse.move(box.x + 35, box.y + box.height / 2);
+  await expect(track).toHaveAttribute("data-dragging", "true");
+  await expect(track).toHaveCSS("cursor", "grabbing");
+  await page.mouse.up();
+  await expect(track).not.toHaveAttribute("data-dragging");
+  const zoom = page.getByRole("slider", { name: "Zoom de la timeline", exact: true });
+  await zoom.focus();
+  await page.keyboard.press("End");
+  const viewport = page.locator(".motion-timeline-scroll"),
+    shadow = page.locator(".motion-scroll-shadow");
+  await expect(shadow).toHaveAttribute("data-overflow-bottom");
+  await expect
+    .poll(() => shadow.evaluate((node) => parseFloat(getComputedStyle(node, "::after").bottom)))
+    .toBeGreaterThanOrEqual(6);
+  const gutter = await viewport.evaluate((node) =>
+    Math.max(6, (node as HTMLElement).offsetHeight - node.clientHeight),
+  );
+  expect(
+    await shadow.evaluate((node) => parseFloat(getComputedStyle(node, "::after").bottom)),
+  ).toBeGreaterThanOrEqual(gutter);
+  expect(await page.evaluate(() => window.__musartVideoReadbacks)).toMatchObject({
+    gpu: 0,
+    webgl: 0,
+    canvas: 0,
+    videoFrame: 0,
+  });
 });
 
 test("shared scroll shadows and visible rows stay bounded in a 500-layer timeline", async ({

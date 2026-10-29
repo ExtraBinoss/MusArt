@@ -5,6 +5,7 @@ import { createLayer } from "@musart/core";
 import { setup } from "../../support/ui";
 import { makeTransport, PanelHost, pointer } from "./support";
 import { TimelinePanel } from "../../../src/components/motion/TimelinePanel";
+import { choose } from "../../support/select";
 
 it("updates time/playhead imperatively without timeline React commits, then cleans subscriptions", () => {
   const d = setup();
@@ -118,6 +119,34 @@ it("implements verified Space playback in timeline focus while preserving field 
   expect(runtime.transport.play).toHaveBeenCalledOnce();
   fireEvent.keyDown(screen.getByRole("spinbutton", { name: "Temps actuel" }), { key: " " });
   expect(runtime.transport.pause).not.toHaveBeenCalled();
+});
+
+it("keeps portalled easing clicks and select items out of timeline marquee and key handling", async () => {
+  const d = setup();
+  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  for (const value of [0, 1])
+    d.engine.execute({
+      type: "upsertMotionKeyframe",
+      target: { kind: "layer", layerId: d.rectangle.id, property: "x" },
+      time: { value, rate: 1 },
+      value,
+    });
+  const runtime = makeTransport(d.engine.getSnapshot().project.pages[0]!);
+  d.mount(<PanelHost engine={d.engine} transport={runtime.transport} />);
+  fireEvent.click(screen.getByRole("button", { name: /Modifier l’interpolation vers/ }));
+  const before = d.engine.getSnapshot();
+  const blank = screen.getByText("Contrôle la transition vers cette image clé.");
+  act(() => pointer(blank, "pointerdown", 500, 30));
+  act(() => pointer(blank, "pointerup", 500, 30));
+  expect(document.querySelector(".motion-marquee")).toBeNull();
+  expect(screen.getByRole("dialog", { name: "Interpolation" })).toBeVisible();
+  await choose("Courbe d’interpolation", "Accélération");
+  expect(screen.getByRole("combobox", { name: "Courbe d’interpolation" })).toHaveTextContent(
+    "Accélération",
+  );
+  expect(screen.getByRole("dialog", { name: "Interpolation" })).toBeVisible();
+  fireEvent.keyDown(blank, { key: "Delete" });
+  expect(d.engine.getSnapshot()).toBe(before);
 });
 
 it("keeps ruler, clipped line and automatic playback scrolling on the same time scale", () => {

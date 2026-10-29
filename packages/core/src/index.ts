@@ -172,6 +172,7 @@ export {
 } from "./motion/properties/registry";
 export { applyMotionValue, applyMotionValues } from "./motion/properties/apply";
 export { compileMotion } from "./motion/compile";
+export { createMotionKeyframePreview } from "./motion/keyframe-preview";
 export type { MotionProgram } from "./motion/compile";
 export { evaluateMotion } from "./motion/evaluate";
 export type {

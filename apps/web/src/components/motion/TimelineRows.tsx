@@ -1,10 +1,20 @@
 import { useTranslation } from "react-i18next";
-import { ChevronDown, ChevronRight, Diamond, Folder, Layers } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Diamond,
+  Folder,
+  Layers,
+  Film,
+  Image as ImageIcon,
+  type LucideIcon,
+} from "lucide-react";
 import {
   getEffectDefinition,
   motionTimeToSeconds,
   resolveLayerMotionProperty,
   type EnginePort,
+  type Layer,
   type MotionPropertyTarget,
 } from "@musart/core";
 import type { TimelineTransport, TimelineUnit } from "./model";
@@ -15,12 +25,18 @@ import { formatTimelineTime } from "./time";
 import "./messages";
 import type { TimelineGestures } from "./gestures";
 import { KeyCluster } from "./KeyCluster";
+import { KeyframeMarker } from "./KeyframeMarker";
 
 const propertyLabels: Readonly<Record<string, string>> = {
   x: "positionX",
   y: "positionY",
   "fillGradient.angle": "gradientAngle",
   "fillGradient.kind": "gradientKind",
+};
+const layerIcons: Partial<Record<Layer["kind"], LucideIcon>> = {
+  group: Folder,
+  image: ImageIcon,
+  video: Film,
 };
 
 export function TimelineRows({
@@ -77,6 +93,7 @@ export function TimelineRows({
     return `${common(definition.nameKey)} · ${parameter ? common(parameter.labelKey) : t(target.property)}`;
   }
   return rows.slice(first, last).map((row, offset) => {
+    const Icon = row.kind === "property" ? Diamond : (layerIcons[row.layer.kind] ?? Layers);
     const active = selected.has(row.layer.id);
     const name = row.kind === "property" ? propertyName(row.property.target, row) : row.layer.name;
     const start = row.track ? motionTimeToSeconds(row.track.start) : 0;
@@ -95,6 +112,7 @@ export function TimelineRows({
         className={`motion-row ${active ? "is-selected" : ""} ${row.kind === "property" ? "is-property" : ""}`}
         style={{ top: (first + offset) * rowHeight, height: rowHeight }}
         data-layer-id={row.layer.id}
+        data-layer-kind={row.layer.kind}
       >
         <div className="motion-row-label" style={{ paddingLeft: 10 + row.depth * 14 }}>
           {row.kind === "layer" && row.expandable ? (
@@ -111,13 +129,7 @@ export function TimelineRows({
           ) : (
             <span className="motion-row-expand" aria-hidden />
           )}
-          {row.kind === "property" ? (
-            <Diamond size={10} aria-hidden />
-          ) : row.layer.kind === "group" ? (
-            <Folder size={12} aria-hidden />
-          ) : (
-            <Layers size={12} aria-hidden />
-          )}
+          <Icon size={row.kind === "property" ? 10 : 12} aria-hidden />
           <button
             type="button"
             className="motion-row-name"
@@ -225,42 +237,18 @@ export function TimelineRows({
                   onZoomRange={onZoomRange}
                 />
               ) : (
-                <button
-                  type="button"
+                <KeyframeMarker
                   key={marker.key.id}
-                  className={`motion-key ${marker.count > 1 ? "is-bundle" : ""} ${gestures?.readSelected().has(marker.key.id) ? "is-key-selected" : ""}`}
-                  disabled={!interactive}
-                  data-key-id={marker.key.id}
-                  data-property-id={row.property.id}
-                  data-first-key-index={marker.firstKeyIndex}
-                  data-after-key-index={marker.afterKeyIndex}
-                  aria-pressed={gestures?.readSelected().has(marker.key.id) ?? false}
-                  style={{ left: marker.x }}
-                  aria-label={t(marker.count > 1 ? "keys" : "key", {
-                    name,
-                    count: marker.count,
-                    time: formatTimelineTime(marker.key.time, unit),
-                    unit,
-                  })}
-                  onPointerDown={(event) => gestures?.beginKey(event, row.layer.id, marker.key)}
-                  onClick={(event) => {
-                    if (gestures?.consumePointerClick(event.detail)) return;
-                    if (!gestures || event.detail === 0) {
-                      gestures?.selectKey(marker.key.id, event.shiftKey);
-                      onSelect(row.layer.id, event.shiftKey);
-                    }
-                    if (event.detail === 0) {
-                      transport.pause();
-                      transport.seek(marker.key.time);
-                    }
-                  }}
-                  onDoubleClick={() => {
-                    transport.pause();
-                    transport.seek(marker.key.time);
-                  }}
-                >
-                  <Diamond size={8} aria-hidden />
-                </button>
+                  marker={marker}
+                  name={name}
+                  propertyId={row.property.id}
+                  layerId={row.layer.id}
+                  unit={unit}
+                  transport={transport}
+                  gestures={gestures}
+                  onSelect={onSelect}
+                  interactive={interactive}
+                />
               ),
             )}
         </div>

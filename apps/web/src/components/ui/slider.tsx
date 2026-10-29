@@ -16,7 +16,7 @@ function Slider({
   defaultValue,
   value,
   valueSource,
-  tone = "primary",
+  tone = "neutral",
   "aria-label": ariaLabel,
   min = 0,
   max = 100,

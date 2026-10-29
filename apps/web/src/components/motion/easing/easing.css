@@ -22,6 +22,22 @@
 .motion-easing-popover > [data-slot="select-trigger"] {
   height: 29px;
   font-size: 11px;
+  width: 100%;
+}
+.motion-easing-preset-label {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: 8px;
+}
+.motion-easing-preset-curve {
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+}
+[data-slot="select-item"][data-highlighted] .motion-easing-preset-curve {
+  color: var(--foreground);
 }
 .motion-easing-graph {
   display: block;
@@ -43,20 +59,21 @@
   opacity: 0.5;
 }
 .motion-easing-arm {
-  stroke: color-mix(in srgb, var(--primary) 50%, transparent);
+  stroke: color-mix(in srgb, var(--muted-foreground) 70%, transparent);
   stroke-width: 1;
 }
 .motion-easing-curve {
-  stroke: var(--primary);
+  stroke: var(--foreground);
   stroke-width: 2;
   fill: none;
   stroke-linejoin: round;
 }
 .motion-easing-handle {
-  stroke: var(--primary);
-  stroke-width: 1.5;
-  fill: var(--background);
-  cursor: grab;
+  display: block;
+  margin: 5px 4px;
+  padding: 0;
+  border-radius: 999px;
+  cursor: default;
   touch-action: none;
   outline: none;
 }
@@ -64,8 +81,14 @@
   cursor: grabbing;
 }
 .motion-easing-handle:focus-visible {
-  stroke-width: 3;
-  fill: color-mix(in srgb, var(--primary) 18%, var(--background));
+  outline: 1px solid var(--muted-foreground);
+  outline-offset: 3px;
+}
+.motion-easing-handle-wrap {
+  overflow: visible;
+}
+.motion-easing-handle:disabled {
+  opacity: 0.55;
 }
 .motion-easing-graph text {
   font-family: inherit;
@@ -143,7 +166,8 @@
 }
 .motion-easing-segment:hover,
 .motion-easing-segment:focus-visible {
-  color: var(--primary);
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
   outline: none;
 }
 .motion-easing-segment:focus-visible::before {

@@ -23,7 +23,9 @@ test("explicit selected labels update without a value portal and keep the empty 
   view.rerender(<SelectField {...props} value="two" />);
   expect(trigger).toHaveTextContent("Two");
   expect(trigger.querySelector("[data-rich-choice]")).toBeNull();
-  view.rerender(<SelectField {...props} value="" />);
+  view.rerender(<SelectField {...props} value="one" selectedLabel={<span>Live curve</span>} />);
+  expect(trigger).toHaveTextContent("Live curve");
+  view.rerender(<SelectField {...props} value="" selectedLabel="Live curve" />);
   expect(trigger.querySelector('[data-slot="select-value"]')?.textContent).toBe("");
   expect(trigger).toHaveAttribute("data-placeholder");
 });

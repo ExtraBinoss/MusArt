@@ -131,8 +131,10 @@ export function createTimelineMarquee(options: {
     isActive: () => active !== null,
     cancel,
     begin(event: ReactPointerEvent<HTMLElement>, rows: readonly TimelineRow[], rowHeight: number) {
+      // Portalled editors bubble through React's row tree but do not belong to this viewport.
       if (
         event.button !== 0 ||
+        !event.currentTarget.contains(event.target as Node) ||
         (event.target as HTMLElement).closest("button,input,.motion-row-label")
       )
         return;

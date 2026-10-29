@@ -19,6 +19,12 @@ export interface TimelineTransport {
   pause(): void;
   setPlaybackMode(mode: TimelineTransportState["playbackMode"]): void;
   readFrame?(): Composition | null;
+  beginKeyframePreview?(ids: readonly string[]):
+    | {
+        update(delta: MotionTime): void;
+        clear(): void;
+      }
+    | undefined;
 }
 
 export type TimelineUnit = "s" | "ms";

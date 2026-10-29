@@ -6,6 +6,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Added
 
+
 - Added a per-composition Motion timeline with virtualized layer/property rows, trimming and movement, key selection, property diamonds, automatic subsequent keys and easing editors. Playback, scrubbing and continuous edits use imperative presentation subscriptions; hidden timeline state is retained with React Activity.
 - Added headless-built In Bloom and Motion Stress Lab templates with grouped imagery/video, masks, animated text/effects and every easing family. The gallery filters Static/Motion templates, validates original-media hashes and opens each as an independent project.
 - Added a split Export action for editing-history Timelapse, with a dedicated replay dialog and a 1–30-second output duration. Authored Motion export remains a separate unfinished milestone.
@@ -19,6 +20,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 ### Changed
 
 - Rebuilt the gradient picker with shared Solid/Gradient segmented controls, draggable color stops and compact position, hex and opacity rows, preserving imperative previews, cancellation and one-step undo.
+- Refined Motion easing editors with hover curve previews, shared glass control points and reliable nested-select ownership. Ordinary controls use neutral theme states, tracks distinguish image/video media colors, and scroll shadows clear the scrollbars without layout reads on every scroll event.
+- Added themed keyframe tooltips after 500 ms and live composition previews while retiming keys. The headless retiming draft reuses unaffected compiled layers and interpolation segments; the editor coalesces evaluation per frame, cancels stale work and commits one undoable edit on release.
 
 - Prepare the same Three.js compositing/effect/text pipelines asynchronously before drawing, including bounded Motion sources that first appear from zero opacity. Reuse analytical text outlines, materials and placement buffers across continuous layout animation when glyph identity is unchanged. WebGPU/WebGL pixel-equivalence witnesses pass; full-template performance acceptance remains unfinished.
 - Updated shared Radix sliders and switches with the compact glass controls adapted from Converta, preserving keyboard interaction, disabled states, reduced motion and component provenance. Sliders can subscribe directly to presentation values; timeline zoom uses a neutral track. Primary controls now consistently use MusArt's action color, and tooltips use the active popover theme.
@@ -40,6 +43,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 - Locked artwork remains inspectable on the canvas with a constant-size lock badge and no editing handles. Layer rows expose persistent protection indicators, while the inspector and effect/mask popovers identify blocking parent locks and unlock only that chain in one undoable transaction.
 
 ### Fixed
+
+- Avoid redundant scene/GPU submissions when only the Motion clock changes and the evaluated still pose is unchanged; active video requests continue to invalidate on every requested media time.
 
 - Timeline focus now allows configured Undo, Redo and Save shortcuts through its gesture boundary. Native text undo and nested shortcut recorders keep ownership, and unrelated canvas commands remain captured.
 - Timeline reopening honors reduced motion immediately, including Static → Motion switches, while the normal entrance/exit uses the retained DOM animation scope. Both paths preserve the hidden timeline and avoid unrelated editor commits.

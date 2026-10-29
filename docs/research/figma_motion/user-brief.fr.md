@@ -404,6 +404,69 @@ calme toi sur gpu et cpu svp
 ok continue mais clamos sur cpu quand meme!!!! mais go
 ```
 
+## M54
+
+```text
+pour l'ui d'interpolation, c'est bien les preset mais faudrait genre au hover dans les elements du select que ca preview la shape de la wave, et aussi pouvoir genre bouger les points (avec les memes point uqe les select/slider je pense thumb tu vois) je pense, ca serait bien
+
+le clic dans le vide du popover ne doit pas fermer le popover, (ni le clic dans l'item d'interpolation, j'ai vu y'en a avec des thumb enfaite donc voila quand je clique sur un element du select genre accélération etc.. j'ai pas l'impression qu'il se selectionne at all.
+
+dans la timeline tout est curseur hand c'est pas beau  cque si je déplace, et ya aucun hover sur les element pour voir ou se situe ma souris
+
+aussi les hover et clic et tout faudrait du neutral plutot que du primary la scrollsahdow passe au dessus de la scrollbar down, donc c'est pas top, paske ducoup ca shadow pas trop quoi
+
+sinontu as spot on le look figma donc gg, c'est pas mal, meme niveau perf!
+
+j'ai vu la vidéo flash la vidéo de fleur parfois. c'est un peu chelou. mais voila c'est ps mal, continue comme ça on avnace bien
+```
+
+## M55
+
+```text
+pareil le popover de loop doit etre neutral le selecteur
+```
+
+## M56
+
+```text
+meme le select le backgrund doit pas etre primary mais neutral, primary c vraiment état actif pure mais pour les trucs mega important, sinon c neutral svp ;) juste fix un peu sa
+```
+
+## M57 — Clarification about the flower flash
+
+Question: Le flash de la fleur arrive surtout pendant la lecture normale, au retour de boucle, ou après un scrub/zoom ? Je continue les retouches UI pendant ce temps.
+
+```text
+Pendant la lecture normale
+```
+
+## M58
+
+```text
+pour l'item selectionné je suis ok pour les couleurs primary genre je palre du truc  "motion track" en gros, ça c'est ok pour primary bleu : (normaux)
+son == vert, etc.. faut des trucs bien fait, genre ptete image bleu, video track violet et son vert, comme ça on différencie
+```
+
+## M59
+
+Reference: [user-supplied gradient picker](assets/gradient-picker-reference.png), copied unchanged from `/tmp/codex-clipboard-yIBfOl.png`.
+
+```text
+[Image #1] pour le truc quand y'a un gradient, faudrait un segmented control, uni ou gradent et ensuite dedans on aura ca comme layout genre le gradient picker doit etre sympa comme ça, moderne et beau que ce soit simple à utiliser, car actuellement il est bofenvoie un sous agent pour ça
+```
+
+## M60
+
+```text
+quand je déplace la keyframe genre le truc, faurait deja un tooltip si je reste 500ms dessus quoi, et aussi que le déplacement soit temps réel etc svp merci bcp
+```
+
+## M61
+
+```text
+tu peux svp commit et git pull le main la pour recuperer les dernières modif j'ai fais pas mla de fix de perf et tout je pense que ca te servira
+```
+
 ## Reference handling
 
 The screenshots are user-supplied Figma UI references, not MusArt product assets. They document the requested appearance and interaction target; they do not grant a license to redistribute Figma code, brand assets or an external design system inside the application. Preserve MusArt branding and use the repository's genuine shadcn/Radix controls.

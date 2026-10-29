@@ -51,6 +51,7 @@ test("scroll boundaries update shadows imperatively, preserve the viewport, and 
     scrollHeight: { value: 500, configurable: true },
     clientHeight: { value: 100, configurable: true },
   });
+  act(() => resize([], {} as ResizeObserver));
   const baseline = renders.mock.calls.length;
   fireEvent.scroll(viewport);
   expect(root).toHaveAttribute("data-overflow-bottom");
@@ -72,6 +73,54 @@ test("scroll boundaries update shadows imperatively, preserve the viewport, and 
   view.unmount();
   expect(remove).toHaveBeenCalledWith("scroll", expect.any(Function));
   expect(disconnect).toHaveBeenCalled();
+});
+
+test("keeps fades above scrollbars and caches layout measurements between resize notifications", () => {
+  let resize!: ResizeObserverCallback;
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      constructor(callback: ResizeObserverCallback) {
+        resize = callback;
+      }
+      observe() {}
+      disconnect() {}
+    },
+  );
+  const view = render(
+      <ScrollShadow>
+        <div role="list" />
+      </ScrollShadow>,
+    ),
+    viewport = screen.getByRole("list"),
+    root = viewport.parentElement!,
+    height = vi.fn(() => 100),
+    scrollHeight = vi.fn(() => 500);
+  Object.defineProperties(viewport, {
+    clientHeight: { get: height, configurable: true },
+    scrollHeight: { get: scrollHeight, configurable: true },
+    clientWidth: { value: 200, configurable: true },
+    scrollWidth: { value: 500, configurable: true },
+    offsetHeight: { value: 108, configurable: true },
+    offsetWidth: { value: 208, configurable: true },
+  });
+  act(() => resize([], {} as ResizeObserver));
+  expect(root.style.getPropertyValue("--scroll-shadow-scrollbar-bottom")).toBe("8px");
+  expect(root.style.getPropertyValue("--scroll-shadow-scrollbar-right")).toBe("8px");
+  height.mockClear();
+  scrollHeight.mockClear();
+  fireEvent.scroll(viewport, { target: { scrollTop: 200 } });
+  expect(root).toHaveAttribute("data-overflow-bottom");
+  expect(height).not.toHaveBeenCalled();
+  expect(scrollHeight).not.toHaveBeenCalled();
+  Object.defineProperties(viewport, {
+    offsetHeight: { value: 100 },
+    offsetWidth: { value: 200 },
+  });
+  act(() => resize([], {} as ResizeObserver));
+  expect(root.style.getPropertyValue("--scroll-shadow-scrollbar-bottom")).toBe("6px");
+  expect(root.style.getPropertyValue("--scroll-shadow-scrollbar-right")).toBe("6px");
+  view.unmount();
 });
 test("changing the viewport type rebinds observation to the new element", () => {
   const view = render(

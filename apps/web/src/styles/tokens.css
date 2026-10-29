@@ -17,7 +17,7 @@
   --color-destructive: var(--destructive);
   --color-border: var(--border);
   --color-input: var(--input);
-  --color-ring: var(--primary);
+  --color-ring: var(--ring);
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 10px;
@@ -33,9 +33,13 @@
   --primary-foreground: var(--action-foreground);
   --action: #2563eb;
   --action-foreground: #ffffff;
+  --media-image: var(--primary);
+  --media-video: #8b5cf6;
+  --media-audio: #16a34a;
   --secondary: #eceef3;
   --muted: #edeef1;
   --muted-foreground: #797d88;
+  --ring: var(--muted-foreground);
   --accent: #eeeeee;
   --destructive: #db4349;
   --border: #e3e4e9;
@@ -52,6 +56,8 @@
   -webkit-font-smoothing: antialiased;
 }
 :root.dark {
+  --media-video: #a78bfa;
+  --media-audio: #4ade80;
   --background: #222222;
   --foreground: #e8e8e8;
   --card: #262626;
@@ -109,7 +115,7 @@ textarea {
   -webkit-tap-highlight-color: transparent;
 }
 button:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
 svg {

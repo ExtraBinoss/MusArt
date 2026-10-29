@@ -6,6 +6,7 @@ import { createPreviewSource } from "../../../src/state/session/preview-source";
 import { previewAtom } from "../../../src/state/session/editor";
 import { createPlaybackSource } from "../../../src/canvas/session/playback-source";
 import { createMotionTransport } from "../../../src/services/motion/transport";
+import { video } from "../../../../../packages/core/test/assets/fixtures";
 function fixture() {
   const layer = createLayer("rectangle", { width: 80, height: 60, fill: "#3366ff" });
   const engine = new EditorEngine(
@@ -16,6 +17,101 @@ function fixture() {
   return { layer, engine, store, controller };
 }
 describe("stable imperative scene controller", () => {
+  test.each(["base", "held key"])(
+    "clock-only Motion ticks retain the %s pose without republishing the GPU scene",
+    (kind) => {
+      const d = fixture();
+      d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+      if (kind === "held key")
+        d.engine.execute({
+          type: "upsertMotionKeyframe",
+          target: { kind: "layer", layerId: d.layer.id, property: "x" },
+          time: { value: 0, rate: 1 },
+          value: 99,
+        });
+      const motion = createMotionTransport(d.engine),
+        changed = vi.fn(),
+        stop = d.controller.subscribe(changed),
+        frame = d.controller.read(),
+        snapshot = d.engine.getSnapshot();
+      for (let value = 1; value <= 60; value++) motion.seek({ value, rate: 60 });
+      expect(d.controller.read()).toBe(frame);
+      expect(changed).not.toHaveBeenCalled();
+      motion.play();
+      expect(d.controller.read().playback).toBe(true);
+      motion.pause();
+      expect(d.controller.read().presentation?.canonical).toBe(true);
+      expect(changed).toHaveBeenCalledTimes(2);
+      expect(d.engine.getSnapshot()).toBe(snapshot);
+      stop();
+      motion.dispose();
+    },
+  );
+
+  test("coalesces unchanged hidden poses but publishes equal-length presence changes", () => {
+    const d = fixture(),
+      other = createLayer("ellipse");
+    d.engine.execute({ type: "addLayers", layers: [other] });
+    d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+    const tracks = d.engine.getSnapshot().project.pages[0]!.motion!.tracks;
+    d.engine.transaction(
+      tracks.map((track) => ({
+        type: "setMotionTrackRange",
+        trackId: track.id,
+        start: { value: track.layerId === d.layer.id ? 0 : 1, rate: 1 },
+        end: { value: track.layerId === d.layer.id ? 1 : 2, rate: 1 },
+      })),
+    );
+    const motion = createMotionTransport(d.engine),
+      changed = vi.fn(),
+      stop = d.controller.subscribe(changed);
+    motion.seek({ value: 1, rate: 2 });
+    expect(changed).not.toHaveBeenCalled();
+    motion.seek({ value: 1, rate: 1 });
+    expect(d.controller.read().page.layers.map((layer) => layer.visible)).toEqual([false, true]);
+    motion.seek({ value: 3, rate: 2 });
+    expect(changed).toHaveBeenCalledOnce();
+    stop();
+    motion.dispose();
+  });
+
+  test("media clocks and both media-presence boundaries still publish when the page is unchanged", () => {
+    const asset = video(),
+      layer = createLayer("video", { assetId: asset.id, visible: false });
+    const engine = new EditorEngine(
+      createProject({
+        assets: { [asset.id]: asset },
+        pages: [createPage({ layers: [layer] })],
+      }),
+    );
+    engine.execute({ type: "setCompositionMode", mode: "motion" });
+    const track = engine.getSnapshot().project.pages[0]!.motion!.tracks[0]!;
+    engine.execute({
+      type: "setMotionTrackRange",
+      trackId: track.id,
+      start: { value: 1, rate: 1 },
+      end: { value: 3, rate: 2 },
+    });
+    const controller = new SceneController(engine, createPreviewSource(createStore())),
+      motion = createMotionTransport(engine),
+      changed = vi.fn(),
+      stop = controller.subscribe(changed),
+      original = controller.read().page;
+    motion.seek({ value: 1, rate: 2 });
+    expect(changed).not.toHaveBeenCalled();
+    motion.seek({ value: 1, rate: 1 });
+    expect(controller.read().motionFrame?.mediaRequests).toHaveLength(1);
+    motion.seek({ value: 5, rate: 4 });
+    expect(controller.read().motionFrame?.time).toEqual({ value: 5, rate: 4 });
+    motion.seek({ value: 3, rate: 2 });
+    expect(controller.read().motionFrame?.mediaRequests).toHaveLength(0);
+    motion.seek({ value: 7, rate: 4 });
+    expect(controller.read().page).toBe(original);
+    expect(changed).toHaveBeenCalledTimes(3);
+    stop();
+    motion.dispose();
+  });
+
   test("presents Motion imperatively, acknowledges a paused revision and preserves property previews", () => {
     const d = fixture();
     d.engine.execute({ type: "setCompositionMode", mode: "motion" });

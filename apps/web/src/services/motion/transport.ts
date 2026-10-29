@@ -1,6 +1,7 @@
 import {
   applyMotionFrame,
   compileMotion,
+  createMotionKeyframePreview,
   evaluateMotion,
   compareMotionTime,
   motionTimeToSeconds,
@@ -53,6 +54,8 @@ export class MotionTransport {
   private anchorTime = 0;
   private anchorClock = 0;
   private disposed = false;
+  private draft: MotionProgram | null = null;
+  private stopDraft: (() => void) | null = null;
 
   constructor(
     private readonly engine: EnginePort,
@@ -70,6 +73,7 @@ export class MotionTransport {
     if (this.disposed) return;
     const snapshot = this.engine.getSnapshot();
     if (this.project === snapshot.project && this.state?.compositionId === snapshot.pageId) return;
+    this.stopDraft?.();
     if (this.state)
       this.retained.set(this.state.compositionId, {
         time: this.state.time,
@@ -107,8 +111,9 @@ export class MotionTransport {
       this.framePlan = null;
       return;
     }
-    this.framePlan = evaluateMotion(this.program, this.state.time, { terminalPreview: true });
-    this.frame = applyMotionFrame(this.program, this.framePlan);
+    const program = this.draft ?? this.program;
+    this.framePlan = evaluateMotion(program, this.state.time, { terminalPreview: true });
+    this.frame = applyMotionFrame(program, this.framePlan);
   }
 
   private emit(): void {
@@ -127,6 +132,52 @@ export class MotionTransport {
     this.sync();
     return this.framePlan;
   };
+  isPreviewing = (): boolean => this.draft !== null;
+
+  /** One latest-only presentation update per frame; no document/history publication. */
+  beginKeyframePreview = (ids: readonly string[]) => {
+    this.sync();
+    this.pause();
+    this.stopDraft?.();
+    if (!this.program || this.disposed) return undefined;
+    const retime = createMotionKeyframePreview(this.program, ids);
+    let pending: number | null = null;
+    let latest: MotionTime | null = null;
+    const clear = () => {
+      if (this.stopDraft !== clear) return;
+      if (pending !== null) this.scheduler.cancel(pending);
+      pending = null;
+      latest = null;
+      this.stopDraft = null;
+      this.draft = null;
+    };
+    this.stopDraft = clear;
+    return {
+      update: (delta: MotionTime) => {
+        if (this.stopDraft !== clear) return;
+        latest = delta;
+        if (pending !== null) return;
+        pending = this.scheduler.request(() => {
+          pending = null;
+          this.sync();
+          if (this.stopDraft !== clear || !latest) return;
+          try {
+            this.draft = retime(latest);
+          } catch {
+            this.draft = null;
+          }
+          this.present();
+          this.emit();
+        });
+      },
+      clear: () => {
+        if (this.stopDraft !== clear) return;
+        clear();
+        this.present();
+        this.emit();
+      },
+    };
+  };
 
   subscribe = (listener: () => void): (() => void) => {
     if (this.disposed) throw new Error("Motion transport is disposed");
@@ -139,10 +190,12 @@ export class MotionTransport {
     return () => {
       this.listeners.delete(listener);
       if (!this.listeners.size) {
+        this.stopDraft?.();
         this.stopEngine?.();
         this.stopEngine = null;
         this.stopTick();
         if (this.state.playing) this.state = Object.freeze({ ...this.state, playing: false });
+        this.present();
       }
     };
   };
@@ -176,6 +229,7 @@ export class MotionTransport {
   play = (): void => {
     if (this.disposed) return;
     this.sync();
+    this.stopDraft?.();
     if (this.state.mode !== "motion" || this.state.playing) return;
     const start =
       compareMotionTime(this.state.time, this.state.duration) >= 0 ? ZERO : this.state.time;
@@ -230,6 +284,7 @@ export class MotionTransport {
   dispose = (): void => {
     if (this.disposed) return;
     this.disposed = true;
+    this.stopDraft?.();
     this.state = Object.freeze({ ...this.state, playing: false });
     this.stopTick();
     this.stopEngine?.();
