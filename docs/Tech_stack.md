@@ -58,7 +58,9 @@ Vitest covers document behavior and module contracts. Playwright exercises nativ
 
 The [Quality workflow](../.github/workflows/quality.yml) verifies changes before its Pages build and deployment jobs. Deployment is restricted to `ExtraBinoss/MusArt`, the `main` branch, and push/manual runs whose original actor and triggering actor are both `ExtraBinoss`. Pull requests and forks run verification without publishing the site.
 
-In repository **Settings → Pages**, select **GitHub Actions** as the source. The workflow deploys through the `github-pages` environment to `https://extrabinoss.github.io/MusArt/`; the URL becomes available after the first successful deployment. Environment review and branch-protection settings are managed separately from the workflow file.
+In repository **Settings → Pages**, select **GitHub Actions** as the source. The workflow deploys through the `github-pages` environment to `https://extrabinoss.github.io/MusArt/`; the URL becomes available after the first successful deployment.
+
+Keep `github-pages` restricted to `main`, with `ExtraBinoss` as its sole required reviewer and administrator bypass disabled. Self-review must remain allowed so the owner can approve their own deployment. The `main` ruleset requires pull requests, owner review, resolved conversations and the `verify` check; its only bypass is the `ExtraBinoss` user. These controls are configured in GitHub settings separately from the workflow and [CODEOWNERS](../.github/CODEOWNERS) files.
 
 Vite reads `MUSART_BASE_PATH` for the hosted path. The workflow obtains it from GitHub's Pages configuration; local development defaults to `/`. To preview the project path locally:
 

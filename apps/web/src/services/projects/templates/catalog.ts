@@ -17,7 +17,7 @@ export const TEMPLATE_CATALOG: readonly ProjectTemplate[] = Object.freeze([
     width: 1080,
     height: 1920,
     category: "artwork" as const,
-    preview: "/templates/afterhours.webp",
+    preview: `${import.meta.env.BASE_URL}templates/afterhours.webp`,
   }),
   ...PRESETS.map((preset) =>
     Object.freeze({

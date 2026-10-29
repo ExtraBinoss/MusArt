@@ -16,7 +16,9 @@ export const bundledFontLibrary: FontLibraryPort = {
   async resolve(family, weight, signal) {
     const font = resolveFont(family),
       file = font.id === "tinos" && weight >= 600 ? "bold" : "font";
-    const response = await fetch(`/fonts/${font.id}/${file}.ttf`, { signal });
+    const response = await fetch(`${import.meta.env.BASE_URL}fonts/${font.id}/${file}.ttf`, {
+      signal,
+    });
     if (!response.ok) throw new Error("The bundled font could not be loaded.");
     return response.arrayBuffer();
   },

@@ -1,7 +1,22 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { MAX_FONT_FILE_BYTES } from "@musart/assets";
 import { abortable, downloadFont, readFontBlob } from "../../../src/services/fonts/download";
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllEnvs();
+});
+it("accepts bundled fonts only inside the configured deployment path", async () => {
+  vi.stubEnv("BASE_URL", "/MusArt/");
+  const fetcher = vi.fn(async () => new Response(new Uint8Array([1, 2, 3]))),
+    signal = new AbortController().signal;
+  await downloadFont("/MusArt/fonts/inter/font.ttf", fetcher, signal);
+  expect(fetcher).toHaveBeenCalledWith("/MusArt/fonts/inter/font.ttf", { signal });
+  for (const url of ["/fonts/inter/font.ttf", "/other/fonts/inter/font.ttf"])
+    await expect(downloadFont(url, fetcher, signal)).rejects.toMatchObject({
+      code: "unsupported",
+    });
+  expect(fetcher).toHaveBeenCalledOnce();
+});
 it("streams approved sources and rejects HTTP errors, unexpected origins and oversized declarations", async () => {
   const fetcher = vi.fn(async () => new Response(new Uint8Array([1, 2, 3]))),
     signal = new AbortController().signal;

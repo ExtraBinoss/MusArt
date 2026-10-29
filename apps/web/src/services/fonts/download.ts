@@ -13,7 +13,7 @@ export async function downloadFont(
   signal: AbortSignal,
 ): Promise<ArrayBuffer> {
   if (
-    !url.startsWith("/fonts/") &&
+    !url.startsWith(`${import.meta.env.BASE_URL}fonts/`) &&
     !/^https:\/\/(raw\.githubusercontent\.com|fonts\.gstatic\.com)\//.test(url)
   )
     throw new FontLibraryError(

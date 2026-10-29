@@ -7,6 +7,7 @@ const fiberThreeAdapter = fileURLToPath(
   new URL("./apps/web/src/canvas/render/fiber-three.ts", import.meta.url),
 );
 export default defineConfig({
+  base: process.env.MUSART_BASE_PATH ?? "/",
   root: "apps/web",
   plugins: [fiberTimerCompatibility(fiberThreeAdapter), react(), tailwindcss()],
   optimizeDeps: {

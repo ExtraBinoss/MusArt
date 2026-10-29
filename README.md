@@ -100,6 +100,6 @@ Read [Technical stack and design choices](docs/Tech_stack.md) for the reasons be
 
 ## Documentation and contributions
 
-Start with the [documentation index](docs/README.md) for usage guides, headless automation and contributor references. Read [CONTRIBUTING.md](CONTRIBUTING.md) before making changes, and follow development in the [changelog](CHANGELOG.md).
+Start with the [documentation index](docs/README.md) for usage guides, headless automation and contributor references. Read [CONTRIBUTING.md](CONTRIBUTING.md) before making changes, follow development in the [changelog](CHANGELOG.md), and report vulnerabilities through the [security policy](SECURITY.md).
 
 MusArt's source code is available under the [MIT License](LICENSE). Fonts, models, artwork and other third-party material retain their own licenses; see [credits and provenance](docs/PROVENANCE.md) and [third-party notices](THIRD_PARTY_NOTICES.md).

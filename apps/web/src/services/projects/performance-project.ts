@@ -34,7 +34,7 @@ export async function createPerformanceProject(
           mime: "image/jpeg",
           width: image.width,
           height: image.height,
-          dataUrl: await loader(`/benchmark/${image.file}`),
+          dataUrl: await loader(`${import.meta.env.BASE_URL}benchmark/${image.file}`),
         };
       }),
     );

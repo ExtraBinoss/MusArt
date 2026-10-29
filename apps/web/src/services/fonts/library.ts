@@ -157,7 +157,7 @@ export class FontLibrary implements FontLibraryPort {
       (a, b) => Math.abs(a.weight - weight) - Math.abs(b.weight - weight) || a.weight - b.weight,
     )[0];
     const url = bundled
-      ? `/fonts/${bundled.id}/${bundled.id === "tinos" && weight >= 600 ? "bold" : "font"}.ttf`
+      ? `${import.meta.env.BASE_URL}fonts/${bundled.id}/${bundled.id === "tinos" && weight >= 600 ? "bold" : "font"}.ttf`
       : variant?.url;
     if (!url)
       throw new FontLibraryError(

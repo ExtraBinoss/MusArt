@@ -11,8 +11,8 @@ export function MusArtLogo({
   return (
     <img
       className={styles.logo}
-      src="/branding/musart-icon-32.png"
-      srcSet="/branding/musart-icon-32.png 1x, /branding/musart-icon-64.png 2x"
+      src={`${import.meta.env.BASE_URL}branding/musart-icon-32.png`}
+      srcSet={`${import.meta.env.BASE_URL}branding/musart-icon-32.png 1x, ${import.meta.env.BASE_URL}branding/musart-icon-64.png 2x`}
       width={size}
       height={size}
       alt={decorative ? "" : "MusArt"}
