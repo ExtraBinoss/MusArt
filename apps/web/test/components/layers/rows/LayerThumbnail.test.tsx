@@ -15,6 +15,74 @@ beforeEach(() => {
   );
 });
 afterEach(() => vi.unstubAllGlobals());
+test("a recycled visible node requires a fresh visibility sample for its new owner", async () => {
+  let notify!: IntersectionObserverCallback;
+  vi.stubGlobal(
+    "IntersectionObserver",
+    class {
+      constructor(callback: IntersectionObserverCallback) {
+        notify = callback;
+      }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  );
+  const first = createLayer("rectangle"),
+    second = createLayer("text"),
+    previewExport = vi.fn(
+      async (..._args: Parameters<NonNullable<EditorServices["previewExport"]>>) => ({
+        blob: new Blob(["preview"]),
+        width: 96,
+        height: 96,
+      }),
+    );
+  const view = render(
+    <LayerThumbnail layer={first} services={{ previewExport }} previewKey="first" />,
+  );
+  const node = view.container.querySelector(".layer-thumbnail")!;
+  const sample = () => [
+    { target: node, time: performance.now(), isIntersecting: true } as IntersectionObserverEntry,
+  ];
+  await act(async () => notify(sample(), {} as IntersectionObserver));
+  await screen.findByRole("presentation");
+  const stale = notify;
+  view.rerender(<LayerThumbnail layer={second} services={{ previewExport }} previewKey="second" />);
+  await act(async () => stale(sample(), {} as IntersectionObserver));
+  expect(previewExport).toHaveBeenCalledOnce();
+  expect(screen.queryByRole("presentation")).toBeNull();
+  await act(async () => notify(sample(), {} as IntersectionObserver));
+  await screen.findByRole("presentation");
+  expect(previewExport).toHaveBeenCalledTimes(2);
+  expect(previewExport.mock.calls[1]![0].selection).toEqual([second.id]);
+  view.unmount();
+});
+test("a reused paint key cannot donate pixels to another layer or preview service", async () => {
+  const first = createLayer("rectangle"),
+    second = createLayer("rectangle"),
+    previewExport = vi.fn(async () => ({ blob: new Blob(["first"]), width: 96, height: 96 })),
+    replacement = vi.fn(async () => ({ blob: new Blob(["replacement"]), width: 96, height: 96 }));
+  const view = render(
+    <LayerThumbnail layer={first} services={{ previewExport }} previewKey="same" />,
+  );
+  await screen.findByRole("presentation");
+  view.rerender(<LayerThumbnail layer={second} services={{ previewExport }} previewKey="same" />);
+  await waitFor(() =>
+    expect(screen.getByRole("presentation")).toHaveAttribute("src", "blob:thumb-2"),
+  );
+  expect(previewExport.mock.calls).toHaveLength(2);
+  expect(URL.revokeObjectURL).toHaveBeenCalledExactlyOnceWith("blob:thumb-1");
+  view.rerender(
+    <LayerThumbnail layer={second} services={{ previewExport: replacement }} previewKey="same" />,
+  );
+  expect(screen.queryByRole("presentation")).toBeNull();
+  await waitFor(() =>
+    expect(screen.getByRole("presentation")).toHaveAttribute("src", "blob:thumb-3"),
+  );
+  expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:thumb-2");
+  view.unmount();
+  expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:thumb-3");
+});
 test("real load reveals a new blob once while cached revisits and ordinary renders stay opaque", async () => {
   const layer = createLayer("rectangle"),
     blob = new Blob(["cached preview"]),
@@ -106,9 +174,25 @@ test("only visible rows request a final rendered thumbnail and revoke each owned
       {} as IntersectionObserver,
     ),
   );
-  expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:thumb-2");
-  expect(screen.queryByRole("presentation")).toBeNull();
+  expect(URL.revokeObjectURL).not.toHaveBeenCalledWith("blob:thumb-2");
+  const retained = screen.getByRole("presentation");
+  await act(async () =>
+    notify(
+      [
+        {
+          target: view.container.querySelector(".layer-thumbnail")!,
+          time: performance.now(),
+          isIntersecting: true,
+        } as IntersectionObserverEntry,
+      ],
+      {} as IntersectionObserver,
+    ),
+  );
+  expect(screen.getByRole("presentation")).toBe(retained);
+  expect(previewExport).toHaveBeenCalledTimes(2);
+  expect(URL.createObjectURL).toHaveBeenCalledTimes(2);
   view.unmount();
+  expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:thumb-2");
   expect(disconnect).toHaveBeenCalledOnce();
 });
 test("aborts late requests and never allocates URLs for disposed rows or simulates a failed preview", async () => {

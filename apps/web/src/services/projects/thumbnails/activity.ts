@@ -2,6 +2,7 @@ export interface ActivityPort {
   busy(): boolean;
   interacting?(): boolean;
   visibleBusy?(): boolean;
+  canonicalBusy?(): boolean;
   subscribe(listener: () => void): () => void;
   dispose(): void;
 }
@@ -13,6 +14,8 @@ export class ThumbnailActivity implements ActivityPort {
   private dragGeneration = 0;
   private until = 0;
   private wheelUntil = 0;
+  private layerIntent = false;
+  private layerUntil = 0;
   private wheelTimer: ReturnType<typeof setTimeout> | undefined;
   private timer: ReturnType<typeof setTimeout> | undefined;
   private readonly listeners = new Set<() => void>();
@@ -24,6 +27,8 @@ export class ThumbnailActivity implements ActivityPort {
   ) {
     this.stopSuspension = suspension?.subscribe(this.notify);
     surface.addEventListener("pointermove", this.quiet, { capture: true, passive: true });
+    surface.addEventListener("pointerover", this.layerOver, true);
+    surface.addEventListener("pointerout", this.layerOut, true);
     surface.addEventListener("pointerdown", this.down, true);
     for (const type of ["pointerup", "pointercancel", "lostpointercapture"])
       surface.addEventListener(type, this.up, true);
@@ -66,6 +71,21 @@ export class ThumbnailActivity implements ActivityPort {
     this.keys.size > 0 ||
     Date.now() < this.wheelUntil ||
     this.inputPending();
+  canonicalBusy = () => this.layerIntent || Date.now() < this.layerUntil;
+  private layerOver = (event: Event) => {
+    const target = event.target;
+    if (!(target instanceof Element) || !target.closest(".layer-tree") || this.layerIntent) return;
+    this.layerIntent = true;
+    this.notify();
+  };
+  private layerOut = (event: Event) => {
+    if (!this.layerIntent) return;
+    const next = (event as PointerEvent).relatedTarget;
+    if (next instanceof Element && next.closest(".layer-tree")) return;
+    this.layerIntent = false;
+    this.layerUntil = Date.now() + this.quietMs;
+    this.quiet();
+  };
   subscribe = (listener: () => void) => {
     this.listeners.add(listener);
     return () => {
@@ -142,6 +162,8 @@ export class ThumbnailActivity implements ActivityPort {
     this.quiet(event);
   };
   private blur = () => {
+    this.layerIntent = false;
+    this.layerUntil = 0;
     this.dragGeneration++;
     this.dragging = false;
     this.pointers.clear();
@@ -151,6 +173,8 @@ export class ThumbnailActivity implements ActivityPort {
     this.quiet();
   };
   dispose(): void {
+    this.layerIntent = false;
+    this.layerUntil = 0;
     this.stopSuspension?.();
     this.dragGeneration++;
     this.dragging = false;
@@ -158,6 +182,8 @@ export class ThumbnailActivity implements ActivityPort {
     clearTimeout(this.timer);
     clearTimeout(this.wheelTimer);
     this.surface.removeEventListener("pointermove", this.quiet, true);
+    this.surface.removeEventListener("pointerover", this.layerOver, true);
+    this.surface.removeEventListener("pointerout", this.layerOut, true);
     this.surface.removeEventListener("pointerdown", this.down, true);
     for (const type of ["pointerup", "pointercancel", "lostpointercapture"])
       this.surface.removeEventListener(type, this.up, true);

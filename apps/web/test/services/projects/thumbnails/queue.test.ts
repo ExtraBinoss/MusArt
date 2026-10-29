@@ -41,6 +41,54 @@ afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
 });
+it("layer intent suspends optional canonical admission but an explicit quiet flush can complete", async () => {
+  const d = fixture();
+  const activity = Object.assign(d.activity, { canonicalBusy: () => true });
+  const pipeline = new ThumbnailPipeline(d.store, { ...d, activity });
+  pipeline.schedule(d.project);
+  await vi.advanceTimersByTimeAsync(2000);
+  expect(d.render).not.toHaveBeenCalled();
+  await pipeline.flush();
+  expect(d.render).toHaveBeenCalledTimes(2);
+  await pipeline.dispose();
+});
+it("urgent rows preempt canonical preparation before GPU admission and canonical saving resumes afterwards", async () => {
+  const d = fixture(),
+    pipeline = new ThumbnailPipeline(d.store, d),
+    page = d.project.pages[0]!;
+  let admit!: () => void, canRender!: () => boolean, started!: () => void;
+  const ready = new Promise<void>((resolve) => {
+    started = resolve;
+  });
+  d.render.mockImplementationOnce((_page, _assets, allowed) => {
+    canRender = allowed!;
+    expect(canRender()).toBe(true);
+    started();
+    return new Promise((_resolve, reject) => {
+      admit = () => {
+        expect(canRender()).toBe(false);
+        reject(new DOMException("Rendering deferred.", "AbortError"));
+      };
+    });
+  });
+  pipeline.schedule(d.project);
+  const flushed = pipeline.flush();
+  await ready;
+  const preview = pipeline.preview("urgent", page, {}, { edge: 96, priority: "visible" });
+  expect(canRender()).toBe(false);
+  admit();
+  await vi.runAllTimersAsync();
+  await preview;
+  await flushed;
+  expect(d.render.mock.calls.map((call) => [call[0].id, call[3]])).toEqual([
+    ["page", undefined],
+    ["page", 96],
+    ["page", undefined],
+    ["two", undefined],
+  ]);
+  expect(d.records.map((record) => record.pageId)).toEqual(["page", "two"]);
+  await pipeline.dispose();
+});
 it("admits visible canonical repairs only after urgent preview delivery has a paint opportunity", async () => {
   const frames = new Map<number, FrameRequestCallback>();
   let serial = 0;

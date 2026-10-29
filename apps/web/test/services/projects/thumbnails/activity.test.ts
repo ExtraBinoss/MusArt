@@ -1,6 +1,36 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { ThumbnailActivity } from "../../../../src/services/projects/thumbnails/activity";
 afterEach(() => vi.useRealTimers());
+it("keeps canonical work out of layer browsing while visible previews remain admissible", () => {
+  vi.useFakeTimers();
+  const tree = document.createElement("div"),
+    child = document.createElement("button");
+  tree.className = "layer-tree";
+  tree.append(child);
+  document.body.append(tree);
+  const activity = new ThumbnailActivity();
+  child.dispatchEvent(new MouseEvent("pointerover", { bubbles: true }));
+  expect(activity.canonicalBusy()).toBe(true);
+  expect(activity.visibleBusy()).toBe(false);
+  vi.advanceTimersByTime(2000);
+  expect(activity.canonicalBusy()).toBe(true);
+  child.dispatchEvent(new MouseEvent("pointerout", { bubbles: true, relatedTarget: tree }));
+  expect(activity.canonicalBusy()).toBe(true);
+  child.dispatchEvent(
+    new MouseEvent("pointerout", { bubbles: true, relatedTarget: document.body }),
+  );
+  vi.advanceTimersByTime(599);
+  expect(activity.canonicalBusy()).toBe(true);
+  vi.advanceTimersByTime(1);
+  expect(activity.canonicalBusy()).toBe(false);
+  child.dispatchEvent(new MouseEvent("pointerover", { bubbles: true }));
+  window.dispatchEvent(new Event("blur"));
+  expect(activity.canonicalBusy()).toBe(false);
+  activity.dispose();
+  child.dispatchEvent(new MouseEvent("pointerover", { bubbles: true }));
+  expect(activity.canonicalBusy()).toBe(false);
+  tree.remove();
+});
 it("suspends all optional GPU admission during explicit effect playback and releases its listener", () => {
   let busy = false;
   const listeners = new Set<() => void>();

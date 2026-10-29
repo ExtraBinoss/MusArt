@@ -16,6 +16,7 @@ import { attachmentSelection } from "../../../state/selection/attachments";
 import { attachmentDeleteKey } from "../../../state/selection/attachment-keydown";
 import "../messages";
 import { LockedLayerNotice } from "../../properties/locked/LockedLayerNotice";
+import { usePopoverOwner } from "./use-popover-owner";
 export function MaskPopover({
   engine,
   page,
@@ -30,9 +31,14 @@ export function MaskPopover({
   children: ReactNode;
 }) {
   const { t } = useTranslation();
+  const owner = usePopoverOwner(
+    JSON.stringify([engine.getSnapshot().project.id, page.id, layer.id]),
+  );
   return (
     <Popover
+      open={owner.open}
       onOpenChange={(open) => {
+        if (!owner.onOpenChange(open)) return;
         if (open)
           attachmentSelection(engine).select(page, {
             kind: "mask",
@@ -43,6 +49,7 @@ export function MaskPopover({
     >
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent
+        onCloseAutoFocus={owner.onCloseAutoFocus}
         side="left"
         align="start"
         className="floating-panel layer-attachment-popover"

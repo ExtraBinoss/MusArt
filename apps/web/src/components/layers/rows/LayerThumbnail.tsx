@@ -13,6 +13,12 @@ const icons = {
   ellipse: Circle,
 };
 const revealed = new WeakSet<Blob>();
+interface PreviewValue {
+  key: string;
+  url: string;
+  blob: Blob;
+  exporter: EditorServices["previewExport"];
+}
 /** One visible row owns one abortable request and explicitly releases its browser URL. */
 export const LayerThumbnail = memo(function LayerThumbnail({
   layer,
@@ -30,8 +36,8 @@ export const LayerThumbnail = memo(function LayerThumbnail({
   variant?: LayerPreviewVariant;
 }) {
   const node = useRef<HTMLSpanElement>(null);
-  const [visible, setVisible] = useState(() => typeof IntersectionObserver === "undefined");
-  const [value, setValue] = useState<{ key: string; url: string; blob: Blob } | null>(null);
+  const [value, setValue] = useState<PreviewValue | null>(null);
+  const owned = useRef<PreviewValue | null>(null);
   const kind = variant?.kind,
     effectId = variant?.kind === "effect" ? variant.effectId : undefined;
   const requestVariant = useMemo<LayerPreviewVariant | undefined>(
@@ -39,20 +45,32 @@ export const LayerThumbnail = memo(function LayerThumbnail({
       kind === "mask" ? { kind } : kind === "effect" ? { kind, effectId: effectId! } : undefined,
     [kind, effectId],
   );
-  const key = JSON.stringify([previewKey, pageId, requestVariant ?? null]);
+  const key = JSON.stringify([previewKey, pageId, layer.id, requestVariant ?? null]);
+  const observerKey = JSON.stringify([pageId, layer.id, requestVariant ?? null]);
+  const [visibility, setVisibility] = useState<{ key: string; visible: boolean } | null>(null);
+  const visible =
+    typeof IntersectionObserver === "undefined" ||
+    (visibility?.key === observerKey && visibility.visible);
   const previewExport = services?.previewExport;
   useEffect(() => {
     if (!node.current || typeof IntersectionObserver === "undefined") return;
-    return observeLayerThumbnail(node.current, (active) => {
-      setVisible(active);
-      if (!active) setValue(null);
-    });
-  }, []);
+    return observeLayerThumbnail(node.current, (active) =>
+      setVisibility({ key: observerKey, visible: active }),
+    );
+  }, [observerKey]);
+  // The virtual window already bounds ownership. Keep a decoded image while its
+  // row crosses the observer margin, rather than revoking and decoding it again.
+  useEffect(() => {
+    return () => {
+      if (owned.current) URL.revokeObjectURL(owned.current.url);
+      owned.current = null;
+    };
+  }, [key, previewExport]);
   useEffect(() => {
     if (!visible || !previewExport) return;
+    if (owned.current?.key === key && owned.current.exporter === previewExport) return;
     const controller = new AbortController();
-    let active = true,
-      url: string | null = null;
+    let active = true;
     const cancelIdle = scheduleLayerThumbnail(() => {
       if (!active || controller.signal.aborted) return;
       if (node.current)
@@ -71,8 +89,14 @@ export const LayerThumbnail = memo(function LayerThumbnail({
       ).then(
         (result) => {
           if (!active || controller.signal.aborted) return;
-          url = URL.createObjectURL(result.blob);
-          setValue({ key, url, blob: result.blob });
+          const next = {
+            key,
+            url: URL.createObjectURL(result.blob),
+            blob: result.blob,
+            exporter: previewExport,
+          };
+          owned.current = next;
+          setValue(next);
         },
         () => {
           /* A failed/stale preview retains its truthful layer-kind placeholder. */
@@ -83,12 +107,11 @@ export const LayerThumbnail = memo(function LayerThumbnail({
       active = false;
       cancelIdle();
       controller.abort();
-      if (url) URL.revokeObjectURL(url);
     };
   }, [visible, previewExport, layer.id, key, pageId, requestVariant]);
   const Icon = icons[layer.kind];
   const source =
-    visible && value?.key === key
+    value?.key === key && value.exporter === previewExport
       ? value.url
       : !services?.previewExport && !requestVariant
         ? asset?.dataUrl

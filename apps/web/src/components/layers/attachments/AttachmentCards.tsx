@@ -62,7 +62,7 @@ export function AttachmentCards({
             });
         return (
           <EffectPopover
-            key={effect.id}
+            key={index}
             engine={engine}
             page={page}
             layer={layer}

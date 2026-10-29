@@ -8,8 +8,11 @@ export function useVirtualRows(count: number, viewport: RefObject<HTMLDivElement
   const publish = useCallback((next: { top: number; height: number }) => {
     const previous = metrics.current;
     metrics.current = next;
-    if (windowStart(previous.top) !== windowStart(next.top) || previous.height !== next.height)
+    if (windowStart(previous.top) !== windowStart(next.top) || previous.height !== next.height) {
       setPosition(next);
+      return true;
+    }
+    return false;
   }, []);
   useLayoutEffect(() => {
     const node = viewport.current;
@@ -28,7 +31,7 @@ export function useVirtualRows(count: number, viewport: RefObject<HTMLDivElement
   const last = Math.min(count, first + visible + OVERSCAN * 2);
   const onScroll = useCallback(
     (event: { currentTarget: HTMLElement }) => {
-      publish({ top: event.currentTarget.scrollTop, height: metrics.current.height });
+      return publish({ top: event.currentTarget.scrollTop, height: metrics.current.height });
     },
     [publish],
   );

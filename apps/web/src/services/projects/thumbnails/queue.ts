@@ -116,6 +116,7 @@ export class ThumbnailPipeline {
     }
   }
   private busy(visible = false) {
+    if (!this.waiters.size && this.activity.canonicalBusy?.()) return true;
     return visible ? (this.activity.visibleBusy?.() ?? this.activity.busy()) : this.activity.busy();
   }
   private next() {
@@ -190,7 +191,10 @@ export class ThumbnailPipeline {
         result = await this.renderer.render(
           page,
           project.assets,
-          () => this.current(request) && !this.busy(request.visible?.has(page.id)),
+          () =>
+            this.current(request) &&
+            !this.busy(request.visible?.has(page.id)) &&
+            !this.previews.hasPriority(),
         );
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {

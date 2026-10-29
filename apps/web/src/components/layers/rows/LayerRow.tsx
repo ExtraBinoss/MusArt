@@ -1,5 +1,5 @@
 import { memo, useLayoutEffect, useRef, useState } from "react";
-import { motion } from "motion/react";
+import { useRowPosition } from "./use-row-position";
 import { ChevronRight, Eye, EyeOff, LockKeyhole, LockKeyholeOpen, ScanLine } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -64,6 +64,7 @@ export const LayerRow = memo(function LayerRow({
 }) {
   const { t } = useTranslation();
   const node = useRef<HTMLDivElement>(null);
+  useRowPosition(node, JSON.stringify([page.id, layer.id]), top, moving, reduced);
   const [editing, setEditing] = useState<{ page: Composition; id: string } | null>(null);
   const renaming = editing?.page === page && editing.id === layer.id;
   if (editing && !renaming) setEditing(null);
@@ -111,10 +112,8 @@ export const LayerRow = memo(function LayerRow({
       });
   }
   return (
-    <motion.div
+    <div
       ref={node}
-      layout={!reduced && moving ? "position" : false}
-      transition={{ type: "spring", stiffness: 430, damping: 34, mass: 0.65 }}
       role="treeitem"
       aria-level={depth + 1}
       aria-selected={selected && !attachmentTarget}
@@ -263,6 +262,6 @@ export const LayerRow = memo(function LayerRow({
           {layer.visible ? <Eye size={13} /> : <EyeOff size={13} />}
         </IconButton>
       </div>
-    </motion.div>
+    </div>
   );
 });

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { FolderPlus, Ungroup, Copy, Trash2, ScanLine } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { Composition, EnginePort } from "@musart/core";
@@ -7,7 +8,7 @@ import { layerActions } from "./actions";
 import "../messages";
 import { attachmentSelection } from "../../../state/selection/attachments";
 import { useAttachmentSelection } from "../../../state/selection/use-attachment-selection";
-export function LayerContext({
+export const LayerContext = memo(function LayerContext({
   engine,
   page,
   selection,
@@ -60,4 +61,4 @@ export function LayerContext({
       </ContextMenuItem>
     </ContextMenuContent>
   );
-}
+});

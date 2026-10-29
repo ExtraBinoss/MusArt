@@ -15,7 +15,12 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
+- Virtual layer rows reuse bounded presentation slots and closed attachment popovers. Rebinding rejects old visibility/open callbacks, cancels renamed-owner drafts, closes old editors and preserves focus on retained rows; native drags keep canonical DOM order and never reuse a retired drag key.
+- Ordinary layer scrolling uses plain DOM row styles. Motion position springs run only for explicit native reordering, retaining interrupted offsets and releasing animations on cancellation, rebinding and unmount.
+- Optional canonical thumbnails pause while the pointer browses the layer tree and resume after its quiet exit, preventing a full-artboard compilation from starting between layer gestures. Urgent row previews remain admissible and an explicit quiet thumbnail flush can still finish.
 - Closed property selectors avoid constructing their hidden option trees until focus or opening, retaining selected labels and native closed typeahead. Disabling an open selector closes its menu and cancels the draft; effect-color reset buttons also support keyboard activation.
+- Urgent visible thumbnails can preempt canonical thumbnail preparation immediately before GPU admission, including after asynchronous renderer/source setup. Canonical saving resumes after urgent delivery instead of compiling a full artboard ahead of newly scrolled rows.
+- Layer scrolling updates only its bounded virtual tree instead of rerendering the whole panel and its footer/context controls. Decoded thumbnails remain owned by mounted rows across visibility-margin crossings, avoiding repeated preview requests, object URLs and image loads on small scroll reversals; identity changes, cancellation and unmount still reject stale work and release resources.
 
 ## [0.2.0] - 2026-10-29
 

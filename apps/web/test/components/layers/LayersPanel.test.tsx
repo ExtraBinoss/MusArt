@@ -53,7 +53,7 @@ test("virtual scroll retains memoized controls even while an attachment disables
     panel = document.querySelector<HTMLElement>(".layers-panel")!,
     panelBefore = Number(panel.dataset.reactRenders);
   for (const top of [360, 720, 1080]) fireEvent.scroll(tree, { target: { scrollTop: top } });
-  expect(Number(panel.dataset.reactRenders)).toBeGreaterThan(panelBefore);
+  expect(Number(panel.dataset.reactRenders)).toBe(panelBefore);
   expect(
     [compositing, menu, effects, adjustments].map((node) => node.dataset.reactRenders),
   ).toEqual(before);

@@ -25,6 +25,7 @@ import {
 import { attachmentDeleteKey } from "../../../state/selection/attachment-keydown";
 import { useLayerPreview } from "../controls/use-layer-preview";
 import { LockedLayerNotice } from "../../properties/locked/LockedLayerNotice";
+import { usePopoverOwner } from "./use-popover-owner";
 export function EffectPopover({
   engine,
   page,
@@ -41,9 +42,19 @@ export function EffectPopover({
   children: ReactNode;
 }) {
   const { t } = useTranslation();
+  const owner = usePopoverOwner(
+    JSON.stringify([
+      engine.getSnapshot().project.id,
+      page.id,
+      layer.id,
+      effectId ?? layer.effects[0]?.id,
+    ]),
+  );
   return (
     <Popover
+      open={owner.open}
       onOpenChange={(open) => {
+        if (!owner.onOpenChange(open)) return;
         const id = effectId ?? layer.effects[0]?.id;
         if (open && id)
           attachmentSelection(engine).select(page, {
@@ -56,6 +67,7 @@ export function EffectPopover({
     >
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent
+        onCloseAutoFocus={owner.onCloseAutoFocus}
         side="left"
         align="start"
         className="floating-panel layer-attachment-popover"

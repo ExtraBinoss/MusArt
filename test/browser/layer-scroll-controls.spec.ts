@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { createEffect, createProject } from "@musart/core";
+import { createEffect, createLayer, createPage, createProject } from "@musart/core";
 import { createTechnoArtboard } from "../../apps/web/src/services/projects/templates/techno";
 import { installReadbackProbe } from "./support/readback-probe";
 import { writeFile } from "node:fs/promises";
@@ -21,6 +21,82 @@ async function counters(page: Page) {
     );
   });
 }
+
+test("native reverse scrolling preserves focus on a retained row while recycling other shells", async ({
+  page,
+}) => {
+  await page.goto("/?automation=1");
+  await page.waitForFunction(() => Boolean(window.musart));
+  const board = createPage({
+    layers: Array.from({ length: 100 }, (_, at) =>
+      createLayer("rectangle", { id: `focus-${at}`, name: `Focus ${at}` }),
+    ),
+  });
+  await page.evaluate((project) => window.musart!.load(project), createProject({ pages: [board] }));
+  const tree = page.locator(".layer-tree");
+  await tree.hover();
+  await page.mouse.wheel(0, 360);
+  await page.waitForFunction(() => document.querySelector(".layer-tree")!.scrollTop >= 359);
+  const target = tree.locator('[data-layer-id="focus-89"] .layer-actions button').last();
+  await target.focus();
+  await target.evaluate((node) => node.setAttribute("data-focus-probe", "retained"));
+  await page.mouse.wheel(0, -180);
+  await page.waitForFunction(
+    () => Math.abs(document.querySelector(".layer-tree")!.scrollTop - 180) < 1,
+  );
+  await expect(target).toBeFocused();
+  await expect(target).toHaveAttribute("data-focus-probe", "retained");
+  expect(await tree.evaluate((node) => node.scrollTop)).toBeCloseTo(180, 0);
+  expect(await page.evaluate(() => window.musart!.snapshot().canUndo)).toBe(false);
+});
+
+test("reversing native scroll reuses the same decoded thumbnail inside the retained row window", async ({
+  page,
+}) => {
+  await installReadbackProbe(page);
+  await page.goto("/?automation=1");
+  await page.waitForFunction(() => Boolean(window.musart));
+  const board = createPage({
+    layers: Array.from({ length: 30 }, (_, index) =>
+      createLayer("rectangle", { name: `Retained ${index}`, fill: "#3366ff" }),
+    ),
+  });
+  await page.evaluate((project) => window.musart!.load(project), createProject({ pages: [board] }));
+  const tree = page.locator(".layer-tree"),
+    thumbnail = tree.locator("[data-thumbnail-layer-id]").first();
+  await expect(thumbnail.locator("img")).toBeVisible();
+  await thumbnail.locator("img").evaluate((image) => (image as HTMLImageElement).decode());
+  const before = await thumbnail.evaluate((node) => {
+    const image = node.querySelector("img")!;
+    if (!image.complete || !image.naturalWidth) throw new Error("Thumbnail has not decoded.");
+    image.dataset.retainedProbe = "original";
+    return { source: image.src, requests: node.getAttribute("data-preview-requests") };
+  });
+  const stats = await counters(page);
+  await tree.hover();
+  await page.mouse.wheel(0, 144);
+  await page.waitForFunction(() => document.querySelector(".layer-tree")!.scrollTop >= 143);
+  await page.evaluate(
+    () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+  );
+  expect(await thumbnail.locator("img").getAttribute("data-retained-probe")).toBe("original");
+  await page.mouse.wheel(0, -144);
+  await page.waitForFunction(() => document.querySelector(".layer-tree")!.scrollTop < 1);
+  await expect(thumbnail.locator("img")).toBeVisible();
+  expect(
+    await thumbnail.evaluate((node) => ({
+      source: node.querySelector("img")!.src,
+      requests: node.getAttribute("data-preview-requests"),
+    })),
+  ).toEqual(before);
+  expect(await thumbnail.locator("img").getAttribute("data-retained-probe")).toBe("original");
+  expect(await counters(page)).toEqual(stats);
+  expect(await page.evaluate(() => window.__musartVideoReadbacks)).toMatchObject({
+    gpu: 0,
+    webgl: 0,
+    canvas: 0,
+  });
+});
 
 test("native virtual scrolling skips stable header controls while selection, attachment and page edits remain live", async ({
   page,
@@ -47,7 +123,7 @@ test("native virtual scrolling skips stable header controls while selection, att
     const before = await counters(page);
     for (let index = 0; index < 24; index++) await page.mouse.wheel(0, 420);
     const after = await counters(page);
-    expect(after.panel).toBeGreaterThan(before.panel);
+    expect(after.panel).toBe(before.panel);
     for (const name of ["menu", "compositing", "effects", "adjustments"])
       expect(after[name], `${name} rendered during virtual scrolling`).toBe(before[name]);
     expect(await tree.locator("[data-layer-id]").count()).toBeLessThan(40);
