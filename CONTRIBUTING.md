@@ -16,7 +16,13 @@ Use Bun 1.4.2 and Node.js 22.12 or newer. Run `bun install --frozen-lockfile`, t
 - Preserve GPU texture ownership, alpha isolation, stable uniforms, demand rendering, and the no-readback path. Browser tests must inspect real pixels in addition to mocked API contracts.
 - Update both English and French UI catalogs for visible interface changes. Write project documentation in English.
 
-Run the relevant focused tests while developing, then run `bun run check` before handing off a change. The CI uses the frozen lockfile and the same quality commands. Reports, captures, dependencies, builds, local projects, and secrets do not belong in commits.
+The development loop is: implement the feature, run its focused code tests, and finish. Pass a test file or directory to `bun run test -- <path>`, use `bun run test:related -- <source-path>` to select dependent tests, or use `bun run test:watch -- <path>` while editing. These commands do not collect coverage. Add a focused browser check for rendering/native interactions and a benchmark for performance-sensitive work; do not run the full GPU/storage suites for unrelated changes.
+
+For focused coverage, use `bun run test:coverage:changed -- <source-paths>`. Without paths it selects staged, unstaged and untracked executable sources from Git. Only their exact mirrored tests run, only those sources are instrumented, and partial reports go to `artifacts/coverage-related/`. Use `test:coverage:related` to include dependent consumers as well; shared barrel imports can make that selection broad. The full `coverage/` report and CI thresholds remain unchanged. Pure core tests use a shared Node worker; DOM tests use isolated VM contexts, while native storage and external animation-clock integration tests retain fresh Node realms.
+
+On the October 29 workstation, focused coverage of `use-row-slots.ts` passes three tests with 100% coverage in 1.79 seconds. The complete non-coverage suite passes 2,024 tests across 569 files in 300.75 seconds with one worker and a 200% CPU cap. These are different workloads; the focused result is not a claimed speedup for full coverage. Raw logs remain under `artifacts/layer-scroll-2026-10-29/`.
+
+Run relevant static checks and `bun run check:rules` before committing. After a fix, rerun affected checks rather than starting the complete gate again. `bun run check` remains the complete CI/release gate, including repository-wide coverage and browser scenarios. Reports, captures, dependencies, builds, local projects, and secrets do not belong in commits.
 
 ## Commit and review
 

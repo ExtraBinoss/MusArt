@@ -46,7 +46,7 @@ The default checked-in configuration may start its own build/server. The tempora
 
 ## Isolate the cohort
 
-- On a shared workstation, run only one build, typecheck, test or browser command at a time across the whole agent team. Use one test worker, low process/I/O priority and an enforced CPU/memory scope; do not keep obsolete preview servers running. If memory or swap pressure appears, stop the batch before starting another check. An isolated process limit failure is a failed check, not permission to remove sources or weaken assertions.
+- On a shared workstation, run only one heavy build, typecheck, test or browser command at a time across the whole agent team. Focused development tests may use the configured bounded worker count; timing cohorts use one worker, low process/I/O priority and an enforced CPU/memory scope. Do not keep obsolete preview servers running. If memory or swap pressure appears, stop the batch before starting another check. An isolated process limit failure is a failed check, not permission to remove sources or weaken assertions.
 - Reserve one native GPU slot. Stop other test workers, coverage, TypeScript, lint, builds and competing browser/GPU workloads before timing begins. Ask other agents to remain quiet until the run ends.
 - Keep the measured tab foregrounded. Record browser version, OS, viewport, DPR, backend and actual adapter information. Launch flags alone do not establish whether the adapter is hardware or software.
 - Separate application bootstrap, source decoding/compilation, first useful canvas frame, first cold selection and warm interactions. Do not preselect the first text or mount its font controls before measuring the cold click.
@@ -68,7 +68,7 @@ systemd-run --user --scope --quiet \
   ./node_modules/.bin/tsc --noEmit
 ```
 
-Use the same ownership rule for other commands and pass `--maxWorkers=1` to Vitest.
+Use the same ownership rule for other heavy commands and pass `--maxWorkers=1` to Vitest for comparable timing cohorts or constrained machines. Normal feature iteration runs focused/related tests without coverage; optional related coverage goes to its separate partial-report directory. Full coverage and load cohorts belong to CI/release verification or a relevant investigation, not every local edit.
 Choose a bounded browser budget before launching its single cohort, rather than
 starting several browser processes alongside coverage or compiler workers. A
 process heap limit must fit inside its scope with room for native allocations and

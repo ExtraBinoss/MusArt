@@ -6,6 +6,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
+- Local iteration uses focused or related tests and watch mode without coverage. Full coverage, browser/load suites and release preparation remain separate CI/release work instead of running after every feature or fix.
+- Focused coverage runs mirrored tests for changed or explicit source paths and writes a separate partial report; optional related coverage includes consumers. Pure core tests reuse Node workers; DOM tests reuse workers with isolated VM contexts, while native storage/animation integrations retain fresh Node realms.
 - Effect parameter rows use compact 30px controls and consistent 6px spacing. A translated icon resets the complete effect to its defaults in one undoable edit, cancels drafts and live playback, and preserves its identity and enabled state.
 - Numeric and effect-color label resets share the same replayable neutral feedback, reduced-motion behavior and timer/animation cleanup. Resetting an unchanged value does not add history.
 - Effect color pickers share one open slot, cancel the previous draft before changing colors, reject stale callbacks and use a 12px popup offset. The permanent pointer-mode Space/Ctrl-wheel hint is removed; shortcuts remain available.

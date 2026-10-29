@@ -125,6 +125,12 @@ The native IndexedDB stress test uses 100,000 history entries and writes `artifa
 
 ## Quality checks
 
+During development, run the feature's test path with `bun run test -- <test-path>`
+or use `bun run test:watch -- <test-path>`. Optional
+`bun run test:coverage:changed -- <source-paths>` runs only mirrored feature tests
+and writes partial coverage separately. Omit source paths to select Git changes.
+Use the complete checks below for CI/release verification.
+
 ```sh
 bun run version:check
 bun run check:rules

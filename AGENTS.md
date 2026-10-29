@@ -27,22 +27,26 @@ Direct user instructions take precedence. Read the relevant architecture contrac
 - Keep background GPU work out of active gestures. Use durable IDs at persistence boundaries; a session-local allocator cannot identify unopened records.
 - Validate imported data and report real failures. Never simulate successful saving, rendering or exporting.
 
-## Blocking quality gates
+## Verification and iteration
 
+- Default workflow: implement the feature, run its focused code tests, then finish. Add a focused real-browser check when rendering or native interaction changes. Benchmark only performance-sensitive changes or when requested.
+- Run explicit test paths or related tests during development; use watch mode for repeated edits. Do not run repository-wide coverage, every browser scenario, GPU/storage load suites or repeated builds for each feature or small fix.
+- When local coverage helps, use `bun run test:coverage:changed -- <source-paths>` (or omit paths to select Git changes). It runs mirrored feature tests and instruments only selected sources, writing a separate partial report. Use `test:coverage:related` when dependent consumers also need verification; shared barrel imports can broaden that selection. Never present partial coverage as repository-wide coverage.
+- After a passing check, rerun only checks affected by subsequent changes. Stop an unsuitable test experiment once its failure is understood; do not keep collecting redundant failures. Investigate runner/setup overhead before accepting multi-minute focused tests.
 - No tests or test directories inside `src/`. Every executable source has an exact mirrored test: `src/layers/tree.ts` → `test/layers/tree.test.ts`. Declaration-only files are exempt.
 - Maximum 600 lines per code, style, script and test file. Split by responsibility.
-- Include every executable source in coverage. Require at least 85% each for statements, branches, functions and lines, with separate core thresholds. Do not hide sources, add coverage ignores or weaken checks.
-- Require zero violations from `bun run check:rules`. Run the coverage-aware rules check after coverage.
+- Full CI/release coverage includes every executable source and requires at least 85% each for statements, branches, functions and lines, with separate core thresholds. Do not hide sources, add coverage ignores or weaken assertions to speed up a run. Coverage is not required for each local iteration.
+- Require zero violations from `bun run check:rules` before committing. Run the coverage-aware rules check whenever full coverage is run.
 - Verify values, transactions, undo/redo, cleanup and error paths. Use real headless browsers for rendering, gestures, decoded exports and screenshots; mocks do not prove GPU correctness.
-- Before delivery, run reproducible GPU and storage load tests, including 50 image layers with effects. Instrument actual read APIs and React commits; report measured results and environment details.
+- Run GPU and storage load tests, including the 50-image effect workload, when the changed subsystem or a requested performance investigation warrants them. Instrument actual read APIs and React commits; report measured results and environment details.
 - Have independent agents audit completed domains when requested. Fix findings and rerun affected checks.
-- Run frozen installation, typecheck, lint, format, coverage, rules, production build and browser checks. Keep generated reports and captures in ignored `artifacts/`.
+- The complete frozen installation, typecheck, lint, format, coverage, rules, production build and browser gate belongs to CI and requested release preparation. Run relevant static checks locally without automatically repeating the full gate. Keep generated reports and captures in ignored `artifacts/`.
 - On shared workstations, run heavy checks serially across agents with bounded workers/resources and low priority; follow `docs/performance/protocol.md` and stop on memory pressure.
 
 ## Versions, changelog and Git
 
 - Use one synchronized Semantic Versioning release number across the root and workspaces. Check it with `bun run version:check`.
-- **Every delivered feature and fix must have an English entry in `CHANGELOG.md`.** Add it under `Unreleased`, then prepare a dated release with `bun run release -- <version>` after validation.
+- **Every delivered feature and fix must have an English entry in `CHANGELOG.md`.** Add it under `Unreleased`. Prepare a dated release with `bun run release -- <version>` when a release is requested, after validation; do not release after every development iteration.
 - Put release details, completed work and measurements in the changelog and documentation, not in this file. Keep `AGENTS.md` focused on lasting contribution rules.
 - Commit each verified feature or milestone separately. Stage deliberately; exclude secrets, dependencies, builds, coverage and artifacts.
 - Preserve existing work and Git history. Do not rewrite or publish history without instruction.
