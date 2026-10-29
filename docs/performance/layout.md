@@ -43,6 +43,53 @@ The maintained reports include `artifacts/search-opening-10000.json`, `layer-scr
 
 ## Trace before optimizing
 
+Attachment editing has its own Provider-scoped open state. Secondary Inspector,
+footer and dock presentation retain their last shown model for the complete
+effect/mask editing session, then adopt the latest model at deferred priority.
+Their subscriptions live in local presentation boundaries: opening a card must
+not rebuild the sidebar tabs, resizable panels or layer rows solely because the
+editor became active. The engine, attachment ownership and action validation
+remain current. Inspector controls whose retained target differs are guarded;
+Undo/Redo availability stays live in both the toolbar and pinned commands.
+
+Property selectors use Radix's item-aligned placement with an explicit
+`SelectValue` child. This provides the value-node geometry required by Radix
+without installing Floating UI overflow-ancestor tracking for every property
+list. Options remain lazy until focus/open; closed typeahead, form reset,
+keyboard navigation, viewport bounds, menu scrolling and preview cancellation
+remain part of the contract. The native witness is
+[`effect-select-performance.spec.ts`](../../test/browser/effect-select-performance.spec.ts).
+It records input queue delay and dispatch-to-presentation opportunities separately,
+checks outer React commits and actual readback APIs, and verifies one commit and
+undo of a real Receipt setting. Run it serially with the cold-opening witness;
+development diagnostic timings are not production latency claims.
+
+The 2026-10-29 frozen Receipt comparison uses Chrome 154.0.8037.97 on Linux,
+1600 × 1000 at DPR 1, native Intel Xe-LPG WebGPU, one foreground browser at a
+time and a 400% CPU / 3000 MiB memory-high / 4000 MiB memory-max scope without
+scope swap. Its 192-pixel photographic source has the full 33-parameter Receipt
+definition and a bounded initial parameter window. Before is commit `82e68cb`;
+the candidate diff, hashes, bundles, source maps and raw cohorts are retained in
+`artifacts/user-profile-20261029/`. Durations below run from native dispatch to
+two useful RAFs, including list focus readiness; they are presentation proxies,
+not physical display latency or INP.
+
+| Receipt interaction                       | Before       | Candidate    |
+| ----------------------------------------- | ------------ | ------------ |
+| First popover opening                     | 123.7 ms     | 69.8 ms      |
+| Subsequent popover openings               | 58.4–62.2 ms | 51.0–62.6 ms |
+| First thermal-halftone list opening       | 108.1 ms     | 95.0 ms      |
+| Subsequent thermal-halftone list openings | 96.6–98.4 ms | 45.8–63.4 ms |
+
+The first opening records one Inspector commit before and zero in the candidate;
+all list openings retain the four outer editor surfaces, with zero production
+pixel readbacks in both cohorts. Warm popover ranges overlap: no consistent warm
+popover speedup is established. These are individual observations on a shared
+workstation and a focused Receipt fixture, not a distribution or a claim about
+every artwork or effect. Separate development observations on port 6100 record
+520.8 ms before and 260.0 ms after for the cold popover; do not mix that unscoped
+diagnostic pair with the frozen production cohort.
+
 Use both a production non-tracing run and a separate CPU/Blink trace. Extra gaps in a development diagnostic require reproduction on the same frozen source/build before attributing them to the engine; changes made between two cohorts can otherwise be mistaken for development overhead.
 
 Look for `getBoundingClientRect`, client/offset dimensions, native scroll access, Radix `use-size`, React mounting, style invalidation and native encoding in the exact input window. A stack under Playwright's own DOM visitor is not automatically application layout cost. Capture commit counts and actual visible row count alongside latency.

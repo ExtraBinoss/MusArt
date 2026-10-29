@@ -1,4 +1,4 @@
-import { memo, useDeferredValue, useEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef, type ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import type { Composition, EnginePort, Layer, Project } from "@musart/core";
 import type { EditorServices } from "../../state/contracts";
@@ -10,6 +10,7 @@ import { LayerTree } from "./tree/LayerTree";
 import { useRenderMetrics } from "../../state/session/render-metrics";
 import { attachmentSelection } from "../../state/selection/attachments";
 import { useAttachmentSelection } from "../../state/selection/use-attachment-selection";
+import { useAttachmentPresentation } from "../shared/use-attachment-presentation";
 import "./messages";
 const EMPTY_SELECTION: readonly string[] = Object.freeze([]);
 export function flattenLayers(layers: Layer[], parentId: string | null = null): Layer[] {
@@ -62,7 +63,6 @@ export const LayersPanel = memo(function LayersPanel({
     () => ({ engine, page, selection, run, attachment, layerCount }),
     [engine, page, selection, run, attachment, layerCount],
   );
-  const deferredFooterProps = useDeferredValue(footerProps);
   return (
     <section ref={element} className="layers-panel" aria-label={t("layers")}>
       <div className="panel-heading">
@@ -91,7 +91,14 @@ export const LayersPanel = memo(function LayersPanel({
         services={services}
         attachment={attachment}
       />
-      <LayerFooter {...deferredFooterProps} />
+      <FooterPresentation {...footerProps} />
     </section>
   );
+});
+
+const FooterPresentation = memo(function FooterPresentation(
+  props: ComponentProps<typeof LayerFooter>,
+) {
+  const shown = useAttachmentPresentation(props);
+  return <LayerFooter {...shown} />;
 });

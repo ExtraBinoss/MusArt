@@ -5,6 +5,45 @@ import { EditorSidebar } from "../../../src/components/workspace/EditorSidebar";
 import { previewAtom } from "../../../src/state/session/editor";
 import { setup } from "../../support/ui";
 
+test("effect editing keeps the previous Inspector guarded and adopts current properties on dismissal", () => {
+  const d = setup(),
+    effect = createEffect("receipt");
+  d.engine.execute({ type: "updateLayers", ids: [d.rectangle.id], patch: { effects: [effect] } });
+  d.engine.select([d.image.id]);
+  const { container } = d.mount(
+    <EditorSidebar
+      engine={d.engine}
+      services={d.services}
+      run={d.run}
+      onTask={d.onTask}
+      panelMode="design"
+      onPanelMode={vi.fn()}
+      exportOpen={false}
+      onExportOpenChange={vi.fn()}
+    />,
+  );
+  const inspector = screen.getByRole("region", { name: "Propriétés" });
+  expect(inspector).toHaveAttribute("data-selected-layer-id", d.image.id);
+  fireEvent.click(container.querySelector(`[data-attachment-effect-id="${effect.id}"]`)!);
+  expect(d.engine.getSnapshot().selection).toEqual([d.rectangle.id]);
+  expect(inspector).toHaveAttribute("data-selected-layer-id", d.image.id);
+  expect(container.querySelector(".inspector-selection-boundary")).toHaveAttribute(
+    "aria-busy",
+    "true",
+  );
+  act(() =>
+    d.engine.execute({ type: "updateLayers", ids: [d.rectangle.id], patch: { width: 321 } }),
+  );
+  expect(inspector).toHaveAttribute("data-selected-layer-id", d.image.id);
+  fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+  expect(inspector).toHaveAttribute("data-selected-layer-id", d.rectangle.id);
+  expect(screen.getByLabelText("Largeur")).toHaveValue("321");
+  expect(container.querySelector(".inspector-selection-boundary")).toHaveAttribute(
+    "aria-busy",
+    "false",
+  );
+});
+
 test("sidebar follows selection and page changes and supplies current export scope", () => {
   const d = setup();
   const onPanelMode = vi.fn(),

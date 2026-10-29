@@ -1,22 +1,11 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { atom, useAtomValue, useStore } from "jotai";
+import {
+  attachmentPopoverAtom as attachmentPopover,
+  type AttachmentPopoverBinding as Binding,
+  type AttachmentPopoverOpening as Opening,
+} from "../../../state/session/attachment-popover";
 
-interface Binding {
-  instance: object;
-  owner: string;
-}
-interface Opening {
-  binding: Binding;
-  generation: number;
-  live: boolean;
-  opened: boolean;
-  cancel(): void;
-}
-interface Slot {
-  opening: Opening;
-  open: boolean;
-}
-const attachmentPopover = atom<Slot | null>(null);
 function retire(opening: Opening) {
   if (!opening.live) return;
   opening.live = false;

@@ -103,6 +103,31 @@ test("opens a real Radix listbox and reports a chosen option", async () => {
   expect(screen.getByRole("combobox", { name: "Mode" }).tagName).toBe("BUTTON");
 });
 
+test("property options use Radix item alignment without installing Floating UI ancestor tracking", async () => {
+  render(
+    <SelectField
+      label="Placement"
+      value="one"
+      options={[
+        { value: "one", label: "One" },
+        { value: "two", label: "Two" },
+      ]}
+      onValueChange={vi.fn()}
+    />,
+  );
+  fireEvent.pointerDown(screen.getByRole("combobox", { name: "Placement" }), {
+    button: 0,
+    ctrlKey: false,
+    pointerType: "mouse",
+  });
+  const list = await screen.findByRole("listbox");
+  expect(list.closest("[data-radix-popper-content-wrapper]")).toBeNull();
+  expect(screen.getByRole("option", { name: "One" })).toHaveAttribute("aria-selected", "true");
+  fireEvent.keyDown(list, { key: "Escape" });
+  expect(screen.queryByRole("listbox")).toBeNull();
+  expect(screen.getByRole("combobox", { name: "Placement" })).toHaveTextContent("One");
+});
+
 test("pointer and keyboard focus preview enabled options once, while close/unmount restore drafts", async () => {
   const change = vi.fn(),
     preview = vi.fn(),
