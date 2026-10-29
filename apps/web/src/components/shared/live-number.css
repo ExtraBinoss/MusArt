@@ -1,0 +1,20 @@
+.live-number-motion {
+  transition:
+    filter 90ms ease-out,
+    opacity 90ms ease-out;
+}
+.live-number-motion.is-live-number-changing {
+  filter: blur(0.25px);
+  opacity: 0.96;
+  will-change: filter, opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-number-motion {
+    transition: none;
+  }
+  .live-number-motion.is-live-number-changing {
+    filter: none;
+    opacity: 1;
+    will-change: auto;
+  }
+}

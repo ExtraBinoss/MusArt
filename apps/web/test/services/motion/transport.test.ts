@@ -61,23 +61,49 @@ function setup() {
 }
 
 describe("imperative Motion transport", () => {
+  it.each(["play", "seek", "replace", "dispose"] as const)(
+    "retires the draft and its visual owner on %s",
+    (action) => {
+      const { source, engine, timer } = setup();
+      source.seek({ value: 1, rate: 2 });
+      const id =
+        engine.getSnapshot().project.pages[0]!.motion!.tracks[0]!.properties[0]!.keyframes[1]!.id;
+      const onRetire = vi.fn(),
+        draft = source.beginKeyframePreview([id], { onRetire })!;
+      expect(draft.update({ value: -1, rate: 1 }, { value: 1, rate: 1 })).toBe(true);
+      timer.advance(16);
+      expect(source.readEditingTime()).toEqual({ value: 1, rate: 1 });
+      expect(source.read().time).toEqual({ value: 1, rate: 2 });
+      if (action === "replace") source.beginKeyframePreview([id]);
+      else if (action === "seek") source.seek({ value: 1, rate: 2 });
+      else source[action]();
+      expect(onRetire).toHaveBeenCalledOnce();
+      expect(source.readEditingTime()).toBeNull();
+      expect(draft.update({ value: 1, rate: 2 })).toBe(false);
+      source.dispose();
+      expect(timer.pending.size).toBe(0);
+    },
+  );
   it("coalesces key timing drafts, updates the current pose and restores it without authoring edits", () => {
     const { engine, source, timer } = setup();
     source.seek({ value: 1, rate: 2 });
     const before = engine.getSnapshot();
     const id = before.project.pages[0]!.motion!.tracks[0]!.properties[0]!.keyframes[1]!.id;
-    const draft = source.beginKeyframePreview([id])!;
+    const onFrame = vi.fn();
+    const draft = source.beginKeyframePreview([id], { onFrame })!;
     for (const value of [-1, -2, -3]) draft.update({ value, rate: 4 });
     expect(timer.pending.size).toBe(1);
     expect(source.readFrame()!.layers[0]!.x).toBe(50);
     timer.advance(16);
+    expect(onFrame).toHaveBeenCalledOnce();
+    expect(onFrame.mock.calls[0]![0].motion).toBe(source.readFrame()!.motion);
     expect(source.readFrame()!.layers[0]!.x).toBe(80);
     expect(source.isPreviewing()).toBe(true);
     expect(engine.getSnapshot()).toBe(before);
-    draft.update({ value: -2, rate: 1 });
+    expect(draft.update({ value: -2, rate: 1 })).toBe(false);
     timer.advance(16);
-    expect(source.readFrame()!.layers[0]!.x).toBe(50);
-    expect(source.isPreviewing()).toBe(false);
+    expect(source.readFrame()!.layers[0]!.x).toBe(80);
+    expect(source.isPreviewing()).toBe(true);
     draft.update({ value: -1, rate: 1 });
     draft.clear();
     timer.advance(16);

@@ -4,6 +4,20 @@ import { formatUiError } from "../../../../src/state/i18n/errors/format";
 
 afterEach(() => changeLanguage("fr"));
 
+test("localizes layout restore/save failures while preserving the storage cause", async () => {
+  const cause = new Error("quota denied");
+  const error = Object.assign(new Error("diagnostic", { cause }), {
+    code: "PROJECT_PREFERENCES_SAVE_FAILED",
+  });
+  expect(formatUiError(error)).toContain("n’ont pas pu être enregistrés");
+  await changeLanguage("en");
+  expect(formatUiError(error)).toContain("could not be saved");
+  expect(formatUiError({ code: "PROJECT_PREFERENCES_LOAD_FAILED" })).toContain(
+    "could not be restored",
+  );
+  expect(error.cause).toBe(cause);
+});
+
 test("formats stable storage codes in the current language without importing the store", async () => {
   const error = Object.assign(new Error("diagnostic"), { code: "STALE_PROJECT_WRITE" });
   expect(formatUiError(error)).toMatch(/^Ce projet a changé/);

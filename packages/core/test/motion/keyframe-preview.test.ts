@@ -45,14 +45,15 @@ test.each([1, 3])(
     const d = setup(),
       delta = { value, rate: 2 },
       ids = [d.keys[0]!.id];
-    const draft = createMotionKeyframePreview(d.program, ids)(delta);
+    const draft = createMotionKeyframePreview(d.program, ids).sample(delta);
     expect(d.engine.getSnapshot().project).toBe(d.project);
-    expect(draft.composition).toBe(d.program.composition);
+    expect(draft.composition.layers).toBe(d.program.composition.layers);
     expect(draft.layers[1]).toBe(d.program.layers[1]);
     expect(draft.layers[0]!.properties[0]!.target).toBe(d.program.layers[0]!.properties[0]!.target);
     expect(Object.isFrozen(draft.layers[0]!.properties[0]!.keys)).toBe(true);
     d.engine.execute({ type: "moveMotionKeyframes", keyframeIds: ids, delta });
     const committed = compileMotion(d.engine.getSnapshot().project, { compositionId: "page" });
+    expect(draft.composition.motion).toEqual(committed.composition.motion);
     for (const value of [0, 3, 1, 8, 5, 7]) {
       const time = { value, rate: 4 };
       const plan = evaluateMotion(draft, time);
@@ -69,7 +70,7 @@ test("retains interpolation functions when key order is unchanged and samples re
     { value: 1, rate: 3 },
     { value: 1, rate: 2 },
   ]) {
-    const draft = retime(delta),
+    const draft = retime.sample(delta),
       property = draft.layers[0]!.properties[0]!;
     expect(property.segments).toBe(d.program.layers[0]!.properties[0]!.segments);
     expect(property.keys[2]!.time).toEqual({
@@ -77,16 +78,33 @@ test("retains interpolation functions when key order is unchanged and samples re
       rate: delta.rate,
     });
   }
-  expect(retime({ value: 0, rate: 1 })).toBe(d.program);
+  expect(retime.sample({ value: 0, rate: 1 })).toBe(d.program);
 });
 
-test("rejects negative times, collisions, missing/duplicate selections and locked ancestors without mutating the program", () => {
+test("preflights negative times and exact rational collisions without compiling a draft", () => {
+  const d = setup(),
+    preview = createMotionKeyframePreview(d.program, [d.keys[0]!.id]);
+  expect(preview.accepts({ value: -1, rate: 2 })).toBe(false);
+  expect(preview.accepts({ value: 2, rate: 2 })).toBe(false);
+  expect(preview.accepts({ value: 1, rate: 0 })).toBe(false);
+  expect(preview.accepts({ value: 0, rate: 1 })).toBe(true);
+  expect(preview.accepts({ value: 1, rate: 3 })).toBe(true);
+  expect(preview.accepts({ value: 3, rate: 2 })).toBe(true);
+  const all = createMotionKeyframePreview(
+    d.program,
+    d.keys.map((key) => key.id),
+  );
+  expect(all.accepts({ value: 1, rate: 1 })).toBe(true);
+  expect(all.accepts({ value: -1, rate: 1000 })).toBe(false);
+});
+
+test("rejects negative times, collisions, missing/duplicate selections and locked layers without mutating the program", () => {
   const d = setup(),
     key = d.keys[0]!.id;
   const retime = createMotionKeyframePreview(d.program, [key]);
-  expect(() => retime({ value: -1, rate: 1 })).toThrow("Negative keyframe time");
-  expect(() => retime({ value: 1, rate: 1 })).toThrow("already occupied");
-  expect(() => retime({ value: 1, rate: 0 })).toThrow();
+  expect(() => retime.sample({ value: -1, rate: 1 })).toThrow("Negative keyframe time");
+  expect(() => retime.sample({ value: 1, rate: 1 })).toThrow("already occupied");
+  expect(() => retime.sample({ value: 1, rate: 0 })).toThrow();
   for (const ids of [[], [key, key], ["missing"]])
     expect(() => createMotionKeyframePreview(d.program, ids)).toThrow();
   d.engine.execute({ type: "updateLayers", ids: ["item"], patch: { locked: true } });

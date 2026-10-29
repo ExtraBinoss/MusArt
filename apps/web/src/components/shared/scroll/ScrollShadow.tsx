@@ -7,17 +7,22 @@ export function ScrollShadow({
   className,
   style,
   surface,
+  viewportSelector,
 }: {
   children: ReactElement;
   className?: string;
   style?: CSSProperties;
   /** CSS color or theme token. An omitted value inherits --scroll-shadow-surface. */
   surface?: string;
+  /** Locate a viewport inside a component that emits sibling metadata (for example Radix Select). */
+  viewportSelector?: string;
 }) {
   const root = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const wrapper = root.current,
-      viewport = wrapper?.firstElementChild;
+      viewport = viewportSelector
+        ? wrapper?.querySelector(viewportSelector)
+        : wrapper?.firstElementChild;
     if (!(viewport instanceof HTMLElement) || !wrapper) return;
     let maximumTop = 0,
       bottomGutter = -1,
@@ -66,7 +71,7 @@ export function ScrollShadow({
       resize.disconnect();
       childrenObserver.disconnect();
     };
-  }, [children.type, children.key]);
+  }, [children.type, children.key, viewportSelector]);
   return (
     <div
       className={cn("scroll-shadow", className)}

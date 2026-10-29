@@ -20,6 +20,26 @@ test("surface colors can be explicit or inherited without overwriting viewport s
   expect(root.style.getPropertyValue("--scroll-shadow-surface")).toBe("");
   expect(root.style.height).toBe("80px");
 });
+test("an explicit selector finds a native viewport after sibling component metadata", () => {
+  const observe = vi.fn();
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe = observe;
+      disconnect() {}
+    },
+  );
+  render(
+    <ScrollShadow viewportSelector="[data-native-viewport]">
+      <>
+        <style>{".metadata {}"}</style>
+        <div data-native-viewport role="list" />
+      </>
+    </ScrollShadow>,
+  );
+  expect(observe).toHaveBeenCalledWith(screen.getByRole("list"));
+  expect(observe).not.toHaveBeenCalledWith(document.querySelector("style"));
+});
 test("scroll boundaries update shadows imperatively, preserve the viewport, and clean observers/listeners", async () => {
   let resize!: ResizeObserverCallback;
   const disconnect = vi.fn(),

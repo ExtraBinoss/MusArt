@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { RadioGroup } from "radix-ui";
-import { ArrowLeftRight, ArrowRightToLine, Repeat } from "lucide-react";
+import { ArrowLeftRight, Repeat } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
@@ -8,7 +8,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import type { TimelineTransportState } from "./model";
 import "./messages";
 
-const icons = { once: ArrowRightToLine, loop: Repeat, pingPong: ArrowLeftRight };
+function PlayOnce({ size = 13 }: { size?: number }) {
+  return (
+    <Repeat size={size} aria-hidden>
+      <path d="m4 20 16-16" />
+    </Repeat>
+  );
+}
+const icons = { once: PlayOnce, loop: Repeat, pingPong: ArrowLeftRight };
 export function PlaybackMode({
   value,
   onChange,

@@ -47,7 +47,10 @@ function createPresentation({ controller, workspace, motion, viewport, beforePai
     const index = createLayerGeometryIndex(page);
     for (const overlay of root.querySelectorAll<HTMLElement>(".canvas-selection[data-layer-id]")) {
       const layer = index.byId.get(overlay.dataset.layerId!);
-      overlay.style.display = frame.playback || !layer ? "none" : "";
+      const visible = layer && index.isVisible(layer.id) && !layer.maskSource;
+      overlay.style.display = visible ? "" : "none";
+      overlay.style.opacity = frame.playback ? ".2" : "1";
+      overlay.inert = Boolean(frame.playback || !visible || (layer && index.isLocked(layer.id)));
       if (!layer) continue;
       Object.assign(overlay.style, {
         width: `${layer.width}px`,
@@ -60,8 +63,10 @@ function createPresentation({ controller, workspace, motion, viewport, beforePai
         size.textContent = `${Math.round(layer.width)} × ${Math.round(layer.height)}`;
         size.style.transform = `translateX(-50%) scale(${1 / view.zoom})`;
       }
-      for (const handle of overlay.querySelectorAll<HTMLElement>(".canvas-handle"))
+      for (const handle of overlay.querySelectorAll<HTMLButtonElement>(".canvas-handle")) {
         handle.style.transform = `scale(${1 / view.zoom})`;
+        handle.disabled = overlay.inert;
+      }
       const lock = overlay.querySelector<HTMLElement>(".canvas-layer-lock");
       if (lock) lock.style.transform = `translate(-50%, -50%) scale(${1 / view.zoom})`;
     }

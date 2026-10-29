@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { TimelineIconButton } from "./ControlButton";
 import { PlaybackMode } from "./PlaybackMode";
 import { formatTimelineTime, parseTimelineTime } from "./time";
+import { createLiveNumberMotion } from "../shared/live-number";
 import type { TimelineTransport, TimelineUnit } from "./model";
 import "./messages";
 
@@ -49,13 +50,27 @@ function CurrentTime({
   const cancelled = useRef(false);
   const [error, setError] = useState(false);
   useEffect(() => {
+    const node = input.current;
+    if (!node) return;
+    const motion = createLiveNumberMotion(node, {
+      read: () => node.value,
+      write: (text) => {
+        node.value = text;
+      },
+    });
     const sync = () => {
-      if (input.current && document.activeElement !== input.current)
-        input.current.value = formatTimelineTime(transport.read().time, unit);
+      const editing = transport.readEditingTime?.();
+      node.setAttribute("aria-label", t(editing ? "keyTime" : "currentTime"));
+      if (editing || document.activeElement !== node)
+        motion.set(formatTimelineTime(editing ?? transport.read().time, unit));
     };
     sync();
-    return transport.subscribe(sync);
-  }, [transport, unit]);
+    const stop = transport.subscribe(sync);
+    return () => {
+      stop();
+      motion.dispose();
+    };
+  }, [transport, unit, t]);
   function commit() {
     const field = input.current;
     if (!field) return;
@@ -290,14 +305,14 @@ export const TimelineControls = memo(function TimelineControls({
             {unit}
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="top">{t(unit === "s" ? "seconds" : "milliseconds")}</TooltipContent>
+        <TooltipContent side="top">{t("changeTimeFormat")}</TooltipContent>
       </Tooltip>
-      {collapseControl}
       <PlaybackMode
         active={active}
         value={state.playbackMode}
         onChange={(value) => transport.setPlaybackMode(value)}
       />
+      {collapseControl}
     </div>
   );
 });

@@ -4,6 +4,7 @@ import { setup } from "../../support/ui";
 import { TimelineRows } from "../../../src/components/motion/TimelineRows";
 import { projectTimelineRows } from "../../../src/components/motion/tree";
 import { makeTransport } from "./support";
+import { createTimelineHoverSource } from "../../../src/state/motion/hover";
 
 it("selects canonical layers, toggles expansion and seeks an exact stored keyframe", () => {
   const d = setup();
@@ -92,4 +93,57 @@ it("opens the destination-key easing editor from real continuous connectors only
   expect(screen.getByRole("dialog", { name: "Interpolation" })).toHaveTextContent(
     "Contrôle la transition vers cette image clé.",
   );
+});
+
+it("publishes row/property hover without selecting and retires virtualized hover owners", () => {
+  const d = setup();
+  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  d.engine.execute({
+    type: "upsertMotionKeyframe",
+    target: { kind: "layer", layerId: d.rectangle.id, property: "x" },
+    time: { value: 1, rate: 2 },
+    value: 42,
+  });
+  const page = d.engine.getSnapshot().project.pages[0]!,
+    rows = projectTimelineRows(page, new Set()),
+    hover = createTimelineHoverSource(d.engine),
+    runtime = makeTransport(page),
+    select = vi.fn();
+  const props = {
+    rows,
+    first: 0,
+    last: rows.length,
+    rowHeight: 26,
+    selected: new Set<string>(),
+    pixelsPerSecond: 240,
+    duration: 2,
+    left: 0,
+    width: 500,
+    unit: "ms" as const,
+    transport: runtime.transport,
+    onToggle: vi.fn(),
+    onSelect: select,
+    engine: d.engine,
+    compositionId: page.id,
+  };
+  const view = d.mount(<TimelineRows {...props} />),
+    before = d.engine.getSnapshot();
+  const layer = document.querySelector<HTMLElement>(
+      `.motion-row:not(.is-property)[data-layer-id="${d.rectangle.id}"]`,
+    )!,
+    property = document.querySelector<HTMLElement>(
+      `.motion-row.is-property[data-layer-id="${d.rectangle.id}"]`,
+    )!;
+  fireEvent.pointerOver(layer);
+  expect(hover.read()?.layerId).toBe(d.rectangle.id);
+  expect(layer).toHaveAttribute("data-motion-hovered", "true");
+  fireEvent.pointerOver(property);
+  fireEvent.pointerOut(layer, { relatedTarget: property });
+  expect(hover.read()?.layerId).toBe(d.rectangle.id);
+  expect(property).toHaveAttribute("data-motion-hovered", "true");
+  expect(d.engine.getSnapshot()).toBe(before);
+  expect(select).not.toHaveBeenCalled();
+  view.rerender(<TimelineRows {...props} first={rows.length} />);
+  expect(hover.read()).toBeNull();
+  view.unmount();
 });

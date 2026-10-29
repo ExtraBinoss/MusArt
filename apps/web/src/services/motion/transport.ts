@@ -56,6 +56,7 @@ export class MotionTransport {
   private disposed = false;
   private draft: MotionProgram | null = null;
   private stopDraft: (() => void) | null = null;
+  private editingTime: MotionTime | null = null;
 
   constructor(
     private readonly engine: EnginePort,
@@ -133,9 +134,16 @@ export class MotionTransport {
     return this.framePlan;
   };
   isPreviewing = (): boolean => this.draft !== null;
+  readEditingTime = (): MotionTime | null => this.editingTime;
 
   /** One latest-only presentation update per frame; no document/history publication. */
-  beginKeyframePreview = (ids: readonly string[]) => {
+  beginKeyframePreview = (
+    ids: readonly string[],
+    options?: {
+      onFrame?: (page: Composition) => void;
+      onRetire?: () => void;
+    },
+  ) => {
     this.sync();
     this.pause();
     this.stopDraft?.();
@@ -150,25 +158,37 @@ export class MotionTransport {
       latest = null;
       this.stopDraft = null;
       this.draft = null;
+      this.editingTime = null;
+      this.present();
+      options?.onRetire?.();
     };
     this.stopDraft = clear;
+    this.draft = this.program;
+    this.emit();
     return {
-      update: (delta: MotionTime) => {
-        if (this.stopDraft !== clear) return;
+      update: (delta: MotionTime, editingTime?: MotionTime): boolean => {
+        this.sync();
+        if (this.stopDraft !== clear || !retime.accepts(delta)) return false;
         latest = delta;
-        if (pending !== null) return;
+        if (editingTime) {
+          validateMotionTime(editingTime);
+          this.editingTime = Object.freeze({ ...editingTime });
+        }
+        if (pending !== null) return true;
         pending = this.scheduler.request(() => {
           pending = null;
           this.sync();
           if (this.stopDraft !== clear || !latest) return;
           try {
-            this.draft = retime(latest);
+            this.draft = retime.sample(latest);
           } catch {
             this.draft = null;
           }
+          options?.onFrame?.((this.draft ?? this.program)!.composition);
           this.present();
           this.emit();
         });
+        return true;
       },
       clear: () => {
         if (this.stopDraft !== clear) return;
@@ -204,7 +224,12 @@ export class MotionTransport {
     if (this.disposed) return;
     validateMotionTime(requested);
     this.sync();
-    if (!this.state.playing && compareMotionTime(requested, this.state.time) === 0) return;
+    const hadDraft = this.stopDraft !== null;
+    this.stopDraft?.();
+    if (!this.state.playing && compareMotionTime(requested, this.state.time) === 0) {
+      if (hadDraft) this.emit();
+      return;
+    }
     this.stopTick();
     const time =
       requested.value < 0
@@ -221,6 +246,7 @@ export class MotionTransport {
     if (this.disposed) return;
     if (!["once", "loop", "pingPong"].includes(playbackMode))
       throw new Error("Invalid playback mode");
+    this.stopDraft?.();
     this.pause();
     this.state = Object.freeze({ ...this.state, playbackMode });
     this.emit();

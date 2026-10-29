@@ -467,6 +467,229 @@ quand je déplace la keyframe genre le truc, faurait deja un tooltip si je reste
 tu peux svp commit et git pull le main la pour recuperer les dernières modif j'ai fais pas mla de fix de perf et tout je pense que ca te servira
 ```
 
+## M62
+
+User-supplied references: [selected and neutral tracks](assets/figma-selection-tracks.png), [playback controls and tooltips](assets/figma-playback-controls.png), [manual keyframe movement](assets/figma-keyframe-drag.png).
+
+```text
+le color de chaque doit etre au moment du actif, sinon il est gris, comme figma non?? [Image #1] ou alors fait comme figma [Image #2][Image #3]
+```
+
+## M63
+
+```text
+copie leur UX et tout svp
+```
+
+## M64
+
+Reference: [reported dark timeline contrast](assets/timeline-keyframe-contrast-report.png).
+
+```text
+[Image #1]les trucs des ptits keyframes et tout c'est trp bleu on vois pas bien, sois met en neutral soit jsp mais la c pas top tu vois que c pas lisible; peut etre en dark mode fuadrait un bleu plus clair ? je ne sais pas ?? inspire toi de figma
+```
+
+## M65
+
+```css
+:root {
+  --info: #1abcfe;
+  --error: #f24e1e;
+  --accent: #0acf83;
+  --border: #e5e5e5;
+  --primary: #f24e1e;
+  --success: #0acf83;
+  --surface: #f5f5f5;
+  --warning: #ffcd29;
+  --secondary: #a259ff;
+  --text-muted: #999999;
+  --background: #ffffff;
+  --text-primary: #1e1e1e;
+  --text-secondary: #6b6b6b;
+}
+```
+
+## M66
+
+```text
+https://www.colorpalettegenerator.ai/brands/figma
+```
+
+## M67
+
+```text
+en temps réel les keyframes ne bougent pas, enfin si, mais la "barre" hroizontal, elle bouge pas en temps réel quoi. tu vois.
+```
+
+## M68
+
+```text
+je pense honnetement que le ble udevrait etre plus comme figma aufaite, je suis convaincu en dark mode. et le slider pour le zoom doit avoir le active state (genre le before thumb en primary svp)
+```
+
+## M69
+
+```text
+remet le bleu comme avant svp
+
+je rpopose aussi que la scrollabr soit dans la motion (celle de bas) soit plus legere genre plus petites, et au hover elle grow, mais sinon de base elle sera less heighty.
+
+ensuite, quand ya le "timeline" il faut que l'animation ne fasse pas un jump, si je clique sur timeline alors qu'elle est ouvert, ca doit pas faire jump le layout ca doit etre doux, pareil pour l'ouverture la c'est pas très smooth
+
+aussi le bouton timleine à un glow moche. je trouve que peut etre en mode motion, il faudrait que ptete la timeline soit légèrement viisblement, dsisont la ruler la première, et au hover ca l'ouvre.
+en haut a droite ca serait un pin (pour pin la motion toolbar) tu vois??? comme ça ça reste pro
+```
+
+## M70 — Pin layout decision
+
+Question: Quand la timeline est épinglée, préfères-tu qu’elle reste superposée au bas du canvas ou qu’elle réduise la zone du canvas ?
+
+```text
+Ancrée, avec redimensionnement du canvas
+```
+
+## M71
+
+```text
+commea actuellement.
+```
+
+## M72
+
+```text
+regle visible et toute la barre du haut quoi hein (comme ca on peux play!! mais voir qu'on a une motion quoi) et si je passe de statique à motion, ça la pin quoi. tu vois
+```
+
+## M73
+
+```text
+le select dans le truc, avec que ce soit blending mode ou la courbe au lieu d'avoir des flèches j'aimerais avec scrollbar et oui si je met ma souris en bas ca va avancer (ou en haut) mais faut les scrollshadow, comme ça ca garde une taille prédicitible avec la scrollbar au lieu d'augmenter avec les flèches tu vois. ca serait cool de pas avoir le flèche juste le scrollsahdow + une truc qui détecte si la souris est dans celle ci pour descendr ecomme la flèche
+```
+
+## M74
+
+```text
+la timeline doit etre superposé hein fin la, il est pas au dessus du properties panel, l'animation doit etre comme apple aufaite, meme équation que les anim dapparation apple svp
+```
+
+## M75
+
+```text
+quand je drag la keyframes,o ui ca bouge en temps réel, mais les logos d'inteprolation bouge et se colle biarrement, ptete les cacher (avec une ptite motion en mode opacité le temps que) et quand je drag je veux le ms en temps réel qui défile, pareil quand i ldéfile dans ce truc de tooltip ou dans la timleine (via le compteur de temps), il faudrait que ca soit smooth l'animation de défilement, genre soit un blur mouvement soit un truc commme une roulette tu vois?
+```
+
+## M76 — Keyframe time display decision
+
+Question: Pendant le déplacement d’une keyframe, le compteur principal de la timeline doit-il afficher temporairement le temps de cette clé ou garder la position de lecture ?
+
+```text
+Afficher le temps de la clé (recommandé)
+```
+
+## M77
+
+```text
+y'a le bouton pin + déplier, c juste pin enfaite, deplier c'est deja quand tu go away quoi
+
+aussi le truc de calques est pas top je trouve car en gros y'a deux truc un en haut, un en bas, qui prend la blinde d'espace. genre ca fais que avec motion timeline + calque + properties ca laisse peut de place tu vois?? faudrait reduire la place que prend les effets et tout jsp comment mais faudrait que ce soit aéré.
+```
+
+## M78
+
+```text
+et je pense selon moi qu'il faut pas sortir de la motion (avec genre hover away) en gros pas sous toutes les condiitons, si l'user bouge vite sa souris de motion timeline (pas pin) à en dehors, alors on le cache.
+
+sinon si l'user est vraiment juuste au dessus du resize, on attend un peu plus (ou alors on le ferme pas) ppour pas frustrer l'user non??? comme figma le fait sur pas mal de ces trucs
+```
+
+## M79
+
+```text
+/home/albi/Téléchargements/mode-icons/motion.svg
+/home/albi/Téléchargements/mode-icons/static.svg utilise ces deux svg pour statique et motion svp!
+```
+
+## M80
+
+```text
+la scrollabr down du motion genre le left right est vrm grosse je t'ai dit je la veut moins heighty quand je hover pas, vais dit moi ce que ta fais et ce qu'il manque dans mes demandes spv
+```
+
+## M81
+
+```text
+j'ai limpression l'icone svg est pas big fautdrait qu'lle soit plus épaisse svp
+```
+
+## M82
+
+```text
+je pense que les layer appaerance doit rester visible constamment. le "+" est bien mais le add effet et add adjustement parofis le hover ne fais pas changer le hover réelleemnt dans le add effect et add adjustement genre le hover veux pas
+```
+
+## M83
+
+```text
+le zoom timeline doit etre save dans les pref du projet svp!
+```
+
+## M84
+
+```text
+aussi quand je hover un element dans la timeline, je pense faudrait les selection handle qui pop en temps réel. quand ca play les handle vont s'opacifié (pour qu'on vois bien, genre a 20% ou jsp peut importe ce que tu vois de bien),
+```
+
+## M85
+
+```text
+envoie des sous agents pour fiare toutes les demandes rapidement genre sépare l travail
+```
+
+## M86
+
+```text
+les scrollabr on besoin de leur controle de haut bas qd meme, et celle de droite doit etre la meme scrollabr que les autres, c'est que celle du bas qui doit etre fix.
+la size des panels doit etre save par projet svp aussi et restaurer of course
+```
+
+## M87
+
+```text
+tu peux commit et tout pour publish sur une branche svp ??? comme ça j'peux la recup deja
+```
+
+## M88
+
+```text
+le ptit pil lde resize doit arriver en fade in , a la fin de lanimation et au début de l'animation, pas PENDANT, svp, ou alors pendant mais en temps réel tu vois genre au meme truc
+```
+
+## M89
+
+```text
+le fade in de la pill de resize a pas l'air fluide en IN pas en out, en out parfait mais en in il clignote avnat
+```
+
+## M90
+
+Reference: [user screenshot](assets/in-bloom-selection-geometry-report.png) (In Bloom, rotated orange image; original `/tmp/codex-clipboard-Yg3hE2.png`).
+
+```text
+[Image #1] les images et tout dans le motion, doivent etre selectionnable si viisble, genre sur le moment direct, defois je peux selectionner un truc mais le resiez hnadle ne ressemble pas a l'item genre ne l'epouse pas
+```
+
+## M91
+
+```text
+et pourqoi le dnd des layers ne marche plus dutout, il fait juste croix. why???? c trop bizarre!!!
+```
+
+## M92
+
+```text
+quand je fais pin je veux bien que ca se pin daccord mais faut que ca s'anime de manière smooth et que dans la canvas ca nous bouge pas ou alors que ce soit smooth quoi, pas de truc violent quoi, truc vrm smooth
+```
+
 ## Reference handling
 
 The screenshots are user-supplied Figma UI references, not MusArt product assets. They document the requested appearance and interaction target; they do not grant a license to redistribute Figma code, brand assets or an external design system inside the application. Preserve MusArt branding and use the repository's genuine shadcn/Radix controls.

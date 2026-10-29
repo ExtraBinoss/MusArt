@@ -6,7 +6,7 @@ This directory preserves the user's request and the evidence used to plan the wo
 
 | Document                                                        | Purpose                                                                                          |
 | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| [Verbatim brief](user-brief.fr.md)                              | M1–M61 unchanged, with supplied Figma references and later MusArt defect screenshots.            |
+| [Verbatim brief](user-brief.fr.md)                              | M1–M92 unchanged, with supplied Figma references and later MusArt defect screenshots.            |
 | [Requirements](requirements.md)                                 | Stable requirement IDs, acceptance criteria and links back to the brief.                         |
 | [Figma reference](figma-reference.md)                           | Primary Figma sources, verified interactions and screenshot observations.                        |
 | [UI and UX specification](ui-ux-spec.md)                        | The intended MusArt workflow, visual structure and interaction rules.                            |
@@ -18,6 +18,8 @@ This directory preserves the user's request and the evidence used to plan the wo
 | [Agent handoff](agent-handoff.md)                               | Delegation protocol, shared contracts and the current handoff state.                             |
 | [Implementation record](implementation-log.md)                  | Implemented submilestones, actual focused/native evidence and remaining integration gaps.        |
 | [Integration audit](integration-audit.md)                       | Source-inspected resolver, lifetime and playback-backpressure findings; no timing claims.        |
+
+The [UI checkpoint](ui-checkpoint.md) records the latest functional evidence and open canvas/drag/pinning follow-ups.
 
 ## Isolated workspace
 
@@ -54,6 +56,6 @@ M38/M39 report a real Play failure and request dedicated media error feedback. M
 
 ## Implementation status
 
-The isolated worktree and 6110 server are ready. Three agents initially researched and implemented separate domains. M44 centralizes the current performance investigation in one dedicated agent, with parent coordination and the others idle. M52/M53 require restrained CPU/GPU use while continuing: short serial checks, one CPU core, low priority and no repeated heavy cohorts. The source brief preserves M1–M61, including the eight initial answered questions and subsequent interaction, audio and performance requests. Stable requirement IDs map to acceptance criteria and the build checklist. Research distinguishes verified Figma behavior, screenshot observations, MusArt adaptations and engineering proposals.
+The isolated worktree and 6110 server are ready. Three agents initially researched and implemented separate domains. M44 centralizes the current performance investigation in one dedicated agent, with parent coordination and the others idle. M52/M53 require restrained CPU/GPU use while continuing: short serial checks, one CPU core, low priority and no repeated heavy cohorts. The source brief preserves M1–M92, including the eight initial answered questions and subsequent interaction, audio and performance requests. Stable requirement IDs map to acceptance criteria and the build checklist. Research distinguishes verified Figma behavior, screenshot observations, MusArt adaptations and engineering proposals.
 
 Implementation is now active. The branch contains a pure temporal model, validated authoring commands, typed property/easing registries, compiled evaluation and an imperative editor transport. The bottom timeline, property authoring and native video-source work are being integrated. The simplified Timelapse dialog has a passing native GPU/encoded-video witness. See the [implementation log](implementation-log.md) for exact verification scope and remaining gaps; these do not yet constitute a completed video editor or a passing browser-performance budget. The main worktree and its 6100 server remain outside this branch's changes.

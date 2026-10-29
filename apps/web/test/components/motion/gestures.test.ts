@@ -50,7 +50,7 @@ function fixture() {
   const runtime = makeTransport(page()),
     onSelection = vi.fn(),
     onError = vi.fn();
-  const draft = { update: vi.fn(), clear: vi.fn() };
+  const draft = { update: vi.fn(() => true), clear: vi.fn() };
   runtime.transport.beginKeyframePreview = vi.fn(() => draft);
   const controls = createTimelineGestures({
     engine,
@@ -195,14 +195,24 @@ it("moves a Shift-selected key set atomically, snaps to exact playhead time and 
     secondLayerKey = d.page().motion!.tracks.find((track) => track.layerId === "b")!.properties[0]!
       .keyframes[0]!;
   d.controls.selectKey(first.id, false);
+  const tooltip = document.createElement("span");
+  tooltip.dataset.motionKeyTooltip = first.id;
+  tooltip.dataset.timeUnit = "ms";
+  tooltip.textContent = "0 ms";
+  const accessibleTooltip = tooltip.cloneNode(true) as HTMLElement;
+  document.body.append(tooltip, accessibleTooltip);
   d.controls.selectKey(secondLayerKey.id, true);
   d.runtime.update({ time: { value: 1, rate: 2 } });
   d.controls.beginKey(d.event(d.keyButtons[0]), "a", first);
   d.send(d.keyButtons[0]!, "pointermove", 146, true);
-  expect(d.draft.update).toHaveBeenLastCalledWith({ value: 1, rate: 2 });
+  expect(d.draft.update).toHaveBeenLastCalledWith({ value: 1, rate: 2 }, { value: 1, rate: 2 });
+  expect(tooltip).toHaveTextContent("500 ms");
+  expect(accessibleTooltip).toHaveTextContent("500 ms");
   expect(d.keyButtons[0]!.style.getPropertyValue("--motion-drag-x")).toBe("50px");
   d.send(d.keyButtons[0]!, "pointerup", 146, true);
   expect(d.draft.clear).toHaveBeenCalledOnce();
+  expect(tooltip).toHaveTextContent("0 ms");
+  expect(accessibleTooltip).toHaveTextContent("0 ms");
   expect(d.track().properties[0]!.keyframes[0]!.time).toEqual({ value: 1, rate: 2 });
   expect(
     d.page().motion!.tracks.find((track) => track.layerId === "b")!.properties[0]!.keyframes[0]!
@@ -236,5 +246,36 @@ it("keeps collisions atomic and leaves text-field Delete to native editing", () 
   expect(d.engine.getSnapshot().project).toBe(before);
   expect(d.controls.consumePointerClick(1)).toBe(true);
   expect(d.controls.consumePointerClick(1)).toBe(false);
+  d.controls.dispose();
+});
+
+it("keeps markers at the last accepted position when the timing preflight rejects a collision", () => {
+  const d = fixture(),
+    before = d.engine.getSnapshot().project;
+  d.controls.beginKey(d.event(d.keyButtons[0]), "a", d.keys[0]!);
+  d.send(d.keyButtons[0]!, "pointermove", 125);
+  expect(d.keyButtons[0]!.style.getPropertyValue("--motion-drag-x")).toBe("25px");
+  d.draft.update.mockReturnValueOnce(false);
+  d.send(d.keyButtons[0]!, "pointermove", 200);
+  expect(d.keyButtons[0]!.style.getPropertyValue("--motion-drag-x")).toBe("25px");
+  d.send(d.keyButtons[0]!, "pointerup", 200);
+  expect(d.engine.getSnapshot().project).toBe(before);
+  expect(d.onError).toHaveBeenLastCalledWith("gestureFailed");
+  d.controls.dispose();
+});
+
+it("retires gesture DOM immediately when the transport replaces its draft owner", () => {
+  const d = fixture(),
+    before = d.engine.getSnapshot().project;
+  d.controls.beginKey(d.event(d.keyButtons[0]), "a", d.keys[0]!);
+  d.send(d.keyButtons[0]!, "pointermove", 125);
+  expect(d.keyButtons[0]!.style.getPropertyValue("--motion-drag-x")).toBe("25px");
+  const [, options] = vi.mocked(d.runtime.transport.beginKeyframePreview!).mock.calls[0]!;
+  options!.onRetire!();
+  expect(d.keyButtons[0]!.style.getPropertyValue("--motion-drag-x")).toBe("");
+  expect(d.draft.clear).toHaveBeenCalledOnce();
+  d.send(d.keyButtons[0]!, "pointerup", 125);
+  expect(d.engine.getSnapshot().project).toBe(before);
+  expect(d.onError).not.toHaveBeenCalled();
   d.controls.dispose();
 });

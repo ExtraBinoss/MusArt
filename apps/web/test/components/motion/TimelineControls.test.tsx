@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from "react";
+import { Profiler, useState, useSyncExternalStore } from "react";
 import { act, fireEvent, screen } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 import { setup } from "../../support/ui";
@@ -118,4 +118,33 @@ it("reports a rejected duration command without simulating an applied edit", () 
   fireEvent.blur(duration);
   expect(d.engine.getSnapshot()).toBe(before);
   expect(screen.getByRole("alert")).toHaveTextContent("n’a pas pu être appliquée");
+});
+
+it("shows the dragged key time without seeking or committing React frames and restores the transport time", () => {
+  const { d, runtime, Host } = fixture(),
+    commits = vi.fn();
+  const view = d.mount(
+    <Profiler id="controls" onRender={commits}>
+      <Host />
+    </Profiler>,
+  );
+  act(() => runtime.update({ time: { value: 1, rate: 1 } }));
+  const field = screen.getByRole("spinbutton", { name: "Temps actuel" });
+  const before = commits.mock.calls.length,
+    snapshot = d.engine.getSnapshot();
+  act(() => {
+    for (let value = 2001; value <= 2060; value++) runtime.editTime({ value, rate: 1000 });
+  });
+  expect(screen.getByRole("spinbutton", { name: "Temps de l’image clé" })).toBe(field);
+  expect(field).toHaveValue(2060);
+  expect(runtime.transport.read().time).toEqual({ value: 1, rate: 1 });
+  expect(runtime.transport.seek).not.toHaveBeenCalled();
+  expect(commits.mock.calls.length).toBe(before);
+  expect(d.engine.getSnapshot()).toBe(snapshot);
+  act(() => runtime.editTime(null));
+  expect(screen.getByRole("spinbutton", { name: "Temps actuel" })).toHaveValue(1000);
+  view.unmount();
+  expect(runtime.listeners.size).toBe(0);
+  runtime.editTime({ value: 4, rate: 1 });
+  expect(field).toHaveValue(1000);
 });

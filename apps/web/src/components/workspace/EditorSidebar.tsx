@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 import type { Composition, EnginePort, Project } from "@musart/core";
 import type { EditorServices } from "../../state/contracts";
 import { useEngine } from "../../state/session/editor";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "../ui/resizable";
+import { ResizablePanel, ResizableHandle } from "../ui/resizable";
+import { ProjectPanelGroup } from "./ProjectPanelGroup";
 import { Inspector } from "../properties/Inspector";
 import { sameInspectorPage } from "../properties/inspector-scope";
 import { LayersPanel } from "../layers/LayersPanel";
@@ -45,7 +46,7 @@ export const EditorSidebar = memo(function EditorSidebar({
     [target, page, snapshot.selection, snapshot.project.assets],
   );
   return (
-    <ResizablePanelGroup orientation="vertical" className="sidebar-panels">
+    <ProjectPanelGroup preference="sidebarLayout" orientation="vertical" className="sidebar-panels">
       <ResizablePanel id="properties" defaultSize="63%" minSize="22%">
         <div className="inspector-tabs">
           <div className="inspector-header">
@@ -81,7 +82,7 @@ export const EditorSidebar = memo(function EditorSidebar({
           run={run}
         />
       </ResizablePanel>
-    </ResizablePanelGroup>
+    </ProjectPanelGroup>
   );
 });
 

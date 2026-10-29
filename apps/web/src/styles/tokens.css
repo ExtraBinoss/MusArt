@@ -34,6 +34,8 @@
   --action: #2563eb;
   --action-foreground: #ffffff;
   --media-image: var(--primary);
+  --motion-accent: var(--primary);
+  --motion-accent-foreground: var(--primary-foreground);
   --media-video: #8b5cf6;
   --media-audio: #16a34a;
   --secondary: #eceef3;

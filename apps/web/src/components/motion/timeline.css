@@ -2,6 +2,16 @@
   display: grid;
   gap: 5px;
 }
+.motion-mode-symbol {
+  display: inline-block;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  background: currentColor;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
 .motion-confirm-hint {
   margin: 2px 0 0;
   color: var(--muted-foreground);
@@ -15,7 +25,10 @@
 }
 .motion-timeline {
   --motion-gutter: 244px;
-  --motion-accent: var(--primary);
+  --primary: var(--motion-accent);
+  --primary-foreground: var(--motion-accent-foreground);
+  --action: var(--motion-accent);
+  --media-image: var(--motion-accent);
   position: relative;
   display: flex;
   flex: 0 0 auto;
@@ -282,6 +295,7 @@
 }
 .motion-row {
   --motion-track-color: var(--media-image);
+  --motion-key-selected-color: color-mix(in srgb, var(--motion-track-color) 70%, var(--foreground));
   position: absolute;
   left: 0;
   right: 0;
@@ -396,9 +410,9 @@ button.motion-row-expand:hover {
   touch-action: none;
   cursor: default;
 }
-.motion-key.is-key-selected > svg {
-  fill: var(--motion-track-color);
-  stroke: var(--motion-track-color);
+.motion-key.is-key-selected:not([data-key-preview="empty"]) > svg {
+  fill: var(--motion-key-selected-color);
+  stroke: var(--motion-key-selected-color);
 }
 .motion-auto-key.is-active {
   color: var(--destructive);
@@ -444,9 +458,9 @@ button.motion-row-expand:hover {
   align-items: center;
   min-width: 2px;
   padding: 0 4px;
-  border: 1px solid color-mix(in srgb, var(--motion-track-color) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--muted-foreground) 28%, transparent);
   border-radius: 4px;
-  background: color-mix(in srgb, var(--motion-track-color) 28%, var(--background));
+  background: color-mix(in srgb, var(--muted-foreground) 22%, var(--background));
 }
 .motion-track > i {
   display: block;
@@ -462,8 +476,8 @@ button.motion-row-expand:hover {
   background: color-mix(in srgb, var(--foreground) 65%, transparent);
 }
 .motion-track:hover {
-  border-color: color-mix(in srgb, var(--motion-track-color) 65%, transparent);
-  background: color-mix(in srgb, var(--motion-track-color) 38%, var(--background));
+  border-color: color-mix(in srgb, var(--muted-foreground) 45%, transparent);
+  background: color-mix(in srgb, var(--muted-foreground) 32%, var(--background));
 }
 .motion-row.is-selected .motion-track:hover {
   border-color: var(--motion-track-color);
@@ -494,17 +508,14 @@ button.motion-row-expand:hover {
   fill: var(--background);
   stroke-width: 1.6;
 }
-.motion-row.is-selected .motion-key {
-  color: var(--motion-track-color);
-}
 .motion-key:hover {
   border-radius: 4px;
   background: var(--accent);
   color: var(--foreground);
 }
-.motion-key:hover > svg,
-.motion-key:focus-visible > svg {
-  fill: currentColor;
+.motion-key:focus-visible {
+  border-radius: 4px;
+  background: var(--accent);
 }
 .motion-key.is-bundle > svg {
   filter: drop-shadow(3px 0 currentColor);

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Diamond, Square } from "lucide-react";
+import motionIcon from "../../assets/mode-icons/motion.svg";
+import staticIcon from "../../assets/mode-icons/static.svg";
 import { useTranslation } from "react-i18next";
 import {
   planMotionInitialization,
@@ -85,8 +86,30 @@ export function CompositionMode({
         label={t("mode")}
         onValueChange={choose}
         items={[
-          { value: "static", label: t("static"), icon: <Square size={13} /> },
-          { value: "motion", label: t("motion"), icon: <Diamond size={13} /> },
+          {
+            value: "static",
+            label: t("static"),
+            icon: (
+              <span
+                className="motion-mode-symbol"
+                data-mode-icon="static"
+                aria-hidden
+                style={{ maskImage: `url("${staticIcon}")` }}
+              />
+            ),
+          },
+          {
+            value: "motion",
+            label: t("motion"),
+            icon: (
+              <span
+                className="motion-mode-symbol"
+                data-mode-icon="motion"
+                aria-hidden
+                style={{ maskImage: `url("${motionIcon}")` }}
+              />
+            ),
+          },
         ]}
       />
       {error && (

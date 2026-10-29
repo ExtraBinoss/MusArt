@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ChevronDown,
@@ -26,6 +27,8 @@ import "./messages";
 import type { TimelineGestures } from "./gestures";
 import { KeyCluster } from "./KeyCluster";
 import { KeyframeMarker } from "./KeyframeMarker";
+import { createTimelineHoverSource } from "../../state/motion/hover";
+import "./row-hover.css";
 
 const propertyLabels: Readonly<Record<string, string>> = {
   x: "positionX",
@@ -80,6 +83,31 @@ export function TimelineRows({
 }) {
   const { t } = useTranslation("motion"),
     { t: common } = useTranslation();
+  const hover = useMemo(() => (engine ? createTimelineHoverSource(engine) : null), [engine]);
+  const hovered = useRef<{ key: string; node: HTMLElement; clear(): void } | null>(null);
+  const clearHover = useCallback((key?: string) => {
+    const current = hovered.current;
+    if (!current || (key !== undefined && current.key !== key)) return;
+    hovered.current = null;
+    delete current.node.dataset.motionHovered;
+    current.clear();
+  }, []);
+  function showHover(key: string, layerId: string, node: HTMLElement) {
+    if (
+      hovered.current?.key === key &&
+      hovered.current.node === node &&
+      (!hover || hover.read()?.layerId === layerId)
+    )
+      return;
+    const clear = hover && compositionId ? hover.show(compositionId, layerId) : () => {};
+    clearHover();
+    node.dataset.motionHovered = "true";
+    hovered.current = { key, node, clear };
+  }
+  useLayoutEffect(() => {
+    if (hovered.current && !hovered.current.node.isConnected) clearHover();
+  });
+  useEffect(() => () => clearHover(), [clearHover, hover, compositionId]);
   function propertyName(target: MotionPropertyTarget, row: TimelineRow): string {
     if (target.kind === "layer") return t(propertyLabels[target.property] ?? target.property);
     const effect = row.layer.effects.find((item) => item.id === target.effectId);
@@ -113,6 +141,16 @@ export function TimelineRows({
         style={{ top: (first + offset) * rowHeight, height: rowHeight }}
         data-layer-id={row.layer.id}
         data-layer-kind={row.layer.kind}
+        data-motion-hover-layer={row.layer.id}
+        onPointerEnter={(event) => showHover(row.key, row.layer.id, event.currentTarget)}
+        onPointerLeave={(event) => {
+          if (!event.currentTarget.contains(document.activeElement)) clearHover(row.key);
+        }}
+        onFocus={(event) => showHover(row.key, row.layer.id, event.currentTarget)}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null))
+            clearHover(row.key);
+        }}
       >
         <div className="motion-row-label" style={{ paddingLeft: 10 + row.depth * 14 }}>
           {row.kind === "layer" && row.expandable ? (
@@ -148,7 +186,10 @@ export function TimelineRows({
             {name}
           </button>
         </div>
-        <div className="motion-row-time">
+        <div
+          className="motion-row-time"
+          data-motion-property-id={row.kind === "property" ? row.property.id : undefined}
+        >
           {row.kind === "property" &&
             easingAvailable &&
             projectEasingSegments(row.property.keyframes, left, width, pixelsPerSecond).map(

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { openDB } from "idb";
 import { createLayer, createProject, EditorEngine, type Project } from "@musart/core";
 import { installAutosave, ProjectStore } from "../../../src/services/projects/storage";
+import { projectPreferencesKey } from "../../../src/services/projects/preferences/schema";
 
 vi.mock("idb", async () => {
   const original = await vi.importActual<typeof import("idb")>("idb");
@@ -18,6 +19,24 @@ afterEach(async () => {
   for (const value of stores.splice(0)) await value.close();
 });
 describe("local project storage", () => {
+  it("deletes layout preferences atomically with project retirement and rejects later writes", async () => {
+    const name = crypto.randomUUID(),
+      saved = store(name),
+      id = "layout-project";
+    await saved.preferences.update(id, { timelineZoom: 240, timelineHeight: 0.4 });
+    await saved.remove(id);
+    const inspection = await openDB(name);
+    try {
+      expect(await inspection.get("preferences", projectPreferencesKey(id))).toBeUndefined();
+      expect(await inspection.get("preferences", `deleted-project:${id}`)).toBe("1");
+      await expect(saved.preferences.update(id, { timelineZoom: 320 })).rejects.toMatchObject({
+        code: "PROJECT_PREFERENCES_SAVE_FAILED",
+        cause: { code: "PROJECT_DELETED" },
+      });
+    } finally {
+      inspection.close();
+    }
+  });
   it("atomically saves documents and last-project preference, retaining or replacing thumbnails", async () => {
     const db = store();
     const project = createProject({ name: "Poster" });
