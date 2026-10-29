@@ -139,19 +139,19 @@ export function EffectParameters({
                         : undefined;
                     return {
                       value: option.value,
-                      label: (
+                      label: preset ? (
                         <span className="effect-preset-choice">
-                          {preset && (
-                            <span
-                              aria-hidden="true"
-                              className="effect-preset-swatch"
-                              style={{
-                                background: `linear-gradient(100deg, ${preset.colors.join(",")})`,
-                              }}
-                            />
-                          )}
+                          <span
+                            aria-hidden="true"
+                            className="effect-preset-swatch"
+                            style={{
+                              background: `linear-gradient(100deg, ${preset.colors.join(",")})`,
+                            }}
+                          />
                           {t(option.labelKey)}
                         </span>
+                      ) : (
+                        t(option.labelKey)
                       ),
                     };
                   })}

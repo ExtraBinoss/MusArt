@@ -1,4 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
+import { getUiPresentation } from "../../../../src/state/session/ui-presentation";
 import { ThumbnailActivity } from "../../../../src/services/projects/thumbnails/activity";
 afterEach(() => vi.useRealTimers());
 it("keeps canonical work out of layer browsing while visible previews remain admissible", () => {
@@ -427,5 +428,29 @@ it("tracks distinct keyboard keys, supports key-only and blank synthetic identit
   activity.dispose();
   window.dispatchEvent(new KeyboardEvent("keydown", { key: "z" }));
   expect(activity.visibleBusy()).toBe(false);
+  expect(vi.getTimerCount()).toBe(0);
+});
+
+it("defers optional popup work while preserving explicit export admission and unsubscribes on dispose", () => {
+  vi.useFakeTimers();
+  const activity = new ThumbnailActivity(),
+    notify = vi.fn();
+  activity.subscribe(notify);
+  const release = getUiPresentation(window).hold();
+  expect(activity.busy()).toBe(true);
+  expect(activity.visibleBusy()).toBe(true);
+  expect(activity.interacting()).toBe(false);
+  vi.advanceTimersByTime(249);
+  expect(activity.visibleBusy()).toBe(true);
+  vi.advanceTimersByTime(1);
+  expect(activity.busy()).toBe(false);
+  expect(activity.visibleBusy()).toBe(false);
+  expect(activity.interacting()).toBe(false);
+  expect(notify).toHaveBeenCalledTimes(2);
+  release();
+  activity.dispose();
+  const next = getUiPresentation(window).hold();
+  expect(notify).toHaveBeenCalledTimes(2);
+  next();
   expect(vi.getTimerCount()).toBe(0);
 });

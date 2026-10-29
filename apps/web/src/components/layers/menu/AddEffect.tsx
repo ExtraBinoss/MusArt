@@ -29,8 +29,7 @@ export const AddEffect = memo(function AddEffect({
   const element = useRef<HTMLButtonElement>(null);
   useRenderMetrics(element);
   const { t } = useTranslation();
-  const state = layerSelection(page, selection),
-    actions = layerActions(engine, page, run);
+  const state = layerSelection(page, selection);
   const Icon = category === "effect" ? Sparkles : SlidersHorizontal;
   return (
     <DropdownMenu>
@@ -45,14 +44,35 @@ export const AddEffect = memo(function AddEffect({
         </IconButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="effect-catalog-menu">
-        {Object.values(EFFECT_CATALOG)
-          .filter((item) => item.category === category)
-          .map((item) => (
-            <DropdownMenuItem key={item.type} onSelect={() => actions.effect(item.type)}>
-              {t(item.nameKey)}
-            </DropdownMenuItem>
-          ))}
+        <EffectOptions engine={engine} page={page} run={run} category={category} />
       </DropdownMenuContent>
     </DropdownMenu>
   );
 });
+
+/** Radix only mounts this subtree while the menu content is actually present. */
+function EffectOptions({
+  engine,
+  page,
+  run,
+  category,
+}: {
+  engine: EnginePort;
+  page: Composition;
+  run: (task: () => void) => void;
+  category: "effect" | "adjustment";
+}) {
+  const { t } = useTranslation();
+  const actions = layerActions(engine, page, run);
+  return (
+    <>
+      {Object.values(EFFECT_CATALOG)
+        .filter((item) => item.category === category)
+        .map((item) => (
+          <DropdownMenuItem key={item.type} onSelect={() => actions.effect(item.type)}>
+            {t(item.nameKey)}
+          </DropdownMenuItem>
+        ))}
+    </>
+  );
+}

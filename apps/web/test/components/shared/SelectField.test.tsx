@@ -1,7 +1,59 @@
+import { useState } from "react";
 import { expect, test, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { SelectField } from "../../../src/components/shared/SelectField";
 import { choose } from "../../support/select";
+test("explicit selected labels update without a value portal and keep the empty placeholder", () => {
+  const props = {
+    label: "Current mode",
+    value: "one",
+    options: [
+      { value: "one", label: <span data-rich-choice>One</span> },
+      { value: "two", label: "Two" },
+    ],
+    onValueChange: vi.fn(),
+  };
+  const view = render(<SelectField {...props} />);
+  const trigger = screen.getByRole("combobox", { name: "Current mode" });
+  expect(trigger).toHaveTextContent("One");
+  expect(trigger.querySelectorAll("[data-rich-choice]")).toHaveLength(1);
+  expect(trigger.querySelector('[data-slot="select-value"]')).toHaveStyle({
+    pointerEvents: "none",
+  });
+  view.rerender(<SelectField {...props} value="two" />);
+  expect(trigger).toHaveTextContent("Two");
+  expect(trigger.querySelector("[data-rich-choice]")).toBeNull();
+  view.rerender(<SelectField {...props} value="" />);
+  expect(trigger.querySelector('[data-slot="select-value"]')?.textContent).toBe("");
+  expect(trigger).toHaveAttribute("data-placeholder");
+});
+test("the Radix native form value and reset remain independent of the explicit label", async () => {
+  function Form() {
+    const [value, setValue] = useState("one");
+    return (
+      <form aria-label="Preferences">
+        <SelectField
+          label="Form mode"
+          value={value}
+          options={[
+            { value: "one", label: "One" },
+            { value: "two", label: "Two" },
+          ]}
+          onValueChange={setValue}
+        />
+      </form>
+    );
+  }
+  render(<Form />);
+  await choose("Form mode", "Two");
+  const form = screen.getByRole("form", { name: "Preferences" });
+  expect(screen.getByRole("combobox", { name: "Form mode" })).toHaveTextContent("Two");
+  expect(form.querySelector("select")).toHaveValue("two");
+  const { fireEvent } = await import("@testing-library/react");
+  fireEvent.reset(form);
+  expect(screen.getByRole("combobox", { name: "Form mode" })).toHaveTextContent("One");
+  expect(form.querySelector("select")).toHaveValue("one");
+});
 test("closed fields show their label without mounting hidden options; focus preserves native closed typeahead", async () => {
   const change = vi.fn(),
     unselected = vi.fn();

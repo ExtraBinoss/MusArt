@@ -1,3 +1,4 @@
+import { getUiPresentation, type UiPresentationPort } from "../../../state/session/ui-presentation";
 export interface ActivityPort {
   busy(): boolean;
   interacting?(): boolean;
@@ -20,12 +21,16 @@ export class ThumbnailActivity implements ActivityPort {
   private timer: ReturnType<typeof setTimeout> | undefined;
   private readonly listeners = new Set<() => void>();
   private readonly stopSuspension?: () => void;
+  private readonly presentation: UiPresentationPort;
+  private readonly stopPresentation: () => void;
   constructor(
     private readonly quietMs = 600,
     private readonly surface: Window = window,
     private readonly suspension?: { busy(): boolean; subscribe(listener: () => void): () => void },
   ) {
     this.stopSuspension = suspension?.subscribe(this.notify);
+    this.presentation = getUiPresentation(surface);
+    this.stopPresentation = this.presentation.subscribe(this.notify);
     surface.addEventListener("pointermove", this.quiet, { capture: true, passive: true });
     surface.addEventListener("pointerover", this.layerOver, true);
     surface.addEventListener("pointerout", this.layerOut, true);
@@ -49,6 +54,7 @@ export class ThumbnailActivity implements ActivityPort {
     return scheduling?.isInputPending?.({ includeContinuous: true }) ?? false;
   };
   busy = () =>
+    this.presentation.busy() ||
     Boolean(this.suspension?.busy()) ||
     this.surface.document.hidden ||
     this.dragging ||
@@ -64,6 +70,7 @@ export class ThumbnailActivity implements ActivityPort {
     Date.now() < this.wheelUntil ||
     this.inputPending();
   visibleBusy = () =>
+    this.presentation.busy() ||
     Boolean(this.suspension?.busy()) ||
     this.surface.document.hidden ||
     this.dragging ||
@@ -176,6 +183,7 @@ export class ThumbnailActivity implements ActivityPort {
     this.layerIntent = false;
     this.layerUntil = 0;
     this.stopSuspension?.();
+    this.stopPresentation();
     this.dragGeneration++;
     this.dragging = false;
     this.keys.clear();

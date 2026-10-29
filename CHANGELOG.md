@@ -15,6 +15,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
+- Popover entrances temporarily defer optional thumbnail work through their actual CSS animation start, with bounded window-scoped leases and explicit cleanup. Property selectors avoid redundant Radix value registration, and closed effect menus defer catalogue construction. Native headless checks cover 150-layer Lock/Receipt interactions; no verified lock-latency improvement is claimed.
 - Virtual layer rows reuse bounded presentation slots and closed attachment popovers. Rebinding rejects old visibility/open callbacks, cancels renamed-owner drafts, closes old editors and preserves focus on retained rows; native drags keep canonical DOM order and never reuse a retired drag key.
 - Ordinary layer scrolling uses plain DOM row styles. Motion position springs run only for explicit native reordering, retaining interrupted offsets and releasing animations on cancellation, rebinding and unmount.
 - Optional canonical thumbnails pause while the pointer browses the layer tree and resume after its quiet exit, preventing a full-artboard compilation from starting between layer gestures. Urgent row previews remain admissible and an explicit quiet thumbnail flush can still finish.

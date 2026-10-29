@@ -3,6 +3,7 @@
 
 import * as React from "react";
 import { cn } from "./utils";
+import { PresentationBoundary } from "../shared/overlays/PresentationBoundary";
 import { Popover as PopoverPrimitive } from "radix-ui";
 
 function Popover({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Root>) {
@@ -15,13 +16,26 @@ function PopoverTrigger({ ...props }: React.ComponentProps<typeof PopoverPrimiti
 
 function PopoverContent({
   className,
+  children,
+  asChild,
   align = "center",
   sideOffset = 4,
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Content>) {
+  const content =
+    asChild && React.isValidElement<{ children?: React.ReactNode }>(children) ? (
+      React.cloneElement(
+        children,
+        undefined,
+        <PresentationBoundary>{children.props.children}</PresentationBoundary>,
+      )
+    ) : (
+      <PresentationBoundary>{children}</PresentationBoundary>
+    );
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Content
+        asChild={asChild}
         data-slot="popover-content"
         align={align}
         sideOffset={sideOffset}
@@ -30,7 +44,9 @@ function PopoverContent({
           className,
         )}
         {...props}
-      />
+      >
+        {content}
+      </PopoverPrimitive.Content>
     </PopoverPrimitive.Portal>
   );
 }

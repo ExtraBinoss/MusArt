@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "../ui/select";
 export interface SelectOption {
   value: string;
   label: ReactNode;
@@ -89,9 +89,9 @@ export function SelectField({
           if (!disabled) setMounted(true);
         }}
       >
-        <SelectValue>
-          {options.find((option) => option.value === value)?.label ?? value}
-        </SelectValue>
+        <span data-slot="select-value" style={{ pointerEvents: "none" }}>
+          {value === "" ? "" : (options.find((option) => option.value === value)?.label ?? value)}
+        </span>
       </SelectTrigger>
       {mounted && (
         <SelectContent position="popper" className="property-select-menu">
