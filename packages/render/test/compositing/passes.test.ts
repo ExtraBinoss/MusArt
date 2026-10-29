@@ -1,10 +1,55 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createLayer } from "@musart/core";
-import { RenderTarget, Texture } from "three/webgpu";
+import {
+  Matrix3,
+  Mesh,
+  MeshBasicNodeMaterial,
+  RenderTarget,
+  Texture,
+  Vector2,
+  type Scene,
+} from "three/webgpu";
+import { graphNodes } from "../effects/node-fixture";
 import { GpuPasses } from "../../src/compositing/passes";
 import { makeGpuRenderer } from "../gpu-fixture";
 afterEach(() => vi.restoreAllMocks());
 describe("GPU-only compositing operators", () => {
+  it("maps a cropped nonnormal source in the current parent target coordinates", () => {
+    const { renderer, fake } = makeGpuRenderer(),
+      passes = new GpuPasses(renderer),
+      target = new RenderTarget(10, 10);
+    const source = {
+      texture: new Texture(),
+      width: 4,
+      height: 5,
+      premultiplied: true,
+      bounds: { x: 3, y: 2, width: 4, height: 5 },
+    };
+    passes.blendTo(
+      new Texture(),
+      source,
+      createLayer("group", { x: 20, y: 30, width: 100, height: 100, blendMode: "multiply" }),
+      10,
+      10,
+      target,
+      { x: 10, y: 15 },
+    );
+    const mesh = (fake.render.mock.calls[0]![0] as Scene).children[0] as Mesh;
+    const nodes = graphNodes((mesh.material as MeshBasicNodeMaterial).fragmentNode!);
+    const values = [...nodes].flatMap((node) => ("value" in node ? [node.value] : []));
+    expect(values.some((value) => value instanceof Vector2 && value.x === 4 && value.y === 5)).toBe(
+      true,
+    );
+    expect(
+      values.some(
+        (value) =>
+          value instanceof Matrix3 && value.elements[6] === -13 && value.elements[7] === -17,
+      ),
+    ).toBe(true);
+    passes.dispose();
+    target.dispose();
+    source.texture.dispose();
+  });
   it("submits clear/copy/shapes/masks/blends without reading pixels and restores shared state", () => {
     const { renderer, fake } = makeGpuRenderer();
     const passes = new GpuPasses(renderer);

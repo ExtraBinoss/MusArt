@@ -9,6 +9,7 @@ import {
 } from "./gradient/definition";
 import type { GradientSettingKey } from "./gradient/model";
 import { GRADIENT_PRESETS, gradientPresetSettings } from "./gradient/presets";
+import { resolveEffectSettings } from "./settings";
 
 export type EffectParameterValue = number | boolean | string;
 export function validateEffectParameter(
@@ -32,7 +33,7 @@ export function validateEffectParameter(
     ensure(
       typeof value === "string" && /^#[\da-f]{6}$/i.test(value),
       code,
-      "Gradient colors must be six-digit RGB hex values.",
+      "Effect colors must be six-digit RGB hex values.",
     );
   else
     ensure(
@@ -48,7 +49,7 @@ export function getEffectParameter(
   parameter: EffectParameter,
 ): EffectParameterValue {
   const value: unknown = settingsScoped(parameter)
-    ? resolveGradientSettings(effect.settings)[parameter.key as GradientSettingKey]
+    ? resolveEffectSettings(effect)[parameter.key]
     : (effect[parameter.key as keyof Effect] ??
       getEffectDefinition(effect.type).defaults[
         parameter.key as keyof Omit<Effect, "id" | "type">
@@ -72,7 +73,7 @@ export function isEffectParameterVisible(effect: Effect, parameter: EffectParame
   }
   if (!("visibleWhen" in parameter) || !parameter.visibleWhen) return true;
   const condition = parameter.visibleWhen;
-  return condition.values.includes(String(resolveGradientSettings(effect.settings)[condition.key]));
+  return condition.values.includes(String(resolveEffectSettings(effect)[condition.key]));
 }
 export function patchEffectParameter(
   effect: Effect,
@@ -85,7 +86,7 @@ export function patchEffectParameter(
   ensure(canonical, "INVALID_COMMAND", "This parameter does not belong to the effect.");
   validateEffectParameter(canonical, value);
   if (!settingsScoped(canonical)) return { [canonical.key]: value } as Partial<Effect>;
-  if (canonical.key === "preset" && value !== "custom") {
+  if (effect.type === "gradient" && canonical.key === "preset" && value !== "custom") {
     const preset = GRADIENT_PRESETS.find((preset) => preset.id === value);
     ensure(preset, "INVALID_COMMAND", "Unknown gradient preset.");
     return {
@@ -96,9 +97,9 @@ export function patchEffectParameter(
   }
   return {
     settings: {
-      ...resolveGradientSettings(effect.settings),
+      ...resolveEffectSettings(effect),
       [canonical.key]: value,
-      preset: "custom",
+      ...(effect.type === "gradient" ? { preset: "custom" } : {}),
     },
   };
 }

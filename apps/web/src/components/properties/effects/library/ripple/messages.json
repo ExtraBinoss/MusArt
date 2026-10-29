@@ -1,0 +1,40 @@
+{
+  "en": {
+    "name": "Live Ripple",
+    "parameter": {
+      "centerX": "Center X",
+      "centerY": "Center Y",
+      "innerRadius": "Protected radius",
+      "radius": "Reach",
+      "feather": "Edge feather",
+      "falloff": "Distance falloff",
+      "amplitude": "Displacement",
+      "wavelength": "Wavelength",
+      "speed": "Wave speed",
+      "phase": "Phase",
+      "direction": "Direction",
+      "dispersion": "Color dispersion",
+      "time": "Time"
+    },
+    "direction": { "outward": "Outward", "inward": "Inward" }
+  },
+  "fr": {
+    "name": "Ondulation vivante",
+    "parameter": {
+      "centerX": "Centre X",
+      "centerY": "Centre Y",
+      "innerRadius": "Rayon protégé",
+      "radius": "Portée",
+      "feather": "Adoucissement des bords",
+      "falloff": "Atténuation avec la distance",
+      "amplitude": "Déplacement",
+      "wavelength": "Longueur d’onde",
+      "speed": "Vitesse de l’onde",
+      "phase": "Phase",
+      "direction": "Direction",
+      "dispersion": "Dispersion des couleurs",
+      "time": "Temps"
+    },
+    "direction": { "outward": "Vers l’extérieur", "inward": "Vers l’intérieur" }
+  }
+}

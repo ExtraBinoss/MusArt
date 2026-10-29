@@ -213,6 +213,13 @@ for (const fixture of ["poster-150", "images-50", "elements-10000"] as const)
   }) => {
     test.setTimeout(360000);
     await installReadbackProbe(page);
+    if (fixture === "elements-10000")
+      await page.addInitScript(() => {
+        localStorage.setItem(
+          "musart.snapping.v1",
+          JSON.stringify({ version: 1, enabled: false, threshold: 6 }),
+        );
+      });
     await page.goto(fixture === "images-50" ? "/?benchmark=50&automation=1" : "/?automation=1");
     await page.waitForFunction(() => Boolean(window.musart), undefined, { timeout: 120000 });
     const coldStart = await page.evaluate(() => performance.now());
@@ -360,6 +367,9 @@ for (const fixture of ["poster-150", "images-50", "elements-10000"] as const)
         return {
           userAgent: navigator.userAgent,
           dpr: devicePixelRatio,
+          snappingPreferenceOverride: JSON.parse(
+            localStorage.getItem("musart.snapping.v1") ?? "null",
+          ),
           adapter: info
             ? {
                 vendor: info.vendor,

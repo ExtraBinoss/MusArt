@@ -1,7 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 import { EFFECT_CATALOG } from "@musart/core";
 import { mkdir, writeFile } from "node:fs/promises";
-import { DENSITY_CASES, compareDensity, densityProject, densityEnvironment } from "./support/effect-density";
+import {
+  DENSITY_CASES,
+  compareDensity,
+  densityProject,
+  densityEnvironment,
+} from "./support/effect-density";
 import { installReadbackProbe } from "./support/readback-probe";
 import { zoomViewport } from "./support/viewport";
 import { WHEEL_PAN_SPEED } from "../../apps/web/src/canvas/viewport/view";
@@ -109,9 +114,10 @@ for (const forceWebGL of [false, true])
         let neutralReference: string | undefined;
         if (fixture.fractional) {
           const neutral = { ...fixture, effect: { ...fixture.effect, enabled: true, amount: 0 } };
-          await page.evaluate(project => window.musart!.load(project), densityProject(neutral));
+          await page.evaluate((project) => window.musart!.load(project), densityProject(neutral));
           neutralReference = await png(page, 1, forceWebGL);
-          for (const density of [2, 4]) neutralCandidates.set(density, await png(page, density, forceWebGL));
+          for (const density of [2, 4])
+            neutralCandidates.set(density, await png(page, density, forceWebGL));
         }
         await page.evaluate((project) => window.musart!.load(project), densityProject(fixture));
         const reference = await png(page, 1, forceWebGL);
@@ -123,9 +129,20 @@ for (const forceWebGL of [false, true])
           );
         for (const density of [2, 4]) {
           const candidate = await png(page, density, forceWebGL);
-          const metrics = await compareDensity(inspection, reference, candidate, fixture.fractional ? {
-            reference: neutralReference!, candidate: neutralCandidates.get(density)!,
-          } : undefined, fixture.fractional ? { reference: untouched, candidate: geometryCandidates.get(density)! } : undefined);
+          const metrics = await compareDensity(
+            inspection,
+            reference,
+            candidate,
+            fixture.fractional
+              ? {
+                  reference: neutralReference!,
+                  candidate: neutralCandidates.get(density)!,
+                }
+              : undefined,
+            fixture.fractional
+              ? { reference: untouched, candidate: geometryCandidates.get(density)! }
+              : undefined,
+          );
           rows.push({ name: fixture.name, density, metrics });
           if (metrics.candidate[0] !== 112 * density || metrics.candidate[1] !== 80 * density)
             failures.push(`${fixture.name}@${density}: wrong PNG dimensions`);
@@ -135,11 +152,23 @@ for (const forceWebGL of [false, true])
               `${fixture.name}@${density}: ${fixture.fractional ? "common-coverage " : ""}RGB mean ${colorError.toFixed(3)} > ${fixture.tolerance}`,
             );
           if (fixture.fractional) {
-            if (metrics.pixels !== 6144 || metrics.rgbMean > fixture.tolerance + metrics.coverageRgbContribution + 1e-9)
-              failures.push(`${fixture.name}@${density}: raw RGB exceeds color bound + directly measured coverage contribution`);
+            if (
+              metrics.pixels !== 6144 ||
+              metrics.rgbMean > fixture.tolerance + metrics.coverageRgbContribution + 1e-9
+            )
+              failures.push(
+                `${fixture.name}@${density}: raw RGB exceeds color bound + directly measured coverage contribution`,
+              );
             const control = metrics.coverageControl;
-            if (!control || control.referenceAlphaMax !== 0 || control.candidateAlphaMax !== 0 || control.coverageDeltaMax !== 0)
-              failures.push(`${fixture.name}@${density}: effect changed an enabled-neutral per-pixel alpha/coverage control map`);
+            if (
+              !control ||
+              control.referenceAlphaMax !== 0 ||
+              control.candidateAlphaMax !== 0 ||
+              control.coverageDeltaMax !== 0
+            )
+              failures.push(
+                `${fixture.name}@${density}: effect changed an enabled-neutral per-pixel alpha/coverage control map`,
+              );
           }
           const baselineAlpha = geometryAlpha.get(density);
           if (
@@ -208,7 +237,10 @@ test("live 100%/200%/400% GPU canvas pixels exactly match same-density exports; 
   try {
     // Every catalogue effect plus spatial Gradient treatment/minimum-size/noise cases.
     const fixtures = DENSITY_CASES.filter(
-      (fixture) => fixture.name === fixture.effect.type || fixture.effect.type === "gradient" || fixture.fractional,
+      (fixture) =>
+        fixture.name === fixture.effect.type ||
+        fixture.effect.type === "gradient" ||
+        fixture.fractional,
     );
     for (const fixture of fixtures) {
       const project = densityProject(fixture, true);
@@ -282,4 +314,3 @@ test("live 100%/200%/400% GPU canvas pixels exactly match same-density exports; 
     await inspection.close();
   }
 });
-

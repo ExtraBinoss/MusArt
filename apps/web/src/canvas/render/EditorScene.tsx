@@ -1,5 +1,5 @@
 import { Component, memo, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   LinearSRGBColorSpace,
   NoToneMapping,
@@ -77,6 +77,7 @@ export function CompositionPlane({
     () => new PlaneResources(renderer, fontResolver),
     [renderer, fontResolver],
   );
+  useFrame(() => density.prepare(renderer), -1);
   useEffect(() => {
     const presenter = controller.presentation.acquire();
     let release: (() => void) | undefined;
@@ -102,7 +103,7 @@ export function CompositionPlane({
         camera,
         invalidate,
         (message) => onErrorRef.current?.(message),
-        (scale) => density.apply(scale, setDpr),
+        (scale, width, height) => density.apply(scale, setDpr, width, height),
         presenter,
       );
       unsubscribe = controller.subscribe(update);

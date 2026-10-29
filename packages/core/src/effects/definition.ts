@@ -1,43 +1,47 @@
 import type { Effect, EffectType } from "../document/model";
-import type { GradientSettingKey } from "./gradient/model";
 
 export interface NumberEffectParameter {
   readonly kind: "number";
-  readonly key: "amount" | "scale" | "levels" | "seed" | "time" | GradientSettingKey;
+  readonly key: string;
   readonly scope?: "settings";
   readonly default?: number;
-  readonly visibleWhen?: { readonly key: GradientSettingKey; readonly values: readonly string[] };
+  readonly visibleWhen?: { readonly key: string; readonly values: readonly string[] };
   readonly labelKey: string;
   /** Bounds and step are expressed in document units, before displayScale. */
   readonly integer?: boolean;
   readonly min: number;
   readonly max: number;
+  /** Preserve a wider legacy document range independently from the editing control. */
+  readonly documentMin?: number;
+  readonly documentMax?: number;
   readonly step: number;
   readonly displayScale: number;
   readonly unit: string;
 }
 export interface BooleanEffectParameter {
   readonly kind: "boolean";
-  readonly key: "color";
+  readonly key: string;
+  readonly scope?: "settings";
+  readonly default?: boolean;
   readonly labelKey: string;
-  readonly visibleWhen?: { readonly key: GradientSettingKey; readonly values: readonly string[] };
+  readonly visibleWhen?: { readonly key: string; readonly values: readonly string[] };
 }
 export interface ChoiceEffectParameter {
   readonly kind: "select";
-  readonly key: GradientSettingKey;
+  readonly key: string;
   readonly scope: "settings";
   readonly labelKey: string;
   readonly default: string;
   readonly options: readonly { readonly value: string; readonly labelKey: string }[];
-  readonly visibleWhen?: { readonly key: GradientSettingKey; readonly values: readonly string[] };
+  readonly visibleWhen?: { readonly key: string; readonly values: readonly string[] };
 }
 export interface ColorEffectParameter {
   readonly kind: "color";
-  readonly key: GradientSettingKey;
+  readonly key: string;
   readonly scope: "settings";
   readonly labelKey: string;
   readonly default: string;
-  readonly visibleWhen?: { readonly key: GradientSettingKey; readonly values: readonly string[] };
+  readonly visibleWhen?: { readonly key: string; readonly values: readonly string[] };
 }
 export type EffectParameter =
   | NumberEffectParameter
@@ -48,8 +52,20 @@ export interface EffectDefinition {
   readonly type: EffectType;
   readonly nameKey: string;
   readonly category: "effect" | "adjustment";
+  /** Raw treatment coverage before optional compositing operators. Reduction never expands alpha. */
+  readonly coverage: "preserve" | "reduce";
   readonly defaults: Readonly<Omit<Effect, "id" | "type">>;
   readonly parameters: readonly EffectParameter[];
+  readonly gizmo?: {
+    readonly kind: "radial";
+    readonly centerX: string;
+    readonly centerY: string;
+    readonly radius: string;
+    readonly innerRadius?: string;
+    readonly radiusUnits?: "document" | "relative-min";
+    readonly aspect?: string;
+    readonly rotation?: string;
+  };
 }
 export const DEFAULTS: Readonly<Omit<Effect, "id" | "type">> = {
   enabled: true,
@@ -74,6 +90,7 @@ export const SCALE: NumberEffectParameter = {
   key: "scale",
   labelKey: "effectScale",
   min: 1,
+  documentMin: 0.1,
   max: 128,
   step: 1,
   displayScale: 1,
@@ -107,11 +124,13 @@ export function defineEffect(
   defaults: Partial<EffectDefinition["defaults"]>,
   parameters: readonly EffectParameter[],
   category: EffectDefinition["category"] = "effect",
+  coverage: EffectDefinition["coverage"] = "preserve",
 ): EffectDefinition {
   return Object.freeze({
     type,
     nameKey: type,
     category,
+    coverage,
     defaults: Object.freeze({
       ...DEFAULTS,
       ...defaults,

@@ -5,6 +5,7 @@ Local reference for Three r186, consulted on October 27, 2026: [official TSL gui
 - Nodes are GPU shader expressions. `texture`, `uv`, `vec2/3/4`, `mix`, `clamp`, `dot`, `floor`, `fract`, and `uniform` compose rendering functions without GLSL/WGSL strings.
 - `uniform(number)` retains a stable object; changing `.value` does not require rebuilding its material. A `TextureNode` source can also be replaced through `.value`.
 - Values that change during slider gestures belong in uniforms. Keep structural differences, such as effect type, in cached material definitions.
+- Materialize expressions reused across `If` or `Loop` scopes with `.toVar()` in their shared outer `Fn`, before branching. In Three r186, otherwise a cached temporary can be assigned only inside one branch and then reused elsewhere as its default zero. Native Shatter and Noise reference tests caught this in generated WGSL; graph topology tests alone did not. Fractal samples reused by several branches also need a parent-scope variable.
 - Use `Node<'vec2'>` / `Node<'vec4'>` for generic expressions: `ReturnType<typeof uv>` can be more specific (`AttributeNode`) than a computed expression.
 - Preserve original alpha in dither and ASCII. Sampling a cell must never make transparent source pixels visible.
 - Effects are separate modules, each in its own directory. The registry maps an identifier to a builder; it does not contain a large switch implementing effect logic.

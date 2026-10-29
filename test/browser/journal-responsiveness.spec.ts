@@ -13,6 +13,12 @@ test("records actual canonical submission and immediate native input while the 1
   page.on("pageerror", (error) => errors.push(error.message));
   await installReadbackProbe(page);
   await installJournalProbe(page);
+  await page.addInitScript(() =>
+    localStorage.setItem(
+      "musart.snapping.v1",
+      JSON.stringify({ version: 1, enabled: false, threshold: 6 }),
+    ),
+  );
   let acknowledge!: (value: { at: number; revision: string }) => void;
   const submission = new Promise<{ at: number; revision: string }>((resolve) => {
     acknowledge = resolve;
@@ -204,6 +210,12 @@ test("records actual canonical submission and immediate native input while the 1
       data.stopJournalProbe();
       return {
         ...data.journalProbe,
+        measuredUntil: performance.now(),
+        snapping: JSON.parse(localStorage.getItem("musart.snapping.v1")!) as {
+          version: number;
+          enabled: boolean;
+          threshold: number;
+        },
         gpu: JSON.parse(
           document.querySelector<HTMLCanvasElement>('[data-testid="artboard"] canvas')!.dataset
             .gpuStats!,
@@ -213,6 +225,28 @@ test("records actual canonical submission and immediate native input while the 1
         userAgent: navigator.userAgent,
       };
     });
+    const measuredPosts = result.journal.posts.filter(
+        (post) => post.at + post.duration >= result.release && post.at <= result.measuredUntil,
+      ),
+      bootstrapPosts = result.journal.posts.filter(
+        (post) => post.at + post.duration < result.release,
+      ),
+      journalTiming = {
+        boundary:
+          "Native pointerup through the end of immediate input capture, including journal acknowledgements",
+        release: result.release,
+        measuredUntil: result.measuredUntil,
+        measuredPostMax: Math.max(0, ...measuredPosts.map((post) => post.duration)),
+        measuredPosts,
+        acknowledgements: result.journal.acknowledgements.filter(
+          (reply) => reply.at >= result.release && reply.at <= result.measuredUntil,
+        ),
+        bootstrapPostMax: Math.max(0, ...bootstrapPosts.map((post) => post.duration)),
+        bootstrapSlowPosts: result.journal.slowPosts
+          .filter((post) => post.at + post.duration < result.release)
+          .map((post) => ({ ...post, relativeToRelease: post.at - result.release })),
+        lifetimePostMax: result.journal.postMax,
+      };
     const { profile } = await session.send("Profiler.stop");
     const artifacts = process.env.MUSART_JOURNAL_REPORT ?? "artifacts/journal-worker-response";
     await mkdir(artifacts, { recursive: true });
@@ -226,6 +260,7 @@ test("records actual canonical submission and immediate native input while the 1
           submission: submitted,
           sendStart,
           ...result,
+          journalTiming,
           errors,
         },
         null,
@@ -234,6 +269,7 @@ test("records actual canonical submission and immediate native input while the 1
     );
     await page.getByTestId("editor-canvas").screenshot({ path: `${artifacts}/after-input.png` });
     expect(result.submitted).toBeGreaterThan(result.release);
+    expect(result.snapping).toEqual({ version: 1, enabled: false, threshold: 6 });
     expect(errors).toEqual([]);
     expect(result.journal).toMatchObject({
       created: 1,
@@ -243,7 +279,10 @@ test("records actual canonical submission and immediate native input while the 1
       errors: [],
     });
     expect(result.journal.headerMax).toBeLessThan(4096);
-    expect(result.journal.postMax).toBeLessThan(5);
+    expect(result.journal.postSamplesDropped).toBe(0);
+    expect(measuredPosts.length).toBeGreaterThan(0);
+    expect(journalTiming.acknowledgements.length).toBeGreaterThan(0);
+    expect(journalTiming.measuredPostMax).toBeLessThan(5);
     expect({
       gpu: result.reads.gpu,
       webgl: result.reads.webgl,

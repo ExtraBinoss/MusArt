@@ -73,10 +73,21 @@ async function commits(page: Page) {
 async function currentX(page: Page) {
   return page.evaluate(() => window.musart!.snapshot().project.pages[0]!.layers[0]!.x);
 }
-async function searchAction(page: Page, query: string, label: string) {
+async function searchAction(page: Page, query: string, label: string, enabled: boolean) {
   await page.keyboard.press("Control+k");
   await page.getByRole("combobox", { name: "Rechercher dans MusArt", exact: true }).fill(query);
   await page.getByRole("option", { name: new RegExp(label) }).click();
+  await expect(page.locator(".magic-search-dialog")).toHaveCount(0);
+  // Search commands execute after closing presence/focus cleanup. Wait for their actual
+  // preference write before loading another document and invalidating the command origin.
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const raw = localStorage.getItem("musart.snapping.v1");
+        return raw === null ? null : JSON.parse(raw).enabled;
+      }),
+    )
+    .toBe(enabled);
 }
 test("actual move/resize snapping uses screen tolerance, honest cues, persisted enable state and one undo commit", async ({
   page,
@@ -130,14 +141,14 @@ test("actual move/resize snapping uses screen tolerance, honest cues, persisted 
   await page.mouse.up();
   await page.keyboard.up("Alt");
   expect(await currentX(page)).toBeCloseTo(77, 6);
-  await searchAction(page, "désactiver magnétisme", "Désactiver le magnétisme");
+  await searchAction(page, "désactiver magnétisme", "Désactiver le magnétisme", false);
   await reset(page, 1);
   await move(page, 20, 20);
   await page.mouse.down();
   await move(page, 87, 20);
   await page.mouse.up();
   expect(await currentX(page)).toBeCloseTo(77, 6);
-  await searchAction(page, "activer magnétisme", "^Activer le magnétisme");
+  await searchAction(page, "activer magnétisme", "^Activer le magnétisme", true);
   await reset(page, 1);
   await page.evaluate(() => window.musart!.select(["moving"]));
   const handle = page.locator('[data-layer-id="moving"][data-handle="se"]');

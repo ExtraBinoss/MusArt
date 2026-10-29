@@ -1,6 +1,34 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { ThumbnailActivity } from "../../../../src/services/projects/thumbnails/activity";
 afterEach(() => vi.useRealTimers());
+it("suspends all optional GPU admission during explicit effect playback and releases its listener", () => {
+  let busy = false;
+  const listeners = new Set<() => void>();
+  const activity = new ThumbnailActivity(600, window, {
+    busy: () => busy,
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+  });
+  const notify = vi.fn(),
+    stop = activity.subscribe(notify);
+  expect(activity.busy()).toBe(false);
+  busy = true;
+  listeners.forEach((listener) => listener());
+  expect(activity.busy()).toBe(true);
+  expect(activity.interacting()).toBe(true);
+  expect(activity.visibleBusy()).toBe(true);
+  expect(notify).toHaveBeenCalledOnce();
+  busy = false;
+  listeners.forEach((listener) => listener());
+  expect(activity.visibleBusy()).toBe(false);
+  stop();
+  activity.dispose();
+  expect(listeners.size).toBe(0);
+});
 it.each([
   ["Alt", "altKey"],
   ["Control", "ctrlKey"],

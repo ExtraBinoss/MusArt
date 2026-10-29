@@ -243,7 +243,7 @@ test("magic wand accepts a selection before an explicit undoable mask and preser
   await page.mouse.click(box!.x + 10, box!.y + 20);
   await expect(page.getByTestId("pixel-selection-outline")).toBeVisible();
   expect(await page.evaluate(() => window.musart!.snapshot().canUndo)).toBe(false);
-  await page.getByRole("button", { name: "Créer un masque", exact: true }).click();
+  await page.getByRole("button", { name: "Garder la zone", exact: true }).click();
   await expect
     .poll(() =>
       page.evaluate(() => window.musart!.snapshot().project.pages[0]!.layers[0]!.mask?.enabled),

@@ -1,0 +1,48 @@
+{
+  "en": {
+    "name": "Cyanotype",
+    "parameter": {
+      "exposure": "Print exposure",
+      "contrast": "Contrast",
+      "gamma": "Midtones",
+      "density": "Blue density",
+      "blackPoint": "Black point",
+      "whitePoint": "White point",
+      "invert": "Negative image",
+      "inkColor": "Blue ink",
+      "paperColor": "Paper color",
+      "wash": "Wash-out",
+      "unevenness": "Uneven coating",
+      "textureScale": "Coating scale",
+      "paperGrain": "Paper grain",
+      "grainScale": "Grain size",
+      "fibers": "Paper fibers",
+      "fiberScale": "Fiber size",
+      "edgeFade": "Faded edges",
+      "edgeWidth": "Edge width"
+    }
+  },
+  "fr": {
+    "name": "Cyanotype",
+    "parameter": {
+      "exposure": "Exposition du tirage",
+      "contrast": "Contraste",
+      "gamma": "Tons moyens",
+      "density": "Densité du bleu",
+      "blackPoint": "Point noir",
+      "whitePoint": "Point blanc",
+      "invert": "Image négative",
+      "inkColor": "Encre bleue",
+      "paperColor": "Couleur du papier",
+      "wash": "Délavage",
+      "unevenness": "Enduction irrégulière",
+      "textureScale": "Échelle de l’enduction",
+      "paperGrain": "Grain du papier",
+      "grainScale": "Taille du grain",
+      "fibers": "Fibres du papier",
+      "fiberScale": "Taille des fibres",
+      "edgeFade": "Bords délavés",
+      "edgeWidth": "Largeur des bords"
+    }
+  }
+}

@@ -271,10 +271,14 @@ describe("direct GPU preview ownership and scheduling", () => {
       density = vi.fn();
     const release = d.resources.activate(d.scene, d.camera, d.invalidate, d.error, density);
     const page = createPage({ width: 192, height: 140 });
+    gpu.render
+      .mockResolvedValueOnce(result(192, 140))
+      .mockResolvedValueOnce(result(96, 70))
+      .mockResolvedValueOnce(result(768, 560));
     d.resources.setDensity(NaN);
     d.resources.submit(page, {});
     await frame();
-    expect(density).toHaveBeenLastCalledWith(1);
+    expect(density).toHaveBeenLastCalledWith(1, 192, 140);
     d.resources.setDensity(0.5);
     await frame();
     expect(gpu.render).toHaveBeenCalledTimes(2);
@@ -283,7 +287,7 @@ describe("direct GPU preview ownership and scheduling", () => {
       {},
       { scale: 0.5, canRender: expect.any(Function) },
     );
-    expect(density).toHaveBeenLastCalledWith(0.5);
+    expect(density).toHaveBeenLastCalledWith(0.5, 96, 70);
     d.resources.setDensity(0.50000000001);
     await frame();
     expect(gpu.render).toHaveBeenCalledTimes(2);
@@ -294,7 +298,7 @@ describe("direct GPU preview ownership and scheduling", () => {
       {},
       { scale: 4, canRender: expect.any(Function) },
     );
-    expect(density).toHaveBeenLastCalledWith(4);
+    expect(density).toHaveBeenLastCalledWith(4, 768, 560);
     d.resources.setDensity(4);
     d.resources.setDensity(-1);
     await frame();

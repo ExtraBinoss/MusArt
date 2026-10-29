@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { createLayer, createPage } from "@musart/core";
+import { createLayer, createPage, EFFECT_CATALOG } from "@musart/core";
 import { setup } from "../../../support/ui";
 import { i18n } from "../../../../src/state/i18n";
 import {
@@ -17,7 +17,17 @@ test("indexes all real actions, effects and every page/layer with localized labe
   d.engine.execute({ type: "addPage", page });
   const items = createSearchItems(d.engine.getSnapshot(), t);
   expect(new Set(items.map((item) => item.id)).size).toBe(items.length);
-  expect(items.filter((item) => item.target.kind === "effect")).toHaveLength(21);
+  expect(items.filter((item) => item.target.kind === "effect")).toHaveLength(
+    Object.keys(EFFECT_CATALOG).length,
+  );
+  for (const definition of Object.values(EFFECT_CATALOG)) {
+    const label = t(definition.nameKey);
+    expect(label).not.toBe(definition.nameKey);
+    expect(items.find((item) => item.id === `effect:${definition.type}`)).toMatchObject({
+      label,
+      target: { kind: "effect", effect: definition.type },
+    });
+  }
   expect(items.filter((item) => item.category === "layers")).toHaveLength(4);
   expect(items.find((item) => item.label === "Légende")).toMatchObject({
     detail: "Texte · Story",

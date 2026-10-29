@@ -109,7 +109,11 @@ async function control(
     };
   }
   if (kind === "effect")
-    await page.locator('[data-layer-id="gesture-shape"] .effect-avatar').click();
+    await page
+      .locator(
+        '[data-layer-id="gesture-shape"] [data-attachment-target="effect"][data-attachment-effect-id="gesture-effect"]',
+      )
+      .click();
   const locator =
     kind === "opacity"
       ? page.getByRole("button", { name: "Ajuster Opacité", exact: true })

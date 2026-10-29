@@ -2,6 +2,24 @@ import { describe, expect, it } from "vitest";
 import { createEffect } from "@musart/core";
 import { createEffectUniforms, updateEffectUniforms } from "../../../src/effects/shared/uniforms";
 describe("stable effect uniforms", () => {
+  it("retains the full portable seed in a stable uint uniform without changing the legacy float port", () => {
+    const effect = createEffect("noise"),
+      controls = createEffectUniforms(effect, 64, 64),
+      integer = controls.randomSeedUint,
+      legacy = controls.randomSeed;
+    expect(integer.nodeType).toBe("uint");
+    for (const seed of [0, 2 ** 30, 2 ** 30 + 1, 2147483647]) {
+      updateEffectUniforms(controls, { ...effect, seed }, 64, 64);
+      expect(controls.randomSeedUint).toBe(integer);
+      expect(controls.randomSeed).toBe(legacy);
+      expect(integer.value).toBe(seed);
+      expect(new Uint32Array([integer.value])[0]).toBe(seed);
+      expect(legacy.value).toBe(seed);
+    }
+    expect(new Float32Array([2 ** 30, 2 ** 30 + 1])[0]).toBe(
+      new Float32Array([2 ** 30, 2 ** 30 + 1])[1],
+    );
+  });
   it("updates values in place, including color mode, without changing node or vector identity", () => {
     const effect = createEffect("dither");
     const controls = createEffectUniforms(effect, 100, 200);

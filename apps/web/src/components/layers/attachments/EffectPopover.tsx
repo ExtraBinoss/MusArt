@@ -210,6 +210,7 @@ function EffectDetails({
               />
             </label>
             <EffectParameters
+              engine={engine}
               effect={effect}
               disabled={disabled}
               onStart={edit.begin}

@@ -41,7 +41,7 @@ test("thumbnail metadata and digest retain the exact portable paint schema", asy
     ...paint
   } = layer;
   const expected = {
-    version: "gpu-webp-768-88-v3",
+    version: "gpu-webp-768-88-v4",
     width: page.width,
     height: page.height,
     background: page.background,

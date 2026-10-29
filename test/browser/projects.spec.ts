@@ -123,16 +123,39 @@ test("project cards use real overlay thumbnails and cycle only during unfocused 
     { x: 0.3, y: 0.3, width: 0.4, height: 0.4 },
   ]);
   await page.bringToFront();
+  const travelPending = preview.locator(".project-preview-track").evaluate(
+    (element) =>
+      new Promise<{ samples: number[]; width: number; timestamps: number[] }>((resolve, reject) => {
+        const owner = element.closest<HTMLElement>(".project-preview")!,
+          samples: number[] = [],
+          timestamps: number[] = [];
+        let frame = 0;
+        const timer = setTimeout(() => {
+          cancelAnimationFrame(frame);
+          reject(new Error("The hovered project preview did not present five sliding frames."));
+        }, 12000);
+        function capture() {
+          if (owner.dataset.previewSliding === "true") {
+            samples.push(new DOMMatrixReadOnly(getComputedStyle(element).transform).m41);
+            timestamps.push(performance.now());
+          }
+          if (samples.length === 5) {
+            clearTimeout(timer);
+            resolve({ samples, width: element.getBoundingClientRect().width, timestamps });
+          } else frame = requestAnimationFrame(capture);
+        }
+        frame = requestAnimationFrame(capture);
+        owner.dataset.previewMotionProbe = "armed";
+      }),
+  );
+  await page.waitForFunction(
+    () =>
+      document.querySelector<HTMLElement>('[aria-label="Library A"] .project-preview')?.dataset
+        .previewMotionProbe === "armed",
+  );
   await preview.hover();
   await expect(preview).toHaveAttribute("data-preview-sliding", "true");
-  const travel = await preview.locator(".project-preview-track").evaluate(async (element) => {
-    const samples: number[] = [];
-    for (let at = 0; at < 5; at++) {
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-      samples.push(new DOMMatrixReadOnly(getComputedStyle(element).transform).m41);
-    }
-    return { samples, width: element.getBoundingClientRect().width };
-  });
+  const travel = await travelPending;
   expect(Math.min(...travel.samples)).toBeLessThan(-2);
   expect(new Set(travel.samples.map((value) => Math.round(value))).size).toBeGreaterThan(1);
   const second = card.getByRole("img", { name: "Green page", exact: true });
@@ -157,7 +180,7 @@ test("project cards use real overlay thumbnails and cycle only during unfocused 
   await page.screenshot({ path: "artifacts/screenshots/project-library.png" });
   await testInfo.attach("real-page-previews", {
     body: JSON.stringify(
-      { dimensions, first: firstWitness.regions[0], second: secondWitness.regions[0] },
+      { dimensions, travel, first: firstWitness.regions[0], second: secondWitness.regions[0] },
       null,
       2,
     ),

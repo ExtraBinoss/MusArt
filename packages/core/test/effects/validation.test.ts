@@ -25,3 +25,25 @@ it("accepts backward-compatible optional extension data and rejects malformed po
   ])
     expect(() => validateEffectExtensions(value)).toThrow();
 });
+it("validates effect-owned settings independently, including booleans and extended spatial ranges", () => {
+  expect(() =>
+    validateEffectExtensions({
+      type: "ripple",
+      settings: { radius: 8192, amplitude: 0, direction: "inward" },
+    }),
+  ).not.toThrow();
+  expect(() =>
+    validateEffectExtensions({
+      type: "shatter",
+      settings: { cutout: true, ior: 1.52, tintColor: "#aabbcc" },
+    }),
+  ).not.toThrow();
+  for (const value of [
+    { type: "ripple", settings: { radius: 8193 } },
+    { type: "ripple", settings: { direction: "sideways" } },
+    { type: "ripple", settings: { color0: "#aabbcc" } },
+    { type: "shatter", settings: { cutout: 1 } },
+    { type: "shatter", settings: { pattern: "silk" } },
+  ])
+    expect(() => validateEffectExtensions(value)).toThrow();
+});

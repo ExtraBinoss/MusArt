@@ -1,0 +1,46 @@
+{
+  "en": {
+    "name": "Flash Light",
+    "parameter": {
+      "centerX": "Center X",
+      "centerY": "Center Y",
+      "radius": "Light radius",
+      "softness": "Edge softness",
+      "falloff": "Light falloff",
+      "aspect": "Beam aspect",
+      "rotation": "Beam rotation",
+      "intensity": "Light intensity",
+      "ambient": "Ambient light",
+      "exposure": "Flash exposure",
+      "highlightCompression": "Highlight compression",
+      "saturation": "Saturation",
+      "glow": "Light haze",
+      "grain": "Film grain",
+      "grainSize": "Grain size",
+      "lightColor": "Light color",
+      "invert": "Invert illumination"
+    }
+  },
+  "fr": {
+    "name": "Flash lumineux",
+    "parameter": {
+      "centerX": "Centre X",
+      "centerY": "Centre Y",
+      "radius": "Rayon lumineux",
+      "softness": "Douceur du bord",
+      "falloff": "Atténuation lumineuse",
+      "aspect": "Aspect du faisceau",
+      "rotation": "Rotation du faisceau",
+      "intensity": "Intensité lumineuse",
+      "ambient": "Lumière ambiante",
+      "exposure": "Exposition du flash",
+      "highlightCompression": "Compression des hautes lumières",
+      "saturation": "Saturation",
+      "glow": "Brume lumineuse",
+      "grain": "Grain argentique",
+      "grainSize": "Taille du grain",
+      "lightColor": "Couleur de la lumière",
+      "invert": "Inverser l’éclairage"
+    }
+  }
+}

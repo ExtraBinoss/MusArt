@@ -12,6 +12,7 @@ import { IconButton } from "../../shared/IconButton";
 import { layerSelection } from "./selection";
 import { layerActions } from "./actions";
 import { useRenderMetrics } from "../../../state/session/render-metrics";
+import "../../properties/effects/library-messages";
 export const AddEffect = memo(function AddEffect({
   engine,
   page,

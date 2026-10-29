@@ -1,6 +1,9 @@
 import { registerFeatureTranslations } from "../../../state/i18n/feature-resources";
 export const messages = {
   en: {
+    playLive: "Play live",
+    pauseLive: "Pause live",
+    liveTime: "Displayed phase",
     seed: "Seed",
     falloff: "Falloff",
     composite: "Alpha composition",
@@ -22,6 +25,9 @@ export const messages = {
     },
   },
   fr: {
+    playLive: "Animer",
+    pauseLive: "Pause",
+    liveTime: "Phase affichée",
     seed: "Graine",
     falloff: "Atténuation",
     composite: "Composition alpha",

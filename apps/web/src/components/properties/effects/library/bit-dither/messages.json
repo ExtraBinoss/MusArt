@@ -1,0 +1,44 @@
+{
+  "en": {
+    "name": "One-bit Dither",
+    "parameter": {
+      "method": "Method",
+      "scale": "Cell size",
+      "threshold": "Threshold",
+      "strength": "Dither strength",
+      "contrast": "Contrast",
+      "gamma": "Tone gamma",
+      "invert": "Invert",
+      "foreground": "Ink color",
+      "background": "Paper color"
+    },
+    "method": {
+      "threshold": "Fixed threshold",
+      "bayer2": "Bayer 2×2",
+      "bayer4": "Bayer 4×4",
+      "bayer8": "Bayer 8×8",
+      "interleaved": "Interleaved gradient noise"
+    }
+  },
+  "fr": {
+    "name": "Tramage 1 bit",
+    "parameter": {
+      "method": "Méthode",
+      "scale": "Taille des cellules",
+      "threshold": "Seuil",
+      "strength": "Intensité du tramage",
+      "contrast": "Contraste",
+      "gamma": "Gamma des tons",
+      "invert": "Inverser",
+      "foreground": "Couleur de l’encre",
+      "background": "Couleur du papier"
+    },
+    "method": {
+      "threshold": "Seuil fixe",
+      "bayer2": "Bayer 2×2",
+      "bayer4": "Bayer 4×4",
+      "bayer8": "Bayer 8×8",
+      "interleaved": "Bruit de gradient entrelacé"
+    }
+  }
+}

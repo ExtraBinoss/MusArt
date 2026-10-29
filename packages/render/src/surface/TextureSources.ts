@@ -3,6 +3,7 @@ import { LinearFilter, NoColorSpace, Texture } from "three/webgpu";
 import { assetIdentity } from "../cache/keys";
 import { GpuResourceCache, type GpuResource } from "../cache/GpuResourceCache";
 import { loadAsset } from "./sources";
+import { assertTextureSize } from "../cache/texture-limits";
 
 class ImageResource implements GpuResource {
   readonly targets = 0;
@@ -29,7 +30,10 @@ function configure(texture: Texture): Texture {
 export class TextureSources {
   uploads = 0;
   private readonly prepared = new Map<string, Texture>();
-  constructor(private readonly cache: GpuResourceCache) {}
+  constructor(
+    private readonly cache: GpuResourceCache,
+    private readonly maxDimension: number,
+  ) {}
   async prepare(page: Composition, assets: Record<string, Asset>): Promise<void> {
     this.prepared.clear();
     const byParent = new Map<string | null, Layer[]>();
@@ -61,6 +65,7 @@ export class TextureSources {
         const image = await loadAsset(asset);
         const width = image.naturalWidth || asset.width,
           height = image.naturalHeight || asset.height;
+        assertTextureSize(width, height, this.maxDimension);
         entry = new ImageResource(configure(new Texture(image)), width, height);
         this.cache.set(key, entry);
         this.uploads++;

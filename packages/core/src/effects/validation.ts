@@ -3,12 +3,10 @@ import { ensure } from "../errors";
 import { BLEND_CATALOG } from "../layers/blending/catalog";
 import { EFFECT_COMPOSITE_MODES } from "./compositing";
 import type { EffectParameter } from "./definition";
-import { GRADIENT_PARAMETERS } from "./gradient/parameters";
+import { getEffectDefinition } from "./catalog";
+import type { EffectType } from "../document/model";
 import { validateEffectParameter } from "./parameters";
 
-const settings = new Map<string, EffectParameter>(
-  GRADIENT_PARAMETERS.map((parameter) => [parameter.key, parameter]),
-);
 /** Optional fields keep old documents valid; every supplied setting remains strictly validated. */
 export function validateEffectExtensions(value: Record<string, unknown>): void {
   if (value.blendMode !== undefined)
@@ -27,11 +25,17 @@ export function validateEffectExtensions(value: Record<string, unknown>): void {
       "Unknown effect composite operation.",
     );
   if (value.settings !== undefined) {
-    ensure(value.type === "gradient", "INVALID_DOCUMENT", "Only Gradient owns gradient settings.");
     assertRecord(value.settings);
+    const definition = getEffectDefinition(value.type as EffectType);
+    const settings = new Map<string, EffectParameter>(
+      definition.parameters
+        .filter((parameter) => "scope" in parameter && parameter.scope === "settings")
+        .map((parameter) => [parameter.key, parameter]),
+    );
+    ensure(settings.size > 0, "INVALID_DOCUMENT", "This effect has no custom settings.");
     for (const [key, field] of Object.entries(value.settings)) {
       const parameter = settings.get(key);
-      ensure(parameter, "INVALID_DOCUMENT", "Unknown gradient setting.");
+      ensure(parameter, "INVALID_DOCUMENT", "Unknown setting for this effect.");
       validateEffectParameter(parameter, field, "INVALID_DOCUMENT");
     }
   }

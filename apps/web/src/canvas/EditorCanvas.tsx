@@ -61,6 +61,7 @@ import {
   useTransformSnapping,
   type TransformGesture,
 } from "./interaction/snapping/use-transform-snapping";
+import { EffectGizmo } from "./effects/EffectGizmo";
 import "./canvas.css";
 export type { Tool } from "./interaction/gestures";
 
@@ -425,6 +426,7 @@ export function EditorCanvas({
       (layer) => ids.has(layer.id) && displayIndex.isVisible(layer.id),
     );
   }, [displayPage, displayIndex, snapshot.selection]);
+  const gizmoProps = { engine, controller, viewSource: motion, onError };
   const cursor = tool === "hand" || space ? "grab" : tool === "pointer" ? "default" : "crosshair";
   return (
     <div
@@ -544,6 +546,7 @@ export function EditorCanvas({
               onHandle={handlePointerDown}
             />
           )}
+          <EffectGizmo {...gizmoProps} />
           <div ref={marqueeElement} className="canvas-marquee" hidden />
         </div>
         <PixelSelectionOverlay

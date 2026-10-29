@@ -503,3 +503,64 @@ it("foreground exports wait for active visible encodes and run before the next r
   await Promise.all([...pending, foreground]);
   await d.queue.dispose();
 });
+
+it("keeps delivery priority through DOM/paint opportunities without holding GPU slots or delaying other previews", async () => {
+  const frames = new Map<number, FrameRequestCallback>();
+  let serial = 0;
+  vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+    frames.set(++serial, callback);
+    return serial;
+  });
+  vi.stubGlobal("cancelAnimationFrame", (id: number) => frames.delete(id));
+  const d = fixture();
+  const first = d.queue.preview("first", d.page, {}, { edge: 96, priority: "visible" });
+  await vi.advanceTimersByTimeAsync(1);
+  const value = await first;
+  expect(d.queue.stats().active).toBe(0);
+  expect(d.queue.hasPriority()).toBe(true);
+  const next = d.queue.preview("next", d.page, {}, { edge: 96, priority: "visible" });
+  await vi.advanceTimersByTimeAsync(1);
+  await next;
+  expect(d.render).toHaveBeenCalledTimes(2);
+  expect(d.queue.stats().active).toBe(0);
+  const cached = await d.queue.preview("first", d.page, {}, { edge: 96, priority: "visible" });
+  expect(cached).toBe(value);
+  expect(d.render).toHaveBeenCalledTimes(2);
+  const draw = () => {
+    for (const [id, callback] of Array.from(frames)) {
+      frames.delete(id);
+      callback(0);
+    }
+  };
+  draw();
+  expect(d.queue.hasPriority()).toBe(true);
+  draw();
+  expect(d.queue.hasPriority()).toBe(true);
+  await vi.advanceTimersByTimeAsync(1);
+  expect(d.queue.hasPriority()).toBe(true);
+  draw();
+  draw();
+  await vi.advanceTimersByTimeAsync(1);
+  expect(d.queue.hasPriority()).toBe(false);
+  const controller = new AbortController();
+  const aborted = d.queue.preview(
+    "first",
+    d.page,
+    {},
+    {
+      edge: 96,
+      priority: "visible",
+      signal: controller.signal,
+    },
+  );
+  controller.abort();
+  await expect(aborted).rejects.toMatchObject({ name: "AbortError" });
+  expect(d.queue.hasPriority()).toBe(false);
+  expect(frames.size).toBe(0);
+  await d.queue.preview("first", d.page, {}, { edge: 96, priority: "visible" });
+  expect(d.queue.hasPriority()).toBe(true);
+  await d.queue.dispose();
+  expect(d.queue.hasPriority()).toBe(false);
+  expect(frames.size).toBe(0);
+  expect(vi.getTimerCount()).toBe(0);
+});

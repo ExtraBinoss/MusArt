@@ -15,7 +15,7 @@ import { installCanvasMock } from "../canvas-fixture";
 
 function renderer(previous: RenderTarget | null = null) {
   return {
-    backend: {},
+    backend: { device: { limits: { maxTextureDimension2D: 16384 } } },
     getRenderTarget: vi.fn(() => previous),
     setRenderTarget: vi.fn(),
     render: vi.fn(),
@@ -48,6 +48,34 @@ function setup() {
     },
   };
 }
+it("checks the real device's axis limit before resizing output or allocating intermediate passes", () => {
+  const backend = renderer();
+  backend.backend.device.limits.maxTextureDimension2D = 64;
+  const gpu = new GpuEffects(backend as unknown as WebGPURenderer),
+    source = new Texture(),
+    output = new RenderTarget(2, 2),
+    resize = vi.spyOn(output, "setSize");
+  const effects = [createEffect("brightness"), createEffect("contrast")];
+  expect(() => gpu.projectedBytes(65, 1, effects)).toThrow("device limit");
+  expect(() => gpu.apply(source, 1, 65, effects, output)).toThrow("device limit");
+  expect(resize).not.toHaveBeenCalled();
+  expect(backend.render).not.toHaveBeenCalled();
+  expect(gpu.stats()).toMatchObject({ targets: 0, materials: 0, bytes: 0 });
+  expect(
+    gpu.apply(
+      source,
+      65,
+      1,
+      effects.map((effect) => ({ ...effect, enabled: false })),
+      output,
+    ),
+  ).toBe(source);
+  gpu.apply(source, 32, 1, effects, output);
+  expect(gpu.stats().passes).toBe(2);
+  gpu.dispose();
+  source.dispose();
+  output.dispose();
+});
 let canvasContext: ReturnType<typeof installCanvasMock>;
 beforeEach(() => {
   canvasContext = installCanvasMock();

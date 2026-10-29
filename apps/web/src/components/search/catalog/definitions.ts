@@ -329,3 +329,4 @@ export const ACTIONS: readonly ActionDefinition[] = [
     shortcut: ["?"],
   },
 ];
+import "../../properties/effects/library-messages";

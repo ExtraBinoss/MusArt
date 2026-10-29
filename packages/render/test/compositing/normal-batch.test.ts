@@ -1,6 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createLayer } from "@musart/core";
-import { RenderTarget, Texture } from "three/webgpu";
+import {
+  Mesh,
+  RenderTarget,
+  Texture,
+  type MeshBasicNodeMaterial,
+  type PlaneGeometry,
+  type Scene,
+} from "three/webgpu";
 import { NormalBatch } from "../../src/compositing/normal-batch";
 import { makeGpuRenderer } from "../gpu-fixture";
 describe("normal layer batching", () => {
@@ -36,4 +43,73 @@ describe("normal layer batching", () => {
     batch.dispose();
     expect(fake.autoClear).toBe(true);
   });
+});
+
+it("retains already drawn live items through cached subtrees and releases removed/page-local items", () => {
+  const { renderer, fake } = makeGpuRenderer(),
+    batch = new NormalBatch(renderer);
+  const target = new RenderTarget(100, 100),
+    texture = new Texture();
+  const a = {
+    layer: createLayer("image", { id: "a" }),
+    source: { texture, width: 20, height: 10, premultiplied: false },
+  };
+  const b = { ...a, layer: { ...a.layer, id: "b" } };
+  batch.draw([a], 100, 100, target);
+  const scene = fake.render.mock.calls.at(-1)![0] as Scene;
+  const materialA = (scene.children[0] as Mesh<PlaneGeometry, MeshBasicNodeMaterial>).material;
+  const disposeA = vi.spyOn(materialA, "dispose");
+  batch.draw([b], 100, 100, target);
+  const materialB = (scene.children[0] as Mesh<PlaneGeometry, MeshBasicNodeMaterial>).material;
+  const disposeB = vi.spyOn(materialB, "dispose");
+  const live = { has: vi.fn((id: string) => ["a", "b", "not-drawn"].includes(id)) };
+  batch.retain(live);
+  expect(disposeA).not.toHaveBeenCalled();
+  expect(disposeB).not.toHaveBeenCalled();
+  expect(live.has).toHaveBeenCalledTimes(2);
+  batch.draw([a], 100, 100, target);
+  expect((scene.children[0] as Mesh).material).toBe(materialA);
+  batch.retain(new Map([["b", true]]));
+  expect(disposeA).toHaveBeenCalledOnce();
+  expect(scene.children).toHaveLength(0);
+  batch.dispose();
+  expect(disposeB).toHaveBeenCalledOnce();
+  target.dispose();
+  texture.dispose();
+});
+
+it("places a cropped transport quad within the current parent viewport", () => {
+  const { renderer, fake } = makeGpuRenderer(),
+    batch = new NormalBatch(renderer);
+  const layer = createLayer("group", { x: 100, y: 80, width: 300, height: 200, rotation: 90 });
+  const target = new RenderTarget(32, 32),
+    texture = new Texture();
+  batch.draw(
+    [
+      {
+        layer,
+        source: {
+          texture,
+          width: 6,
+          height: 12,
+          premultiplied: true,
+          bounds: { x: 19, y: 29, width: 6, height: 12 },
+        },
+      },
+    ],
+    32,
+    32,
+    target,
+    { x: 5, y: 7 },
+  );
+  const scene = fake.render.mock.calls.at(-1)![0] as Scene;
+  const mesh = scene.children[0] as Mesh;
+  expect(mesh.position.x).toBeCloseTo(310, 10);
+  expect(mesh.position.y).toBeCloseTo(45, 10);
+  expect(mesh.scale.toArray()).toEqual([6, -12, 1]);
+  expect(mesh.rotation.z).toBeCloseTo(Math.PI / 2);
+  expect(layer).toMatchObject({ x: 100, y: 80, width: 300, height: 200 });
+  batch.dispose();
+  target.dispose();
+  texture.dispose();
 });

@@ -1,5 +1,11 @@
 import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
-import { createEffect, getEffectDefinition, type Effect, type Layer } from "@musart/core";
+import {
+  createEffect,
+  getEffectDefinition,
+  type Effect,
+  type Layer,
+  type EnginePort,
+} from "@musart/core";
 import { useTranslation } from "react-i18next";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from "../ui/dropdown-menu";
 import { EffectMenu } from "../layers/EffectMenu";
@@ -10,11 +16,13 @@ import { EffectParameters } from "./effects/EffectParameters";
 
 export function EffectsPanel({
   layer,
+  engine,
   onPatch,
   onPreview,
   onCancel,
 }: {
   layer: Layer;
+  engine?: EnginePort;
   onPatch(this: void, patch: Partial<Layer>): void;
   onPreview(this: void, patch: Partial<Layer>): void;
   onCancel?: () => void;
@@ -92,6 +100,7 @@ export function EffectsPanel({
             </div>
             {effect.enabled && (
               <EffectParameters
+                engine={engine}
                 effect={effect}
                 onChange={(patch, preview) => update(effect, patch, preview)}
                 onCancel={onCancel}

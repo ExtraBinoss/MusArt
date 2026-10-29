@@ -51,6 +51,7 @@ async function ready(page: Page) {
   await choose(page, "fit canvas", /Ajuster à l’écran/);
 }
 async function search(page: Page, query: string) {
+  await expect(page.locator("[data-magic-search]")).toHaveCount(0);
   await page.keyboard.press("Control+k");
   const input = page.getByRole("combobox", { name: "Rechercher dans MusArt", exact: true });
   await expect(input).toBeFocused();
@@ -63,6 +64,7 @@ async function choose(page: Page, query: string, label: RegExp) {
   await expect(
     page.getByRole("dialog", { name: "Rechercher dans MusArt", exact: true }),
   ).toBeHidden();
+  await expect(page.locator("[data-magic-search]")).toHaveCount(0);
 }
 test("spotlight keyboard navigation, cross-page layers, effect undo and help use actual editor actions", async ({
   page,

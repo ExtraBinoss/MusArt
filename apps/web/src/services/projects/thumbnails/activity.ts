@@ -16,10 +16,13 @@ export class ThumbnailActivity implements ActivityPort {
   private wheelTimer: ReturnType<typeof setTimeout> | undefined;
   private timer: ReturnType<typeof setTimeout> | undefined;
   private readonly listeners = new Set<() => void>();
+  private readonly stopSuspension?: () => void;
   constructor(
     private readonly quietMs = 600,
     private readonly surface: Window = window,
+    private readonly suspension?: { busy(): boolean; subscribe(listener: () => void): () => void },
   ) {
+    this.stopSuspension = suspension?.subscribe(this.notify);
     surface.addEventListener("pointermove", this.quiet, { capture: true, passive: true });
     surface.addEventListener("pointerdown", this.down, true);
     for (const type of ["pointerup", "pointercancel", "lostpointercapture"])
@@ -41,6 +44,7 @@ export class ThumbnailActivity implements ActivityPort {
     return scheduling?.isInputPending?.({ includeContinuous: true }) ?? false;
   };
   busy = () =>
+    Boolean(this.suspension?.busy()) ||
     this.surface.document.hidden ||
     this.dragging ||
     this.pointers.size > 0 ||
@@ -48,12 +52,14 @@ export class ThumbnailActivity implements ActivityPort {
     Date.now() < this.until ||
     this.inputPending();
   interacting = () =>
+    Boolean(this.suspension?.busy()) ||
     this.surface.document.hidden ||
     this.dragging ||
     this.pointers.size > 0 ||
     Date.now() < this.wheelUntil ||
     this.inputPending();
   visibleBusy = () =>
+    Boolean(this.suspension?.busy()) ||
     this.surface.document.hidden ||
     this.dragging ||
     this.pointers.size > 0 ||
@@ -145,6 +151,7 @@ export class ThumbnailActivity implements ActivityPort {
     this.quiet();
   };
   dispose(): void {
+    this.stopSuspension?.();
     this.dragGeneration++;
     this.dragging = false;
     this.keys.clear();

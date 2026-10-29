@@ -21,6 +21,17 @@ import { posterizeNode } from "./posterize/node";
 import { grainNode } from "./grain/node";
 import { halftoneNode } from "./halftone/node";
 import { vignetteNode } from "./vignette/node";
+import { rippleNode } from "./ripple/node";
+import { shatterNode } from "./shatter/node";
+import { noiseNode } from "./noise/node";
+import { flashlightNode } from "./flashlight/node";
+import { circleNode } from "./circle/node";
+import { cyanotypeNode } from "./cyanotype/node";
+import { crtNode } from "./crt/node";
+import { datamoshNode } from "./datamosh/node";
+import { bitDitherNode } from "./bit-dither/node";
+import { receiptNode } from "./receipt/node";
+import { pinkPhosphorNode } from "./pink-phosphor/node";
 /** Renderer implementation registry. Metadata/defaults live in the pure core catalogue. */
 export const EFFECT_NODES: Readonly<Record<Exclude<EffectType, "gradient">, EffectNodeBuilder>> =
   Object.freeze({
@@ -44,4 +55,15 @@ export const EFFECT_NODES: Readonly<Record<Exclude<EffectType, "gradient">, Effe
     grain: grainNode,
     halftone: halftoneNode,
     vignette: vignetteNode,
+    ripple: rippleNode,
+    shatter: shatterNode,
+    noise: noiseNode,
+    flashlight: flashlightNode,
+    circle: circleNode,
+    cyanotype: cyanotypeNode,
+    datamosh: datamoshNode,
+    crt: crtNode,
+    "bit-dither": bitDitherNode,
+    receipt: receiptNode,
+    "pink-phosphor": pinkPhosphorNode,
   });

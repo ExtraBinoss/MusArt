@@ -5,6 +5,23 @@ import { makeGpuRenderer } from "../../gpu-fixture";
 import { PrimitiveBatch } from "../../../src/compositing/primitives/batch";
 import { MAX_PRIMITIVE_INSTANCES } from "../../../src/compositing/primitives/attributes";
 import { PrimitivePaintCache } from "../../../src/compositing/primitives/paint-cache";
+it("translates a viewport origin without changing authored shape dimensions or source objects", () => {
+  const { renderer, fake } = makeGpuRenderer(),
+    batch = new PrimitiveBatch(renderer),
+    target = new RenderTarget(10, 90);
+  const layer = createLayer("rectangle", { x: 60, y: 1403, width: 1, height: 11 });
+  batch.draw([layer], 1.25, 11.25, 8, target, { x: 59.875, y: 1402.875 });
+  const mesh = (fake.render.mock.calls[0]![0] as Scene).children[0] as InstancedMesh;
+  const matrix = new Matrix4();
+  mesh.getMatrixAt(0, matrix);
+  expect(matrix.elements[12]).toBe(0.625);
+  expect(matrix.elements[13]).toBe(5.625);
+  const shape = mesh.geometry.getAttribute("primitiveShape");
+  expect([shape.getX(0), shape.getY(0)]).toEqual([8, 88]);
+  expect(layer).toMatchObject({ x: 60, y: 1403, width: 1, height: 11 });
+  batch.dispose();
+  target.dispose();
+});
 it("draws ten thousand ordered shapes in one instanced submission without textures or per-layer materials", () => {
   const { renderer, fake } = makeGpuRenderer(),
     batch = new PrimitiveBatch(renderer),

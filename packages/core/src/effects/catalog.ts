@@ -12,6 +12,17 @@ export type {
 import { defineEffect, AMOUNT, SCALE, LEVELS, COLOR, SEED } from "./definition";
 import type { EffectDefinition } from "./definition";
 import { GRADIENT_DEFINITION } from "./gradient/definition";
+import { RIPPLE_DEFINITION } from "./ripple/definition";
+import { SHATTER_DEFINITION } from "./shatter/definition";
+import { FLASHLIGHT_DEFINITION } from "./flashlight/definition";
+import { NOISE_DEFINITION } from "./noise/definition";
+import { CIRCLE_DEFINITION } from "./circle/definition";
+import { CYANOTYPE_DEFINITION } from "./cyanotype/definition";
+import { CRT_DEFINITION } from "./crt/definition";
+import { DATAMOSH_DEFINITION } from "./datamosh/definition";
+import { BIT_DITHER_DEFINITION } from "./bit-dither/definition";
+import { RECEIPT_DEFINITION } from "./receipt/definition";
+import { PINK_PHOSPHOR_DEFINITION } from "./pink-phosphor/definition";
 /** Portable effect metadata shared by factories, validation and client controls. */
 export const EFFECT_CATALOG: Readonly<Record<EffectType, EffectDefinition>> = Object.freeze({
   dither: defineEffect("dither", {}, [AMOUNT, SCALE, LEVELS, COLOR, SEED]),
@@ -38,6 +49,17 @@ export const EFFECT_CATALOG: Readonly<Record<EffectType, EffectDefinition>> = Ob
     { ...SCALE, labelKey: "effectControls:falloff", unit: "×" },
   ]),
   gradient: GRADIENT_DEFINITION,
+  ripple: RIPPLE_DEFINITION,
+  shatter: SHATTER_DEFINITION,
+  noise: NOISE_DEFINITION,
+  flashlight: FLASHLIGHT_DEFINITION,
+  circle: CIRCLE_DEFINITION,
+  cyanotype: CYANOTYPE_DEFINITION,
+  datamosh: DATAMOSH_DEFINITION,
+  crt: CRT_DEFINITION,
+  "bit-dither": BIT_DITHER_DEFINITION,
+  receipt: RECEIPT_DEFINITION,
+  "pink-phosphor": PINK_PHOSPHOR_DEFINITION,
 });
 
 export function getEffectDefinition(type: EffectType): EffectDefinition {

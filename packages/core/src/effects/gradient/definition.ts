@@ -46,7 +46,7 @@ export const GRADIENT_DEFINITION = defineEffect(
     seed: 60,
     color: true,
     time: 0,
-    settings: GRADIENT_DEFAULT_SETTINGS,
+    settings: { ...GRADIENT_DEFAULT_SETTINGS },
   },
   [
     ...GRADIENT_PARAMETERS.slice(0, 3),
@@ -57,6 +57,8 @@ export const GRADIENT_DEFINITION = defineEffect(
       labelKey: "gradientFx:parameter.scale",
       min: 0.3,
       max: 4,
+      documentMin: 0.1,
+      documentMax: 128,
       step: 0.01,
       displayScale: 1,
       unit: "×",
@@ -85,4 +87,6 @@ export const GRADIENT_DEFINITION = defineEffect(
     { ...LEVELS, visibleWhen: { key: "treatment", values: ["dither"] } },
     ...GRADIENT_PARAMETERS.slice(3),
   ],
+  "effect",
+  "reduce",
 );

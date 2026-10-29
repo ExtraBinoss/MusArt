@@ -4,6 +4,7 @@ import {
   createPage,
   createProject,
   EFFECT_CATALOG,
+  getEffectDefinition,
   GRADIENT_STYLES,
   GRADIENT_TREATMENTS,
   type Effect,
@@ -18,7 +19,29 @@ export interface DensityCase {
   fractional?: boolean;
   mask?: boolean;
 }
-const patterned = new Set<EffectType>(["ascii", "dither", "grain", "halftone"]);
+const patterned = new Set<EffectType>([
+  "ascii",
+  "dither",
+  "grain",
+  "halftone",
+  "circle",
+  "bit-dither",
+]);
+const densityOverrides: Partial<Record<EffectType, Partial<Effect>>> = {
+  ripple: {
+    time: 0.25,
+    settings: { innerRadius: 8, radius: 44, feather: 4, amplitude: 5, wavelength: 16, speed: 12 },
+  },
+  shatter: { scale: 24 },
+  noise: { scale: 16 },
+};
+function densityScale(type: EffectType): number {
+  const definition = getEffectDefinition(type);
+  const parameter = definition.parameters.find((p) => p.key === "scale" && p.scope !== "settings");
+  if (parameter?.kind !== "number") return definition.defaults.scale;
+  const desired = type === "ascii" ? 20 : type === "halftone" ? 12 : 4;
+  return Math.max(parameter.min, Math.min(parameter.max, desired));
+}
 const gradient = (settings: Partial<NonNullable<Effect["settings"]>>) =>
   createEffect("gradient", {
     amount: 1,
@@ -44,10 +67,11 @@ export const DENSITY_CASES: readonly DensityCase[] = [
       name: type,
       effect: createEffect(type as EffectType, {
         amount: 0.8,
-        scale: type === "ascii" ? 20 : type === "halftone" ? 12 : 4,
+        scale: densityScale(type as EffectType),
         levels: 6,
         color: true,
         seed: 9321,
+        ...densityOverrides[type as EffectType],
       }),
       flat: patterned.has(type as EffectType),
       tolerance: type === "ascii" ? 13 : type === "halftone" ? 8 : 3,
@@ -237,12 +261,18 @@ export async function compareDensity(
       }
       const a = await decode(reference),
         b = await decode(candidate, a.width, a.height);
-      const decodeControl = async (input?: { reference: string; candidate: string }) => input ? {
-        a: await decode(input.reference, a.width, a.height),
-        b: await decode(input.candidate, a.width, a.height),
-        referenceAlphaMax: 0, candidateAlphaMax: 0, coverageDeltaMax: 0,
-      } : null;
-      const control = await decodeControl(coverageControl), geometry = await decodeControl(geometryControl);
+      const decodeControl = async (input?: { reference: string; candidate: string }) =>
+        input
+          ? {
+              a: await decode(input.reference, a.width, a.height),
+              b: await decode(input.candidate, a.width, a.height),
+              referenceAlphaMax: 0,
+              candidateAlphaMax: 0,
+              coverageDeltaMax: 0,
+            }
+          : null;
+      const control = await decodeControl(coverageControl),
+        geometry = await decodeControl(geometryControl);
       let differentPixels = 0,
         maximumByteDifference = 0;
       for (let offset = 0; offset < a.pixels.length; offset += 4) {
@@ -270,21 +300,25 @@ export async function compareDensity(
           minimumAlpha = Math.min(minimumAlpha, aa);
           maximumAlpha = Math.max(maximumAlpha, aa);
           alpha += Math.abs(aa - ba);
-          for (const item of [control, geometry]) if (item) {
-            const ca = item.a.pixels[offset + 3]!, cb = item.b.pixels[offset + 3]!;
-            item.referenceAlphaMax = Math.max(item.referenceAlphaMax, Math.abs(aa - ca));
-            item.candidateAlphaMax = Math.max(item.candidateAlphaMax, Math.abs(ba - cb));
-            item.coverageDeltaMax = Math.max(item.coverageDeltaMax, Math.abs((aa - ba) - (ca - cb)));
-          }
+          for (const item of [control, geometry])
+            if (item) {
+              const ca = item.a.pixels[offset + 3]!,
+                cb = item.b.pixels[offset + 3]!;
+              item.referenceAlphaMax = Math.max(item.referenceAlphaMax, Math.abs(aa - ca));
+              item.candidateAlphaMax = Math.max(item.candidateAlphaMax, Math.abs(ba - cb));
+              item.coverageDeltaMax = Math.max(
+                item.coverageDeltaMax,
+                Math.abs(aa - ba - (ca - cb)),
+              );
+            }
           let error = 0;
           for (let channel = 0; channel < 3; channel++) {
-            const ac = a.pixels[offset + channel]!, bc = b.pixels[offset + channel]!;
-            error += Math.abs(
-              (ac * aa) / 255 - (bc * ba) / 255,
-            );
-            commonColor += Math.min(aa, ba) * Math.abs(ac - bc) / 255;
+            const ac = a.pixels[offset + channel]!,
+              bc = b.pixels[offset + channel]!;
+            error += Math.abs((ac * aa) / 255 - (bc * ba) / 255);
+            commonColor += (Math.min(aa, ba) * Math.abs(ac - bc)) / 255;
             // Direct per-channel coverage term, never raw error minus color.
-            coverageColor += Math.abs(aa - ba) * (aa >= ba ? ac : bc) / 255;
+            coverageColor += (Math.abs(aa - ba) * (aa >= ba ? ac : bc)) / 255;
           }
           total += error;
           errors.push(error / 3);
@@ -298,8 +332,20 @@ export async function compareDensity(
         commonCoverageRgbMean: commonColor / (samples * 3),
         coverageRgbContribution: coverageColor / (samples * 3),
         pixels: samples,
-        coverageControl: control ? { referenceAlphaMax: control.referenceAlphaMax, candidateAlphaMax: control.candidateAlphaMax, coverageDeltaMax: control.coverageDeltaMax } : null,
-        disabledGeometryDiagnostic: geometry ? { referenceAlphaMax: geometry.referenceAlphaMax, candidateAlphaMax: geometry.candidateAlphaMax, coverageDeltaMax: geometry.coverageDeltaMax } : null,
+        coverageControl: control
+          ? {
+              referenceAlphaMax: control.referenceAlphaMax,
+              candidateAlphaMax: control.candidateAlphaMax,
+              coverageDeltaMax: control.coverageDeltaMax,
+            }
+          : null,
+        disabledGeometryDiagnostic: geometry
+          ? {
+              referenceAlphaMax: geometry.referenceAlphaMax,
+              candidateAlphaMax: geometry.candidateAlphaMax,
+              coverageDeltaMax: geometry.coverageDeltaMax,
+            }
+          : null,
         alphaMean: alpha / samples,
         p95: errors[Math.floor(errors.length * 0.95)]!,
         max: errors.at(-1)!,

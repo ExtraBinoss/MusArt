@@ -33,6 +33,7 @@ import "../selection/wand/messages";
 import type { FontLibraryPort } from "../fonts/model";
 import { isEditingShortcutTarget } from "../../state/keybindings/matching";
 import { isMusArtClipboardText } from "../clipboard/controller";
+import { freezeEffectPreviews } from "../../state/session/effect-preview";
 export interface ServiceDependencies {
   fonts?: FontLibraryPort;
   store: ProjectStore;
@@ -219,6 +220,7 @@ export function createEditorServices(
       engine.load(project);
     },
     async exportProject() {
+      freezeEffectPreviews(engine);
       const project = engine.getSnapshot().project;
       download(
         new Blob([serializeProject(project)], { type: "application/json" }),
@@ -226,6 +228,7 @@ export function createEditorServices(
       );
     },
     async exportImage(options: ExportOptions, scope?: ExportScope) {
+      freezeEffectPreviews(engine);
       const snapshot = engine.getSnapshot(),
         { project } = snapshot;
       assertExportScope(snapshot, scope);

@@ -17,6 +17,7 @@ import {
 } from "three/webgpu";
 import { texture, uv } from "three/tsl";
 import { createGlyphAtlas } from "./ascii/atlas";
+import { assertTextureSize, gpuTextureLimit } from "../cache/texture-limits";
 import { gradientStages, type EffectStage } from "./gradient/pipeline";
 import { compositeEffect } from "./shared/compositing/node";
 import { sampleEffect, type EffectDimensions } from "./shared/context";
@@ -54,6 +55,7 @@ export class GpuEffects {
   constructor(private readonly renderer: WebGPURenderer) {}
 
   private getGlyphAtlas = (): Texture => {
+    assertTextureSize(256, 16, gpuTextureLimit(this.renderer));
     this.atlas ??= createGlyphAtlas();
     return this.atlas;
   };
@@ -120,6 +122,7 @@ export class GpuEffects {
       (sum, effect) => sum + (effect.type === "gradient" ? gradientStages(effect).length : 1),
       0,
     );
+    if (stages) assertTextureSize(width, height, gpuTextureLimit(this.renderer));
     const scratch =
       stages > 1
         ? width * height * 4
@@ -182,6 +185,7 @@ export class GpuEffects {
     if (!enabled.length) return source;
     if (source === output.texture)
       throw new Error("La source et la cible GPU doivent être distinctes.");
+    assertTextureSize(width, height, gpuTextureLimit(this.renderer));
     output.setSize(width, height);
     const blocks = enabled.map((effect) => {
       if (effect.type === "gradient") return { effect, stages: gradientStages(effect) };

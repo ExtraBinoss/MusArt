@@ -76,6 +76,53 @@ test("no-window runtimes use a bounded task without installing a visibility list
   expect(vi.getTimerCount()).toBe(0);
 });
 
+test("aborted and stale preview deliveries release owned frames, timers and listeners", async () => {
+  vi.useFakeTimers();
+  const frames = new Map<number, FrameRequestCallback>();
+  let serial = 0;
+  vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+    frames.set(++serial, callback);
+    return serial;
+  });
+  const cancel = vi.fn((id: number) => frames.delete(id));
+  vi.stubGlobal("cancelAnimationFrame", cancel);
+  const remove = vi.spyOn(document, "removeEventListener"),
+    gate = new PaintYield(),
+    controller = new AbortController(),
+    removeAbort = vi.spyOn(controller.signal, "removeEventListener"),
+    pending = gate.wait(undefined, { signal: controller.signal });
+  expect(frames.size).toBe(1);
+  controller.abort();
+  await pending;
+  expect(frames.size).toBe(0);
+  expect(vi.getTimerCount()).toBe(0);
+  expect(removeAbort).toHaveBeenCalledWith("abort", expect.any(Function));
+  expect(remove).toHaveBeenCalledWith("visibilitychange", expect.any(Function));
+  await gate.wait(undefined, { signal: controller.signal });
+  expect(frames.size).toBe(0);
+  await gate.wait(undefined, { isCurrent: () => false });
+  await gate.wait(undefined, {
+    isCurrent: () => {
+      throw new Error("removed origin");
+    },
+  });
+  expect(frames.size).toBe(0);
+  let current = true;
+  const stale = gate.wait(undefined, { isCurrent: () => current });
+  const draw = () => {
+    const [id, callback] = [...frames][0]!;
+    frames.delete(id);
+    callback(0);
+  };
+  draw();
+  draw();
+  current = false;
+  await vi.advanceTimersByTimeAsync(0);
+  await stale;
+  expect(vi.getTimerCount()).toBe(0);
+  expect(frames.size).toBe(0);
+});
+
 test("waits for the useful canonical draw instead of arbitrary frames and rechecks newer preview requests", async () => {
   vi.useFakeTimers();
   const frames = new Map<number, FrameRequestCallback>();

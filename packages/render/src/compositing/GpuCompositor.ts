@@ -3,12 +3,14 @@ import {
   isPublishedComposition,
   isPublishedAssets,
   type Asset,
+  type Bounds,
   type Composition,
   type Layer,
 } from "@musart/core";
 import type { RenderTarget, WebGPURenderer } from "three/webgpu";
 import { ColorPipeline } from "../color/ColorPipeline";
 import { GpuResourceCache } from "../cache/GpuResourceCache";
+import { gpuTextureLimit } from "../cache/texture-limits";
 import { createSourceKeys } from "../cache/keys";
 import { maskLayerMapping } from "./mask-binding";
 import { EffectResources } from "./effect-resources";
@@ -21,6 +23,7 @@ import { isInstancedPrimitive, primitivePaintKey } from "./primitives/eligibilit
 import { NormalBatch } from "./normal-batch";
 import { GpuPasses } from "./passes";
 import { LayerTargets } from "./targets";
+import { groupViewport, type GroupViewport } from "./group-viewport";
 import {
   assertRenderSize,
   rasterExtent,
@@ -39,6 +42,7 @@ interface RenderFrame {
 
 /** Retained GPU graph. Only font/image preparation awaits; all GPU submissions are synchronous. */
 export class GpuCompositor {
+  private readonly maxTextureDimension: number;
   private readonly cache: GpuResourceCache;
   private readonly sources: TextureSources;
   private readonly texts: TextSources;
@@ -46,7 +50,6 @@ export class GpuCompositor {
   private passes: GpuPasses | null = null;
   private normal: NormalBatch | null = null;
   private primitives: PrimitiveBatch | null = null;
-  private readonly normalIds = new Set<string>();
   private vectors: VectorSources | null = null;
   private color: ColorPipeline | null = null;
   private queue: Promise<unknown> = Promise.resolve();
@@ -67,8 +70,9 @@ export class GpuCompositor {
     private readonly renderer: WebGPURenderer,
     options: { maxBytes?: number; fontResolver?: FontResolver } = {},
   ) {
+    this.maxTextureDimension = gpuTextureLimit(renderer);
     this.cache = new GpuResourceCache(options.maxBytes);
-    this.sources = new TextureSources(this.cache);
+    this.sources = new TextureSources(this.cache, this.maxTextureDimension);
     this.texts = new TextSources(renderer, this.cache, { fontResolver: options.fontResolver });
   }
 
@@ -133,6 +137,9 @@ export class GpuCompositor {
         this.cache.set("shared-primitives", this.primitives);
       }
       const geometry = createLayerGeometryIndex(page);
+      // Use the existing index, including descendants hidden behind cached groups.
+      // Prune removed/page-local IDs even when the whole root is a cache hit.
+      this.normal.retain(geometry.byId);
       const frame: RenderFrame = {
         page,
         scale,
@@ -168,7 +175,6 @@ export class GpuCompositor {
         return entry.output;
       }
       entry.signature = "";
-      this.normalIds.clear();
       const composed = this.children(
         null,
         page.width,
@@ -192,7 +198,6 @@ export class GpuCompositor {
       this.retainedRoot = rootKey;
       this.rememberInput(entry, page, assets);
       this.frames++;
-      this.normal.retain(this.normalIds);
       return entry.output;
     });
     this.queue = job.catch(() => undefined);
@@ -212,7 +217,7 @@ export class GpuCompositor {
   private entry(key: string): LayerTargets {
     let entry = this.cache.get<LayerTargets>(key);
     if (!entry) {
-      entry = new LayerTargets();
+      entry = new LayerTargets(this.maxTextureDimension);
       this.cache.set(key, entry);
     }
     return entry;
@@ -230,14 +235,16 @@ export class GpuCompositor {
     this.cache.synchronize(key);
     return target;
   }
-  private layer(layer: Layer, frame: RenderFrame): FrameTexture {
+  private layer(layer: Layer, frame: RenderFrame, parentViewport?: Bounds): FrameTexture {
     const reference = layer.effects.some((effect) => effect.enabled) || !!layer.mask?.enabled;
     // Effects and masks consume the same authored reference pixels in every
     // caller. Output density changes sampling of this plane, never its content.
     if (reference && frame.scale !== 1)
       frame = { ...frame, scale: 1, keyFor: frame.referenceKeyFor };
     const { page, scale, keyFor, geometry } = frame;
-    const key = `layer:${page.id}:${layer.id}:${scale}`;
+    const viewport =
+      layer.kind === "group" && !reference ? groupViewport(layer, scale, parentViewport) : null;
+    const key = `layer:${page.id}:${layer.id}:${scale}${viewport ? `:window:${viewport.key}` : ""}`;
     const entry = this.entry(key);
     const signature = keyFor(layer);
     if (entry.signature === signature && entry.output) {
@@ -249,7 +256,16 @@ export class GpuCompositor {
     const height = rasterExtent(layer.height, scale);
     let source: FrameTexture;
     if (layer.kind === "group")
-      source = this.children(layer.id, layer.width, layer.height, "transparent", entry, key, frame);
+      source = this.children(
+        layer.id,
+        layer.width,
+        layer.height,
+        "transparent",
+        entry,
+        key,
+        frame,
+        viewport,
+      );
     else if (layer.kind === "image")
       source = { texture: this.sources.image(layer.assetId), width, height, premultiplied: false };
     else if (layer.kind === "text") {
@@ -351,18 +367,19 @@ export class GpuCompositor {
     entry: LayerTargets,
     key: string,
     frame: RenderFrame,
+    window?: GroupViewport | null,
   ): FrameTexture {
     const { scale, geometry } = frame;
-    const pixelWidth = rasterExtent(width, scale);
-    const pixelHeight = rasterExtent(height, scale);
+    const viewport = window?.bounds ?? { x: 0, y: 0, width, height };
+    const pixelWidth = window?.pixelWidth ?? rasterExtent(width, scale);
+    const pixelHeight = window?.pixelHeight ?? rasterExtent(height, scale);
     let target = this.target(entry, key, "children-a", pixelWidth, pixelHeight);
     this.passes!.clear(target, background);
-    const layers = geometry.children(parentId);
+    const layers = window?.empty ? [] : geometry.children(parentId);
     let batch: { layer: Layer; source: FrameTexture }[] = [],
       primitiveRun: Layer[] = [];
     const flush = () => {
-      this.normal!.draw(batch, width, height, target);
-      for (const { layer } of batch) this.normalIds.add(layer.id);
+      this.normal!.draw(batch, viewport.width, viewport.height, target, viewport);
       batch = [];
     };
     const flushPrimitives = () => {
@@ -372,7 +389,14 @@ export class GpuCompositor {
         this.primitives!.projectedBytes(primitiveRun.length),
       );
       try {
-        this.primitives!.draw(primitiveRun, width, height, scale, target);
+        this.primitives!.draw(
+          primitiveRun,
+          viewport.width,
+          viewport.height,
+          scale,
+          target,
+          viewport,
+        );
       } finally {
         this.cache.synchronize("shared-primitives");
       }
@@ -386,7 +410,7 @@ export class GpuCompositor {
         continue;
       }
       flushPrimitives();
-      const source = this.layer(layer, frame);
+      const source = this.layer(layer, frame, viewport);
       if (layer.blendMode === "normal") {
         batch.push({ layer, source });
         continue;
@@ -401,12 +425,26 @@ export class GpuCompositor {
         pixelWidth,
         pixelHeight,
       );
-      this.passes!.blendTo(target.texture, source, layer, width, height, next);
+      this.passes!.blendTo(
+        target.texture,
+        source,
+        layer,
+        viewport.width,
+        viewport.height,
+        next,
+        viewport,
+      );
       target = next;
     }
     flushPrimitives();
     flush();
-    return { texture: target.texture, width: pixelWidth, height: pixelHeight, premultiplied: true };
+    return {
+      texture: target.texture,
+      width: pixelWidth,
+      height: pixelHeight,
+      premultiplied: true,
+      ...(window ? { bounds: window.bounds } : {}),
+    };
   }
   stats(): GpuStats {
     const cache = this.cache.stats();
@@ -446,7 +484,6 @@ export class GpuCompositor {
       this.passes = null;
       this.normal = null;
       this.primitives = null;
-      this.normalIds.clear();
       this.vectors = null;
       this.color = null;
     });

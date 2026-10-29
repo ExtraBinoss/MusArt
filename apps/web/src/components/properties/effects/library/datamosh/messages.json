@@ -1,0 +1,34 @@
+{
+  "en": {
+    "name": "Datamosh · Block Smear",
+    "parameter": {
+      "blockSize": "Macroblock size",
+      "density": "Affected blocks",
+      "displacement": "Block displacement",
+      "direction": "Displacement direction",
+      "angleVariation": "Direction variation",
+      "coherence": "Row coherence",
+      "smear": "Spatial smear",
+      "chromaShift": "Color bleed",
+      "levels": "Color levels",
+      "rate": "Pattern rate",
+      "time": "Pattern time"
+    }
+  },
+  "fr": {
+    "name": "Datamosh · Traînées de blocs",
+    "parameter": {
+      "blockSize": "Taille des macroblocs",
+      "density": "Blocs affectés",
+      "displacement": "Déplacement des blocs",
+      "direction": "Direction du déplacement",
+      "angleVariation": "Variation de direction",
+      "coherence": "Cohérence des lignes",
+      "smear": "Traînée spatiale",
+      "chromaShift": "Débordement des couleurs",
+      "levels": "Niveaux de couleur",
+      "rate": "Cadence du motif",
+      "time": "Temps du motif"
+    }
+  }
+}

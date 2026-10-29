@@ -34,12 +34,14 @@ const gpu = vi.hoisted(() => ({
   compositorDispose: vi.fn(),
   compositorConstruct: vi.fn(),
   frame: null as (() => void) | null,
+  framePriority: undefined as number | undefined,
   state: {} as Record<string, unknown>,
 }));
 vi.mock("@react-three/fiber", () => ({
   Canvas: vi.fn(({ children }: { children: ReactNode }) => <>{children}</>),
   useThree: (selector: (state: Record<string, unknown>) => unknown) => selector(gpu.state),
-  useFrame: (callback: () => void) => {
+  useFrame: (callback: () => void, priority?: number) => {
+    gpu.framePriority = priority;
     gpu.frame = callback;
   },
 }));
@@ -99,15 +101,21 @@ beforeEach(() => {
     height: page.height,
   }));
   gpu.frame = null;
+  gpu.framePriority = undefined;
   vi.mocked(Canvas)
     .mockReset()
     .mockImplementation(({ children }) => <>{children}</>);
+  const element = canvas();
   gpu.state = {
     invalidate: gpu.invalidate,
     setDpr: vi.fn(),
     clock: new FiberTimerClock(),
     gl: {
-      domElement: canvas(),
+      domElement: element,
+      setDrawingBufferSize: vi.fn((width: number, height: number) => {
+        element.width = width;
+        element.height = height;
+      }),
       backend: {},
       compileAsync: gpu.compile,
       getRenderTarget: vi.fn(() => null),
@@ -265,7 +273,28 @@ describe("R3F direct WebGPU scene lifetime", () => {
     const resizeRatio = Math.max(retained[0], Math.min(retained[1], 1));
     expect(192 * resizeRatio).toBe(768);
     expect(vi.mocked(Canvas)).toHaveBeenCalledOnce();
-    expect(gpu.frame).toBeNull();
+    expect(gpu.frame).toBeTypeOf("function");
+    expect(gpu.framePriority).toBe(-1);
+  });
+  it("prepares exact frame texels before Fiber renders, including a later external resize", async () => {
+    const input = source(page(778, 17));
+    gpu.render.mockResolvedValueOnce({ texture: new Texture(), width: 159, height: 4 });
+    render(<CompositionPlane controller={input.controller} />);
+    await waitFor(() => expect(gpu.invalidate).toHaveBeenCalled());
+    const renderer = gpu.state.gl as {
+      domElement: HTMLCanvasElement;
+      setDrawingBufferSize: ReturnType<typeof vi.fn>;
+    };
+    renderer.domElement.width = 158;
+    renderer.domElement.height = 3;
+    act(() => gpu.frame?.());
+    expect(renderer.setDrawingBufferSize).toHaveBeenLastCalledWith(159, 4, 1);
+    act(() => gpu.frame?.());
+    expect(renderer.setDrawingBufferSize).toHaveBeenCalledTimes(1);
+    renderer.domElement.width = 158;
+    act(() => gpu.frame?.());
+    expect(renderer.setDrawingBufferSize).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(Canvas)).not.toHaveBeenCalled();
   });
   it("releases a presentation lease and resources if activation throws before effect cleanup exists", async () => {
     const input = source(),

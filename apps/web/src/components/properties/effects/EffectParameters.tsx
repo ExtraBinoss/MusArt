@@ -1,5 +1,6 @@
 import "./gradient-messages";
 import "./messages";
+import "./library-messages";
 import {
   getEffectDefinition,
   getEffectParameter,
@@ -7,20 +8,24 @@ import {
   patchEffectParameter,
   GRADIENT_PRESETS,
   type Effect,
+  type EnginePort,
 } from "@musart/core";
 import { useTranslation } from "react-i18next";
 import { NumberInput } from "../../shared/NumberInput";
 import { SelectField } from "../../shared/SelectField";
 import { Switch } from "../../ui/switch";
+import { EffectPlayback } from "./EffectPlayback";
 import { EffectColor } from "./EffectColor";
 export function EffectParameters({
   effect,
+  engine,
   disabled = false,
   onChange,
   onStart,
   onCancel,
 }: {
   effect: Effect;
+  engine?: EnginePort;
   disabled?: boolean;
   onChange: (patch: Partial<Effect>, preview?: boolean) => void;
   onStart?: () => void;
@@ -29,6 +34,19 @@ export function EffectParameters({
   const { t } = useTranslation();
   return (
     <div className="effect-controls">
+      {engine &&
+        getEffectDefinition(effect.type).parameters.some(
+          (p) => p.key === "time" && p.scope !== "settings",
+        ) && (
+          <EffectPlayback
+            engine={engine}
+            effect={effect}
+            disabled={disabled}
+            onChange={onChange}
+            onStart={onStart}
+            onCancel={onCancel}
+          />
+        )}
       {getEffectDefinition(effect.type)
         .parameters.filter((parameter) => isEffectParameterVisible(effect, parameter))
         .map((parameter) => {

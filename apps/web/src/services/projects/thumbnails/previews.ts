@@ -3,6 +3,7 @@ import type { Asset, Composition } from "@musart/core";
 import type { ActivityPort } from "./activity";
 import { THUMBNAIL_EDGE } from "./model";
 import type { ThumbnailRenderer } from "./renderer";
+import { PaintYield } from "../../animation/paint-yield";
 
 export interface ThumbnailPreviewOptions {
   edge?: number;
@@ -39,6 +40,10 @@ export class ThumbnailPreviews {
   private readonly cache = new Map<string, ThumbnailPreview>();
   private cacheBytes = 0;
   private readonly active = new Map<Job, Promise<void>>();
+  private readonly presentation = new PaintYield();
+  private readonly deliveryAbort = new AbortController();
+  private presenting: Promise<void> | null = null;
+  private deliveryVersion = 0;
   private timer: ReturnType<typeof setTimeout> | undefined;
   private idle: number | undefined;
   private closed = false;
@@ -76,6 +81,7 @@ export class ThumbnailPreviews {
       this.cache.set(identity, cached);
       return Promise.resolve().then(() => {
         this.assertCurrent(options);
+        this.delivering(options);
         return cached;
       });
     }
@@ -142,7 +148,34 @@ export class ThumbnailPreviews {
     );
   }
   hasPriority(): boolean {
-    return [...this.jobs.values()].some((job) => this.isUrgent(job));
+    return !!this.presenting || [...this.jobs.values()].some((job) => this.isUrgent(job));
+  }
+  /** Give resolved urgent images a DOM commit/paint opportunity before optional canonical compilation. */
+  private delivering(options: ThumbnailPreviewOptions) {
+    if (options.priority !== "foreground" && options.priority !== "visible") return;
+    this.deliveryVersion++;
+    this.presentDelivery();
+  }
+  private presentDelivery() {
+    if (this.presenting) return;
+    const version = this.deliveryVersion;
+    const pending = this.presentation
+      .wait(undefined, {
+        signal: this.deliveryAbort.signal,
+        isCurrent: () => !this.closed,
+      })
+      .finally(() => {
+        if (this.presenting !== pending) return;
+        this.presenting = null;
+        if (!this.closed) {
+          if (version !== this.deliveryVersion) this.presentDelivery();
+          else {
+            this.onIdle();
+            this.wake();
+          }
+        }
+      });
+    this.presenting = pending;
   }
   isActive(): boolean {
     return this.active.size > 0;
@@ -238,6 +271,7 @@ export class ThumbnailPreviews {
       this.remember(job.key, result);
       for (const consumer of job.consumers) {
         this.release(job, consumer);
+        this.delivering(consumer.options);
         consumer.resolve(result);
       }
     } catch (error) {
@@ -270,6 +304,9 @@ export class ThumbnailPreviews {
     this.closed = true;
     this.cancelStart();
     this.stopActivity();
+    this.deliveryAbort.abort();
+    this.presentation.release();
+    this.presenting = null;
     for (const job of this.jobs.values()) this.fail(job, abortError("Preview queue is closed."));
     this.pending.clear();
     this.jobs.clear();

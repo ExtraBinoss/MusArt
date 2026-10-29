@@ -34,9 +34,11 @@ async function snapshot(page: Page) {
 test("theme, language, persistent preferences and readable responsive panels", async ({ page }) => {
   await ready(page);
   await openPreferences(page);
-  await page.getByRole("button", { name: "Sombre", exact: true }).click();
+  await page.getByRole("tab", { name: "Apparence", exact: true }).click();
+  await page.getByRole("radio", { name: "Sombre", exact: true }).click();
   await expect(page.locator("html")).toHaveClass(/dark/);
   await expect.poll(() => page.evaluate(() => localStorage.getItem("musart.theme"))).toBe("dark");
+  await page.getByRole("tab", { name: "Général", exact: true }).click();
   await choose(page, "Langue", "English");
   await expect(page.getByRole("heading", { name: "Preferences", exact: true })).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
@@ -49,8 +51,10 @@ test("theme, language, persistent preferences and readable responsive panels", a
   await expect(page.locator("html")).toHaveClass(/dark/);
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await openPreferences(page);
-  await page.getByRole("button", { name: "Light", exact: true }).click();
+  await page.getByRole("tab", { name: "Appearance", exact: true }).click();
+  await page.getByRole("radio", { name: "Light", exact: true }).click();
   await expect(page.locator("html")).not.toHaveClass(/dark/);
+  await page.getByRole("tab", { name: "General", exact: true }).click();
   await choose(page, "Language", "Français");
   await page.getByRole("button", { name: "Fermer", exact: true }).click();
   await page.setViewportSize({ width: 900, height: 650 });
@@ -256,13 +260,17 @@ test("effect controls follow the shared catalogue and reorder the stack without 
     ["ASCII", "Ajouter un effet"],
     ["Contraste", "Ajouter un réglage"],
   ]) {
-    await page.getByRole("button", { name: "Ajouter un effet", exact: true }).click();
-    await page.getByRole("menuitem", { name: category, exact: true }).hover();
+    await page.getByRole("button", { name: category, exact: true }).click();
     await page.getByRole("menuitem", { name, exact: true }).click();
   }
-  const dither = page
-    .locator(".effect-card")
-    .filter({ has: page.locator("strong", { hasText: /^Dither$/ }) });
+  const effectRow = page.locator('.layer-row[data-layer-id="effect-target"]');
+  await effectRow.locator(".group-chevron").click();
+  const ditherId = (await snapshot(page)).project.pages[0]!.layers[0]!.effects[0]!.id;
+  const ditherTrigger = page.locator(
+    `.layer-attachment-row[data-effect-id="${ditherId}"] .attachment-name`,
+  );
+  await ditherTrigger.click();
+  const dither = page.getByRole("dialog", { name: "Effets · Effets", exact: true });
   const amount = dither.getByRole("textbox", { name: "Intensité", exact: true });
   await amount.fill("65");
   await amount.press("Tab");
@@ -272,7 +280,12 @@ test("effect controls follow the shared catalogue and reorder the stack without 
   await dither.getByRole("switch", { name: "Couleur", exact: true }).click();
   const before = (await snapshot(page)).project.pages[0]!.layers[0]!.effects;
   expect(before.map((effect) => effect.type)).toEqual(["dither", "ascii", "contrast"]);
-  await dither.getByRole("button", { name: "Descendre l’effet", exact: true }).click();
+  await page.keyboard.press("Escape");
+  await expect(dither).toHaveCount(0);
+  await expect(ditherTrigger).toBeFocused();
+  await page
+    .locator(`.layer-attachment-row[data-effect-id="${before[1]!.id}"]`)
+    .dragTo(page.locator(`.layer-attachment-row[data-effect-id="${before[0]!.id}"]`));
   expect((await snapshot(page)).project.pages[0]!.layers[0]!.effects).toEqual([
     before[1],
     before[0],
@@ -405,12 +418,20 @@ test("the searchable shape library, linked masks and design/animate tabs are usa
     .getByRole("treeitem")
     .filter({ has: page.locator(".layer-name", { hasText: /^Content$/ }) })
     .click();
+  const maskTrigger = page.locator(
+    '.layer-row[data-layer-id="content-shape"] [data-attachment-target="mask"]',
+  );
+  await maskTrigger.click();
+  const maskPopover = page.getByRole("dialog", { name: "Masque · Content", exact: true });
   await choose(page, "Mode du masque", "Luminosité");
   await page.getByRole("button", { name: "Inverser le masque", exact: true }).click();
   expect(
     (await snapshot(page)).project.pages[0]!.layers.find((layer) => layer.id === "content-shape")!
       .mask,
   ).toMatchObject({ mode: "luminance", inverted: true });
+  await page.keyboard.press("Escape");
+  await expect(maskPopover).toHaveCount(0);
+  await expect(maskTrigger).toBeFocused();
   await page.getByRole("tab", { name: "Animation", exact: true }).click();
   await expect(page.getByRole("region", { name: "Rejouer la création" })).toBeVisible();
   await page.getByRole("tab", { name: "Design", exact: true }).click();

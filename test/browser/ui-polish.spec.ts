@@ -24,6 +24,22 @@ async function expectConnected(group: Locator, count: number) {
     expect(boxes[index]!.height).toBe(boxes[0]!.height);
   }
 }
+async function expectCompactChoices(group: Locator, count: number) {
+  await expect(group).toHaveAttribute("data-size", "compact");
+  await expect(group).toHaveCSS("height", "32px");
+  await expect(group).toHaveCSS("gap", "2px");
+  const radios = group.getByRole("radio");
+  await expect(radios).toHaveCount(count);
+  const boxes = await radios.evaluateAll((elements) =>
+    elements.map((element) => {
+      const { left, right, height } = element.getBoundingClientRect();
+      return { left, right, height };
+    }),
+  );
+  for (const box of boxes) expect(box.height).toBe(26);
+  for (let index = 1; index < boxes.length; index++)
+    expect(boxes[index]!.left - boxes[index - 1]!.right).toBeCloseTo(2, 2);
+}
 
 test("floating shortcuts keep readable contrast in both themes and controls form connected groups", async ({
   page,
@@ -36,10 +52,11 @@ test("floating shortcuts keep readable contrast in both themes and controls form
     await page.keyboard.press("Control+k");
     await page.getByRole("combobox").fill("settings");
     await page.getByRole("option", { name: /^Préférences/ }).click();
-    const themes = page.getByRole("group", { name: "Thème", exact: true });
-    await themes.getByRole("button", { name: mode, exact: true }).click();
-    await expect(themes.getByRole("button", { pressed: true })).toHaveCount(1);
-    await expectConnected(themes, 3);
+    await page.getByRole("tab", { name: "Apparence", exact: true }).click();
+    const themes = page.getByRole("radiogroup", { name: "Thème", exact: true });
+    await themes.getByRole("radio", { name: mode, exact: true }).click();
+    await expect(themes.getByRole("radio", { checked: true })).toHaveCount(1);
+    await expectCompactChoices(themes, 3);
     await page.getByRole("button", { name: "Fermer", exact: true }).click();
     await page.getByRole("button", { name: "Sélection", exact: true }).hover();
     const key = page.locator('[data-slot="tooltip-content"]:visible [data-slot="kbd"]');

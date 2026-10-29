@@ -17,7 +17,12 @@ function layout(box: PreviewBox | null, width: number, height: number, expanded:
   if (fit <= 0) return null;
   const pixels = Math.max(
       1,
-      Math.min(768, Math.floor(Math.max(width, height) * fit * (expanded ? 2 : 1) * box.dpr)),
+      Math.min(
+        768,
+        // ThumbnailRenderer and RenderOptions both cap raster density at 8×.
+        Math.floor(Math.max(width, height) * 8),
+        Math.floor(Math.max(width, height) * fit * (expanded ? 2 : 1) * box.dpr),
+      ),
     ),
     scale = pixels / (Math.max(width, height) * box.dpr);
   return {

@@ -3,6 +3,24 @@ import type { Node } from "three/webgpu";
 import { Fn, If, clamp, max, mix, vec2, vec4 } from "three/tsl";
 import { blendRGB } from "../../../compositing/blends/registry";
 import type { EffectUniforms } from "../uniforms";
+/** Mix image treatments in premultiplied space when an effect can remove coverage.
+ * Both inputs are materialized before selection, keeping TSL temporaries in scope. */
+export function mixEffectCoverage(
+  backdrop: Node<"vec4">,
+  processed: Node<"vec4">,
+  amount: Node<"float">,
+) {
+  return Fn(
+    ([backdrop, processed, amount]: readonly [Node<"vec4">, Node<"vec4">, Node<"float">]) => {
+      const from = backdrop.toVar(),
+        to = processed.toVar(),
+        weight = amount.toVar();
+      const alpha = mix(from.a, to.a, weight);
+      const rgb = mix(from.rgb.mul(from.a), to.rgb.mul(to.a), weight);
+      return weight.greaterThan(0).select(vec4(rgb.div(max(alpha, 0.000001)), alpha), from);
+    },
+  )(backdrop, processed, amount);
+}
 /** Straight-alpha effect replacement by default; explicit Porter-Duff is opt-in. */
 export function compositeEffect(
   backdrop: Node<"vec4">,

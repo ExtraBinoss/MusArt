@@ -313,9 +313,11 @@ test("native blend previews change pixels for a multiselection, cancel exactly a
     await expect(blend).toHaveAttribute("data-state", "open");
     await expect
       .poll(() =>
-        blend
-          .locator('[data-slot="select-chevron"]')
-          .evaluate((element) => new DOMMatrix(getComputedStyle(element).transform).a),
+        blend.locator('[data-slot="select-chevron"]').evaluate((element) => {
+          const style = getComputedStyle(element),
+            angle = style.rotate === "none" ? 0 : Number.parseFloat(style.rotate);
+          return new DOMMatrix(style.transform).rotate(angle).a;
+        }),
       )
       .toBeCloseTo(-1, 2);
     const prior = await frames();

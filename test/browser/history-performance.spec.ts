@@ -3,21 +3,8 @@ import { access, mkdir, writeFile } from "node:fs/promises";
 import { createLayer, createPage, createProject, stateFromProject } from "@musart/core";
 import type { StoredProject } from "../../apps/web/src/services/projects/database";
 import type { HistoryBase, HistoryMetadata } from "../../apps/web/src/services/history/model";
-interface JournalProbe {
-  reads: number;
-  rows: number;
-  checkpointRows: number;
-  eventWrites: number;
-  manifestWrites: number;
-  assetWrites: number;
-  requests: Record<string, number>;
-}
-declare global {
-  interface Window {
-    __journalProbe: JournalProbe;
-    __resetJournalProbe: () => void;
-  }
-}
+import { THUMBNAIL_RENDER_VERSION } from "../../apps/web/src/services/projects/thumbnails/model";
+import { installHistoryIdbProbe, type HistoryIdbObserver } from "./support/history-idb-probe";
 const count = 100000;
 const schema = 6;
 function fixture() {
@@ -92,49 +79,49 @@ async function accounting(page: Page) {
   }, schema);
 }
 
-async function replayProbe(page: Page) {
-  return page.evaluate(async () => {
-    window.__resetJournalProbe();
-    const start = performance.now(),
-      spec = await window.musart!.historyReplay();
-    const ready = performance.now() - start;
-    const current = structuredClone(spec.initial);
-    for (const event of spec.events) {
-      if (event.after) {
-        current.pages = structuredClone(event.after.pages);
-        continue;
+async function replayProbe(page: Page, probes: HistoryIdbObserver) {
+  return probes.measure(() =>
+    page.evaluate(async () => {
+      const start = performance.now(),
+        spec = await window.musart!.historyReplay();
+      const ready = performance.now() - start;
+      const current = structuredClone(spec.initial);
+      for (const event of spec.events) {
+        if (event.after) {
+          current.pages = structuredClone(event.after.pages);
+          continue;
+        }
+        for (const delta of event.delta) {
+          if (delta.op !== "set") throw new Error("Unexpected fixture delta");
+          let object = current as unknown as Record<string | number, unknown>;
+          for (const key of delta.path.slice(0, -1))
+            object = object[key] as Record<string | number, unknown>;
+          object[delta.path.at(-1)!] = delta.value;
+        }
       }
-      for (const delta of event.delta) {
-        if (delta.op !== "set") throw new Error("Unexpected fixture delta");
-        let object = current as unknown as Record<string | number, unknown>;
-        for (const key of delta.path.slice(0, -1))
-          object = object[key] as Record<string | number, unknown>;
-        object[delta.path.at(-1)!] = delta.value;
-      }
-    }
-    return {
-      prepareMs: ready,
-      events: spec.events.length,
-      initialAt: spec.events[0]!.at,
-      lastAt: spec.events.at(-1)!.at,
-      duration: spec.duration,
-      initialX: spec.initial.pages[0]!.layers.map((layer) => layer.x),
-      finalX: current.pages[0]!.layers.map((layer) => layer.x),
-      originals: Object.keys(spec.initial.assets).length,
-      futureOriginals: Object.keys(spec.assets).length,
-      originalHash: [
-        ...new Uint8Array(
-          await crypto.subtle.digest(
-            "SHA-256",
-            new TextEncoder().encode(spec.initial.assets.original!.dataUrl),
+      return {
+        prepareMs: ready,
+        events: spec.events.length,
+        initialAt: spec.events[0]!.at,
+        lastAt: spec.events.at(-1)!.at,
+        duration: spec.duration,
+        initialX: spec.initial.pages[0]!.layers.map((layer) => layer.x),
+        finalX: current.pages[0]!.layers.map((layer) => layer.x),
+        originals: Object.keys(spec.initial.assets).length,
+        futureOriginals: Object.keys(spec.assets).length,
+        originalHash: [
+          ...new Uint8Array(
+            await crypto.subtle.digest(
+              "SHA-256",
+              new TextEncoder().encode(spec.initial.assets.original!.dataUrl),
+            ),
           ),
-        ),
-      ]
-        .map((byte) => byte.toString(16).padStart(2, "0"))
-        .join(""),
-      probe: structuredClone(window.__journalProbe),
-    };
-  });
+        ]
+          .map((byte) => byte.toString(16).padStart(2, "0"))
+          .join(""),
+      };
+    }),
+  );
 }
 
 test("100,000 native journal events: cold document opens without reading history, pages remain bounded, checkpoint pruning stays local", async ({
@@ -151,7 +138,7 @@ test("100,000 native journal events: cold document opens without reading history
   );
   await page.goto("/__history_seed__");
   const seeded = await page.evaluate(
-    async ({ project, base, count, schema }) => {
+    async ({ project, base, count, schema, rendererVersion }) => {
       const start = performance.now(),
         opening = indexedDB.open("musart-studio", schema);
       opening.onupgradeneeded = () => {
@@ -170,6 +157,7 @@ test("100,000 native journal events: cold document opens without reading history
         });
         events.createIndex("by-project", "projectId");
         events.createIndex("by-checkpoint", ["projectId", "event.after.id", "sequence"]);
+        events.createIndex("by-operation", ["projectId", "operationId"], { unique: true });
         const assets = db.createObjectStore("journalAssets", { keyPath: ["projectId", "assetId"] });
         assets.createIndex("by-project", "projectId");
         db.createObjectStore("thumbnails", { keyPath: ["projectId", "pageId"] }).createIndex(
@@ -273,7 +261,7 @@ test("100,000 native journal events: cold document opens without reading history
               page.id,
               await digest(
                 canonical({
-                  version: "gpu-webp-768-88-v3",
+                  version: rendererVersion,
                   width: page.width,
                   height: page.height,
                   background: page.background,
@@ -292,7 +280,7 @@ test("100,000 native journal events: cold document opens without reading history
         assetsRevision: "assets:1",
         project: { ...finalProject, assets: metadata },
         pageRevisions,
-        thumbnailRenderVersion: "gpu-webp-768-88-v3",
+        thumbnailRenderVersion: rendererVersion,
         thumbnailInfo: [],
       };
       const projectBytes = {
@@ -355,7 +343,7 @@ test("100,000 native journal events: cold document opens without reading history
         finalX: state.pages[0]!.layers.map((layer) => layer.x),
       };
     },
-    { project, base, count, schema },
+    { project, base, count, schema, rendererVersion: THUMBNAIL_RENDER_VERSION },
   );
   expect(seeded.checkpoints).toBe(count / 250);
   await test.info().attach("native-seed-summary", {
@@ -377,69 +365,23 @@ test("100,000 native journal events: cold document opens without reading history
     }
     expect(released, "CPU-idle benchmark gate").toBe(true);
   }
-  await page.addInitScript(() => {
-    const empty = (): JournalProbe => ({
-      reads: 0,
-      rows: 0,
-      checkpointRows: 0,
-      eventWrites: 0,
-      manifestWrites: 0,
-      assetWrites: 0,
-      requests: {},
-    });
-    window.__journalProbe = empty();
-    window.__resetJournalProbe = () => {
-      window.__journalProbe = empty();
-    };
-    for (const name of ["get", "getAll", "openCursor", "count", "put", "add", "delete"] as const) {
-      const original = IDBObjectStore.prototype[name];
-      Object.defineProperty(IDBObjectStore.prototype, name, {
-        configurable: true,
-        value: function (this: IDBObjectStore, ...args: unknown[]) {
-          const probe = window.__journalProbe;
-          const events = this.name === "journalEvents",
-            write = ["put", "add", "delete"].includes(name);
-          if (events) {
-            probe.requests[name] = (probe.requests[name] ?? 0) + 1;
-            if (write) probe.eventWrites++;
-            else probe.reads++;
-          }
-          if (this.name === "projects" && write) probe.manifestWrites++;
-          if (this.name === "assets" && write) probe.assetWrites++;
-          const request = Reflect.apply(original, this, args) as IDBRequest;
-          if (events && !write && name !== "count")
-            request.addEventListener("success", () => {
-              const result: unknown = request.result;
-              if (Array.isArray(result)) probe.rows += result.length;
-              else if (result !== undefined && result !== null) probe.rows++;
-            });
-          return request;
-        },
-      });
-    }
-    const original = IDBIndex.prototype.openCursor;
-    IDBIndex.prototype.openCursor = function (...args) {
-      const request = Reflect.apply(original, this, args) as IDBRequest<IDBCursorWithValue | null>;
-      if (this.objectStore.name === "journalEvents")
-        request.addEventListener("success", () => {
-          if (request.result) window.__journalProbe.checkpointRows++;
-        });
-      return request;
-    };
-  });
+  const probes = await installHistoryIdbProbe(page);
   await page.goto("/?automation=1");
   await page.waitForFunction(() => Boolean(window.musart));
-  const cold = await page.evaluate(async () => {
-    const start = performance.now(),
-      info = await window.musart!.historyInfo();
-    return {
-      info,
-      headerMs: performance.now() - start,
-      appReadyMs: performance.now(),
-      probe: structuredClone(window.__journalProbe),
-      snapshot: window.musart!.snapshot().project.pages[0]!.layers.map((layer) => layer.x),
-    };
-  });
+  const cold = await probes.measure(
+    () =>
+      page.evaluate(async () => {
+        const start = performance.now(),
+          info = await window.musart!.historyInfo();
+        return {
+          info,
+          headerMs: performance.now() - start,
+          appReadyMs: performance.now(),
+          snapshot: window.musart!.snapshot().project.pages[0]!.layers.map((layer) => layer.x),
+        };
+      }),
+    false,
+  );
   expect(cold.info.events).toBe(count);
   expect(cold.info.error).toBe(false);
   expect(cold.probe.reads).toBe(0);
@@ -453,22 +395,30 @@ test("100,000 native journal events: cold document opens without reading history
   expect(coldAccounting.written).toBe(seeded.logicalEventBytes);
   expect(coldAccounting.pruned).toBe(0);
   expect(coldAccounting.baseBytes).toBe(seeded.accounting.history.base);
-  const pages = await page.evaluate(async () => {
-    window.__resetJournalProbe();
-    const start = performance.now(),
-      first = await window.musart!.historyPage(),
-      a = structuredClone(window.__journalProbe);
-    window.__resetJournalProbe();
-    const second = await window.musart!.historyPage(first.before!);
-    return {
-      ms: performance.now() - start,
-      first: first.entries.map((row) => row.sequence),
-      second: second.entries.map((row) => row.sequence),
-      total: first.total,
-      firstProbe: a,
-      secondProbe: structuredClone(window.__journalProbe),
-    };
-  });
+  const first = await probes.measure(() =>
+    page.evaluate(async () => {
+      const start = performance.now(),
+        result = await window.musart!.historyPage();
+      return { result, ms: performance.now() - start };
+    }),
+  );
+  const second = await probes.measure(() =>
+    page.evaluate(async (before) => {
+      const start = performance.now(),
+        result = await window.musart!.historyPage(before);
+      return { result, ms: performance.now() - start };
+    }, first.result.before!),
+  );
+  const pages = {
+    ms: first.ms + second.ms,
+    first: first.result.entries.map((row) => row.sequence),
+    second: second.result.entries.map((row) => row.sequence),
+    total: first.result.total,
+    firstProbe: first.probe,
+    secondProbe: second.probe,
+    firstProbeRealms: first.probeRealms,
+    secondProbeRealms: second.probeRealms,
+  };
   expect(pages.first).toHaveLength(100);
   expect(pages.second).toHaveLength(100);
   expect(pages.total).toBe(count);
@@ -477,7 +427,7 @@ test("100,000 native journal events: cold document opens without reading history
   expect(pages.secondProbe.rows).toBeLessThanOrEqual(101);
   expect(pages.first[0]).toBe(count - 1);
   expect(pages.second[0]).toBe(count - 101);
-  const fullReplay = await replayProbe(page);
+  const fullReplay = await replayProbe(page, probes);
   expect(fullReplay.events).toBe(count);
   expect(fullReplay.finalX).toEqual(seeded.finalX);
   expect(fullReplay.initialX).toEqual(project.pages[0]!.layers.map((layer) => layer.x));
@@ -488,15 +438,19 @@ test("100,000 native journal events: cold document opens without reading history
   expect(fullReplay.probe.requests.getAll).toBe(1000);
   expect(fullReplay.probe.rows).toBe(count);
   // The same validated journal configuration port is available in the UI and headless API.
-  const pruning = await page.evaluate(async () => {
-    window.__resetJournalProbe();
-    const start = performance.now();
-    await window.musart!.historyConfigure({ limit: 10000 });
-    return {
-      ms: performance.now() - start,
-      probe: structuredClone(window.__journalProbe),
-      info: await window.musart!.historyInfo(),
-    };
+  const pruning = await probes.measure(() =>
+    page.evaluate(async () => {
+      const start = performance.now();
+      await window.musart!.historyConfigure({ limit: 10000 });
+      return {
+        ms: performance.now() - start,
+        info: await window.musart!.historyInfo(),
+      };
+    }),
+  );
+  await test.info().attach("native-prune-summary", {
+    body: JSON.stringify(pruning, null, 2),
+    contentType: "application/json",
   });
   expect(pruning.info.events).toBe(10000);
   expect(pruning.info.limit).toBe(10000);
@@ -511,7 +465,7 @@ test("100,000 native journal events: cold document opens without reading history
   expect(prunedAccounting.written).toBe(seeded.logicalEventBytes);
   expect(prunedAccounting.history?.assets).toBe(seeded.accounting.history.assets);
   expect(prunedAccounting.history?.base).toBe(prunedAccounting.baseBytes);
-  const replay = await replayProbe(page);
+  const replay = await replayProbe(page, probes);
   expect(replay.events).toBe(10000);
   expect(replay.finalX).not.toEqual(replay.initialX);
   expect(replay.initialX).toEqual(Array.from({ length: 50 }, () => 179.9));
@@ -521,18 +475,22 @@ test("100,000 native journal events: cold document opens without reading history
   expect(replay.lastAt).toBe(replay.duration);
   expect(replay.probe.requests.getAll).toBe(100);
   expect(replay.probe.rows).toBe(10000);
-  const autosave = await page.evaluate(async () => {
-    window.__resetJournalProbe();
-    for (let index = 0; index < 40; index++)
-      window.musart!.execute({ type: "updateLayers", ids: ["layer-0"], patch: { x: 200 + index } });
-    await window.musart!.flush();
-    await new Promise((resolve) => setTimeout(resolve, 550));
-    await window.musart!.flush();
-    return {
-      probe: structuredClone(window.__journalProbe),
-      info: await window.musart!.historyInfo(),
-    };
-  });
+  const autosave = await probes.measure(() =>
+    page.evaluate(async () => {
+      for (let index = 0; index < 40; index++)
+        window.musart!.execute({
+          type: "updateLayers",
+          ids: ["layer-0"],
+          patch: { x: 200 + index },
+        });
+      await window.musart!.flush();
+      await new Promise((resolve) => setTimeout(resolve, 550));
+      await window.musart!.flush();
+      return {
+        info: await window.musart!.historyInfo(),
+      };
+    }),
+  );
   expect(autosave.info.error).toBe(false);
   expect(autosave.probe.manifestWrites).toBeLessThanOrEqual(2);
   expect(autosave.probe.assetWrites).toBe(0);

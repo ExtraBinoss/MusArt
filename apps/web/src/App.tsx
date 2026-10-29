@@ -23,6 +23,7 @@ import { ProjectDialog } from "./components/projects/ProjectDialog";
 import { ProjectPill } from "./components/projects/ProjectPill";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./components/ui/tabs";
 import { AnimatePanel } from "./components/animation/AnimatePanel";
+import { freezeEffectPreviews } from "./state/session/effect-preview";
 import { ExportPopover } from "./components/export/ExportPopover";
 import { ToolSettings } from "./components/toolbar/ToolSettings";
 import type { PanelMode, ProjectView } from "./components/search/actions";
@@ -91,6 +92,10 @@ export function App({ engine, services, welcome = false }: AppProps) {
     [onTask, services, store],
   );
   const onImport = useCallback(() => input.current?.click(), []);
+  const showExport = (open: boolean) => {
+    if (open) freezeEffectPreviews(engine);
+    setExportMenu(open);
+  };
   useShortcuts(engine, services, onTask, !choosingProject);
   return (
     <FontLibraryProvider library={services.fonts ?? bundledFontLibrary}>
@@ -135,7 +140,7 @@ export function App({ engine, services, welcome = false }: AppProps) {
                     services={services}
                     onTask={onTask}
                     onProjects={setProjectMenu}
-                    onExport={() => setExportMenu(true)}
+                    onExport={() => showExport(true)}
                     onPanelMode={setPanelMode}
                     onImport={onImport}
                   />
@@ -174,7 +179,7 @@ export function App({ engine, services, welcome = false }: AppProps) {
                           </TabsList>
                           <ExportPopover
                             open={exportMenu}
-                            onOpenChange={setExportMenu}
+                            onOpenChange={showExport}
                             page={page}
                             pageCount={snapshot.project.pages.length}
                             selection={snapshot.selection}

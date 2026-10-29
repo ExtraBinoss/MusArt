@@ -64,7 +64,7 @@ export class PlaneResources {
   private camera: OrthographicCamera | null = null;
   private invalidate: () => void = () => undefined;
   private onError?: (message: string) => void;
-  private onScale?: (scale: number) => void;
+  private onScale?: (scale: number, width: number, height: number) => void;
   private density = 1;
   private presentationId: string | null = null;
   private presentationProjectId: string | undefined;
@@ -94,7 +94,7 @@ export class PlaneResources {
     camera: OrthographicCamera,
     invalidate: () => void,
     onError?: (message: string) => void,
-    onScale?: (scale: number) => void,
+    onScale?: (scale: number, width: number, height: number) => void,
     presenter?: PresentationPublisher,
   ): () => void {
     if (this.disposed) throw new Error("Aperçu GPU déjà libéré");
@@ -264,7 +264,7 @@ export class PlaneResources {
     camera.top = request.page.height / 2;
     camera.bottom = -request.page.height / 2;
     camera.updateProjectionMatrix();
-    this.onScale?.(request.scale);
+    this.onScale?.(request.scale, result.width, result.height);
   }
   private preparedFrame(request: PreviewRequest, result: FrameTexture): void {
     this.completed++;

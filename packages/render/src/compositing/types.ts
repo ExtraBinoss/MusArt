@@ -1,5 +1,5 @@
 import type { Texture } from "three/webgpu";
-import type { Composition } from "@musart/core";
+import type { Bounds, Composition } from "@musart/core";
 import type { FontResolver } from "../surface/text/fonts";
 export interface RenderOptions {
   scale?: number;
@@ -12,6 +12,8 @@ export interface FrameTexture {
   width: number;
   height: number;
   premultiplied: boolean;
+  /** A transport texture may cover only this rectangle of its owner's authored coordinates. */
+  bounds?: Bounds;
 }
 export interface GpuStats {
   passes: number;

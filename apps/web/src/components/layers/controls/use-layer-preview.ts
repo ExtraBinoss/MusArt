@@ -55,11 +55,11 @@ export function useLayerPreview(
       setPreview(null);
     };
   }, [engine, current, setPreview]);
-  function begin() {
+  function beginOnPage(originPage: Composition) {
     if (held.current) return;
     const snapshot = engine.getSnapshot(),
       active = snapshot.project.pages.find((item) => item.id === snapshot.pageId);
-    const state = active === page ? layerSelection(active, ids) : null;
+    const state = active === originPage ? layerSelection(active, ids) : null;
     const editable = state?.editable && state.selected.length === ids.length;
     const selection = new Set(snapshot.selection);
     const selected =
@@ -70,6 +70,9 @@ export function useLayerPreview(
       ids: [...ids],
       selection: requireSelection ? [...ids] : null,
     };
+  }
+  function begin() {
+    beginOnPage(page);
   }
   function preview(patch: Partial<Layer>) {
     begin();
@@ -89,6 +92,7 @@ export function useLayerPreview(
   }
   return {
     begin,
+    beginOnPage,
     cancel,
     preview,
     command: (value: Command) => command(() => value),

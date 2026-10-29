@@ -5,6 +5,7 @@ async function command(page: Page, query: string, name: string) {
   await page.keyboard.press("Control+k");
   await page.getByRole("combobox", { name: "Rechercher dans MusArt", exact: true }).fill(query);
   await page.getByRole("option", { name, exact: true }).click();
+  await expect(page.locator(".magic-search-dialog")).toHaveCount(0);
 }
 test("command search and the real snapping sandbox share persisted preferences without project edits", async ({
   page,
@@ -18,11 +19,19 @@ test("command search and the real snapping sandbox share persisted preferences w
   ).toBeVisible();
   const before = await page.evaluate(() => window.musart!.snapshot());
   await command(page, "désactiver magnétisme", "Désactiver le magnétisme des éléments");
-  expect(
-    await page.evaluate(() => JSON.parse(localStorage.getItem("musart.snapping.v1")!).enabled),
-  ).toBe(false);
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const raw = localStorage.getItem("musart.snapping.v1");
+        return raw === null ? null : JSON.parse(raw).enabled;
+      }),
+    )
+    .toBe(false);
   await command(page, "distance magnétisme", "Réglages de l’éditeur et distance de magnétisme");
-  const preferences = page.getByRole("dialog", { name: "Préférences", exact: true });
+  const preferences = page.getByRole("dialog", {
+    name: "Préférences",
+    exact: true,
+  });
   await expect(preferences.getByRole("tab", { name: "Éditeur", exact: true })).toHaveAttribute(
     "aria-selected",
     "true",
@@ -35,6 +44,16 @@ test("command search and the real snapping sandbox share persisted preferences w
   await preferences.getByRole("button", { name: "Essayer le magnétisme" }).click();
   const preview = page.getByTestId("snapping-preview-popover");
   await expect(preview).toBeVisible();
+  // The native popover scales/slides on opening; measure the actual settled SVG,
+  // rather than mixing an opening bounding box with pointer events after it moves.
+  await preview.evaluate(async (element) => {
+    await Promise.all(
+      element.getAnimations({ subtree: true }).map((animation) => animation.finished),
+    );
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    );
+  });
   expect((await preferences.boundingBox())!.height).toBeCloseTo(beforeBounds.height, 3);
   const stage = page.getByTestId("snapping-playground"),
     moving = preview.getByRole("button", { name: "Objet à déplacer" });
@@ -50,7 +69,9 @@ test("command search and the real snapping sandbox share persisted preferences w
   await expect(stage).toHaveAttribute("data-x", "232");
   await expect(stage).toHaveAttribute("data-snapped", "true");
   await page.mouse.up();
-  await page.screenshot({ path: "artifacts/screenshots/preferences-snapping-try.png" });
+  await page.screenshot({
+    path: "artifacts/screenshots/preferences-snapping-try.png",
+  });
   await preview.getByRole("button", { name: "Fermer l’essai", exact: true }).click();
   const after = await page.evaluate(() => window.musart!.snapshot());
   expect(after.project).toEqual(before.project);
@@ -62,7 +83,12 @@ test("command search and the real snapping sandbox share persisted preferences w
   });
   await preferences.getByRole("button", { name: "Fermer", exact: true }).click();
   await command(page, "activer magnétisme", "Activer le magnétisme des éléments");
-  expect(
-    await page.evaluate(() => JSON.parse(localStorage.getItem("musart.snapping.v1")!).enabled),
-  ).toBe(true);
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const raw = localStorage.getItem("musart.snapping.v1");
+        return raw === null ? null : JSON.parse(raw).enabled;
+      }),
+    )
+    .toBe(true);
 });

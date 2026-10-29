@@ -33,7 +33,15 @@ function validateEffect(value: unknown, ids: Set<string>): void {
   assertBoolean(value.enabled);
   assertBoolean(value.color);
   assertNumber(value.amount, 0, 1);
-  assertNumber(value.scale, 0.1, 128);
+  const scale = EFFECT_CATALOG[value.type as keyof typeof EFFECT_CATALOG].parameters.find(
+    (parameter) =>
+      parameter.kind === "number" && parameter.key === "scale" && parameter.scope !== "settings",
+  );
+  assertNumber(
+    value.scale,
+    scale?.kind === "number" ? (scale.documentMin ?? scale.min) : 0.1,
+    scale?.kind === "number" ? (scale.documentMax ?? scale.max) : 128,
+  );
   assertNumber(value.levels, 2, 256);
   assertNumber(value.seed, 0, 2147483647);
   validateEffectExtensions(value);

@@ -1,7 +1,8 @@
 import type { Node } from "three/webgpu";
 import { float, uint, uvec2 } from "three/tsl";
+export type NoiseSeed = Node<"float"> | Node<"uint">;
 /** Integer hash is deterministic across TSL WGSL/GLSL backends and document reloads. */
-export function noise2d(position: Node<"vec2">, seed: Node<"float">) {
+export function noise2d(position: Node<"vec2">, seed: NoiseSeed) {
   const p = uvec2(position);
   let n = p.x
     .mul(uint(374761393))

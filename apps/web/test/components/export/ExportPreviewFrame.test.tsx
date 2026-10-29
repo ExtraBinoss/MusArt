@@ -195,3 +195,25 @@ test("caps a panoramic DPR3 preview's physical display and encoding together whe
   expect(resolution).toHaveBeenLastCalledWith(768);
   expect(body).toHaveStyle({ width: "284px", height: "200px" });
 });
+
+test("bounds a tiny DPR3 scope's physical fit and expansion to the renderer's eightfold density", () => {
+  vi.stubGlobal("devicePixelRatio", 3);
+  const resolution = vi.fn();
+  setup().mount(
+    <ExportPreviewFrame
+      url="blob:tiny"
+      loading={false}
+      width={16}
+      height={16}
+      format="png"
+      onResolution={resolution}
+    />,
+  );
+  const image = screen.getByRole("img");
+  expect(Number.parseFloat(image.style.width) * 3).toBeCloseTo(128);
+  expect(resolution).toHaveBeenLastCalledWith(128);
+  fireEvent.click(screen.getByRole("button", { name: "Agrandir l’aperçu" }));
+  expect(Number.parseFloat(image.style.width) * 3).toBeCloseTo(128);
+  expect(resolution).toHaveBeenLastCalledWith(128);
+  expect(image).toHaveStyle({ maxWidth: "", maxHeight: "" });
+});

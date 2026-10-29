@@ -54,6 +54,21 @@ test("live previews update all target layers without React renders or document c
       .map((layer) => layer.opacity),
   ).toEqual([1, 1]);
 });
+test("an explicit freshly captured page starts after a previous live phase was frozen in the same input task", () => {
+  const d = fixture();
+  act(() => d.engine.execute({ type: "updateLayers", ids: [d.image.id], patch: { x: 123 } }));
+  const origin = d.engine.getSnapshot().project,
+    currentPage = origin.pages[0]!;
+  expect(currentPage).not.toBe(d.page);
+  act(() => d.result.current.beginOnPage(currentPage));
+  act(() => d.result.current.preview({ opacity: 0.3 }));
+  expect(d.store.get(previewAtom)).not.toBeNull();
+  act(() => d.result.current.commit({ opacity: 0.3 }));
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.opacity).toBe(0.3);
+  d.engine.undo();
+  expect(d.engine.getSnapshot().project).toEqual(origin);
+  d.unmount();
+});
 test("cancel restores the source, and stale preview sessions remain blocked after React catches up", () => {
   const d = fixture();
   act(() => d.result.current.preview({ opacity: 0.5 }));

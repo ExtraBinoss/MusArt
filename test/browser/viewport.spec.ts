@@ -55,6 +55,8 @@ test("viewport travel stays bounded and measurement badges remain readable at ev
   await expect(artboard).toHaveAttribute("data-pan-x", "-90");
   await expect(artboard).toHaveAttribute("data-pan-y", "-50");
   const recenter = page.getByRole("button", { name: "Recentrer la vue", exact: true });
+  await expect(artboard).toHaveAttribute("data-view-moving", "false");
+  await expect(recenter).toBeVisible();
   const surfaces = await page.evaluate(() => {
     const controls = document.querySelector<HTMLElement>(".canvas-controls")!,
       recenter = document.querySelector<HTMLElement>(".canvas-recenter")!;
@@ -70,9 +72,10 @@ test("viewport travel stays bounded and measurement badges remain readable at ev
     });
   });
   expect(surfaces[0]!.height).toBe(40);
-  expect(surfaces[1]!.height).toBe(surfaces[2]!.height);
-  expect(surfaces[1]!.height).toBe(32);
-  expect(surfaces[1]!.bottom).toBe(surfaces[2]!.bottom);
+  expect(surfaces[1]!.height).toBe(surfaces[0]!.height);
+  expect(surfaces[1]!.height).toBe(40);
+  expect(surfaces[2]!.height).toBe(32);
+  expect(surfaces[1]!.bottom).toBe(surfaces[0]!.bottom);
   expect(surfaces[1]!.background).toBe(surfaces[0]!.background);
   expect(surfaces[1]!.blur).toBe(surfaces[0]!.blur);
   expect(surfaces[0]!.blur).toContain("blur(20px)");
@@ -100,8 +103,24 @@ test("viewport travel stays bounded and measurement badges remain readable at ev
       await page.mouse.move(start.x + 2, start.y);
       await expect(page.locator('[data-snap-target="alignment-reference"]')).toHaveCount(1);
       await expect(badges).toHaveCount(1);
-      for (const badge of await badges.all())
-        expect((await badge.boundingBox())!.height).toBeCloseTo(19, 2);
+      for (const badge of await badges.all()) {
+        const geometry = await badge.evaluate((element) => {
+          const rect = element as SVGRectElement,
+            matrix = rect.getScreenCTM()!;
+          return {
+            authoredHeight: rect.height.baseVal.value,
+            fillHeight: rect.getBoundingClientRect().height,
+            strokeWidth: getComputedStyle(rect).strokeWidth,
+            scale: Math.hypot(matrix.c, matrix.d),
+          };
+        });
+        expect(geometry.authoredHeight).toBe(19);
+        expect(geometry.fillHeight).toBeCloseTo(19, 2);
+        expect(geometry.strokeWidth).toBe("1px");
+        expect(geometry.scale).toBeCloseTo(1, 5);
+        // Chromium's protocol box includes the one-pixel SVG stroke around the fill.
+        expect((await badge.boundingBox())!.height).toBeCloseTo(20, 2);
+      }
       const label = page.locator(".canvas-measurement-label text").filter({ hasText: /^63$/ });
       await expect(label).toHaveCount(1);
       const typography = await label.evaluate((element) => {

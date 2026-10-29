@@ -3,11 +3,14 @@ import type {
   CanonicalPresentation,
 } from "../../state/session/canonical-presentation";
 
-/** Wait for a useful submitted canonical frame, then yield its browser paint before metadata work. */
+/** Yield a useful canonical frame, or a preview DOM commit, through a browser paint opportunity. */
 export class PaintYield {
   private readonly waiting = new Set<() => void>();
   constructor(private readonly presentation?: CanonicalPresentation) {}
-  wait(origin?: CanonicalOrigin): Promise<void> {
+  wait(
+    origin?: CanonicalOrigin,
+    options: { signal?: AbortSignal; isCurrent?: () => boolean } = {},
+  ): Promise<void> {
     return new Promise((resolve) => {
       const page = typeof document === "undefined" ? undefined : document;
       let frame: number | undefined;
@@ -24,12 +27,24 @@ export class PaintYield {
         clear();
         stop?.();
         page?.removeEventListener("visibilitychange", visibility);
+        options.signal?.removeEventListener("abort", finish);
         resolve();
+      };
+      const current = () => {
+        try {
+          return !options.signal?.aborted && options.isCurrent?.() !== false;
+        } catch {
+          return false;
+        }
       };
       const afterFrame = () => {
         frame = undefined;
         timer = setTimeout(() => {
           timer = undefined;
+          if (!current()) {
+            finish();
+            return;
+          }
           if (
             !this.presentation ||
             !origin ||
@@ -43,7 +58,7 @@ export class PaintYield {
       const update = () => {
         if (!this.waiting.has(finish)) return;
         clear();
-        if (page?.visibilityState === "hidden") {
+        if (!current() || page?.visibilityState === "hidden") {
           finish();
           return;
         }
@@ -67,6 +82,7 @@ export class PaintYield {
       };
       const visibility = () => update();
       this.waiting.add(finish);
+      options.signal?.addEventListener("abort", finish, { once: true });
       stop = this.presentation?.subscribe(update);
       page?.addEventListener("visibilitychange", visibility);
       update();

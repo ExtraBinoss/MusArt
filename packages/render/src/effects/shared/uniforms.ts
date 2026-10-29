@@ -4,6 +4,7 @@ import { createGradientUniforms, updateGradientUniforms } from "../gradient/shar
 import { Vector2 } from "three/webgpu";
 import { uniform } from "three/tsl";
 import type { EffectDimensions } from "./context";
+import { createParameterUniforms, updateParameterUniforms } from "./parameters";
 
 export function createEffectUniforms(
   effect: Effect,
@@ -12,6 +13,8 @@ export function createEffectUniforms(
   logical: EffectDimensions = { width, height },
 ) {
   return {
+    ...createParameterUniforms(effect),
+    time: uniform(effect.time ?? 0),
     gradient: effect.type === "gradient" ? createGradientUniforms(effect) : null,
     blendMode: uniform(blendModeId(effect.blendMode ?? "normal")),
     composite: uniform(effect.composite ? EFFECT_COMPOSITE_MODES.indexOf(effect.composite) : -1),
@@ -23,6 +26,7 @@ export function createEffectUniforms(
     color: uniform(effect.color ? 1 : 0),
     sourceFlipY: uniform(0),
     randomSeed: uniform(effect.seed),
+    randomSeedUint: uniform(effect.seed, "uint"),
     seed: uniform(new Vector2(effect.seed % 4, Math.floor(effect.seed / 4) % 4)),
     resolution: uniform(new Vector2(width, height)),
     logicalResolution: uniform(new Vector2(logical.width, logical.height)),
@@ -39,6 +43,8 @@ export function updateEffectUniforms(
   height: number,
   logical: EffectDimensions = { width, height },
 ): void {
+  updateParameterUniforms(controls, effect);
+  controls.time.value = effect.time ?? 0;
   if (controls.gradient) updateGradientUniforms(controls.gradient, effect);
   controls.blendMode.value = blendModeId(effect.blendMode ?? "normal");
   controls.composite.value = effect.composite
@@ -50,6 +56,7 @@ export function updateEffectUniforms(
   controls.levels.value = Math.max(1, effect.levels - 1);
   controls.color.value = effect.color ? 1 : 0;
   controls.randomSeed.value = effect.seed;
+  controls.randomSeedUint.value = effect.seed;
   controls.seed.value.set(effect.seed % 4, Math.floor(effect.seed / 4) % 4);
   controls.resolution.value.set(width, height);
   controls.logicalResolution.value.set(logical.width, logical.height);

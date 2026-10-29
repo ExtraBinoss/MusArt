@@ -41,6 +41,45 @@ afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
 });
+it("admits visible canonical repairs only after urgent preview delivery has a paint opportunity", async () => {
+  const frames = new Map<number, FrameRequestCallback>();
+  let serial = 0;
+  vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+    frames.set(++serial, callback);
+    return serial;
+  });
+  vi.stubGlobal("cancelAnimationFrame", (id: number) => frames.delete(id));
+  const d = fixture(),
+    pipeline = new ThumbnailPipeline(d.store, d),
+    page = d.project.pages[0]!;
+  const preview = pipeline.preview("row", page, {}, { edge: 96, priority: "visible" });
+  pipeline.schedule(d.project);
+  pipeline.request(d.project.id, [page.id], { visible: true, repair: true });
+  await vi.advanceTimersByTimeAsync(1);
+  await preview;
+  expect(d.render).toHaveBeenCalledOnce();
+  expect(d.render).toHaveBeenCalledWith(page, {}, expect.any(Function), 96);
+  const flush = pipeline.flush();
+  await vi.advanceTimersByTimeAsync(1);
+  expect(d.render).toHaveBeenCalledOnce();
+  const draw = () => {
+    for (const [id, callback] of Array.from(frames)) {
+      frames.delete(id);
+      callback(0);
+    }
+  };
+  draw();
+  await vi.advanceTimersByTimeAsync(1);
+  expect(d.render).toHaveBeenCalledOnce();
+  draw();
+  await vi.runAllTimersAsync();
+  await flush;
+  expect(d.render.mock.calls.slice(1).map(([page]) => page.id)).toEqual(["page", "two"]);
+  expect(d.store.saveThumbnail).toHaveBeenCalledTimes(2);
+  await pipeline.dispose();
+  expect(frames.size).toBe(0);
+  expect(vi.getTimerCount()).toBe(0);
+});
 it("historical artboard artwork remains explicitly stale while lost modifier state recovers and visible generation resumes", async () => {
   const d = fixture(),
     activity = new ThumbnailActivity(),

@@ -282,7 +282,12 @@ for (const forceWebGL of [false, true])
       expect(exportIdentity.cornerAlpha).toBe(source.cornerAlpha);
       expect(exportIdentity.maximumAlpha).toBe(255);
       expect(exportIdentity.valueRange).toBeGreaterThan(128);
-      const poses: unknown[] = [];
+      const poses: {
+        intrinsic: number[];
+        requested: number[];
+        bounds: { x: number; y: number; width: number; height: number };
+        gpu: unknown;
+      }[] = [];
       for (const zoom of [0.31, 0.49, 0.5, 0.51, 1, 2]) {
         await page.getByTestId("artboard").hover();
         await zoomViewport(page, zoom);
@@ -394,6 +399,13 @@ for (const forceWebGL of [false, true])
           .toBeLessThan(0.025);
         await expect(page.getByTestId("artboard")).toHaveAttribute("data-view-moving", "false");
       }
+      const matchingCanvas = await page.locator(".editor-gpu-scene canvas").evaluate((canvas) => {
+        const c = canvas as HTMLCanvasElement;
+        return {
+          intrinsic: [c.width, c.height],
+          requested: [Number(c.dataset.renderWidth), Number(c.dataset.renderHeight)],
+        };
+      });
       const main = await capture(page, selection, dpr);
       const popup = await capture(page, preview, dpr);
       expect(main.pixels).toEqual(popup.pixels);
@@ -445,6 +457,7 @@ for (const forceWebGL of [false, true])
             patternScale,
             poses,
             matchingZoom,
+            matchingCanvas,
             pan,
             main: { bounds: main.bounds, clip: main.clip, pixels: main.pixels },
             preview: thumbnail,
@@ -458,6 +471,9 @@ for (const forceWebGL of [false, true])
           2,
         ),
       );
+      for (const pose of poses) expect(pose.intrinsic).toEqual(pose.requested);
+      expect(matchingCanvas.intrinsic).toEqual(thumbnail.natural);
+      expect(matchingCanvas.requested).toEqual(matchingCanvas.intrinsic);
       expect(visible.rgbMean).toBeLessThan(8);
       expect(encoded.rgbMean).toBeLessThan(8);
       expect(encoded.cornerAlpha).toBe(source.cornerAlpha);

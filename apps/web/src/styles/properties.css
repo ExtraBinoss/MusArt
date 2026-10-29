@@ -211,6 +211,17 @@
 .effect-controls {
   margin-top: 14px;
 }
+.effect-playback {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.effect-playback output {
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+}
 .effect-controls .continuous-control {
   margin-bottom: 16px;
 }

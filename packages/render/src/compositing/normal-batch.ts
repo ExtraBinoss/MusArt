@@ -1,4 +1,5 @@
-import type { Layer } from "@musart/core";
+import type { Bounds, Layer } from "@musart/core";
+import { sourcePlacement } from "./group-viewport";
 import {
   DoubleSide,
   Mesh,
@@ -32,6 +33,7 @@ export class NormalBatch {
     width: number,
     height: number,
     target: RenderTarget,
+    origin?: Pick<Bounds, "x" | "y">,
   ): void {
     if (!layers.length) return;
     this.scene.clear();
@@ -40,6 +42,7 @@ export class NormalBatch {
     this.camera.updateProjectionMatrix();
     for (let index = 0; index < layers.length; index++) {
       const { layer, source } = layers[index]!;
+      const placed = sourcePlacement(layer, source.bounds, origin);
       let item = this.items.get(layer.id);
       if (!item) {
         const controls = sourceControls();
@@ -60,9 +63,9 @@ export class NormalBatch {
       item.controls.flipY.value = textureFlip(source.texture);
       item.controls.opacity.value = layer.opacity;
       item.controls.premultiplied.value = source.premultiplied ? 1 : 0;
-      item.mesh.position.set(layer.x + layer.width / 2, layer.y + layer.height / 2, 0);
-      item.mesh.scale.set(layer.width, -layer.height, 1);
-      item.mesh.rotation.z = (layer.rotation * Math.PI) / 180;
+      item.mesh.position.set(placed.x + placed.width / 2, placed.y + placed.height / 2, 0);
+      item.mesh.scale.set(placed.width, -placed.height, 1);
+      item.mesh.rotation.z = (placed.rotation * Math.PI) / 180;
       item.mesh.renderOrder = index;
       this.scene.add(item.mesh);
     }
@@ -78,9 +81,11 @@ export class NormalBatch {
       this.renderer.autoClear = auto;
     }
   }
-  retain(ids: Set<string>): void {
+  /** Cached subtrees still own live items; membership is independent of this frame's draws. */
+  retain(ids: { has(id: string): boolean }): void {
     for (const [id, item] of this.items)
       if (!ids.has(id)) {
+        this.scene.remove(item.mesh);
         item.mesh.material.dispose();
         this.items.delete(id);
       }

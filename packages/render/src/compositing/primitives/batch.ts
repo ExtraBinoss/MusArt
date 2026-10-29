@@ -1,4 +1,4 @@
-import type { Layer } from "@musart/core";
+import type { Bounds, Layer } from "@musart/core";
 import {
   DoubleSide,
   DynamicDrawUsage,
@@ -86,6 +86,7 @@ export class PrimitiveBatch implements GpuResource {
     height: number,
     density: number,
     target: RenderTarget,
+    origin?: Pick<Bounds, "x" | "y">,
   ): void {
     if (this.closed) throw new Error("Primitive batch is disposed.");
     if (!layers.length) return;
@@ -94,6 +95,8 @@ export class PrimitiveBatch implements GpuResource {
     this.camera.bottom = height;
     this.camera.updateProjectionMatrix();
     const attributes = mesh.geometry.attributes as Record<string, InstancedBufferAttribute>;
+    const offsetX = origin?.x ?? 0,
+      offsetY = origin?.y ?? 0;
     const before = this.renderer.getRenderTarget(),
       autoClear = this.renderer.autoClear;
     try {
@@ -103,7 +106,11 @@ export class PrimitiveBatch implements GpuResource {
         const count = Math.min(this.capacity, layers.length - start);
         for (let index = 0; index < count; index++) {
           const layer = layers[start + index]!;
-          this.position.set(layer.x + layer.width / 2, layer.y + layer.height / 2, 0);
+          this.position.set(
+            layer.x + layer.width / 2 - offsetX,
+            layer.y + layer.height / 2 - offsetY,
+            0,
+          );
           this.scale.set(layer.width, -layer.height, 1);
           this.rotation.setFromAxisAngle(this.axis, (layer.rotation * Math.PI) / 180);
           mesh.setMatrixAt(index, this.matrix.compose(this.position, this.rotation, this.scale));

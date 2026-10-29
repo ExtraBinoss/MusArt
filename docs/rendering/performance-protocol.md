@@ -6,6 +6,29 @@ Open `/?benchmark=50&automation=1`. Construction is deterministic: 50 image laye
 
 The fixture is a visual contact sheet and a reproducible workload. It does not represent 50 different original photographs. The report records the number of distinct JPEG fingerprints.
 
+## Latest frozen candidate
+
+The eleven-effect integration's isolated legacy workload passes on Chromium
+156/Linux/Intel Xe-LPG, 1600 × 1000, DPR 1: cold opening 5,842 ms, decoded PNG
+export 2,277 ms, move median/p95 41.4/51.8 ms and effect-update median/p95
+47.3/47.8 ms. Source uploads stay at 97, final cache use is 239.85 MiB within
+384 MiB, idle/recovery and canonical WebP checks pass, and all instrumented
+production readback APIs remain at zero. The runner duration is 17.9 seconds;
+it is not the cold-opening boundary. One fresh browser/worker used CPUQuota
+200%, MemoryHigh 3800 MiB, MemoryMax 4500 MiB, zero swap and low priority.
+
+These are current workload observations, not matched speedups against older
+3,825/2,301 ms samples. A pressure-affected 8,024/13,922 ms diagnostic was retained
+and did not reproduce in this isolated run; it is not used as a performance
+baseline. Raw data and process limits are archived under
+`artifacts/effects-final-cohorts/` with the matching v3 executable/maps.
+
+The separate [eleven-effect photographic witness](../performance/effect-library-load.md)
+cycles all new types across the same fifty image layers. Its functional duration,
+resource counts and exact durable-recovery checks are documented separately.
+[Visible-thumbnail latency](../performance/thumbnail-latency.md) uses its own
+matched baseline and generated/dispatch input clocks.
+
 ## Measurements and invariants
 
 1. Record browser, OS, viewport, DPR, and WebGPU adapter, including hardware/software classification when available. The current benchmark records vendor `intel` and architecture `xe-lpg`; do not describe it as software Vulkan based on launch flags.

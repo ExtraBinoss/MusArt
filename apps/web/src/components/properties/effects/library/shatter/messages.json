@@ -1,0 +1,62 @@
+{
+  "en": {
+    "name": "Shatter",
+    "pattern": { "impact": "Impact glass", "cellular": "Cellular glass" },
+    "parameter": {
+      "scale": "Facet size",
+      "pattern": "Fracture pattern",
+      "centerX": "Impact X",
+      "centerY": "Impact Y",
+      "radius": "Impact radius",
+      "innerRadius": "Protected center",
+      "falloff": "Edge falloff",
+      "jitter": "Fracture irregularity",
+      "spokes": "Radial cracks",
+      "displacement": "Facet shift",
+      "rotation": "Facet rotation",
+      "ior": "Refractive index",
+      "thickness": "Glass thickness",
+      "dispersion": "Color dispersion",
+      "tilt": "Facet tilt",
+      "roughness": "Glass roughness",
+      "crackWidth": "Crack width",
+      "cracks": "Crack opacity",
+      "highlights": "Glass highlights",
+      "tintStrength": "Tint strength",
+      "tintColor": "Glass tint",
+      "crackColor": "Crack color",
+      "highlightColor": "Highlight color",
+      "cutout": "Transparent cracks"
+    }
+  },
+  "fr": {
+    "name": "Verre brisé",
+    "pattern": { "impact": "Verre impacté", "cellular": "Verre cellulaire" },
+    "parameter": {
+      "scale": "Taille des facettes",
+      "pattern": "Type de fracture",
+      "centerX": "Impact X",
+      "centerY": "Impact Y",
+      "radius": "Rayon de l’impact",
+      "innerRadius": "Centre protégé",
+      "falloff": "Atténuation du bord",
+      "jitter": "Irrégularité des fractures",
+      "spokes": "Fissures radiales",
+      "displacement": "Décalage des facettes",
+      "rotation": "Rotation des facettes",
+      "ior": "Indice de réfraction",
+      "thickness": "Épaisseur du verre",
+      "dispersion": "Dispersion des couleurs",
+      "tilt": "Inclinaison des facettes",
+      "roughness": "Rugosité du verre",
+      "crackWidth": "Largeur des fissures",
+      "cracks": "Opacité des fissures",
+      "highlights": "Reflets du verre",
+      "tintStrength": "Intensité de la teinte",
+      "tintColor": "Teinte du verre",
+      "crackColor": "Couleur des fissures",
+      "highlightColor": "Couleur des reflets",
+      "cutout": "Fissures transparentes"
+    }
+  }
+}

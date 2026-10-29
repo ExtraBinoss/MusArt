@@ -9,6 +9,7 @@ import {
 } from "three/webgpu";
 import type { GpuResource } from "../cache/GpuResourceCache";
 import type { FrameTexture } from "./types";
+import { assertTextureSize } from "../cache/texture-limits";
 
 function bytes(width: number, height: number, mipmapped = false): number {
   if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1)
@@ -23,6 +24,7 @@ function bytes(width: number, height: number, mipmapped = false): number {
 }
 
 export class LayerTargets implements GpuResource {
+  constructor(private readonly maxDimension: number) {}
   signature = "";
   output: FrameTexture | null = null;
   private readonly buffers = new Map<string, RenderTarget>();
@@ -30,6 +32,7 @@ export class LayerTargets implements GpuResource {
   sourceSignature = "";
   sourceBytes = 0;
   projectedBytes(role: string, width: number, height: number, mipmapped = false): number {
+    assertTextureSize(width, height, this.maxDimension);
     const target = this.buffers.get(role);
     return (
       this.bytes -
@@ -38,6 +41,7 @@ export class LayerTargets implements GpuResource {
     );
   }
   target(role: string, width: number, height: number, mipmapped = false): RenderTarget {
+    assertTextureSize(width, height, this.maxDimension);
     let target = this.buffers.get(role);
     if (target && target.texture.generateMipmaps !== mipmapped)
       throw new Error("A GPU target role cannot change its filtering policy.");

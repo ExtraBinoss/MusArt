@@ -3,7 +3,6 @@ import type { VectorDefinition } from "../vector/model";
 import type { Insets, WorkingColorSpace, Alignment, LayoutReference } from "../layout/model";
 import type { ReplaySpec } from "../animation/model";
 import type { FillGradient } from "../paint/gradient";
-import type { GradientSettings } from "../effects/gradient/model";
 import type { EffectCompositeMode } from "../effects/compositing";
 /** Portable document contract. No browser, React or renderer dependencies. */
 export const FORMAT_VERSION = 1 as const;
@@ -29,7 +28,20 @@ export type EffectType =
   | "grain"
   | "halftone"
   | "vignette"
-  | "gradient";
+  | "gradient"
+  | "ripple"
+  | "shatter"
+  | "noise"
+  | "flashlight"
+  | "circle"
+  | "cyanotype"
+  | "crt"
+  | "datamosh"
+  | "bit-dither"
+  | "receipt"
+  | "pink-phosphor";
+/** Effect-owned scalar settings are validated against that effect's definition. */
+export type EffectSettings = Partial<Record<string, number | boolean | string>>;
 export interface Effect {
   id: string;
   type: EffectType;
@@ -45,7 +57,7 @@ export interface Effect {
   composite?: EffectCompositeMode;
   /** Explicit seconds; still rendering never reads a wall clock. */
   time?: number;
-  settings?: Partial<GradientSettings>;
+  settings?: EffectSettings;
 }
 export interface LayerMask {
   assetId?: string;

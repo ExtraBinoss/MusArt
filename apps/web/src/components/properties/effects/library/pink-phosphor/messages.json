@@ -1,0 +1,44 @@
+{
+  "en": {
+    "name": "Pink Phosphor",
+    "parameter": {
+      "scale": "Scanline pitch",
+      "exposure": "Exposure",
+      "gamma": "Tone gamma",
+      "contrast": "Contrast",
+      "glow": "Glow strength",
+      "glowRadius": "Glow reach",
+      "glowThreshold": "Glow threshold",
+      "scanlines": "Scanline strength",
+      "beamWidth": "Beam width",
+      "grain": "Grain",
+      "flicker": "Flicker",
+      "speed": "Evolution speed",
+      "background": "Shadow color",
+      "phosphor": "Phosphor color",
+      "highlight": "Highlight color",
+      "time": "Time"
+    }
+  },
+  "fr": {
+    "name": "Phosphore rose",
+    "parameter": {
+      "scale": "Pas des lignes",
+      "exposure": "Exposition",
+      "gamma": "Gamma des tons",
+      "contrast": "Contraste",
+      "glow": "Intensité de la lueur",
+      "glowRadius": "Portée de la lueur",
+      "glowThreshold": "Seuil de la lueur",
+      "scanlines": "Intensité des lignes",
+      "beamWidth": "Largeur du faisceau",
+      "grain": "Grain",
+      "flicker": "Scintillement",
+      "speed": "Vitesse d’évolution",
+      "background": "Couleur des ombres",
+      "phosphor": "Couleur du phosphore",
+      "highlight": "Couleur des hautes lumières",
+      "time": "Temps"
+    }
+  }
+}

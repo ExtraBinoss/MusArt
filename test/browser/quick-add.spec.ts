@@ -80,6 +80,16 @@ test("workspace plus and empty-world quick add use real shared actions, native f
   const beforeQuery = await surfaceCommits(page);
   await input.fill("texte");
   expect(await surfaceCommits(page)).toEqual(beforeQuery);
+  await page
+    .getByRole("dialog", { name: "Ajout rapide", exact: true })
+    .evaluate(async (element) => {
+      await Promise.all(
+        element
+          .getAnimations({ subtree: true })
+          .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
+          .map((animation) => animation.finished.catch(() => undefined)),
+      );
+    });
   const popup = (await page
       .getByRole("dialog", { name: "Ajout rapide", exact: true })
       .boundingBox())!,
@@ -107,6 +117,8 @@ test("workspace plus and empty-world quick add use real shared actions, native f
   );
   expect(added.text.length).toBeGreaterThan(0);
   expect(await page.evaluate(() => window.musart!.snapshot().revision)).toBe(revision + 1);
+  await expect(page.locator(".quick-add-popover")).toHaveCount(0);
+  await expect(canvas).toBeFocused();
   await page.keyboard.press("Control+z");
   await expect
     .poll(() => page.evaluate(() => window.musart!.snapshot().project.pages[0]!.layers.length))
@@ -130,6 +142,8 @@ test("workspace plus and empty-world quick add use real shared actions, native f
   await expect(
     page.locator('[data-testid="artboard"] canvas[data-renderer-ready="true"]'),
   ).toBeVisible();
+  await expect(page.locator(".quick-add-popover")).toHaveCount(0);
+  await expect(canvas).toBeFocused();
   await page.keyboard.press("Control+z");
   await expect
     .poll(() => page.evaluate(() => window.musart!.snapshot().project.pages[0]!.layers.length))

@@ -15,6 +15,32 @@ import { makeGpuRenderer } from "../gpu-fixture";
 import { outlineFont } from "../text-fixture";
 import { EffectResources } from "../../src/compositing/effect-resources";
 import { GpuPasses } from "../../src/compositing/passes";
+import { NormalBatch } from "../../src/compositing/normal-batch";
+it("rejects an oversized thin texture while preserving giant primitives and recovery/disposal", async () => {
+  const { renderer, fake } = makeGpuRenderer();
+  fake.backend.device.limits.maxTextureDimension2D = 64;
+  const graph = new GpuCompositor(renderer),
+    resize = vi.spyOn(RenderTarget.prototype, "setSize"),
+    layer = createLayer("rectangle", {
+      x: 0,
+      y: 0,
+      width: 65,
+      height: 1,
+      effects: [createEffect("brightness")],
+    }),
+    page = createPage({ width: 32, height: 32, layers: [layer] });
+  await expect(graph.render(page, {})).rejects.toThrow("65×1 exceeds the device limit of 64px");
+  expect(resize.mock.calls.every(([width, height]) => width <= 64 && height <= 64)).toBe(true);
+  const primitive = { ...layer, width: 32768, height: 1, effects: [] };
+  await expect(graph.render({ ...page, layers: [primitive] }, {})).resolves.toMatchObject({
+    width: 32,
+    height: 32,
+  });
+  expect(graph.stats().primitiveInstances).toBeGreaterThan(0);
+  expect(fake.getRenderTarget()).toBeNull();
+  await graph.dispose();
+  expect(graph.stats()).toMatchObject({ cacheBytes: 0, targets: 0 });
+});
 const asset: Asset = {
   id: "image",
   name: "photo",
@@ -483,5 +509,56 @@ it("retains one authored effect reference and samples it at every requested rast
   }
   expect(apply).toHaveBeenCalledOnce();
   expect(effect.scale).toBe(1);
+  await graph.dispose();
+});
+
+it("retains cached descendant materials without churn and prunes removed IDs even on a whole-page cache hit", async () => {
+  const { renderer, fake } = makeGpuRenderer(),
+    graph = new GpuCompositor(renderer);
+  const seen = new Map<string, import("three/webgpu").Material>();
+  const draw = NormalBatch.prototype.draw;
+  vi.spyOn(NormalBatch.prototype, "draw").mockImplementation(function (this: NormalBatch, ...args) {
+    draw.apply(this, args);
+    if (!args[0].length) return;
+    const scene = fake.render.mock.calls.at(-1)![0] as Scene;
+    args[0].forEach(({ layer }, index) => {
+      const material = (scene.children[index] as Mesh).material;
+      if (Array.isArray(material)) throw new Error("One retained material expected");
+      seen.set(layer.id, material);
+    });
+  });
+  const group = createLayer("group", { id: "cached-group", x: 0, y: 0, width: 32, height: 32 });
+  const child = createLayer("image", {
+    id: "cached-image",
+    x: 0,
+    y: 0,
+    parentId: group.id,
+    assetId: asset.id,
+    width: 8,
+    height: 8,
+  });
+  const background = createLayer("rectangle", { width: 64, height: 64 });
+  const page = createPage({ width: 64, height: 64, layers: [background, group, child] });
+  await graph.render(page, { image: asset });
+  const childMaterial = seen.get(child.id)!,
+    disposeChild = vi.spyOn(childMaterial, "dispose");
+  const changed = { ...page, layers: [{ ...background, fill: "#ee3366" }, group, child] };
+  await graph.render(changed, { image: asset });
+  expect(disposeChild).not.toHaveBeenCalled();
+  await graph.render(
+    { ...changed, layers: [changed.layers[0]!, group, { ...child, opacity: 0.8 }] },
+    { image: asset },
+  );
+  expect(seen.get(child.id)).toBe(childMaterial);
+  const removed = { ...changed, layers: [changed.layers[0]!, group] };
+  await graph.render(removed, { image: asset });
+  expect(disposeChild).toHaveBeenCalledOnce();
+  const foreign = createLayer("image", { assetId: asset.id, width: 8, height: 8 });
+  await graph.render(createPage({ width: 64, height: 64, layers: [foreign] }), { image: asset });
+  const disposeForeign = vi.spyOn(seen.get(foreign.id)!, "dispose"),
+    passes = graph.stats().passes;
+  await graph.render(removed, { image: asset });
+  expect(graph.stats().passes).toBe(passes);
+  expect(disposeForeign).toHaveBeenCalledOnce();
   await graph.dispose();
 });

@@ -4,6 +4,9 @@ export interface JournalProbe {
   live: number;
   peak: number;
   postMax: number;
+  posts: { id: number; type: string; at: number; duration: number }[];
+  postSamplesDropped: number;
+  acknowledgements: { id: number; at: number }[];
   parts: number;
   originalChunks: number;
   replies: number;
@@ -37,6 +40,9 @@ export async function installJournalProbe(page: Page): Promise<void> {
       live: 0,
       peak: 0,
       postMax: 0,
+      posts: [],
+      postSamplesDropped: 0,
+      acknowledgements: [],
       parts: 0,
       originalChunks: 0,
       replies: 0,
@@ -94,6 +100,7 @@ export async function installJournalProbe(page: Page): Promise<void> {
         this.addEventListener("error", (event) => stats.errors.push(event.message));
         this.addEventListener("message", (event: MessageEvent) => {
           stats.replies++;
+          stats.acknowledgements.push({ id: event.data.id, at: performance.now() });
           stats.headerMax = Math.max(stats.headerMax, JSON.stringify(event.data).length);
           stats.headerOnly &&= Object.keys(event.data.result ?? {}).every(
             (key) => key === "meta" || key === "ownNext",
@@ -126,6 +133,10 @@ export async function installJournalProbe(page: Page): Promise<void> {
         if (this.journal) {
           const duration = performance.now() - before;
           stats.postMax = Math.max(stats.postMax, duration);
+          const envelope = message as { id: number; type: string };
+          if (stats.posts.length < 10000)
+            stats.posts.push({ id: envelope.id, type: envelope.type, at: before, duration });
+          else stats.postSamplesDropped++;
           if (duration > 0.5 && stats.slowPosts.length < 256) {
             const request = message as {
               type: string;

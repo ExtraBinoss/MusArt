@@ -1,0 +1,37 @@
+{
+  "en": {
+    "name": "Circle",
+    "parameter": {
+      "spacing": "Cell spacing",
+      "rotation": "Screen angle",
+      "dotSize": "Dot size",
+      "softness": "Edge softness",
+      "gamma": "Tone gamma",
+      "polarity": "Dot polarity",
+      "foreground": "Ink color",
+      "background": "Paper color",
+      "foregroundOpacity": "Ink opacity",
+      "backgroundOpacity": "Paper opacity"
+    },
+    "polarity": { "shadows": "Dots in shadows", "highlights": "Dots in highlights" }
+  },
+  "fr": {
+    "name": "Cercles",
+    "parameter": {
+      "spacing": "Espacement des cellules",
+      "rotation": "Angle de trame",
+      "dotSize": "Taille des points",
+      "softness": "Douceur des bords",
+      "gamma": "Gamma des tons",
+      "polarity": "Polarité des points",
+      "foreground": "Couleur de l’encre",
+      "background": "Couleur du papier",
+      "foregroundOpacity": "Opacité de l’encre",
+      "backgroundOpacity": "Opacité du papier"
+    },
+    "polarity": {
+      "shadows": "Points dans les ombres",
+      "highlights": "Points dans les hautes lumières"
+    }
+  }
+}

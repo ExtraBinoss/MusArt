@@ -111,11 +111,20 @@ async function prepare(page: Page) {
   await page.locator('canvas[data-renderer-ready="true"]').waitFor();
   // Drain autosave, the journal and thumbnail persistence before injecting a manual-save fault.
   await page.evaluate(() => window.musart!.flushThumbnails());
+  await stored(page, "before-setup");
+  // The first published save can legitimately add exact optional page-byte caches that the
+  // bootstrap's external snapshot did not retain. Establish that real saved baseline first;
+  // the fault window still compares every manifest field and counts exactly one later write.
+  await page.evaluate(async () => {
+    await window.musart!.save();
+    await window.musart!.flushThumbnails();
+  });
+  await stored(page, "after-setup");
   expect(await page.evaluate(() => window.persistenceFault.created)).toBeGreaterThan(0);
 }
 
-async function stored(page: Page) {
-  return page.evaluate(async () => {
+async function stored(page: Page, label: string) {
+  const capture = await page.evaluate(async () => {
     const id = window.musart!.snapshot().project.id,
       opening = indexedDB.open("musart-studio", 6);
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
@@ -136,23 +145,57 @@ async function stored(page: Page) {
       const value = record.result as StoredProject;
       if (!value) throw Error("The actual persisted project is missing.");
       if (value.storageVersion !== 2) throw Error("Expected a split-asset project manifest.");
-      // Compare the full native record without returning its layer tree or original bytes.
-      const bytes = new TextEncoder().encode(JSON.stringify(value));
-      const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+      // Object-key insertion order is not document state. Canonicalize every field;
+      // arrays retain their exact order, and no accounting/header/cache field is omitted.
+      const rawJson = JSON.stringify(value),
+        canonicalJson = JSON.stringify(value, (_key, item: unknown) =>
+          item && typeof item === "object" && !Array.isArray(item)
+            ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b, "en")))
+            : item,
+        ),
+        digest = async (text: string) =>
+          Array.from(
+            new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text))),
+            (byte) => byte.toString(16).padStart(2, "0"),
+          ).join(""),
+        [rawDigest, canonicalDigest] = await Promise.all([digest(rawJson), digest(canonicalJson)]);
       return {
-        id: value.id,
-        name: value.project.name,
-        manifest: Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join(""),
-        revision: revision.result as string,
-        assetsRevision: value.assetsRevision,
-        assets: assets.result as number,
-        pageRevisions: value.pageRevisions,
-        journal: journal.result as { next: number; count: number },
+        summary: {
+          id: value.id,
+          name: value.project.name,
+          manifest: canonicalDigest,
+          revision: revision.result as string,
+          assetsRevision: value.assetsRevision,
+          assets: assets.result as number,
+          pageRevisions: value.pageRevisions,
+          journal: journal.result as { next: number; count: number },
+        },
+        diagnostics: {
+          schema: db.version,
+          record: value,
+          header: {
+            id: value.id,
+            storageVersion: value.storageVersion,
+            thumbnailRenderVersion: value.thumbnailRenderVersion,
+            assetsRevision: value.assetsRevision,
+            writeRevision: revision.result as string,
+          },
+          bytes: value.bytes,
+          rawJson,
+          canonicalJson,
+          rawDigest,
+          canonicalDigest,
+        },
       };
     } finally {
       db.close();
     }
   });
+  await test.info().attach(`native-persisted-manifest-${label}`, {
+    body: JSON.stringify(capture.diagnostics, null, 2),
+    contentType: "application/json",
+  });
+  return capture.summary;
 }
 
 function captureErrors(page: Page) {
@@ -180,7 +223,7 @@ test("native persistence reports a lost committed ACK as uncertain without retry
 }) => {
   const errors = captureErrors(page);
   await prepare(page);
-  const before = await stored(page),
+  const before = await stored(page, "before"),
     initial = await page.evaluate(() => window.persistenceFault);
   const failure = await page.evaluate(async () => {
     window.persistenceFault.mode = "ack";
@@ -198,7 +241,7 @@ test("native persistence reports a lost committed ACK as uncertain without retry
     name: "PersistenceUncertainError",
   });
   expect(failure.message).toContain("acknowledgment was lost");
-  const after = await stored(page),
+  const after = await stored(page, "after"),
     fault = await page.evaluate(() => window.persistenceFault),
     reply = fault.replies.at(-1)!;
   expect(fault.begins).toBe(initial.begins + 1);
@@ -225,7 +268,7 @@ test("native persistence rejects a missing fragment atomically and saves the nex
 }) => {
   const errors = captureErrors(page);
   await prepare(page);
-  const before = await stored(page),
+  const before = await stored(page, "before"),
     initial = await page.evaluate(() => window.persistenceFault);
   const failure = await page.evaluate(async () => {
     window.persistenceFault.mode = "drop";
@@ -237,7 +280,7 @@ test("native persistence rejects a missing fragment atomically and saves the nex
     }
   });
   expect(failure).toMatch(/fragment/i);
-  expect(await stored(page)).toEqual(before);
+  expect(await stored(page, "after-rejection")).toEqual(before);
   const rejected = await page.evaluate(() => window.persistenceFault);
   expect(rejected.dropped).toBe(1);
   expect(rejected.begins).toBe(initial.begins + 1);
@@ -249,7 +292,7 @@ test("native persistence rejects a missing fragment atomically and saves the nex
     // A separate explicit save must also work after the failed frame, without a new runtime.
     await window.musart!.save();
   });
-  const after = await stored(page),
+  const after = await stored(page, "after"),
     fault = await page.evaluate(() => window.persistenceFault);
   expect(after.name).toBe("Recovered complete persistence");
   expect(after.manifest).not.toBe(before.manifest);

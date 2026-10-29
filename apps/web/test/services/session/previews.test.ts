@@ -39,7 +39,7 @@ test("previews an inactive artboard's layer without changing the editing page or
   const signal = new AbortController().signal;
   await run({ pageId: "second", selection: ["b"], edge: 96, priority: "visible" }, signal);
   expect(engine.getSnapshot()).toBe(before);
-  expect(JSON.parse(preview.mock.calls[0]![0])[0]).toBe("gpu-webp-768-88-v3");
+  expect(JSON.parse(preview.mock.calls[0]![0])[0]).toBe("gpu-webp-768-88-v4");
   expect(preview.mock.calls[0]![1]).toMatchObject({
     width: 80,
     height: 40,

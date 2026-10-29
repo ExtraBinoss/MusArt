@@ -1,9 +1,25 @@
 import { describe, expect, it, vi } from "vitest";
 import { Texture, LinearMipmapLinearFilter, NearestFilter } from "three/webgpu";
 import { LayerTargets } from "../../src/compositing/targets";
+it("rejects oversized thin allocations and resizes before changing a retained role", () => {
+  const layer = new LayerTargets(64),
+    target = layer.target("reference", 32, 1, true),
+    dispose = vi.spyOn(target, "dispose");
+  expect(() => layer.projectedBytes("reference", 65, 1, true)).toThrow("device limit");
+  expect(() => layer.target("reference", 1, 65, true)).toThrow("device limit");
+  expect(() => layer.target("new", 65, 1)).toThrow("device limit");
+  expect([target.width, target.height]).toEqual([32, 1]);
+  expect(layer.targets).toBe(1);
+  expect(dispose).not.toHaveBeenCalled();
+  expect(layer.target("reference", 64, 1, true)).toBe(target);
+  expect(dispose).toHaveBeenCalledOnce();
+  layer.dispose();
+  expect(dispose).toHaveBeenCalledTimes(2);
+  expect(layer.bytes).toBe(0);
+});
 describe("retained per-layer GPU targets", () => {
   it("reuses same-role buffers, resizes only dimensions and owns texture disposal", () => {
-    const layer = new LayerTargets();
+    const layer = new LayerTargets(16384);
     const first = layer.target("source", 40, 30);
     expect(layer.target("source", 40, 30)).toBe(first);
     expect(layer.bytes).toBe(4800);
@@ -23,7 +39,7 @@ describe("retained per-layer GPU targets", () => {
     expect(layer.bytes).toBe(0);
   });
   it("owns the complete mip pyramid and projects its exact byte budget before allocation", () => {
-    const layer = new LayerTargets();
+    const layer = new LayerTargets(16384);
     expect(layer.projectedBytes("reference", 5, 3, true)).toBe(72);
     const target = layer.target("reference", 5, 3, true);
     expect(target.texture.generateMipmaps).toBe(true);

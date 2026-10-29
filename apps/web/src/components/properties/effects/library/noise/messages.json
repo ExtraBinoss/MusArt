@@ -1,0 +1,72 @@
+{
+  "en": {
+    "name": "GPU Noise",
+    "parameter": {
+      "algorithm": "Algorithm",
+      "scale": "Cell size",
+      "octaves": "Octaves",
+      "lacunarity": "Frequency growth",
+      "persistence": "Detail strength",
+      "jitter": "Cell irregularity",
+      "offsetX": "Offset X",
+      "offsetY": "Offset Y",
+      "offsetZ": "3D slice",
+      "speed": "Evolution speed",
+      "contrast": "Contrast",
+      "brightness": "Brightness",
+      "gamma": "Gamma",
+      "invert": "Invert",
+      "mode": "Apply noise",
+      "lowColor": "Low color",
+      "highColor": "High color",
+      "time": "Time"
+    },
+    "algorithm": {
+      "perlin": "3D Perlin",
+      "value": "3D Value",
+      "cell": "3D Cell",
+      "worley": "3D Worley",
+      "fbm": "Fractal Brownian motion",
+      "ridged": "Ridged fractal",
+      "turbulence": "Turbulence"
+    },
+    "mode": { "replace": "Replace color", "add": "Add variation", "multiply": "Multiply" }
+  },
+  "fr": {
+    "name": "Bruit GPU",
+    "parameter": {
+      "algorithm": "Algorithme",
+      "scale": "Taille des cellules",
+      "octaves": "Octaves",
+      "lacunarity": "Croissance des fréquences",
+      "persistence": "Intensité des détails",
+      "jitter": "Irrégularité des cellules",
+      "offsetX": "Décalage X",
+      "offsetY": "Décalage Y",
+      "offsetZ": "Coupe 3D",
+      "speed": "Vitesse d’évolution",
+      "contrast": "Contraste",
+      "brightness": "Luminosité",
+      "gamma": "Gamma",
+      "invert": "Inverser",
+      "mode": "Appliquer le bruit",
+      "lowColor": "Couleur basse",
+      "highColor": "Couleur haute",
+      "time": "Temps"
+    },
+    "algorithm": {
+      "perlin": "Perlin 3D",
+      "value": "Valeur 3D",
+      "cell": "Cellules 3D",
+      "worley": "Worley 3D",
+      "fbm": "Mouvement brownien fractal",
+      "ridged": "Fractale à crêtes",
+      "turbulence": "Turbulence"
+    },
+    "mode": {
+      "replace": "Remplacer la couleur",
+      "add": "Ajouter une variation",
+      "multiply": "Multiplier"
+    }
+  }
+}

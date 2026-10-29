@@ -5,7 +5,7 @@ export function makeGpuRenderer() {
   const canvas = document.createElement("canvas");
   const fake = {
     domElement: canvas,
-    backend: {},
+    backend: { device: { limits: { maxTextureDimension2D: 16384 } } },
     autoClear: true,
     getRenderTarget: vi.fn(() => target),
     setRenderTarget: vi.fn((next: RenderTarget | null) => {

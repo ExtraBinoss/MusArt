@@ -25,7 +25,7 @@ afterEach(() => {
 describe("GPU texture preparation", () => {
   it("uploads decoded originals directly once and shares a texture across transformed layers", async () => {
     const cache = new GpuResourceCache();
-    const sources = new TextureSources(cache);
+    const sources = new TextureSources(cache, 16384);
     const layer = createLayer("image", { assetId: "image", width: 320, height: 220 });
     const page = createPage({ layers: [layer, { ...layer, id: "second", x: 200 }] });
     await sources.prepare(page, { image: asset });
@@ -40,7 +40,7 @@ describe("GPU texture preparation", () => {
     cache.clear();
   });
   it("leaves text to the analytical GPU source without creating raster textures", async () => {
-    const sources = new TextureSources(new GpuResourceCache());
+    const sources = new TextureSources(new GpuResourceCache(), 16384);
     await sources.prepare(createPage({ layers: [createLayer("text")] }), {});
     expect(sources.uploads).toBe(0);
     expect(fetch).not.toHaveBeenCalled();
@@ -48,7 +48,7 @@ describe("GPU texture preparation", () => {
     expect(context.getImageData).not.toHaveBeenCalled();
   });
   it("prepares alpha masks and rejects missing assets rather than substituting empty pixels", async () => {
-    const sources = new TextureSources(new GpuResourceCache());
+    const sources = new TextureSources(new GpuResourceCache(), 16384);
     const layer = createLayer("rectangle", {
       mask: { assetId: "image", enabled: true, inverted: false },
     });
@@ -82,7 +82,7 @@ it("uploads original image and mask dimensions even when their authored dimensio
     },
   );
   const cache = new GpuResourceCache(),
-    sources = new TextureSources(cache),
+    sources = new TextureSources(cache, 16384),
     dispose = vi.spyOn(Texture.prototype, "dispose"),
     layer = createLayer("image", {
       width: 100,
@@ -108,7 +108,7 @@ it("uploads original image and mask dimensions even when their authored dimensio
 it("rejects an original that exceeds the GPU budget and disposes its texture without shrinking it", async () => {
   vi.stubGlobal("createImageBitmap", vi.fn());
   const cache = new GpuResourceCache(asset.width * asset.height * 4 - 1),
-    sources = new TextureSources(cache),
+    sources = new TextureSources(cache, 16384),
     dispose = vi.spyOn(Texture.prototype, "dispose"),
     page = createPage({ layers: [createLayer("image", { assetId: "image" })] });
   await expect(sources.prepare(page, { image: asset })).rejects.toThrow("Budget mémoire GPU");
@@ -119,9 +119,40 @@ it("rejects an original that exceeds the GPU budget and disposes its texture wit
   expect(createImageBitmap).not.toHaveBeenCalled();
   expect(context.getImageData).not.toHaveBeenCalled();
 });
+it("checks decoded original size even when metadata claims a small source and recovers without texture fallback", async () => {
+  vi.stubGlobal(
+    "Image",
+    class {
+      naturalWidth = 0;
+      naturalHeight = 1;
+      onload: (() => void) | null = null;
+      set src(value: string) {
+        this.naturalWidth = value === "wide" ? 65 : 32;
+        queueMicrotask(() => this.onload?.());
+      }
+    },
+  );
+  const cache = new GpuResourceCache(),
+    sources = new TextureSources(cache, 64),
+    dispose = vi.spyOn(Texture.prototype, "dispose"),
+    page = createPage({ layers: [createLayer("image", { assetId: "image" })] }),
+    small = { ...asset, width: 1, height: 1, dataUrl: "wide" };
+  await expect(sources.prepare(page, { image: small })).rejects.toThrow("65×1");
+  expect(cache.stats()).toMatchObject({ entries: 0, cacheBytes: 0 });
+  expect(sources.uploads).toBe(0);
+  expect(dispose).not.toHaveBeenCalled();
+  expect(() => sources.image("image")).toThrow("introuvable");
+  await sources.prepare(page, { image: { ...small, dataUrl: "valid" } });
+  expect(sources.uploads).toBe(1);
+  expect(cache.stats().cacheBytes).toBe(32 * 4);
+  expect(context.drawImage).not.toHaveBeenCalled();
+  expect(context.getImageData).not.toHaveBeenCalled();
+  cache.clear();
+  expect(dispose).toHaveBeenCalledOnce();
+});
 it("reports original decode failures and can prepare a corrected source without a CPU fallback", async () => {
   const cache = new GpuResourceCache(),
-    sources = new TextureSources(cache),
+    sources = new TextureSources(cache, 16384),
     page = createPage({ layers: [createLayer("image", { assetId: "image" })] });
   await expect(sources.prepare(page, { image: { ...asset, dataUrl: "bad" } })).rejects.toThrow(
     "Image illisible",

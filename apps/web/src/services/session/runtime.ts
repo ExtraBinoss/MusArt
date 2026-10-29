@@ -9,6 +9,8 @@ import type { FontLibraryPort } from "../fonts/model";
 import { ThumbnailRenderer } from "../projects/thumbnails/renderer";
 import { FontLibrary } from "../fonts/library";
 import { ProjectWriteQueue } from "./project-write-queue";
+import { ThumbnailActivity } from "../projects/thumbnails/activity";
+import { effectPreviewActivity, freezeEffectPreviews } from "../../state/session/effect-preview";
 export interface RuntimeOptions {
   store?: ProjectStore;
   project?: Project;
@@ -79,6 +81,7 @@ export async function createRuntime(
     options.thumbnails ??
     new ThumbnailPipeline(store, {
       onError,
+      activity: new ThumbnailActivity(600, window, effectPreviewActivity(engine)),
       renderer: new ThumbnailRenderer(undefined, fonts?.resolve),
     });
   let stopThumbnails: (() => void) | undefined,
@@ -138,6 +141,7 @@ export async function createRuntime(
     dispose() {
       closing ??= (async () => {
         disposed = true;
+        freezeEffectPreviews(engine, false);
         window.removeEventListener("pagehide", pagehide);
         stopDeferred?.();
         removeClipboard?.();

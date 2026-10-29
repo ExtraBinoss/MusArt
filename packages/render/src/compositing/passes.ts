@@ -1,4 +1,5 @@
-import type { Layer } from "@musart/core";
+import type { Bounds, Layer } from "@musart/core";
+import { sourcePlacement } from "./group-viewport";
 import { invertMatrix, layerTransform } from "@musart/core";
 import {
   DoubleSide,
@@ -141,7 +142,9 @@ export class GpuPasses {
     parentWidth: number,
     parentHeight: number,
     target: RenderTarget,
+    origin?: Pick<Bounds, "x" | "y">,
   ): void {
+    const placed = sourcePlacement(layer, source.bounds, origin);
     this.blend.backdrop.value = backdrop;
     this.blend.backdropFlipY.value = textureFlip(backdrop);
     this.blend.flipY.value = textureFlip(source.texture);
@@ -150,8 +153,8 @@ export class GpuPasses {
     this.blend.premultiplied.value = source.premultiplied ? 1 : 0;
     this.blend.mode.value = blendModeId(layer.blendMode);
     this.blend.parentSize.value.set(parentWidth, parentHeight);
-    this.blend.sourceSize.value.set(layer.width, layer.height);
-    const m = invertMatrix(layerTransform(layer));
+    this.blend.sourceSize.value.set(placed.width, placed.height);
+    const m = invertMatrix(layerTransform(placed));
     this.blend.inverse.value.set(m[0], m[2], m[4], m[1], m[3], m[5], 0, 0, 1);
     this.draw(this.blendMaterial, target);
   }

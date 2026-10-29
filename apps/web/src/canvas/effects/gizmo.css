@@ -1,0 +1,28 @@
+.effect-gizmo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 5;
+}
+.effect-gizmo-ring {
+  fill: none;
+  stroke: #72c9ff;
+  stroke-dasharray: 5 4;
+}
+.effect-gizmo-inner {
+  stroke: #a7f3d0;
+}
+.effect-gizmo-handle {
+  fill: #17232d;
+  stroke: #a8deff;
+  pointer-events: all;
+  cursor: crosshair;
+  touch-action: none;
+  outline: none;
+}
+.effect-gizmo-handle:focus-visible {
+  fill: #2b72b8;
+}

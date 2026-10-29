@@ -179,6 +179,7 @@ test("reorders dragged layers and nests drops onto groups using the center drop 
   const data = new Map<string, string>();
   const transfer = {
     setData: vi.fn((key: string, value: string) => data.set(key, value)),
+    setDragImage: vi.fn(),
     getData: (key: string) => data.get(key) ?? "",
     effectAllowed: "",
   };
@@ -246,6 +247,7 @@ test("previews inside collapsed groups without removing the dragged row and supp
   expect(folder).toHaveAttribute("aria-expanded", "false");
   const transfer = {
     value: "",
+    setDragImage: vi.fn(),
     effectAllowed: "",
     dropEffect: "",
     setData(_key: string, value: string) {
@@ -255,12 +257,13 @@ test("previews inside collapsed groups without removing the dragged row and supp
       return this.value;
     },
   };
-  fireEvent.dragStart(screen.getByText(d.rectangle.name).closest("[role=treeitem]")!, {
+  const tree = screen.getByRole("tree");
+  fireEvent.dragStart(within(tree).getByText(d.rectangle.name).closest("[role=treeitem]")!, {
     dataTransfer: transfer,
   });
   fireEvent.dragOver(folder, { dataTransfer: transfer });
   expect(folder).toHaveAttribute("aria-expanded", "true");
-  expect(screen.getByText(d.rectangle.name)).toBeInTheDocument();
+  expect(within(tree).getByText(d.rectangle.name)).toBeInTheDocument();
   expect(
     d.engine.getSnapshot().project.pages[0]!.layers.find((layer) => layer.id === d.rectangle.id)!
       .parentId,
@@ -268,7 +271,7 @@ test("previews inside collapsed groups without removing the dragged row and supp
   fireEvent.keyDown(window, { key: "Escape" });
   expect(folder).toHaveAttribute("aria-expanded", "false");
   const target = screen.getByText(d.text.name).closest("[role=treeitem]")!;
-  fireEvent.dragStart(screen.getByText(d.rectangle.name).closest("[role=treeitem]")!, {
+  fireEvent.dragStart(within(tree).getByText(d.rectangle.name).closest("[role=treeitem]")!, {
     dataTransfer: transfer,
   });
   const maskOver = createEvent.dragOver(target, { dataTransfer: transfer });
