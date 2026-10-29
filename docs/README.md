@@ -4,14 +4,15 @@ Start with the [project README](../README.md) for features, installation and the
 
 ## Where things live
 
-| Directory                             | Contents                                                           |
-| ------------------------------------- | ------------------------------------------------------------------ |
-| [guides/](guides/)                    | Editing workflows, preferences, fonts and headless usage.          |
-| [product/](product/)                  | [Product vision and future directions](product/vision.md).         |
-| [architecture/](architecture/)        | Module contracts, technology choices and durable history design.   |
-| [rendering/](rendering/)              | Composition, GPU effects, text and export implementation.          |
-| [performance/](performance/README.md) | Measurement protocols, diagnostic runbooks and attributed results. |
-| [legal/](legal/provenance.md)         | Source attribution and preserved third-party notices.              |
+| Directory                                                | Contents                                                                                                                                                   |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [guides/](guides/)                                       | Editing workflows, preferences, fonts and headless usage.                                                                                                  |
+| [product/](product/)                                     | [Product vision and future directions](product/vision.md).                                                                                                 |
+| [Motion/video research](research/figma_motion/README.md) | Source-linked Figma research, preserved requirements, generic headless architecture and delegated build checklists; preparation, not implemented behavior. |
+| [architecture/](architecture/)                           | Module contracts, technology choices and durable history design.                                                                                           |
+| [rendering/](rendering/)                                 | Composition, GPU effects, text and export implementation.                                                                                                  |
+| [performance/](performance/README.md)                    | Measurement protocols, diagnostic runbooks and attributed results.                                                                                         |
+| [legal/](legal/provenance.md)                            | Source attribution and preserved third-party notices.                                                                                                      |
 
 ## Using MusArt
 
