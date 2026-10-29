@@ -295,9 +295,10 @@ test("keeps text editable and edits typography and alignment", async () => {
 test("routes text gradient colors through one preview and undoable commit while preserving solid fill", async () => {
   const data = renderInspector("text"),
     fill = data.text.fill;
-  await choose("Type de remplissage", "Dégradé linéaire");
+  fireEvent.click(screen.getByRole("radio", { name: "Dégradé" }));
   const before = data.engine.getSnapshot();
   expect(before.project.pages[0]!.layers[1]!.fillGradient?.kind).toBe("linear");
+  fireEvent.click(screen.getByRole("button", { name: "Couleur du point 1" }));
   const color = screen.getByLabelText("Couleur hexadécimale");
   fireEvent.change(color, { target: { value: "#ff004480" } });
   expect(data.engine.getSnapshot()).toBe(before);
@@ -317,7 +318,7 @@ test("routes text gradient colors through one preview and undoable commit while 
   expect(data.engine.getSnapshot().project.pages[0]!.layers[1]!.fillGradient).toEqual(
     before.project.pages[0]!.layers[1]!.fillGradient,
   );
-  await choose("Type de remplissage", "Uni");
+  fireEvent.click(screen.getByRole("radio", { name: "Uni" }));
   expect(data.engine.getSnapshot().project.pages[0]!.layers[1]!.fillGradient).toBeUndefined();
   expect(screen.getByLabelText("Couleur hexadécimale")).toHaveValue(fill.toUpperCase());
 });

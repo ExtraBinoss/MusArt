@@ -18,6 +18,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
+- Rebuilt the gradient picker with shared Solid/Gradient segmented controls, draggable color stops and compact position, hex and opacity rows, preserving imperative previews, cancellation and one-step undo.
+
 - Prepare the same Three.js compositing/effect/text pipelines asynchronously before drawing, including bounded Motion sources that first appear from zero opacity. Reuse analytical text outlines, materials and placement buffers across continuous layout animation when glyph identity is unchanged. WebGPU/WebGL pixel-equivalence witnesses pass; full-template performance acceptance remains unfinished.
 - Updated shared Radix sliders and switches with the compact glass controls adapted from Converta, preserving keyboard interaction, disabled states, reduced motion and component provenance. Sliders can subscribe directly to presentation values; timeline zoom uses a neutral track. Primary controls now consistently use MusArt's action color, and tooltips use the active popover theme.
 - Moved the Static/Motion control below the active artboard with screen-sized captions and compact icon tooltips when zoomed out. Canvas zoom controls sit at the upper right; timeline visibility is isolated in a Jotai/Motion dock with transform-only entrance and exit animation.

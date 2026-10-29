@@ -1,27 +1,49 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import { Plus, Minus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { sampleGradientColor, type EnginePort, type FillGradient, type Layer } from "@musart/core";
+import type { EnginePort, FillGradient, Layer } from "@musart/core";
 import type { PropertyActions } from "../TextProperties";
-import { ColorControl } from "../ColorControl";
 import { MotionNumberInput as NumberInput } from "../motion/MotionNumberInput";
 import { MotionField } from "../motion/MotionField";
 import { MotionValueField } from "../motion/MotionValueField";
 import { createMotionTransport } from "../../../services/motion/transport";
+import { motionTimeChanges } from "../../../state/session/motion-edit";
 import { SelectField } from "../../shared/SelectField";
 import { IconButton } from "../../shared/IconButton";
-import { ButtonGroup } from "../../ui/button-group";
+import { SegmentedTabs } from "../../shared/segmented/SegmentedTabs";
+import { GradientBar } from "./GradientBar";
+import { GradientStopRow } from "./GradientStopRow";
+import { gradientRamp, insertStop, replaceStop, stopColorFields } from "./paint";
 import styles from "./GradientControl.module.css";
 import "./messages";
 
-function cssPaint(gradient: FillGradient) {
-  const stops = gradient.stops.map((stop) => `${stop.color} ${stop.offset * 100}%`).join(", ");
-  return gradient.kind === "linear"
-    ? `linear-gradient(${gradient.angle + 90}deg, ${stops})`
-    : `radial-gradient(ellipse closest-side at center, ${stops})`;
+function presentPaint(root: HTMLElement | null, paint: FillGradient) {
+  const ramp = root?.querySelector<HTMLElement>("[data-gradient-ramp]");
+  if (ramp) ramp.style.backgroundImage = gradientRamp(paint);
+  paint.stops.forEach((stop, at) => {
+    const thumb = root?.querySelector<HTMLElement>(`[data-gradient-thumb="${at}"]`);
+    if (thumb) {
+      thumb.style.left = `${stop.offset * 100}%`;
+      thumb.style.backgroundColor = stop.color;
+      thumb.setAttribute("aria-valuenow", String(stop.offset * 100));
+      thumb.setAttribute("aria-valuetext", `${Math.round(stop.offset * 100)}%`);
+    }
+    const row = root?.querySelector<HTMLElement>(`[data-gradient-row="${at}"]`);
+    const swatch = row?.querySelector<HTMLElement>("[data-gradient-swatch]");
+    if (swatch) swatch.style.backgroundColor = stop.color;
+    const fields = stopColorFields(stop.color);
+    for (const [selector, value] of [
+      ["[data-gradient-position] input", String(Math.round(stop.offset * 10000) / 100)],
+      ["[data-gradient-opacity] input", String(Math.round(fields.opacity * 100) / 100)],
+      ["[data-gradient-hex]", fields.hex],
+    ] as const) {
+      const input = row?.querySelector<HTMLInputElement>(selector);
+      if (input && document.activeElement !== input) input.value = value;
+    }
+  });
 }
 
-/** Only this control changes selection; paint gestures publish imperative preview patches. */
+/** Only selection and committed commands render React; continuous paint drafts stay imperative. */
 export function GradientControl({
   layer,
   engine,
@@ -30,185 +52,189 @@ export function GradientControl({
   cancel,
 }: PropertyActions & { layer: Layer; engine?: EnginePort }) {
   const { t } = useTranslation("gradient");
-  const [selected, setSelected] = useState(0);
-  const bar = useRef<HTMLDivElement>(null);
+  const [selection, setSelection] = useState({ layerId: layer.id, index: 0 });
+  const root = useRef<HTMLDivElement>(null);
   const gradient = layer.fillGradient;
-  const index = Math.min(selected, (gradient?.stops.length ?? 1) - 1);
-  const stop = gradient?.stops[index];
-  const endpoint = index === 0 || index === (gradient?.stops.length ?? 1) - 1;
+  const index =
+    selection.layerId === layer.id
+      ? Math.min(selection.index, (gradient?.stops.length ?? 1) - 1)
+      : 0;
+  const invalidation = engine ? motionTimeChanges(engine) : undefined;
+  function select(index: number) {
+    setSelection((current) =>
+      current.layerId === layer.id && current.index === index
+        ? current
+        : { layerId: layer.id, index },
+    );
+  }
   useLayoutEffect(() => {
     if (!engine || !gradient) return;
     const transport = createMotionTransport(engine);
-    const update = () => {
-      const paint =
+    const update = () =>
+      presentPaint(
+        root.current,
         transport.readFrame()?.layers.find((item) => item.id === layer.id)?.fillGradient ??
-        gradient;
-      if (bar.current) bar.current.style.background = cssPaint(paint);
-    };
+          gradient,
+      );
     const stop = transport.subscribe(update);
     update();
     return stop;
   }, [engine, layer.id, gradient]);
-
   function previewPaint(next: FillGradient) {
     if (layer.locked) return;
-    if (bar.current) bar.current.style.background = cssPaint(next);
+    presentPaint(root.current, next);
     preview({ fillGradient: next });
   }
   function commitPaint(next: FillGradient) {
     if (!layer.locked) patch({ fillGradient: next });
   }
   function cancelPaint() {
-    if (gradient && bar.current) bar.current.style.background = cssPaint(gradient);
+    if (gradient) presentPaint(root.current, gradient);
     cancel();
   }
-  function updateStop(change: Partial<FillGradient["stops"][number]>): FillGradient {
-    return {
-      ...gradient!,
-      stops: gradient!.stops.map((item, at) => (at === index ? { ...item, ...change } : item)),
-    };
-  }
-  function addStop() {
-    if (!gradient || gradient.stops.length >= 8 || layer.locked) return;
-    let gap = -1,
-      at = 1;
-    for (let candidate = 1; candidate < gradient.stops.length; candidate++) {
-      const width = gradient.stops[candidate]!.offset - gradient.stops[candidate - 1]!.offset;
-      if (width > gap) {
-        gap = width;
-        at = candidate;
-      }
-    }
-    const before = gradient.stops[at - 1]!,
-      after = gradient.stops[at]!,
-      stops = [...gradient.stops];
-    const offset = (before.offset + after.offset) / 2;
-    stops.splice(at, 0, { offset, color: sampleGradientColor(gradient, offset) });
-    setSelected(at);
-    commitPaint({ ...gradient, stops });
-  }
-  function removeStop() {
-    if (!gradient || gradient.stops.length <= 2 || endpoint || layer.locked) return;
-    setSelected(Math.max(0, index - 1));
-    commitPaint({ ...gradient, stops: gradient.stops.filter((_, at) => at !== index) });
-  }
   return (
-    <div className={styles.control} aria-disabled={layer.locked || undefined}>
-      <MotionField
-        engine={gradient ? engine : undefined}
-        target={{ kind: "layer", layerId: layer.id, property: "fillGradient.kind" }}
+    <div ref={root} className={styles.control} aria-disabled={layer.locked || undefined}>
+      <SegmentedTabs
+        mode="choice"
+        size="compact"
         label={t("type")}
+        value={gradient ? "gradient" : "solid"}
         disabled={layer.locked}
-      >
-        <MotionValueField
-          engine={engine}
-          target={{ kind: "layer", layerId: layer.id, property: "fillGradient.kind" }}
-          fallback={gradient?.kind ?? "solid"}
-        >
-          {(kind) => (
-            <SelectField
-              label={t("type")}
-              value={String(kind)}
-              disabled={layer.locked}
-              options={(["solid", "linear", "radial"] as const).map((value) => ({
-                value,
-                label: t(value),
-              }))}
-              onValueChange={(kind) => {
-                if (layer.locked) return;
-                if (kind === "solid") patch({ fillGradient: undefined });
-                else
-                  commitPaint({
-                    kind: kind as FillGradient["kind"],
-                    angle: gradient?.angle ?? 0,
-                    stops: gradient?.stops ?? [
+        items={[
+          { value: "solid", label: t("solid") },
+          { value: "gradient", label: t("gradient") },
+        ]}
+        onValueChange={(value) => {
+          if (layer.locked) return;
+          cancelPaint();
+          select(0);
+          patch({
+            fillGradient:
+              value === "solid"
+                ? undefined
+                : {
+                    kind: "linear",
+                    angle: 0,
+                    stops: [
                       { offset: 0, color: layer.fill },
                       { offset: 1, color: "#ffffff" },
                     ],
-                  });
-              }}
-            />
-          )}
-        </MotionValueField>
-      </MotionField>
-      {gradient && stop && (
+                  },
+          });
+        }}
+      />
+      {gradient && (
         <div className={styles.editor} inert={layer.locked || undefined}>
-          <div
-            ref={bar}
-            className={styles.preview}
-            role="img"
-            aria-label={t("preview")}
-            style={{ background: cssPaint(gradient) }}
-          />
-          <div className={styles.stops}>
-            {gradient.stops.map((item, at) => (
-              <button
-                type="button"
-                key={at}
-                aria-label={t("stop", { number: at + 1 })}
-                aria-pressed={at === index}
-                onClick={() => setSelected(at)}
+          <div className={styles.settings}>
+            <div className={styles.setting}>
+              <span className={styles.caption}>{t("gradient")}</span>
+              <MotionField
+                engine={engine}
+                target={{ kind: "layer", layerId: layer.id, property: "fillGradient.kind" }}
+                label={t("gradientType")}
+                disabled={layer.locked}
               >
-                <span style={{ background: item.color }} />
-              </button>
-            ))}
-            <ButtonGroup className={styles.actions}>
-              <IconButton label={t("add")} disabled={gradient.stops.length >= 8} onClick={addStop}>
-                <Plus size={13} />
-              </IconButton>
-              <IconButton
-                label={t("remove")}
-                disabled={gradient.stops.length <= 2 || endpoint}
-                onClick={removeStop}
-              >
-                <Minus size={13} />
-              </IconButton>
-            </ButtonGroup>
+                <MotionValueField
+                  engine={engine}
+                  target={{ kind: "layer", layerId: layer.id, property: "fillGradient.kind" }}
+                  fallback={gradient.kind}
+                >
+                  {(kind) => (
+                    <SelectField
+                      label={t("gradientType")}
+                      value={String(kind)}
+                      disabled={layer.locked}
+                      options={(["linear", "radial"] as const).map((value) => ({
+                        value,
+                        label: t(value),
+                      }))}
+                      onValueChange={(kind) =>
+                        commitPaint({ ...gradient, kind: kind as FillGradient["kind"] })
+                      }
+                    />
+                  )}
+                </MotionValueField>
+              </MotionField>
+            </div>
+            {gradient.kind === "linear" && (
+              <div className={styles.setting}>
+                <span className={styles.caption}>{t("angleLabel")}</span>
+                <NumberInput
+                  engine={engine}
+                  target={{ kind: "layer", layerId: layer.id, property: "fillGradient.angle" }}
+                  identity={layer}
+                  label={t("angle")}
+                  value={gradient.angle}
+                  min={-360000}
+                  max={360000}
+                  unit="°"
+                  disabled={layer.locked}
+                  onPreview={(angle) => previewPaint({ ...gradient, angle })}
+                  onCommit={(angle) => commitPaint({ ...gradient, angle })}
+                  onCancel={cancelPaint}
+                />
+              </div>
+            )}
           </div>
-          {gradient.kind === "linear" && (
-            <NumberInput
-              engine={engine}
-              target={{ kind: "layer", layerId: layer.id, property: "fillGradient.angle" }}
-              identity={layer}
-              label={t("angle")}
-              value={gradient.angle}
-              min={-360000}
-              max={360000}
-              unit="°"
-              onPreview={(angle) => previewPaint({ ...gradient, angle })}
-              onCommit={(angle) => commitPaint({ ...gradient, angle })}
-              onCancel={cancelPaint}
-            />
-          )}
-          <NumberInput
-            key={index}
-            identity={layer}
-            label={t("position")}
-            value={stop.offset * 100}
-            resetValue={() =>
-              ((gradient.stops[index - 1]?.offset ?? 0) +
-                (gradient.stops[index + 1]?.offset ?? 1)) *
-              50
-            }
-            min={(gradient.stops[index - 1]?.offset ?? 0) * 100}
-            max={(gradient.stops[index + 1]?.offset ?? 1) * 100}
-            disabled={endpoint}
-            unit="%"
-            onPreview={(offset) => previewPaint(updateStop({ offset: offset / 100 }))}
-            onCommit={(offset) => commitPaint(updateStop({ offset: offset / 100 }))}
+          <GradientBar
+            gradient={gradient}
+            identity={layer.id}
+            selected={index}
+            disabled={layer.locked}
+            invalidation={invalidation}
+            onSelect={select}
+            onPreview={previewPaint}
+            onCommit={commitPaint}
             onCancel={cancelPaint}
           />
-          {endpoint && <p className={styles.hint}>{t("endpoints")}</p>}
-          <div role="group" aria-label={t("stopColor", { number: index + 1 })}>
-            <ColorControl
-              disabled={layer.locked}
-              key={index}
-              identity={`${layer.id}:${index}`}
-              value={stop.color}
-              onPreview={(color) => previewPaint(updateStop({ color }))}
-              onCommit={(color) => commitPaint(updateStop({ color }))}
-              onCancel={cancelPaint}
-            />
+          <div className={styles.stopsHeading}>
+            <span className={styles.caption}>{t("stops")}</span>
+            <IconButton
+              label={t("add")}
+              disabled={layer.locked || gradient.stops.length >= 8}
+              onClick={() => {
+                if (layer.locked) return;
+                const next = insertStop(gradient);
+                if (next) {
+                  select(next.index);
+                  commitPaint(next.gradient);
+                }
+              }}
+            >
+              <Plus size={14} />
+            </IconButton>
+          </div>
+          <div className={styles.rows}>
+            {gradient.stops.map((_, at) => (
+              <GradientStopRow
+                key={`${layer.id}:${at}`}
+                gradient={gradient}
+                index={at}
+                ownerId={layer.id}
+                identity={layer}
+                selected={at === index}
+                disabled={layer.locked}
+                invalidation={invalidation}
+                onSelect={() => select(at)}
+                onPreview={(change) => previewPaint(replaceStop(gradient, at, change))}
+                onCommit={(change) => commitPaint(replaceStop(gradient, at, change))}
+                onCancel={cancelPaint}
+                onRemove={() => {
+                  if (
+                    layer.locked ||
+                    at === 0 ||
+                    at === gradient.stops.length - 1 ||
+                    gradient.stops.length <= 2
+                  )
+                    return;
+                  select(Math.max(0, at - 1));
+                  commitPaint({
+                    ...gradient,
+                    stops: gradient.stops.filter((_, position) => position !== at),
+                  });
+                }}
+              />
+            ))}
           </div>
         </div>
       )}

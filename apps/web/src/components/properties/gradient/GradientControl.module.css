@@ -1,56 +1,262 @@
+.control {
+  container: gradient-picker / inline-size;
+  min-width: 0;
+  margin-bottom: 12px;
+}
 .control,
 .editor {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-.control {
-  margin-bottom: 12px;
+  gap: 12px;
 }
 .editor[inert] {
   opacity: 0.5;
 }
-.preview {
-  height: 22px;
-  border-radius: 5px;
-  border: 1px solid var(--border);
+.settings {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
-.stops {
+.setting {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  min-width: 0;
+  gap: 6px;
+}
+.caption {
+  color: var(--muted-foreground);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.setting :global([data-slot="select-trigger"]) {
+  width: 100%;
+  height: 32px;
+  padding-inline: 9px;
+  border-color: color-mix(in srgb, var(--foreground) 8%, transparent);
+  border-radius: 8px;
+  background: var(--field);
+  box-shadow: none;
+  font-size: 12px;
+}
+.setting :global(.number-field) {
+  height: 32px;
+  border-color: color-mix(in srgb, var(--foreground) 8%, transparent);
+  border-radius: 8px;
+}
+.setting :global(.number-scrub) {
+  display: none;
+}
+.setting :global(.number-unit) {
+  min-width: 19px;
+  padding-inline: 3px;
+  border: 0;
+}
+.ramp {
+  position: relative;
+  height: 36px;
+  margin: 13px 9px 0;
+  isolation: isolate;
+}
+.ramp::before,
+.preview {
+  position: absolute;
+  inset: 11px 0 0;
+  border-radius: 7px;
+}
+.ramp::before {
+  content: "";
+  z-index: -1;
+  background-color: var(--background);
+  background-image:
+    linear-gradient(45deg, var(--muted) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--muted) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--muted) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--muted) 75%);
+  background-size: 10px 10px;
+  background-position:
+    0 0,
+    0 5px,
+    5px -5px,
+    -5px 0;
+}
+.preview {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+.thumb {
+  position: absolute;
+  top: 0;
+  width: 20px;
+  height: 25px;
+  transform: translateX(-50%);
+  border: 4px solid var(--card);
+  border-radius: 7px;
+  box-shadow: 0 2px 5px #00000038;
+  outline: 2px solid transparent;
+  outline-offset: 0;
+  padding: 0;
+  cursor: ew-resize;
+  touch-action: none;
+}
+.thumb::after {
+  content: "";
+  position: absolute;
+  top: calc(100% + 1px);
+  left: calc(50% - 4px);
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+  background: var(--card);
+  transform: rotate(45deg);
+  z-index: -1;
+}
+.thumb:hover {
+  outline-color: color-mix(in srgb, var(--foreground) 25%, transparent);
+}
+.thumb[data-selected] {
+  outline-color: var(--primary);
+}
+.thumb:focus-visible {
+  outline-color: var(--primary);
+  outline-offset: 2px;
+}
+.thumb[aria-disabled="true"] {
+  cursor: default;
+}
+.thumb[data-dragging] {
+  cursor: grabbing;
+}
+.stopsHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 22px;
+  margin-bottom: -8px;
+}
+.stopsHeading :global(.icon-button) {
+  width: 23px;
+  height: 23px;
+  color: var(--muted-foreground);
+}
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-inline: -5px;
+}
+.row {
+  display: grid;
+  grid-template-columns: minmax(46px, 0.72fr) minmax(90px, 1.5fr) minmax(53px, 0.8fr) 21px;
   align-items: center;
   gap: 5px;
+  min-width: 0;
+  padding: 5px;
+  border-radius: 8px;
+  background: transparent;
 }
-.stops > button {
-  display: grid;
-  place-items: center;
-  width: 23px;
-  height: 26px;
-  padding: 3px;
-  border: 1px solid var(--border);
-  border-radius: 5px;
+.row:hover {
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+.row[data-selected],
+.row:focus-within {
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+.row > div {
+  min-width: 0;
+}
+.row :global(.number-field),
+.hexField {
+  height: 30px;
+  border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+  border-radius: 6px;
   background: var(--field);
 }
-.stops > button[aria-pressed="true"] {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 1px var(--primary);
+.row :global(.number-scrub) {
+  display: none;
 }
-.stops > button > span {
-  width: 14px;
+.row :global(.number-field input) {
+  padding-inline: 3px;
+  font-size: 12px;
+}
+.row :global(.number-unit) {
+  min-width: 16px;
+  padding-inline: 2px 4px;
+  border: 0;
+  font-size: 11px;
+}
+.hexField {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-inline: 4px;
+}
+.hexField:focus-within {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ring) 15%, transparent);
+}
+.swatchButton {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 23px;
+  height: 25px;
+  padding: 3px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+}
+.swatchButton:hover {
+  background: var(--accent);
+}
+.swatchButton > span {
+  width: 17px;
   height: 17px;
-  border-radius: 2px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--foreground) 12%, transparent);
 }
-.actions {
-  margin-left: auto;
+.swatchButton:focus-visible {
+  outline: 2px solid var(--ring);
 }
-.actions button {
-  width: 24px;
+.hexField input:global([data-slot="input"]) {
+  width: 0;
+  flex: 1;
+  height: 27px;
+  padding: 0 1px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  color: var(--foreground);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.hexField input:focus-visible {
+  box-shadow: none;
+}
+.remove:global(.icon-button) {
+  width: 21px;
   height: 26px;
-  border: 1px solid var(--border);
-}
-.hint {
-  margin: -3px 0 0;
-  font-size: 10px;
-  line-height: 1.5;
   color: var(--muted-foreground);
+}
+.colorPopover {
+  width: min(268px, calc(100vw - 24px));
+  padding: 12px;
+  border-radius: 12px;
+}
+@container gradient-picker (max-width: 230px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 21px;
+  }
+  .hexField {
+    grid-column: 1 / 3;
+    grid-row: 1;
+  }
+  .remove {
+    grid-column: 3;
+    grid-row: 1 / 3;
+  }
+  .row > [data-gradient-position],
+  .row > [data-gradient-opacity] {
+    grid-row: 2;
+  }
 }
