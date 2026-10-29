@@ -51,7 +51,7 @@ message payload; native clone time and operating-system pauses still need measur
 Normal captures contain current asset descriptions and newly changed originals.
 Initialization and recovery can resolve the complete real source pool. Worker
 restart retries preserve operation identity; an uncertain initialization is reported
-without reapplying its old snapshot. See [history](../history.md) for cursor/epoch
+without reapplying its old snapshot. See [history](../architecture/history.md) for cursor/epoch
 and failed-write recovery semantics.
 
 ## Common regressions

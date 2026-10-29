@@ -9,7 +9,7 @@ Headless mode lets you create or edit a MusArt project from the command line, ex
 | `render`     | The selected artboard as PNG, WebP or JPEG. | Yes, plus Playwright Chromium |
 | `screenshot` | A screenshot of the editor interface.       | Yes, plus Playwright Chromium |
 
-Run the examples from the repository root. Use the Bun version declared in [package.json](../package.json) and install the locked dependencies first:
+Run the examples from the repository root. Use the Bun version declared in [package.json](../../package.json) and install the locked dependencies first:
 
 ```sh
 bun install --frozen-lockfile
@@ -48,7 +48,7 @@ bun run headless apply \
 
 Commands use the same validated document engine as the editor. The complete list is applied as one transaction: a rejected edit prevents the changed project from being written. Existing files at the output path are overwritten on success, so use a different path to keep the original.
 
-Each invocation starts on the input project's first artboard. `updatePage` edits the current artboard; an `addPage` command makes the new artboard current for later commands in the same list. Commands that target layers use IDs from the project's `pages[].layers[]`. The full `Command` type is defined in [the document model](../packages/core/src/document/model.ts), and handlers are listed in [the registry](../packages/core/src/session/registry.ts).
+Each invocation starts on the input project's first artboard. `updatePage` edits the current artboard; an `addPage` command makes the new artboard current for later commands in the same list. Commands that target layers use IDs from the project's `pages[].layers[]`. The full `Command` type is defined in [the document model](../../packages/core/src/document/model.ts), and handlers are listed in [the registry](../../packages/core/src/session/registry.ts).
 
 ## Render an image
 
@@ -110,8 +110,8 @@ Run `bun run headless` without an operation to print the CLI's usage summary.
 
 - `create` and `apply` need no GPU, app server or model download. Rendering launches a real Chromium browser and requires a working WebGPU or WebGL2 backend. The CLI sets its own Linux/Vulkan launch flags; availability depends on the host's drivers and browser support.
 - Images export one whole artboard at a time. The CLI has no ZIP, selection-crop or video-export operation; those are available in the editor. Run separate commands to export several artboards.
-- Output is limited to 16,384 pixels per side and 64 megapixels, with stricter device/resource limits possible. Excessive output sizes fail rather than silently reducing the requested image. See [texture limits](rendering/texture-limits.md).
+- Output is limited to 16,384 pixels per side and 64 megapixels, with stricter device/resource limits possible. Excessive output sizes fail rather than silently reducing the requested image. See [texture limits](../rendering/texture-limits.md).
 - Each browser invocation uses a fresh context. It does not inherit your everyday browser's installed custom fonts or site storage. Use bundled fonts for portable automation; unavailable fonts are reported as errors. See [font portability](fonts.md).
 - A connection failure usually means the app is stopped or `--url` points to the wrong address. Project, command, font and rendering failures are reported as errors. A printed destination path indicates that the operation completed.
 
-The browser API is opt-in at `/?automation=1`; the CLI enables it automatically. `window.musart` exposes document snapshots, validated commands/transactions, selection, artboard switching, undo/redo, saving, history access and still rendering. Its exact interface is in [automation.ts](../apps/web/src/services/automation/automation.ts). This is a browser automation adapter; it does not provide a server API or model-driven editing agent.
+The browser API is opt-in at `/?automation=1`; the CLI enables it automatically. `window.musart` exposes document snapshots, validated commands/transactions, selection, artboard switching, undo/redo, saving, history access and still rendering. Its exact interface is in [automation.ts](../../apps/web/src/services/automation/automation.ts). This is a browser automation adapter; it does not provide a server API or model-driven editing agent.

@@ -55,7 +55,7 @@ Deleting a project atomically removes its manifest, originals, previews and jour
 
 Opening Animate requests one history page. Preparing a timelapse explicitly reads a consistent bounded journal snapshot in batches. The engine validates it, indexes checkpoints and caches neighboring states. Subsequent scrubbing evaluates transforms and effects without modifying the document or its undo history.
 
-The journal can be downloaded as a separate `*-history.json` file. A normal `.musart` export contains the document and originals. Video uses the retained GPU canvas and Mediabunny; see [video encoding](rendering/animation-export.md).
+The journal can be downloaded as a separate `*-history.json` file. A normal `.musart` export contains the document and originals. Video uses the retained GPU canvas and Mediabunny; see [video encoding](../rendering/animation-export.md).
 
 ## Verification
 

@@ -1,6 +1,6 @@
 # Contributing to MusArt
 
-MusArt is an MIT-licensed, local-first creative editor. Read [AGENTS.md](AGENTS.md) and the [architecture contracts](docs/CONTRACTS.md) before changing shared behavior.
+MusArt is an MIT-licensed, local-first creative editor. Read [AGENTS.md](AGENTS.md) and the [architecture contracts](docs/architecture/contracts.md) before changing shared behavior.
 
 ## Set up
 

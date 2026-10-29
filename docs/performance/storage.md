@@ -1,6 +1,6 @@
 # Persistence and large-project diagnostics
 
-Read [Protocol](protocol.md) before timing a cohort and [Durable project history](../history.md) before changing the journal. This page separates document persistence from source decoding, GPU preparation and background previews. It does not claim that an older local report describes the current build.
+Read [Protocol](protocol.md) before timing a cohort and [Durable project history](../architecture/history.md) before changing the journal. This page separates document persistence from source decoding, GPU preparation and background previews. It does not claim that an older local report describes the current build.
 
 ## Ownership and contracts
 
@@ -11,7 +11,7 @@ Read [Protocol](protocol.md) before timing a cohort and [Durable project history
 | Per-editor FIFO and autosave/disposal barriers                   | [ProjectWriteQueue](../../apps/web/src/services/session/project-write-queue.ts), [runtime](../../apps/web/src/services/session/runtime.ts)                                                                       |
 | Cross-session compare-and-swap and retired project IDs           | [write revisions](../../apps/web/src/services/projects/writes/revision.ts), [project lifecycle](../../apps/web/src/services/projects/lifecycle.ts)                                                               |
 | Canonical metadata fingerprints and byte accounting              | [hashing](../../apps/web/src/services/serialization/hashing), [records](../../apps/web/src/services/projects/records.ts), [usage](../../apps/web/src/services/projects/usage.ts)                                 |
-| Bounded journal reads, retention and retry semantics             | [history service](../../apps/web/src/services/history), [history contract](../history.md)                                                                                                                        |
+| Bounded journal reads, retention and retry semantics             | [history service](../../apps/web/src/services/history), [history contract](../architecture/history.md)                                                                                                           |
 | Worker journal preparation and header acknowledgments            | [processor](../../apps/web/src/services/animation/journal/processor.ts), [worker host](../../apps/web/src/services/animation/journal/host.ts), [client/transport](../../apps/web/src/services/animation/journal) |
 | Thumbnail jobs, cached blobs and object-URL leases               | [thumbnail pipeline](../../apps/web/src/services/projects/thumbnails), [visible row previews](../../apps/web/src/components/layers/rows/LayerThumbnail.tsx)                                                      |
 

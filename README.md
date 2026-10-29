@@ -43,7 +43,7 @@ Open **[localhost:6100](http://localhost:6100)** in your browser.
 2. Drop in images, add text and shapes, then build your composition with layers, effects and masks. The **AFTERHOURS — Techno** template is an editable starting point.
 3. Use **Export** to download an image, or open **Animate** to prepare a timelapse. Download a `.musart` copy from the project-name menu to keep a portable backup.
 
-Press **Ctrl/Cmd + K** to find tools and actions. Scroll to pan, **Ctrl/Cmd + scroll** to zoom around the pointer, and click the zoom percentage to return to 100%. See the [shortcut guide](docs/keyboard-shortcuts.md).
+Press **Ctrl/Cmd + K** to find tools and actions. Scroll to pan, **Ctrl/Cmd + scroll** to zoom around the pointer, and click the zoom percentage to return to 100%. See the [shortcut guide](docs/guides/keyboard-shortcuts.md).
 
 ## Headless mode
 
@@ -56,7 +56,7 @@ bun run headless create --output artifacts/example.musart
 bun run headless apply --input artifacts/example.musart --commands commands.json --output artifacts/changed.musart
 ```
 
-`create` makes a square demo project with a MusArt text layer. `apply` reads a JSON list of editor commands and applies them together; the [headless guide](docs/headless.md) includes a complete command-file example.
+`create` makes a square demo project with a MusArt text layer. `apply` reads a JSON list of editor commands and applies them together; the [headless guide](docs/guides/headless.md) includes a complete command-file example.
 
 Rendering uses an invisible Chromium browser. Install it once:
 
@@ -71,12 +71,13 @@ bun run headless render --input artifacts/example.musart --output artifacts/exam
 bun run headless screenshot --input artifacts/example.musart --output artifacts/editor.png
 ```
 
-See [Headless mode](docs/headless.md) for image formats, artboard selection, browser automation, requirements and troubleshooting.
+See [Headless mode](docs/guides/headless.md) for image formats, artboard selection, browser automation, requirements and troubleshooting.
 
 ## Still to implement
 
-These capabilities are currently absent; they are possible next steps rather than a dated release plan:
+Keyframe animation is part of the [product direction](docs/product/vision.md). The other items are current gaps and possible next steps. None has a delivery date.
 
+- [ ] Author animation with a timeline and keyframes, beyond the existing edit-history timelapse.
 - [ ] Embed custom font files in portable projects. They currently need to be installed separately in each browser.
 - [ ] Support mixed left-to-right/right-to-left paragraphs and color emoji.
 - [ ] Export editable vector/PDF files and print-ready, ICC-managed CMYK artwork. Current image exports are RGB.
@@ -84,7 +85,7 @@ These capabilities are currently absent; they are possible next steps rather tha
 ## Before you start
 
 - **Keep a portable backup.** Clearing your browser's site data can remove locally saved projects and fonts. A `.musart` file contains the design and original images; recorded edit history can be downloaded separately in Animate.
-- **Some resources need an initial download.** Google Fonts and the object-selection model download when requested. Image processing stays on your device. See [fonts](docs/fonts.md) and [local object selection](docs/SEGMENTATION.md).
+- **Some resources need an initial download.** Google Fonts and the object-selection model download when requested. Image processing stays on your device. See [fonts](docs/guides/fonts.md) and [local object selection](docs/guides/object-selection.md).
 - **Browser capabilities matter.** Rendering needs WebGPU or WebGL2. System-font access and video encoding depend on browser support; large exports are also limited by the graphics device and available memory.
 
 <details>
@@ -94,7 +95,7 @@ MusArt uses **TypeScript, React, Vite and Bun**, with **Three.js, React Three Fi
 
 The document engine can run independently of the interface. The editor and image exports share the same renderer, with WebGPU and Three.js's WebGL fallback.
 
-Read [Technical stack and design choices](docs/Tech_stack.md) for the reasons behind the stack and the [architecture contracts](docs/CONTRACTS.md) for module boundaries.
+Read [Technical stack and design choices](docs/architecture/tech-stack.md) for the reasons behind the stack and the [architecture contracts](docs/architecture/contracts.md) for module boundaries.
 
 </details>
 
@@ -102,4 +103,4 @@ Read [Technical stack and design choices](docs/Tech_stack.md) for the reasons be
 
 Start with the [documentation index](docs/README.md) for usage guides, headless automation and contributor references. Read [CONTRIBUTING.md](CONTRIBUTING.md) before making changes, follow development in the [changelog](CHANGELOG.md), and report vulnerabilities through the [security policy](SECURITY.md).
 
-MusArt's source code is available under the [MIT License](LICENSE). Fonts, models, artwork and other third-party material retain their own licenses; see [credits and provenance](docs/PROVENANCE.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
+MusArt's source code is available under the [MIT License](LICENSE). Fonts, models, artwork and other third-party material retain their own licenses; see [credits and provenance](docs/legal/provenance.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
