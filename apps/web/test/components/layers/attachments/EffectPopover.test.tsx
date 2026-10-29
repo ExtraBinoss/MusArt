@@ -26,6 +26,73 @@ function fixture() {
   d.mount(<Live />);
   return d;
 }
+test("locked FX show an actionable notice and preserve the effect while unlocking once", () => {
+  const d = fixture();
+  act(() => {
+    d.engine.execute({ type: "updateLayers", ids: [d.rectangle.id], patch: { locked: true } });
+    d.engine.load(d.engine.getSnapshot().project);
+  });
+  fireEvent.click(screen.getByRole("button", { name: "FX" }));
+  expect(screen.getByRole("status")).toHaveTextContent("Ce calque est verrouillé");
+  expect(
+    screen.getAllByRole("button", { name: "Réinitialiser tous les paramètres de l’effet" })[0],
+  ).toBeDisabled();
+  const before = d.engine.getSnapshot();
+  fireEvent.click(screen.getByRole("button", { name: "Déverrouiller" }));
+  expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.effects).toEqual(
+    before.project.pages[0]!.layers[0]!.effects,
+  );
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project).toEqual(before.project);
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+});
+test("reset all is one undoable edit of its effect including blend, opacity and alpha composition", () => {
+  const d = fixture();
+  act(() => {
+    const page = d.engine.getSnapshot().project.pages[0]!,
+      layer = page.layers[0]!;
+    d.engine.execute({
+      type: "updateLayers",
+      ids: [layer.id],
+      patch: {
+        effects: layer.effects.map((fx, index) =>
+          index
+            ? fx
+            : {
+                ...fx,
+                amount: 0.3,
+                seed: 145,
+                opacity: 0.4,
+                blendMode: "screen",
+                composite: "source-in",
+              },
+        ),
+      },
+    });
+    d.engine.load(d.engine.getSnapshot().project);
+  });
+  const before = d.engine.getSnapshot();
+  fireEvent.click(screen.getByRole("button", { name: "FX" }));
+  fireEvent.click(
+    screen.getAllByRole("button", { name: "Réinitialiser tous les paramètres de l’effet" })[0]!,
+  );
+  const after = d.engine.getSnapshot();
+  expect(after.revision).toBe(before.revision + 1);
+  expect(after.project.pages[0]!.layers[0]!.effects[0]).toMatchObject({
+    amount: 1,
+    seed: 42,
+    opacity: 1,
+    blendMode: "normal",
+  });
+  expect(after.project.pages[0]!.layers[0]!.effects[0]!.composite).toBeUndefined();
+  expect(after.project.pages[0]!.layers[0]!.effects[1]).toEqual(
+    before.project.pages[0]!.layers[0]!.effects[1],
+  );
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project).toEqual(before.project);
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+});
 test("FX avatars expose actual blend/opacity and parameters; previews cancel or commit one transaction", async () => {
   const d = fixture();
   fireEvent.click(screen.getByRole("button", { name: "FX" }));

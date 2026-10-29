@@ -2,6 +2,36 @@ import { expect, test, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { SelectField } from "../../../src/components/shared/SelectField";
 import { choose } from "../../support/select";
+test("closed fields show their label without mounting hidden options; focus preserves native closed typeahead", async () => {
+  const change = vi.fn(),
+    unselected = vi.fn();
+  function OtherLabel() {
+    unselected();
+    return <>Two</>;
+  }
+  const view = render(
+    <SelectField
+      label="Lazy mode"
+      value="one"
+      options={[
+        { value: "one", label: "One" },
+        { value: "two", label: <OtherLabel /> },
+        { value: "three", label: "Three", disabled: true },
+      ]}
+      onValueChange={change}
+    />,
+  );
+  const trigger = screen.getByRole("combobox", { name: "Lazy mode" });
+  expect(trigger).toHaveTextContent("One");
+  expect(unselected).not.toHaveBeenCalled();
+  const { fireEvent } = await import("@testing-library/react");
+  fireEvent.focus(trigger);
+  expect(unselected).toHaveBeenCalled();
+  expect(screen.queryByRole("listbox")).toBeNull();
+  fireEvent.keyDown(trigger, { key: "t" });
+  expect(change).toHaveBeenCalledWith("two");
+  view.unmount();
+});
 test("opens a real Radix listbox and reports a chosen option", async () => {
   const change = vi.fn();
   render(
@@ -92,6 +122,10 @@ test("disabling an open field cancels its draft and blocks a late item selection
   expect(preview).toHaveBeenCalledWith("two");
   view.rerender(<SelectField {...props} disabled />);
   expect(cancel).toHaveBeenCalledOnce();
+  expect(screen.queryByRole("listbox")).toBeNull();
   fireEvent.click(two);
   expect(change).not.toHaveBeenCalled();
+  view.rerender(<SelectField {...props} />);
+  expect(screen.queryByRole("listbox")).toBeNull();
+  expect(screen.getByRole("combobox")).toHaveAttribute("aria-expanded", "false");
 });

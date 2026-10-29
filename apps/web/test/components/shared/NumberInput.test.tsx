@@ -131,7 +131,10 @@ test("scrubs with threshold, snapping and one commit; cancel restores canonical 
 test("clamps shift keyboard steps and cancels lost pointer capture", () => {
   const cancel = vi.fn();
   render(<NumberInput label="Y" value={1} min={0} max={5} onCommit={vi.fn()} onCancel={cancel} />);
-  fireEvent.keyDown(screen.getByLabelText("Y"), { key: "ArrowUp", shiftKey: true });
+  fireEvent.keyDown(screen.getByLabelText("Y"), {
+    key: "ArrowUp",
+    shiftKey: true,
+  });
   expect(screen.getByLabelText("Y")).toHaveValue("5");
   const handle = screen.getByRole("button", { name: "Ajuster Y" });
   fireEvent.pointerDown(handle, { clientX: 0, button: 0, pointerId: 3 });
@@ -199,7 +202,12 @@ test("immutable target rebinding reuses the input and cancels old pointer/key/ty
     cancel = vi.fn(),
     a = {},
     b = {},
-    props = { label: "Stable", onPreview: preview, onCommit: commit, onCancel: cancel };
+    props = {
+      label: "Stable",
+      onPreview: preview,
+      onCommit: commit,
+      onCancel: cancel,
+    };
   const view = render(<NumberInput identity={a} value={10} {...props} />),
     input = screen.getByLabelText("Stable"),
     handle = screen.getByRole("button", { name: "Ajuster Stable" });
@@ -247,6 +255,14 @@ test("double-clicking the label resets once, cancels a scrub and owns its short 
     const handle = screen.getByRole("button", { name: "Ajuster Size" }),
       input = screen.getByLabelText("Size"),
       field = input.parentElement!;
+    const pulse = {
+      animationName: "reset-feedback-pulse",
+      currentTime: 180,
+      play: vi.fn(),
+      cancel: vi.fn(),
+    };
+    Object.defineProperty(field, "getAnimations", { value: () => [pulse] });
+    expect(field).toHaveClass("reset-feedback");
     fireEvent.pointerDown(handle, { button: 0, clientX: 0, pointerId: 1 });
     fireEvent.pointerMove(handle, { clientX: 40, pointerId: 1 });
     expect(preview).toHaveBeenCalled();
@@ -256,10 +272,13 @@ test("double-clicking the label resets once, cancels a scrub and owns its short 
     expect(input).toHaveValue("64");
     expect(field).not.toHaveAttribute("data-dragging");
     expect(field).toHaveAttribute("data-resetting");
+    expect(pulse.currentTime).toBe(0);
+    expect(pulse.play).toHaveBeenCalledOnce();
     fireEvent.pointerUp(handle, { pointerId: 1 });
     fireEvent.blur(input);
     fireEvent.doubleClick(handle);
     expect(commit).toHaveBeenCalledOnce();
+    expect(pulse.play).toHaveBeenCalledTimes(2);
     vi.advanceTimersByTime(360);
     expect(field).not.toHaveAttribute("data-resetting");
     expect(vi.getTimerCount()).toBe(0);
@@ -303,7 +322,9 @@ test("reset is lazy, bounded and resolves a mixed selection even when its first 
   fireEvent.doubleClick(screen.getByRole("button", { name: "Ajuster Bounded" }));
   expect(commit).toHaveBeenCalledOnce();
   view.rerender(<NumberInput label="Bounded" value={100} resetValue={NaN} onCommit={commit} />);
-  fireEvent.change(screen.getByLabelText("Bounded"), { target: { value: "40" } });
+  fireEvent.change(screen.getByLabelText("Bounded"), {
+    target: { value: "40" },
+  });
   fireEvent.doubleClick(screen.getByRole("button", { name: "Ajuster Bounded" }));
   expect(screen.getByLabelText("Bounded")).toHaveValue("100");
   fireEvent.blur(screen.getByLabelText("Bounded"));

@@ -4,6 +4,7 @@
 import { useId, useLayoutEffect, useMemo, useRef, type PointerEvent, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Input } from "../ui/input";
+import { useResetFeedback } from "./use-reset-feedback";
 
 export interface NumberInputProps {
   label: string;
@@ -49,8 +50,7 @@ export function NumberInput({
   const { t } = useTranslation();
   const id = useId();
   const element = useRef<HTMLDivElement>(null);
-  const pulse = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  useLayoutEffect(() => () => clearTimeout(pulse.current), []);
+  const resetFeedback = useResetFeedback(element);
   const field = useRef<HTMLInputElement>(null);
   const gesture = useRef<{
     x: number;
@@ -204,15 +204,14 @@ export function NumberInput({
       committed.current = next;
       onCommit(next);
     }
-    const node = element.current;
-    if (node && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      clearTimeout(pulse.current);
-      node.setAttribute("data-resetting", "");
-      pulse.current = setTimeout(() => node.removeAttribute("data-resetting"), 360);
-    }
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) resetFeedback();
   }
   return (
-    <div ref={element} className="number-field" data-disabled={disabled || undefined}>
+    <div
+      ref={element}
+      className="number-field reset-feedback"
+      data-disabled={disabled || undefined}
+    >
       <button
         type="button"
         className="number-scrub"

@@ -2,6 +2,31 @@ import { expect, test, vi } from "vitest";
 import { createPage, createProject, EditorEngine } from "@musart/core";
 import { captureGestureOrigin } from "../../../src/canvas/interaction/gesture-origin";
 import { prepareMarqueePage, type MarqueeScope } from "../../../src/canvas/selection/marquee-scope";
+import { intersectingMarquee } from "../../../src/canvas/selection/marquee-scope";
+
+test("constructs secondary selection scope without activating another page", () => {
+  const a = createPage(),
+    b = createPage();
+  const engine = new EditorEngine(createProject({ pages: [a, b] }));
+  const before = engine.getSnapshot();
+  expect(intersectingMarquee(engine, false)).toEqual({
+    initial: [],
+    additive: false,
+    intersect: true,
+  });
+  expect(intersectingMarquee(engine, true, a.id)).toEqual({
+    initial: [],
+    additive: true,
+    intersect: true,
+  });
+  expect(intersectingMarquee(engine, false, b.id)).toEqual({
+    initial: [],
+    additive: false,
+    intersect: true,
+    pageId: b.id,
+  });
+  expect(engine.getSnapshot()).toBe(before);
+});
 
 test("keeps stationary secondary clicks inert and rebases only a dragged destination in its new page scope", () => {
   const a = createPage(),

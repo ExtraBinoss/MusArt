@@ -15,6 +15,7 @@ import { activateLayerPage } from "../tree/activation";
 import { attachmentSelection } from "../../../state/selection/attachments";
 import { attachmentDeleteKey } from "../../../state/selection/attachment-keydown";
 import "../messages";
+import { LockedLayerNotice } from "../../properties/locked/LockedLayerNotice";
 export function MaskPopover({
   engine,
   page,
@@ -77,6 +78,7 @@ function MaskDetails({
   const edit = useLayerPreview(engine, page, [layer.id], run);
   return (
     <>
+      <LockedLayerNotice engine={engine} page={page} layers={[layer]} run={run} />
       {layer.mask?.layerId && (
         <Button
           variant="ghost"

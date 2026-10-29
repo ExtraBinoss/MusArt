@@ -2,7 +2,7 @@ import { expect, test, vi } from "vitest";
 import { StrictMode } from "react";
 import { act, screen, fireEvent } from "@testing-library/react";
 import { choose } from "../../support/select";
-import { createLayer } from "@musart/core";
+import { createLayer, createPage, createProject } from "@musart/core";
 import { Inspector } from "../../../src/components/properties/Inspector";
 import { previewAtom, useEngine } from "../../../src/state/session/editor";
 import { setup } from "../../support/ui";
@@ -43,6 +43,48 @@ function renderInspector(selection: "shape" | "text" | "image" | "multiple" | "n
   data.mount(<Live />);
   return data;
 }
+test("inherited locks explain the parent and disable layer properties until one undoable unlock", () => {
+  const d = setup();
+  d.engine.load(
+    createProject({
+      pages: [
+        createPage({
+          layers: [
+            createLayer("group", { id: "parent", name: "Protected parent", locked: true }),
+            createLayer("rectangle", { id: "child", parentId: "parent" }),
+          ],
+        }),
+      ],
+    }),
+  );
+  d.engine.select(["child"]);
+  function Live() {
+    const s = useEngine(d.engine),
+      page = s.project.pages[0]!;
+    return (
+      <Inspector
+        engine={d.engine}
+        page={page}
+        selected={page.layers.filter((layer) => s.selection.includes(layer.id))}
+        run={d.run}
+      />
+    );
+  }
+  d.mount(<Live />);
+  expect(screen.getByRole("status")).toHaveTextContent("Protected parent");
+  for (const label of ["X", "Couleur hexadécimale", "Contour HEX"])
+    expect(screen.getByRole("textbox", { name: label })).toBeDisabled();
+  const before = d.engine.getSnapshot();
+  fireEvent.blur(screen.getByRole("textbox", { name: "X" }), { target: { value: "99" } });
+  expect(d.engine.getSnapshot()).toBe(before);
+  fireEvent.click(screen.getByRole("button", { name: "Déverrouiller" }));
+  expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  expect(screen.getByRole("textbox", { name: "X" })).not.toBeDisabled();
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[1]!.locked).toBe(false);
+  act(() => d.engine.undo());
+  expect(screen.getByRole("status")).toBeVisible();
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+});
 test("label resets use geometry defaults, keep numeric DOM stable and create one undo entry", () => {
   const data = renderInspector(),
     input = screen.getByLabelText("X");

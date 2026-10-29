@@ -88,6 +88,7 @@ it("releases the transient frame before publishing a canonical move and keeps on
       frames.push(renderer.controller.read().page === snapshot.project.pages[0]);
   });
   render(<EditorCanvas engine={engine} tool="pointer" />);
+  expect(document.querySelector(".canvas-help")).toBeNull();
   await ready();
   const input = document.createElement("input");
   document.body.append(input);

@@ -209,7 +209,21 @@
   padding-bottom: 9px;
 }
 .effect-controls {
-  margin-top: 14px;
+  --effect-control-height: 30px;
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+.effect-controls-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.effect-controls-actions .icon-button {
+  width: 26px;
+  height: 26px;
+}
+.effect-controls > .number-field {
+  height: var(--effect-control-height);
 }
 .effect-playback {
   display: flex;
@@ -366,12 +380,6 @@
 .effect-catalog-menu {
   max-height: min(450px, 75vh);
   overflow-y: auto;
-}
-.effect-controls > .number-field + .number-field {
-  margin-top: 8px;
-}
-.effect-controls > .switch-row {
-  margin-top: 10px;
 }
 
 .inspector-scroll {

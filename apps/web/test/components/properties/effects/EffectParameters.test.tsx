@@ -13,6 +13,60 @@ import { EffectParameters } from "../../../../src/components/properties/effects/
 import { i18n } from "../../../../src/state/i18n";
 import { setup } from "../../../support/ui";
 import { choose } from "../../../support/select";
+test("the icon resets every parameter and effect composition together, preserving enable state", () => {
+  const d = setup(),
+    change = vi.fn(),
+    cancel = vi.fn();
+  const effect = createEffect("pink-phosphor", {
+    amount: 0.3,
+    time: 6,
+    enabled: false,
+    opacity: 0.4,
+    blendMode: "screen",
+    composite: "source-over",
+  });
+  const view = d.mount(<EffectParameters effect={effect} onChange={change} onCancel={cancel} />);
+  const reset = screen.getByRole("button", {
+    name: "Réinitialiser tous les paramètres de l’effet",
+  });
+  expect(reset.textContent).toBe("");
+  fireEvent.click(reset);
+  expect(cancel).toHaveBeenCalledOnce();
+  expect(change).toHaveBeenCalledExactlyOnceWith(
+    expect.objectContaining({
+      ...getEffectDefinition(effect.type).defaults,
+      enabled: false,
+      opacity: 1,
+      blendMode: "normal",
+      composite: undefined,
+    }),
+    false,
+  );
+  change.mockClear();
+  view.rerender(<EffectParameters effect={createEffect("pink-phosphor")} onChange={change} />);
+  fireEvent.click(reset);
+  expect(change).not.toHaveBeenCalled();
+  expect(reset.closest(".effect-controls")).toHaveAttribute("data-resetting");
+  view.rerender(<EffectParameters effect={effect} onChange={change} disabled />);
+  fireEvent.click(reset);
+  expect(change).not.toHaveBeenCalled();
+});
+test("effect colors share one active picker and cancel the preceding color draft", async () => {
+  const d = setup(),
+    cancel = vi.fn(),
+    change = vi.fn(),
+    effect = createEffect("pink-phosphor");
+  d.mount(<EffectParameters effect={effect} onChange={change} onCancel={cancel} />);
+  const colors = getEffectDefinition(effect.type).parameters.filter((p) => p.kind === "color");
+  fireEvent.click(screen.getByRole("button", { name: i18n.t(colors[0]!.labelKey) }));
+  const first = await screen.findByRole("textbox", { name: "Couleur hexadécimale" });
+  fireEvent.change(first, { target: { value: "#123456" } });
+  fireEvent.click(screen.getByRole("button", { name: i18n.t(colors[1]!.labelKey) }));
+  expect(document.querySelectorAll('.effect-color-popover[data-state="open"]')).toHaveLength(1);
+  expect(screen.getAllByRole("textbox", { name: "Couleur hexadécimale" })).toHaveLength(1);
+  expect(cancel).toHaveBeenCalled();
+  expect(change.mock.calls.every((call) => call[1] === true)).toBe(true);
+});
 test("typed settings presets/choices/colors and conditional number controls edit actual gradient fields", async () => {
   const d = setup(),
     preview = vi.fn(),

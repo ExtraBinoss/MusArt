@@ -184,7 +184,7 @@ export class LayerGeometryIndex {
       : null;
   }
   /** Parent-local traversal rejects cheap bounds before allocating any world geometry. */
-  hitTest(point: Point): Layer | null {
+  hitTest(point: Point, options: { includeLocked?: boolean } = {}): Layer | null {
     const roots = this.children(null);
     const stack: { children: readonly Layer[]; at: number; point: Point; fallback?: Layer }[] = [
       { children: roots, at: roots.length - 1, point },
@@ -197,7 +197,13 @@ export class LayerGeometryIndex {
         continue;
       }
       const layer = frame.children[frame.at--]!;
-      if (layer.maskSource || layer.locked || !layer.visible || layer.opacity <= 0) continue;
+      if (
+        layer.maskSource ||
+        (layer.locked && !options.includeLocked) ||
+        !layer.visible ||
+        layer.opacity <= 0
+      )
+        continue;
       let local: Point;
       if (layer.rotation === 0) {
         const x = frame.point.x - layer.x,

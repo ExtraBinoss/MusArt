@@ -38,6 +38,7 @@ it("paints live CSS poses without reconstructing unchanged selection geometry on
         { className: "canvas-selection", "data-layer-id": layer.id },
         createElement("button", { className: "canvas-handle" }),
         createElement("span", { className: "canvas-selection-size" }),
+        createElement("span", { className: "canvas-layer-lock" }),
       ),
       createElement("div", { className: "canvas-selection", "data-layer-id": "missing" }),
     );
@@ -57,6 +58,9 @@ it("paints live CSS poses without reconstructing unchanged selection geometry on
   expect(label).toHaveTextContent("100%");
   act(() => motion.jump({ x: 25, y: -12, zoom: 2 }, false));
   expect(overlay.style.borderWidth).toBe("0.5px");
+  expect(overlay.querySelector(".canvas-layer-lock")).toHaveStyle({
+    transform: "translate(-50%, -50%) scale(0.5)",
+  });
   expect(label).toHaveTextContent("200%");
   act(() => controller.setGesture([{ layerId: layer.id, patch: { width: 120 } }]));
   expect(overlay).toHaveStyle({ width: "120px" });

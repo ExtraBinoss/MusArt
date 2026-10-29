@@ -1,6 +1,7 @@
 import { registerFeatureTranslations } from "../../../state/i18n/feature-resources";
 export const messages = {
   en: {
+    resetAll: "Reset all effect parameters",
     playLive: "Play live",
     pauseLive: "Pause live",
     liveTime: "Displayed phase",
@@ -25,6 +26,7 @@ export const messages = {
     },
   },
   fr: {
+    resetAll: "Réinitialiser tous les paramètres de l’effet",
     playLive: "Animer",
     pauseLive: "Pause",
     liveTime: "Phase affichée",

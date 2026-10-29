@@ -21,6 +21,8 @@ export const messages = {
     selectMaskSource: "Select mask source",
     collapseArtboard: "Collapse {{name}}",
     expandArtboard: "Expand {{name}}",
+    lockedState: "Locked",
+    lockedByParent: "Locked by {{name}}",
   },
   fr: {
     mixed: "Mixte",
@@ -43,6 +45,8 @@ export const messages = {
     selectMaskSource: "Sélectionner la source du masque",
     collapseArtboard: "Replier {{name}}",
     expandArtboard: "Déplier {{name}}",
+    lockedState: "Verrouillé",
+    lockedByParent: "Verrouillé par {{name}}",
   },
 };
 registerFeatureTranslations("layerControls", messages);

@@ -20,9 +20,20 @@ exposes its complete style/treatment settings and shows colored output and level
 only for treatments which consume those values. Pixel scales and quantization use
 the full validated ranges. Fine chromatic displacement is displayed in per mille
 so the shared numeric field can edit thousandth-unit document values precisely.
-Opacity and blend controls share a 34-pixel height. Long popovers use one bounded
+Effect rows, opacity and blend controls share a 30-pixel height and 6-pixel row gaps. Long popovers use one bounded
 scroll viewport, constrained by Radix's available space and the browser viewport.
 Their previews remain imperative and completed gestures still commit once.
+
+The icon at the top resets all authored parameters and compositing defaults in one
+undoable command, preserving effect identity and enabled state. It cancels live and
+typed drafts first. Numeric labels and effect-color labels use the same replayable
+reset feedback; resetting an unchanged value adds no history. One effect owns one
+open color picker; switching colors cancels the previous uncommitted draft.
+
+Closed select fields display their selected label without constructing hidden option
+trees. Options mount on focus or opening and remain available for closed keyboard
+typeahead. All applicable effect controls remain directly available when the
+popover opens.
 
 Overlay autofocus keeps normal keyboard focus and accessible button names without
 opening tooltip labels. Tooltips appear on deliberate pointer hover; merely opening
@@ -45,6 +56,14 @@ Effect and mask targets are presentation state, independent of portable layer ID
 Collapsed rows show at most two real effect-stage preview cards and one real mask preview card. A remaining-count button exposes the existing full child list; the selected effect is surfaced among the two previews. Cards overlap inside the unchanged 36-pixel row and use page-scoped bounded preview leases, without mounting a thumbnail observer for every effect in a long stack.
 
 Opacity and the 26-mode blend selector apply to the actual selection, including groups. Empty or inherited-locked selections disable editing. Divergent values show **Mixed** until an absolute value is chosen. A held scrub updates only imperative draft state; one validated command completes the gesture, cancellation restores the source, and a changed project, page, revision or selection rejects a stale gesture.
+
+Locked layers retain a visible lock indicator in the tree. Inherited protection names
+the blocking ancestor. Pointer selection can inspect locked artwork on the canvas,
+where a dashed frame and constant-screen-size lock badge replace editing handles;
+selection never begins a move. The property inspector and effect/mask popovers show a
+translated locked notice and an Unlock action. Unlock clears only the actual blocking
+chain in one validated transaction, preserving independent sibling and descendant
+locks. Deferred actions reject a changed project, page, revision or selection.
 
 The heading exposes the overflow menu. Footer icons separately add effects and color adjustments through the shared catalog. Right-click preserves an existing multiselection and exposes one Group/Ungroup item, duplicate, create-mask and counted delete actions. Groups with compositing or attachments cannot be silently flattened by the ungroup action.
 

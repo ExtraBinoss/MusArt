@@ -28,7 +28,8 @@ export function EffectPlayback({
   const finish = useRef<((commit?: boolean) => void) | null>(null);
   useEffect(() => {
     const pointer = (event: globalThis.PointerEvent) => {
-      if (!root.current?.contains(event.target as Node)) finish.current?.();
+      if ((event.target as Element).closest?.("[data-effect-reset]")) finish.current?.(false);
+      else if (!root.current?.contains(event.target as Node)) finish.current?.();
     };
     const key = (event: KeyboardEvent) => {
       if (event.key === "Escape" && finish.current) {

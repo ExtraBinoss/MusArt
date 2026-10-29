@@ -1,4 +1,4 @@
-import { memo, useRef, useState } from "react";
+import { memo, useLayoutEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { ChevronRight, Eye, EyeOff, LockKeyhole, LockKeyholeOpen, ScanLine } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -19,6 +19,8 @@ import { AttachmentCards } from "../attachments/AttachmentCards";
 import { attachmentSelection, type AttachmentTarget } from "../../../state/selection/attachments";
 import { DropCue } from "../drag/DropCue";
 import { activateLayerPage } from "../tree/activation";
+import "./layer-row.css";
+import "../messages";
 export const LayerRow = memo(function LayerRow({
   engine,
   page,
@@ -62,9 +64,22 @@ export const LayerRow = memo(function LayerRow({
 }) {
   const { t } = useTranslation();
   const node = useRef<HTMLDivElement>(null);
-  const [editing, setEditing] = useState<Composition | null>(null);
-  const parentLocked = !!layer.parentId && createLayerGeometryIndex(page).isLocked(layer.parentId);
+  const [editing, setEditing] = useState<{ page: Composition; id: string } | null>(null);
+  const renaming = editing?.page === page && editing.id === layer.id;
+  if (editing && !renaming) setEditing(null);
+  useLayoutEffect(() => {
+    const focused = document.activeElement;
+    if (focused instanceof HTMLElement && node.current?.contains(focused)) focused.blur();
+  }, [layer.id, page.id]);
+  const geometry = createLayerGeometryIndex(page);
+  const parentLocked = !!layer.parentId && geometry.isLocked(layer.parentId);
   const locked = layer.locked || parentLocked;
+  const lockedParent = parentLocked
+    ? geometry.ancestors(layer.id).find((ancestor) => ancestor.locked)
+    : undefined;
+  const lockDescription = lockedParent
+    ? t("layerControls:lockedByParent", { name: lockedParent.name })
+    : t("layerControls:lockedState");
   const expandable = layer.kind === "group" || !!layer.effects.length || !!layer.mask;
   function canonical() {
     const snapshot = engine.getSnapshot();
@@ -87,7 +102,7 @@ export const LayerRow = memo(function LayerRow({
     );
   }
   function rename(name: string) {
-    const valid = editing === page;
+    const valid = renaming;
     setEditing(null);
     if (valid && name.trim() && name.trim() !== layer.name)
       run(() => {
@@ -104,12 +119,15 @@ export const LayerRow = memo(function LayerRow({
       aria-level={depth + 1}
       aria-selected={selected && !attachmentTarget}
       aria-expanded={expandable ? expanded : undefined}
+      title={locked ? lockDescription : undefined}
       tabIndex={0}
       draggable={!locked}
       data-layer-id={layer.id}
       data-layer-tree-key={`layer:${layer.id}`}
       data-dragging={dragging || undefined}
-      className={`layer-row ${selected && !attachmentTarget ? "selected" : ""} ${!layer.visible ? "is-hidden" : ""} ${drop ? `drop-${drop}` : ""}`}
+      data-locked={locked || undefined}
+      data-lock-inherited={parentLocked || undefined}
+      className={`layer-row ${selected && !attachmentTarget ? "selected" : ""} ${locked ? "is-locked" : ""} ${!layer.visible ? "is-hidden" : ""} ${drop ? `drop-${drop}` : ""}`}
       style={{ position: "absolute", left: 0, right: 0, top, paddingLeft: 12 + depth * 16 }}
       onClick={(event) => select(event.shiftKey || event.metaKey || event.ctrlKey)}
       onContextMenu={(event) => {
@@ -123,10 +141,11 @@ export const LayerRow = memo(function LayerRow({
           event.preventDefault();
           select(event.shiftKey || event.metaKey || event.ctrlKey);
         }
-        if (event.key === "F2" && !locked && activateLayerPage(engine, page)) setEditing(page);
+        if (event.key === "F2" && !locked && activateLayerPage(engine, page))
+          setEditing({ page, id: layer.id });
       }}
       onDoubleClick={() => {
-        if (!locked && activateLayerPage(engine, page)) setEditing(page);
+        if (!locked && activateLayerPage(engine, page)) setEditing({ page, id: layer.id });
       }}
       onDragStartCapture={(event) => {
         if ((event.target as Element).closest("[data-attachment-target]")) {
@@ -159,7 +178,7 @@ export const LayerRow = memo(function LayerRow({
         previewKey={previewKey}
         pageId={page.id}
       />
-      {editing === page ? (
+      {renaming ? (
         <Input
           autoFocus
           className="layer-name-input"
@@ -204,7 +223,9 @@ export const LayerRow = memo(function LayerRow({
       >
         <IconButton
           disabled={parentLocked}
-          label={`${t(layer.locked ? "unlock" : "lock")} · ${layer.name}`}
+          className={`layer-lock-button ${locked ? "is-locked" : ""}`}
+          label={`${parentLocked ? lockDescription : t(layer.locked ? "unlock" : "lock")} · ${layer.name}`}
+          aria-description={locked ? lockDescription : undefined}
           onClick={() => {
             if (!activateLayerPage(engine, page)) return;
             run(() => {
@@ -217,7 +238,12 @@ export const LayerRow = memo(function LayerRow({
             });
           }}
         >
-          {layer.locked ? <LockKeyhole size={12} /> : <LockKeyholeOpen size={12} />}
+          {locked ? <LockKeyhole size={14} /> : <LockKeyholeOpen size={12} />}
+          {locked && (
+            <span className="layer-lock-label" aria-hidden>
+              {t("layerControls:lockedState")}
+            </span>
+          )}
         </IconButton>
         <IconButton
           disabled={parentLocked}

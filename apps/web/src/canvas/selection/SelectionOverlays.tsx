@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createLayerGeometryIndex, type Composition, type Layer } from "@musart/core";
+import { LockKeyhole } from "lucide-react";
 import type { SceneController } from "../session/scene-controller";
 import type { ViewSource } from "../viewport/motion";
 
@@ -113,6 +114,7 @@ export function SelectionOverlays({
             key={layer.id}
             className="canvas-selection"
             data-layer-id={layer.id}
+            data-locked={layer.locked || index.isLocked(layer.id) || undefined}
             style={{
               width: layer.width,
               height: layer.height,
@@ -120,6 +122,16 @@ export function SelectionOverlays({
               borderWidth: 1 / zoom,
             }}
           >
+            {(layer.locked || index.isLocked(layer.id)) && (
+              <span
+                className="canvas-layer-lock"
+                role="img"
+                aria-label={t("layerControls:lockedState", { defaultValue: "Locked" })}
+                style={{ transform: `translate(-50%, -50%) scale(${1 / zoom})` }}
+              >
+                <LockKeyhole size={16} aria-hidden="true" />
+              </span>
+            )}
             {!layer.locked &&
               !index.ancestors(layer.id).some((parent) => parent.locked) &&
               (["nw", "ne", "sw", "se", "rotate"] as const).map((handle) => (

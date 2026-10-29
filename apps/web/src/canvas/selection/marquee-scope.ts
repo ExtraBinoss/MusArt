@@ -14,6 +14,20 @@ export interface MarqueeScope {
   };
 }
 
+export function intersectingMarquee(
+  engine: EnginePort,
+  additive: boolean,
+  pageId?: string,
+): NonNullable<MarqueeScope["boxSelection"]> {
+  const snapshot = engine.getSnapshot();
+  return {
+    initial: snapshot.selection,
+    additive,
+    intersect: true,
+    ...(pageId && pageId !== snapshot.pageId ? { pageId } : {}),
+  };
+}
+
 /** A secondary click keeps its page; only a real drag activates an inactive artboard. */
 export function prepareMarqueePage<T extends MarqueeScope>(
   engine: EnginePort,

@@ -62,6 +62,8 @@ function createPresentation({ controller, workspace, motion, viewport, beforePai
       }
       for (const handle of overlay.querySelectorAll<HTMLElement>(".canvas-handle"))
         handle.style.transform = `scale(${1 / view.zoom})`;
+      const lock = overlay.querySelector<HTMLElement>(".canvas-layer-lock");
+      if (lock) lock.style.transform = `translate(-50%, -50%) scale(${1 / view.zoom})`;
     }
   };
 }

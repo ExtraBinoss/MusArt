@@ -3,6 +3,20 @@ import { createLayer, createPage, createProject } from "../../src/document/facto
 import { EditorEngine } from "../../src/session/engine";
 import { createLayerGeometryIndex } from "../../src/layers/geometry-index";
 import { getWorldBounds, getWorldMatrix, hitTest } from "../../src/layers/geometry";
+test("locked inspection is opt-in and retains hierarchy, visibility and painted-shape hit rules", () => {
+  const page = createPage({
+    layers: [
+      createLayer("rectangle", { id: "back", x: 0, y: 0, width: 200, height: 200 }),
+      createLayer("group", { id: "g", x: 10, y: 10, width: 100, height: 100, locked: true }),
+      createLayer("ellipse", { id: "e", parentId: "g", x: 10, y: 10, width: 40, height: 40 }),
+      createLayer("rectangle", { id: "hidden", visible: false, locked: true }),
+    ],
+  });
+  const index = createLayerGeometryIndex(page);
+  expect(index.hitTest({ x: 40, y: 40 })!.id).toBe("back");
+  expect(index.hitTest({ x: 40, y: 40 }, { includeLocked: true })!.id).toBe("e");
+  expect(index.hitTest({ x: 21, y: 21 }, { includeLocked: true })!.id).toBe("g");
+});
 test("matches canonical geometry and hierarchical hit testing with cached immutable values", () => {
   const page = createPage({
     layers: [

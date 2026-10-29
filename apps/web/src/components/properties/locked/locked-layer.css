@@ -1,0 +1,38 @@
+.locked-layer-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 12px;
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--muted);
+  color: var(--foreground);
+  font-size: 11px;
+}
+.locked-layer-notice > svg {
+  flex: none;
+}
+.locked-layer-notice > div {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.locked-layer-notice strong,
+.locked-layer-notice small {
+  display: block;
+}
+.locked-layer-notice small {
+  margin-top: 3px;
+  color: var(--muted-foreground);
+}
+.locked-layer-notice > button {
+  flex: none;
+  height: 28px;
+}
+.locked-layer-controls {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}

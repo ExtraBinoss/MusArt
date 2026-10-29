@@ -69,6 +69,7 @@ it("keeps ordinary per-layer handles and locks while exposing the real size", ()
   );
   expect(screen.getAllByRole("button")).toHaveLength(5);
   expect(screen.queryByText("8 × 8")).toBeNull();
+  expect(screen.getByRole("img", { name: "Locked" })).toHaveClass("canvas-layer-lock");
 });
 it("represents ten thousand selected layers with one accurate collective frame and imperative previews", () => {
   const d = source(10000),

@@ -47,8 +47,9 @@ import { captureGestureOrigin, isGestureOriginCurrent } from "./interaction/gest
 import "./artboards/artboards.css";
 import { QuickAdd } from "./quick-add/QuickAdd";
 import { SelectionOverlays } from "./selection/SelectionOverlays";
+import { canvasHit } from "./selection/hit";
 import { useMarquee } from "./selection/use-marquee";
-import { prepareMarqueePage, type MarqueeScope } from "./selection/marquee-scope";
+import * as marqueeScope from "./selection/marquee-scope";
 import { useCanvasPresentation } from "./viewport/use-canvas-presentation";
 import { Rulers } from "./guides/Rulers";
 import { GuideOverlay } from "./guides/GuideOverlay";
@@ -75,7 +76,7 @@ export interface EditorCanvasProps {
   onDropFiles?: (files: File[]) => void;
   onImagePoint?: (layerId: string, x: number, y: number) => void;
 }
-interface Gesture extends TransformGesture, MarqueeScope {
+interface Gesture extends TransformGesture, marqueeScope.MarqueeScope {
   pointerId: number;
   mode: "pan" | "move" | "resize" | "box" | "draw";
   view: View;
@@ -233,24 +234,21 @@ export function EditorCanvas({
       gesture.current = {
         ...base,
         mode: "box",
-        boxSelection: {
-          initial: engine.getSnapshot().selection,
-          additive,
-          intersect: true,
-          ...(targetBoard && targetBoard.id !== controller.read().page.id
-            ? { pageId: targetBoard.id }
-            : {}),
-        },
+        boxSelection: marqueeScope.intersectingMarquee(engine, additive, targetBoard?.id),
       };
       return;
     }
     attachmentSelection(engine).clear();
     if (targetBoard && targetBoard.id !== controller.read().page.id) {
       engine.setPage(targetBoard.id);
-      const hit = createLayerGeometryIndex(controller.read().page).hitTest({
-        x: worldPoint.x - targetBoard.x,
-        y: worldPoint.y - targetBoard.y,
-      });
+      const hit = canvasHit(
+        controller.read().page,
+        {
+          x: worldPoint.x - targetBoard.x,
+          y: worldPoint.y - targetBoard.y,
+        },
+        tool === "pointer",
+      )?.layer;
       engine.select(hit ? [hit.id] : []);
       return;
     }
@@ -282,7 +280,8 @@ export function EditorCanvas({
       return;
     }
     const currentPage = controller.read().page;
-    const hit = createLayerGeometryIndex(currentPage).hitTest(point);
+    const picked = canvasHit(currentPage, point, tool === "pointer"),
+      hit = picked?.layer;
     if (tool === "wand" || tool === "segment") {
       if (hit?.kind === "image") {
         engine.select([hit.id]);
@@ -311,6 +310,7 @@ export function EditorCanvas({
     }
     const ids = clickSelection(engine.getSnapshot().selection, hit.id, additive);
     engine.select(ids);
+    if (picked?.locked) return;
     gesture.current = { ...base, mode: "move", layers: selectedRoots(currentPage, ids) };
   }
   function pointerMove(event: ReactPointerEvent<HTMLDivElement>) {
@@ -324,7 +324,7 @@ export function EditorCanvas({
       cancelGesture();
       return;
     }
-    prepareMarqueePage(engine, gesture, event, pagePoint);
+    marqueeScope.prepareMarqueePage(engine, gesture, event, pagePoint);
     const point = pagePoint(event);
     active.current = point;
     if (active.mode === "pan") {
@@ -363,7 +363,7 @@ export function EditorCanvas({
       cancelGesture();
       return;
     }
-    prepareMarqueePage(engine, gesture, event, pagePoint);
+    marqueeScope.prepareMarqueePage(engine, gesture, event, pagePoint);
     if (active.mode === "move" || active.mode === "resize") {
       const finalPoint = pagePoint(event);
       if (
@@ -582,11 +582,11 @@ export function EditorCanvas({
         controller={controller}
         onError={onError}
       />
-      <div className="canvas-help">
-        {tool === "pointer"
-          ? t("canvasHint", { defaultValue: "Espace pour déplacer · Ctrl + molette pour zoomer" })
-          : t("toolHint", { defaultValue: "Cliquez ou tracez sur le canvas" })}
-      </div>
+      {tool !== "pointer" && (
+        <div className="canvas-help">
+          {t("toolHint", { defaultValue: "Cliquez ou tracez sur le canvas" })}
+        </div>
+      )}
       {dragOver && (
         <div className="canvas-drag-overlay">
           {t("dropImages", { defaultValue: "Déposez vos images ici" })}

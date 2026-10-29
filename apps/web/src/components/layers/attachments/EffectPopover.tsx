@@ -24,6 +24,7 @@ import {
 } from "../../../state/selection/attachments";
 import { attachmentDeleteKey } from "../../../state/selection/attachment-keydown";
 import { useLayerPreview } from "../controls/use-layer-preview";
+import { LockedLayerNotice } from "../../properties/locked/LockedLayerNotice";
 export function EffectPopover({
   engine,
   page,
@@ -109,6 +110,7 @@ function EffectDetails({
   }
   return (
     <div className="layer-effect-details">
+      <LockedLayerNotice engine={engine} page={page} layers={[layer]} run={run} />
       {layer.effects
         .filter((effect) => !effectId || effect.id === effectId)
         .map((effect) => (

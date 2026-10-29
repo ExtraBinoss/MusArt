@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 export interface SelectOption {
   value: string;
@@ -28,6 +28,9 @@ export function SelectField({
   className?: string;
 }) {
   const session = useRef<{ open: boolean; last: string | null }>({ open: false, last: null });
+  const [mounted, setMounted] = useState(false);
+  const [open, setOpen] = useState(false);
+  if (disabled && open) setOpen(false);
   const cancel = useRef(onPreviewCancel);
   useLayoutEffect(() => {
     cancel.current = onPreviewCancel;
@@ -59,9 +62,12 @@ export function SelectField({
   return (
     <Select
       value={value}
+      open={open && !disabled}
       disabled={disabled}
       onOpenChange={(open) => {
+        setOpen(open && !disabled);
         if (open && !disabled) {
+          setMounted(true);
           session.current.open = true;
           session.current.last = value;
         } else if (session.current.open) {
@@ -75,22 +81,33 @@ export function SelectField({
           onValueChange(next);
       }}
     >
-      <SelectTrigger id={id} aria-label={label} className={className}>
-        <SelectValue />
+      <SelectTrigger
+        id={id}
+        aria-label={label}
+        className={className}
+        onFocus={() => {
+          if (!disabled) setMounted(true);
+        }}
+      >
+        <SelectValue>
+          {options.find((option) => option.value === value)?.label ?? value}
+        </SelectValue>
       </SelectTrigger>
-      <SelectContent position="popper" className="property-select-menu">
-        {options.map((option) => (
-          <SelectItem
-            key={option.value}
-            value={option.value}
-            disabled={option.disabled}
-            onPointerMove={() => preview(option)}
-            onFocus={() => preview(option)}
-          >
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
+      {mounted && (
+        <SelectContent position="popper" className="property-select-menu">
+          {options.map((option) => (
+            <SelectItem
+              key={option.value}
+              value={option.value}
+              disabled={option.disabled}
+              onPointerMove={() => preview(option)}
+              onFocus={() => preview(option)}
+            >
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      )}
     </Select>
   );
 }

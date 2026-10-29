@@ -1,6 +1,6 @@
 import { expect, test, vi } from "vitest";
 import { act, fireEvent, screen } from "@testing-library/react";
-import { createLayer, createProject } from "@musart/core";
+import { createLayer, createPage, createProject } from "@musart/core";
 import { LayerRow } from "../../../../src/components/layers/rows/LayerRow";
 import { setup } from "../../../support/ui";
 function fixture() {
@@ -27,6 +27,23 @@ function fixture() {
   };
   return { ...d, props };
 }
+test("rebound row shells retain their buttons but release focus and never donate rename drafts", () => {
+  const d = fixture(),
+    view = d.mount(<LayerRow {...d.props} />);
+  const button = screen.getByLabelText("Masquer le calque · Rectangle bleu");
+  button.focus();
+  view.rerender(<LayerRow {...d.props} layer={d.props.page.layers[1]!} previewKey="text" />);
+  expect(screen.getByLabelText("Masquer le calque · Titre")).toBe(button);
+  expect(document.activeElement).toBe(document.body);
+  fireEvent.keyDown(screen.getByRole("treeitem"), { key: "F2" });
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "Old draft" } });
+  view.rerender(<LayerRow {...d.props} />);
+  expect(screen.queryByRole("textbox")).toBeNull();
+  fireEvent.keyDown(screen.getByRole("treeitem"), { key: "F2" });
+  expect(screen.getByRole("textbox")).toHaveValue("Rectangle bleu");
+  fireEvent.keyDown(screen.getByRole("textbox"), { key: "Escape" });
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+});
 test("memo rows read the current engine selection and reject stale native events before React catches up", () => {
   const d = fixture();
   d.mount(<LayerRow {...d.props} />);
@@ -76,4 +93,82 @@ test("row expansion, keyboard rename, controls and native drag events remain ind
   expect(d.props.drag.over).toHaveBeenCalled();
   expect(d.props.drag.drop).toHaveBeenCalled();
   expect(d.props.onDragEnd).toHaveBeenCalled();
+});
+
+test("an owned lock has a persistent readable badge and retains one-click undoable unlocking", () => {
+  const d = fixture();
+  act(() =>
+    d.engine.execute({ type: "updateLayers", ids: [d.rectangle.id], patch: { locked: true } }),
+  );
+  const page = d.engine.getSnapshot().project.pages[0]!;
+  const view = d.mount(<LayerRow {...d.props} page={page} layer={page.layers[0]!} />);
+  const row = screen.getByRole("treeitem"),
+    unlock = screen.getByRole("button", { name: "Déverrouiller le calque · Rectangle bleu" });
+  expect(row).toHaveAttribute("data-locked", "true");
+  expect(row).not.toHaveAttribute("data-lock-inherited");
+  expect(row).toHaveClass("is-locked");
+  expect(row).toHaveAttribute("draggable", "false");
+  expect(unlock).toBeEnabled();
+  expect(unlock).toHaveClass("layer-lock-button", "is-locked");
+  expect(unlock).toHaveTextContent("Verrouillé");
+  expect(unlock).toHaveAttribute("aria-description", "Verrouillé");
+  expect(unlock.querySelector("svg")).toHaveClass("lucide-lock-keyhole");
+  fireEvent.click(unlock);
+  expect(d.run).toHaveBeenCalledOnce();
+  const unlocked = d.engine.getSnapshot().project.pages[0]!;
+  expect(unlocked.layers[0]!.locked).toBe(false);
+  view.rerender(<LayerRow {...d.props} page={unlocked} layer={unlocked.layers[0]!} />);
+  expect(row).not.toHaveAttribute("data-locked");
+  expect(screen.queryByText("Verrouillé")).toBeNull();
+  expect(screen.getByText("Rectangle bleu")).toHaveClass("layer-name");
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.locked).toBe(true);
+});
+
+test("inherited locks name the actual locked ancestor and never offer a fake child unlock", () => {
+  const d = fixture(),
+    outer = createLayer("group", { id: "lock-owner", name: "Protected artwork", locked: true }),
+    inner = createLayer("group", { id: "lock-middle", name: "Nested group", parentId: outer.id }),
+    child = createLayer("rectangle", {
+      id: "lock-child",
+      name: "Nested artwork",
+      parentId: inner.id,
+    });
+  act(() =>
+    d.engine.load(createProject({ pages: [createPage({ layers: [outer, inner, child] })] })),
+  );
+  const page = d.engine.getSnapshot().project.pages[0]!;
+  const view = d.mount(<LayerRow {...d.props} page={page} layer={page.layers[2]!} />);
+  const row = screen.getByRole("treeitem"),
+    inherited = screen.getByRole("button", {
+      name: "Verrouillé par Protected artwork · Nested artwork",
+    });
+  expect(row).toHaveAttribute("data-locked", "true");
+  expect(row).toHaveAttribute("data-lock-inherited", "true");
+  expect(row).toHaveAttribute("title", "Verrouillé par Protected artwork");
+  expect(row).toHaveAttribute("draggable", "false");
+  expect(inherited).toBeDisabled();
+  expect(inherited).toHaveTextContent("Verrouillé");
+  expect(inherited.querySelector("svg")).toHaveClass("lucide-lock-keyhole");
+  expect(screen.queryByRole("button", { name: /^Déverrouiller/ })).toBeNull();
+  const before = d.engine.getSnapshot().project;
+  fireEvent.click(inherited);
+  fireEvent.doubleClick(row);
+  fireEvent.keyDown(row, { key: "F2" });
+  expect(d.engine.getSnapshot().project).toBe(before);
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+  expect(d.run).not.toHaveBeenCalled();
+  expect(screen.queryByRole("textbox")).toBeNull();
+  fireEvent.click(row);
+  expect(d.engine.getSnapshot().selection).toEqual([child.id]);
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+  act(() => d.engine.execute({ type: "updateLayers", ids: [outer.id], patch: { locked: false } }));
+  const unlocked = d.engine.getSnapshot().project.pages[0]!;
+  view.rerender(<LayerRow {...d.props} page={unlocked} layer={unlocked.layers[2]!} />);
+  expect(row).not.toHaveAttribute("data-locked");
+  expect(row).not.toHaveAttribute("data-lock-inherited");
+  expect(
+    screen.getByRole("button", { name: "Verrouiller le calque · Nested artwork" }),
+  ).toBeEnabled();
+  expect(screen.queryByText("Verrouillé")).toBeNull();
 });

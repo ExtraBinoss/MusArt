@@ -4,6 +4,17 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ## [Unreleased]
 
+### Changed
+
+- Effect parameter rows use compact 30px controls and consistent 6px spacing. A translated icon resets the complete effect to its defaults in one undoable edit, cancels drafts and live playback, and preserves its identity and enabled state.
+- Numeric and effect-color label resets share the same replayable neutral feedback, reduced-motion behavior and timer/animation cleanup. Resetting an unchanged value does not add history.
+- Effect color pickers share one open slot, cancel the previous draft before changing colors, reject stale callbacks and use a 12px popup offset. The permanent pointer-mode Space/Ctrl-wheel hint is removed; shortcuts remain available.
+- Locked artwork remains inspectable on the canvas with a constant-size lock badge and no editing handles. Layer rows expose persistent protection indicators, while the inspector and effect/mask popovers identify blocking parent locks and unlock only that chain in one undoable transaction.
+
+### Fixed
+
+- Closed property selectors avoid constructing their hidden option trees until focus or opening, retaining selected labels and native closed typeahead. Disabling an open selector closes its menu and cancels the draft; effect-color reset buttons also support keyboard activation.
+
 ## [0.2.0] - 2026-10-29
 
 ### Added

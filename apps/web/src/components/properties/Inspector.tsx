@@ -11,7 +11,12 @@ import {
   Radius,
   Pencil,
 } from "lucide-react";
-import { type Composition, type EnginePort, type Layer } from "@musart/core";
+import {
+  createLayerGeometryIndex,
+  type Composition,
+  type EnginePort,
+  type Layer,
+} from "@musart/core";
 import { useTranslation } from "react-i18next";
 import { useSetAtom } from "jotai";
 import { useRenderMetrics } from "../../state/session/render-metrics";
@@ -28,6 +33,7 @@ import { SelectField } from "../shared/SelectField";
 import { IconButton } from "../shared/IconButton";
 import { Switch } from "../ui/switch";
 import { Input } from "../ui/input";
+import { LockedLayerNotice } from "./locked/LockedLayerNotice";
 
 interface Props {
   engine: EnginePort;
@@ -42,17 +48,22 @@ export function Inspector({ engine, page, selected, run }: Props) {
   const setPreview = useSetAtom(previewAtom);
   const [aspectLocked, setAspectLocked] = useState(true);
   const layer = selected.length === 1 ? selected[0] : undefined;
+  const geometry = createLayerGeometryIndex(page);
+  const locked = selected.some((item) => geometry.isLocked(item.id));
+  const displayLayer = layer && locked && !layer.locked ? { ...layer, locked: true } : layer;
   const useLayerColor = layer && ["rectangle", "ellipse", "text", "vector"].includes(layer.kind);
   function cancel() {
     setPreview(null);
   }
   function patch(patch: Partial<Layer>) {
     cancel();
+    if (locked) return;
     run(() =>
       engine.execute({ type: "updateLayers", ids: selected.map((item) => item.id), patch }),
     );
   }
   function preview(patch: Partial<Layer>) {
+    if (locked) return cancel();
     if (layer) setPreview({ target: "layer", layerId: layer.id, patch });
   }
   function fillPatch(fill: string): Partial<Layer> {
@@ -119,7 +130,7 @@ export function Inspector({ engine, page, selected, run }: Props) {
         min={min}
         max={max}
         unit={unit}
-        disabled={layer.locked}
+        disabled={locked}
         onPreview={(value) => preview(makePatch(value))}
         onCommit={(value) => patch(makePatch(value))}
         onCancel={cancel}
@@ -140,9 +151,12 @@ export function Inspector({ engine, page, selected, run }: Props) {
             {selected.length > 1 ? t("multiSelection") : layer ? t(layer.kind) : t("composition")}
           </span>
         </div>
+        <LockedLayerNotice engine={engine} page={page} layers={selected} run={run} />
         {selected.length > 1 ? (
           <>
-            <AlignmentPanel engine={engine} selected={selected} run={run} />
+            <fieldset className="locked-layer-controls" disabled={locked}>
+              <AlignmentPanel engine={engine} selected={selected} run={run} />
+            </fieldset>
           </>
         ) : (
           <>
@@ -172,11 +186,16 @@ export function Inspector({ engine, page, selected, run }: Props) {
                 </p>
               )}
               {layer?.kind === "text" && (
-                <GradientControl layer={layer} patch={patch} preview={preview} cancel={cancel} />
+                <GradientControl
+                  layer={displayLayer!}
+                  patch={patch}
+                  preview={preview}
+                  cancel={cancel}
+                />
               )}
               {(layer?.kind !== "text" || !layer.fillGradient) && (
                 <ColorControl
-                  disabled={!!useLayerColor && layer.locked}
+                  disabled={!!useLayerColor && locked}
                   identity={useLayerColor ? layer.id : `page:${page.id}`}
                   value={useLayerColor ? layer.fill : page.background}
                   onPreview={(fill) => {
@@ -198,6 +217,7 @@ export function Inspector({ engine, page, selected, run }: Props) {
                   <span>{t("originalColors")}</span>
                   <Switch
                     aria-label={t("originalColors")}
+                    disabled={locked}
                     checked={!!layer.vector.preserveColors}
                     onCheckedChange={(preserveColors) => {
                       if (layer.vector) patch({ vector: { ...layer.vector, preserveColors } });
@@ -215,6 +235,7 @@ export function Inspector({ engine, page, selected, run }: Props) {
                       <IconButton
                         label={t("lockAspect")}
                         active={aspectLocked}
+                        disabled={locked}
                         onClick={() => setAspectLocked((value) => !value)}
                       >
                         {aspectLocked ? <LockKeyhole size={13} /> : <LockKeyholeOpen size={13} />}
@@ -234,6 +255,7 @@ export function Inspector({ engine, page, selected, run }: Props) {
                       <NumberInput
                         identity={layer}
                         label={t("imageScale")}
+                        disabled={locked}
                         value={(layer.width / asset.width) * 100}
                         resetValue={100}
                         min={0.1}
@@ -253,9 +275,16 @@ export function Inspector({ engine, page, selected, run }: Props) {
                     </div>
                   )}
                 </section>
-                <AlignmentPanel engine={engine} selected={selected} run={run} />
+                <fieldset className="locked-layer-controls" disabled={locked}>
+                  <AlignmentPanel engine={engine} selected={selected} run={run} />
+                </fieldset>
                 {layer.kind === "text" && (
-                  <TextProperties layer={layer} patch={patch} preview={preview} cancel={cancel} />
+                  <TextProperties
+                    layer={displayLayer!}
+                    patch={patch}
+                    preview={preview}
+                    cancel={cancel}
+                  />
                 )}
                 {["rectangle", "ellipse", "vector"].includes(layer.kind) && (
                   <section className="inspector-section">
@@ -265,6 +294,7 @@ export function Inspector({ engine, page, selected, run }: Props) {
                       <Input
                         key={`${layer.id}:${layer.stroke}`}
                         aria-label={t("strokeHex")}
+                        disabled={locked}
                         defaultValue={layer.stroke}
                         onChange={(event) => {
                           if (/^#(?:[\da-f]{6}|[\da-f]{8})$/i.test(event.currentTarget.value))
@@ -332,7 +362,7 @@ export function Inspector({ engine, page, selected, run }: Props) {
             )}
             <SpacingPanel
               page={page}
-              layer={layer}
+              layer={displayLayer}
               onLayerPatch={patch}
               onPagePatch={pagePatch}
               onLayerPreview={preview}
