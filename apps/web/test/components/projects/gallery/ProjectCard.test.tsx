@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { act, fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { ProjectCard } from "../../../../src/components/projects/gallery/ProjectCard";
 import { projectSummary } from "../../../support/projects";
 import { setup } from "../../../support/ui";
@@ -36,6 +36,10 @@ test("exposes complete inactive-project CRUD and storage actions through real me
   expect(open).toHaveBeenCalledOnce();
   await menu("Renommer le projet");
   const input = screen.getByLabelText("Renommer le projet");
+  await waitFor(() => {
+    expect(screen.queryByRole("menu", { hidden: true })).not.toBeInTheDocument();
+    expect(input).toHaveFocus();
+  });
   fireEvent.change(input, { target: { value: "Renamed" } });
   await act(async () => {
     fireEvent.keyDown(input, { key: "Enter" });

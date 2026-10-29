@@ -39,7 +39,9 @@ export function ProjectCard({
   const [editing, setEditing] = useState(false),
     [saving, setSaving] = useState(false);
   const cancelled = useRef(false),
-    submitted = useRef(false);
+    submitted = useRef(false),
+    nameInput = useRef<HTMLInputElement>(null),
+    menuOpen = useRef(false);
   function begin() {
     submitted.current = false;
     cancelled.current = false;
@@ -66,6 +68,7 @@ export function ProjectCard({
           <div className="project-card-meta">
             {editing ? (
               <Input
+                ref={nameInput}
                 autoFocus
                 disabled={saving || disabled}
                 maxLength={160}
@@ -103,7 +106,11 @@ export function ProjectCard({
                 {project.name}
               </button>
             )}
-            <DropdownMenu>
+            <DropdownMenu
+              onOpenChange={(open) => {
+                menuOpen.current = open;
+              }}
+            >
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
@@ -118,7 +125,10 @@ export function ProjectCard({
               <DropdownMenuContent
                 align="end"
                 onCloseAutoFocus={(event) => {
-                  if (editing) event.preventDefault();
+                  const input = nameInput.current;
+                  if (!editing || menuOpen.current || !input?.isConnected || input.disabled) return;
+                  event.preventDefault();
+                  input.focus({ preventScroll: true });
                 }}
               >
                 <DropdownMenuItem
