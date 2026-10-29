@@ -36,3 +36,29 @@ test("matches live portable bindings and leaves composing/unknown keys and edita
   Object.defineProperty(widget, "isContentEditable", { value: true });
   expect(isEditingShortcutTarget(widget)).toBe(true);
 });
+
+test("document scopes allow non-text widgets while retaining text and modal ownership", () => {
+  const scope = document.createElement("div"),
+    child = document.createElement("button");
+  scope.setAttribute("data-keybinding-capture", "");
+  scope.append(child);
+  expect(isEditingShortcutTarget(child)).toBe(true);
+  expect(isEditingShortcutTarget(child, { documentScope: true })).toBe(false);
+  for (const role of ["slider", "spinbutton"]) {
+    child.setAttribute("role", role);
+    expect(isEditingShortcutTarget(child, { documentScope: true })).toBe(false);
+  }
+  for (const role of ["dialog", "alertdialog", "menu", "combobox", "listbox"]) {
+    child.setAttribute("role", role);
+    expect(isEditingShortcutTarget(child, { documentScope: true })).toBe(true);
+  }
+  child.removeAttribute("role");
+  scope.setAttribute("contenteditable", "true");
+  expect(isEditingShortcutTarget(child, { documentScope: true })).toBe(true);
+  for (const tag of ["input", "textarea", "select"]) {
+    const field = document.createElement(tag);
+    scope.removeAttribute("contenteditable");
+    scope.append(field);
+    expect(isEditingShortcutTarget(field, { documentScope: true })).toBe(true);
+  }
+});

@@ -62,8 +62,14 @@ export function useShortcuts(
         return;
       if (!command || (event.repeat && !command.startsWith("nudge:"))) return;
       const target = event.target;
-      if (target instanceof HTMLElement && target.closest("[data-keybinding-capture]")) return;
-      if (command !== "action:save" && isEditingShortcutTarget(target)) return;
+      const capture =
+        target instanceof HTMLElement ? target.closest("[data-keybinding-capture]") : null;
+      const documentScope = Boolean(
+        capture?.hasAttribute("data-document-shortcuts") &&
+        (command === "action:undo" || command === "action:redo" || command === "action:save"),
+      );
+      if (capture && !documentScope) return;
+      if (command !== "action:save" && isEditingShortcutTarget(target, { documentScope })) return;
       if (nativeClipboardShortcut(command, event)) return;
       const fallback = documentShortcut(command, { engine, save: services.saveProject, setTool });
       if (command === "action:undo" || command === "action:redo" || command === "action:deselect")

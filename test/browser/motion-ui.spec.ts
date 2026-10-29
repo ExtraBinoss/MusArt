@@ -237,6 +237,37 @@ test("empty timeline and artboard controls remain legible at compact viewports a
   await page.screenshot({ path: "artifacts/motion/ui/empty-compact-reduced-dark.png" });
 });
 
+test("timeline focus keeps native Undo/Redo routing and text-field ownership", async ({ page }) => {
+  await load(page);
+  await page.evaluate(() =>
+    window.musart!.execute({
+      type: "upsertMotionKeyframe",
+      target: { kind: "layer", layerId: "motion-card", property: "x" },
+      time: { value: 5, rate: 1 },
+      value: 700,
+    }),
+  );
+  const endValue = () =>
+    page.evaluate(
+      () =>
+        window
+          .musart!.snapshot()
+          .project.pages[0]!.motion!.tracks[0]!.properties[0]!.keyframes.at(-1)!.value,
+    );
+  expect(await endValue()).toBe(700);
+  const ruler = page.getByRole("slider", { name: "Se déplacer dans la timeline" });
+  await ruler.focus();
+  await page.keyboard.press("Control+z");
+  await expect.poll(endValue).toBe(480);
+  await page.keyboard.press("Control+Shift+z");
+  await expect.poll(endValue).toBe(700);
+  await page.getByRole("spinbutton", { name: "Temps actuel" }).focus();
+  await page.keyboard.press("Control+z");
+  expect(await endValue()).toBe(700);
+  const reads = await page.evaluate(() => window.__musartVideoReadbacks);
+  expect(reads).toMatchObject({ gpu: 0, webgl: 0, canvas: 0, videoFrame: 0 });
+});
+
 test("shared scroll shadows and visible rows stay bounded in a 500-layer timeline", async ({
   page,
 }) => {

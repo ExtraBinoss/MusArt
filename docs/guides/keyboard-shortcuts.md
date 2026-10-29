@@ -98,6 +98,26 @@ Keep **Include images when copying** enabled for sharing between people, project
 
 Standard `Ctrl+C` / `Ctrl+V` use native clipboard events. Running clipboard actions through Magic Search, a pinned action or a custom binding uses the browser Clipboard API, which may require permission. Sharing is manual: send the copied text or a project file to your recipient.
 
+Portable clipboard and project files currently support embedded images. Video originals remain in local storage; portable video packaging is a separate pending feature.
+
+## Motion timeline
+
+These controls apply while the timeline is focused. Document shortcuts use the bindings configured in Preferences; text fields keep their normal editing behavior.
+
+| Action                        | Default shortcut or gesture           | Scope                                                                            |
+| ----------------------------- | ------------------------------------- | -------------------------------------------------------------------------------- |
+| Play / pause                  | `Space`                               | Ruler, track or key focus. Other focused buttons retain their normal activation. |
+| Step one frame                | `←` / `→`                             | Focused time ruler; pauses playback.                                             |
+| Start / exact composition end | `Home` / `End`                        | Focused time ruler.                                                              |
+| Undo / redo a document edit   | `Ctrl+Z` / `Ctrl+Shift+Z` or `Ctrl+Y` | Timeline controls, excluding active text entry.                                  |
+| Save                          | `Ctrl+S`                              | Timeline controls and fields.                                                    |
+| Delete selected keys          | `Delete` / `Backspace`                | Timeline selection; keeps layers intact.                                         |
+| Cancel the current gesture    | `Escape`                              | Key/track drag, time scrub, marquee or panel resize.                             |
+| Zoom the timeline             | `Ctrl` + wheel                        | Timeline viewport, around the pointer.                                           |
+| Scroll time / tracks          | Wheel or two-finger trackpad          | Both horizontal and vertical axes.                                               |
+
+Click a property's diamond in the inspector to create its first key at the current time. Subsequent edits of that animated property create or update a key at the playhead.
+
 ## Customize shortcuts
 
 1. Open **Preferences → Shortcuts**, press `?`, or find **Keyboard shortcuts** in `Ctrl+K`.

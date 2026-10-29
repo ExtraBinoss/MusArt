@@ -287,6 +287,7 @@ export function TimelinePanel({
         aria-label={t("timeline")}
         data-canvas-control
         data-keybinding-capture
+        data-document-shortcuts
         onKeyDown={(event) => {
           gestures.keyDown(event);
           if (

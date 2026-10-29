@@ -51,6 +51,7 @@ Primary-source references are maintained in [performance-research.md](./performa
 
 ## Latest constrained verification
 
+- Timeline document-shortcut follow-up: 18 App/matching/shortcut tests pass in 12.01 seconds. A separate native Chromium case passes Undo/Redo from the ruler and preserves text-field undo (24.5 seconds; browser and dev server each capped at 50% CPU for an aggregate one-core budget, browser scope limited to 40 seconds). Independent read-only review found no confirmed issue. Other canvas actions stay captured; configured history bindings and nested capture ownership are tested.
 - Affected command, video-source, cleanup, notification, copy-button, dock and Timelapse mirrors: 106 passing tests in 16 files, 11.78 seconds, one worker, CPU quota 100%, low priority and no GPU.
 - The separate App integration batch passes the failed-frame pause/retry and notice-diagnostic boundary.
 - Compact real-Chromium interaction: one passing case in 14.4 seconds, CPU quota 100%, memory maximum 1.8 GiB, whole-scope limit 30 seconds, no profiling. The scope is inactive after completion. Screenshot: ignored `artifacts/motion/ui/empty-compact-reduced-dark.png`, inspected visually.

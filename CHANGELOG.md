@@ -39,6 +39,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
+- Timeline focus now allows configured Undo, Redo and Save shortcuts through its gesture boundary. Native text undo and nested shortcut recorders keep ownership, and unrelated canvas commands remain captured.
 - Timeline reopening honors reduced motion immediately, including Static → Motion switches, while the normal entrance/exit uses the retained DOM animation scope. Both paths preserve the hidden timeline and avoid unrelated editor commits.
 - Preserve original track ticks and rational source requests at NTSC frame boundaries instead of rounding logical selection to microseconds. A short native H.264 witness verifies exact random, sequential and playback sampling at 30000/1001 FPS, with zero retained frames/decoders after cleanup.
 - Reject transparent video import/decode before Mediabunny's JavaScript pixel-copy alpha merger can run. Typed English/French failures identify this source capability; opaque VP9 remains available, and native readback instrumentation now also counts actual VideoFrame.copyTo calls.

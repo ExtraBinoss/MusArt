@@ -120,6 +120,38 @@ test("uses persisted tool/save overrides and refuses captured or editable key ev
   expect(d.services.saveProject).toHaveBeenCalledOnce();
   hook.unmount();
 });
+
+test("opted-in document scopes honor customized history bindings and isolate nested captures", async () => {
+  const d = setup();
+  d.engine.execute({ type: "updateLayers", ids: [d.rectangle.id], patch: { x: 99 } });
+  keybindings.assign("action:undo", [{ key: "u", mod: true, alt: true, shift: false }]);
+  const hook = renderHook(() => useShortcuts(d.engine, d.services, d.onTask), {
+    wrapper: ({ children }) => createElement(Provider, { store: d.store }, children),
+  });
+  const scope = document.createElement("section"),
+    control = document.createElement("button"),
+    nested = document.createElement("div");
+  scope.setAttribute("data-keybinding-capture", "");
+  scope.setAttribute("data-document-shortcuts", "");
+  nested.setAttribute("data-keybinding-capture", "");
+  scope.append(control, nested);
+  document.body.append(scope);
+  try {
+    fireEvent.keyDown(control, { key: "z", ctrlKey: true });
+    fireEvent.keyDown(control, { key: "r" });
+    fireEvent.keyDown(control, { key: "Delete" });
+    expect(d.store.get(toolAtom)).toBe("pointer");
+    expect(d.engine.getSnapshot().project.pages[0]!.layers).toHaveLength(3);
+    expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.x).toBe(99);
+    await act(() => fireEvent.keyDown(nested, { key: "u", ctrlKey: true, altKey: true }));
+    expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.x).toBe(99);
+    await act(() => fireEvent.keyDown(control, { key: "u", ctrlKey: true, altKey: true }));
+    expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.x).toBe(20);
+  } finally {
+    scope.remove();
+    hook.unmount();
+  }
+});
 test("does not execute a queued shortcut against a previous engine or a replaced document", () => {
   const d = setup(),
     other = setup();

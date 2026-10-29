@@ -19,12 +19,15 @@ export function matchBinding(
   }
   return index.get(chordKey(chord));
 }
-export function isEditingShortcutTarget(target: EventTarget | null): boolean {
+export function isEditingShortcutTarget(
+  target: EventTarget | null,
+  options: { documentScope?: boolean } = {},
+): boolean {
+  const editing =
+    'input,textarea,select,[contenteditable="true"],[role="dialog"],[role="alertdialog"],[role="combobox"],[role="listbox"],[role="menu"]';
+  const widgets = ',[role="slider"],[role="spinbutton"],[data-keybinding-capture]';
   return (
     target instanceof HTMLElement &&
-    (target.isContentEditable ||
-      !!target.closest(
-        'input,textarea,select,[role="dialog"],[role="alertdialog"],[role="slider"],[role="spinbutton"],[role="combobox"],[role="listbox"],[role="menu"],[data-keybinding-capture]',
-      ))
+    (target.isContentEditable || !!target.closest(editing + (options.documentScope ? "" : widgets)))
   );
 }

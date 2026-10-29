@@ -126,6 +126,36 @@ test("pauses failed Motion playback without changing the document or preventing 
   expect(transport.read().playing).toBe(true);
   act(() => transport.pause());
 });
+test("undoes and redoes Motion keys from timeline focus while keeping native field undo and save", async () => {
+  const d = setup();
+  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const before = d.engine.getSnapshot().project;
+  d.engine.execute({
+    type: "upsertMotionKeyframe",
+    target: { kind: "layer", layerId: d.rectangle.id, property: "x" },
+    time: { value: 0, rate: 1 },
+    value: 99,
+  });
+  const authored = d.engine.getSnapshot().project;
+  d.mount(<App engine={d.engine} services={d.services} />);
+  const ruler = await screen.findByRole("slider", { name: "Se déplacer dans la timeline" });
+  await act(() => fireEvent.keyDown(ruler, { key: "z", ctrlKey: true }));
+  expect(d.engine.getSnapshot().project).toBe(before);
+  await act(() => fireEvent.keyDown(ruler, { key: "z", metaKey: true, shiftKey: true }));
+  expect(d.engine.getSnapshot().project).toBe(authored);
+  const field = screen.getByRole("spinbutton", { name: "Temps actuel" });
+  const nativeUndo = new KeyboardEvent("keydown", {
+    key: "z",
+    ctrlKey: true,
+    bubbles: true,
+    cancelable: true,
+  });
+  fireEvent(field, nativeUndo);
+  expect(nativeUndo.defaultPrevented).toBe(false);
+  expect(d.engine.getSnapshot().project).toBe(authored);
+  await act(() => fireEvent.keyDown(field, { key: "s", ctrlKey: true }));
+  expect(d.services.saveProject).toHaveBeenCalledOnce();
+});
 test("opens the real project/export dialogs and switches panel modes through command search", async () => {
   const d = setup();
   d.mount(<App engine={d.engine} services={d.services} />);
