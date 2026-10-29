@@ -1,7 +1,7 @@
 import { expect, test, type Locator } from "@playwright/test";
 import { createEffect, getEffectDefinition, getEffectParameter } from "@musart/core";
 import { mkdir } from "node:fs/promises";
-import labels from "../../apps/web/src/components/properties/effects/library/pink-phosphor/messages.json";
+import labels from "../../apps/web/src/components/properties/effects/library/pink-phosphor/messages.json" with { type: "json" };
 import { i18n } from "../../apps/web/src/state/i18n";
 import { photographicEffect } from "./support/photographic-effect";
 
