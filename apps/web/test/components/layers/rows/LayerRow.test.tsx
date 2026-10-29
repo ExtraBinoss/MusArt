@@ -1,8 +1,25 @@
 import { expect, test, vi } from "vitest";
 import { act, fireEvent, screen } from "@testing-library/react";
-import { createLayer, createPage, createProject } from "@musart/core";
+import { createEffect, createLayer, createPage, createProject } from "@musart/core";
 import { LayerRow } from "../../../../src/components/layers/rows/LayerRow";
 import { setup } from "../../../support/ui";
+import { attachmentSelection } from "../../../../src/state/selection/attachments";
+
+test("a context menu in an effect portal preserves its attachment instead of selecting the host row", () => {
+  const d = fixture(),
+    effect = createEffect("dither");
+  d.engine.execute({ type: "updateLayers", ids: [d.rectangle.id], patch: { effects: [effect] } });
+  const page = d.engine.getSnapshot().project.pages[0]!;
+  const { container } = d.mount(<LayerRow {...d.props} page={page} layer={page.layers[0]!} />);
+  fireEvent.click(container.querySelector(`[data-attachment-effect-id="${effect.id}"]`)!);
+  const attachment = attachmentSelection(d.engine),
+    target = attachment.read();
+  const clear = vi.spyOn(attachment, "clear");
+  fireEvent.contextMenu(screen.getByRole("dialog").querySelector("input")!);
+  expect(clear).not.toHaveBeenCalled();
+  expect(attachment.read()).toBe(target);
+  expect(d.engine.getSnapshot().selection).toEqual([d.rectangle.id]);
+});
 function fixture() {
   const d = setup(),
     page = d.engine.getSnapshot().project.pages[0]!,
@@ -86,6 +103,11 @@ test("row expansion, keyboard rename, controls and native drag events remain ind
   fireEvent.click(screen.getByLabelText("Verrouiller le calque · Renamed"));
   expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.locked).toBe(true);
   fireEvent.dragStart(row);
+  expect(d.props.drag.start).not.toHaveBeenCalled();
+  act(() => d.engine.undo());
+  const draggablePage = d.engine.getSnapshot().project.pages[0]!;
+  view.rerender(<LayerRow {...d.props} page={draggablePage} layer={draggablePage.layers[0]!} />);
+  fireEvent.dragStart(row);
   fireEvent.dragOver(row);
   fireEvent.drop(row);
   fireEvent.dragEnd(row);
@@ -93,6 +115,44 @@ test("row expansion, keyboard rename, controls and native drag events remain ind
   expect(d.props.drag.over).toHaveBeenCalled();
   expect(d.props.drag.drop).toHaveBeenCalled();
   expect(d.props.onDragEnd).toHaveBeenCalled();
+});
+
+test("retained rows select, rename and drag through ruler metadata but reject later queued edits", () => {
+  const d = fixture();
+  let pending: (() => void) | undefined;
+  const run = (task: () => void) => {
+    pending = task;
+  };
+  const view = d.mount(<LayerRow {...d.props} run={run} />);
+  const row = screen.getByRole("treeitem");
+  fireEvent.keyDown(row, { key: "F2" });
+  const input = screen.getByRole("textbox");
+  fireEvent.change(input, { target: { value: "Metadata draft" } });
+  act(() => d.engine.execute({ type: "updatePage", patch: { rulers: true } }));
+  const metadata = d.engine.getSnapshot().project.pages[0]!;
+  view.rerender(<LayerRow {...d.props} page={metadata} run={run} />);
+  expect(screen.getByRole("textbox")).toBe(input);
+  expect(input).toHaveValue("Metadata draft");
+  expect(document.activeElement).toBe(input);
+  fireEvent.keyDown(input, { key: "Enter" });
+  pending!();
+  const renamed = d.engine.getSnapshot().project.pages[0]!;
+  expect(renamed.layers[0]!.name).toBe("Metadata draft");
+  view.rerender(<LayerRow {...d.props} page={renamed} layer={renamed.layers[0]!} run={run} />);
+  act(() => d.engine.execute({ type: "updatePage", patch: { rulers: false } }));
+  fireEvent.click(row);
+  expect(d.engine.getSnapshot().selection).toEqual([d.rectangle.id]);
+  fireEvent.dragStart(row);
+  expect(d.props.drag.start.mock.lastCall?.[2]).toBe(d.engine.getSnapshot().project.pages[0]);
+  fireEvent.click(screen.getByRole("button", { name: "Masquer le calque · Metadata draft" }));
+  act(() => d.engine.execute({ type: "updatePage", patch: { rulers: true } }));
+  const changed = d.engine.getSnapshot();
+  pending!();
+  expect(d.engine.getSnapshot()).toBe(changed);
+  act(() => d.engine.load(d.engine.getSnapshot().project));
+  const replacement = d.engine.getSnapshot();
+  fireEvent.click(row);
+  expect(d.engine.getSnapshot()).toBe(replacement);
 });
 
 test("an owned lock has a persistent readable badge and retains one-click undoable unlocking", () => {

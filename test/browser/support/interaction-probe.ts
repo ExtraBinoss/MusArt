@@ -17,7 +17,12 @@ export interface InteractionSample {
   gpuQueueHook: boolean;
   submissionsBeforeReady: number[];
   submissionsThroughSettled: number[];
-  firstReadyControls?: { total: number; missing: string[]; placeholders: number };
+  firstReadyControls?: {
+    total: number;
+    mounted: number;
+    missingMounted: string[];
+    placeholders: number;
+  };
   focusInside?: boolean;
   entranceAnimations?: { name: string; duration: number | string }[];
   longTasks: { start: number; duration: number }[];
@@ -61,7 +66,7 @@ export async function armInteraction(
     kind: "lock" | "receipt";
     trigger: string;
     layerId: string;
-    controls?: { key: string; selector: string }[];
+    controls?: { key: string; selector: string; index: number }[];
   },
 ) {
   await page.evaluate((options) => {
@@ -180,9 +185,14 @@ export async function armInteraction(
               firstReadyAt = now;
               const controls = popup.querySelector(".effect-controls");
               firstReadyControls = {
-                total: options.controls!.length,
-                missing: options
-                  .controls!.filter((control) => !controls?.querySelector(control.selector))
+                total: Number(controls?.getAttribute("data-effect-parameter-count")),
+                mounted: controls?.querySelectorAll("[data-parameter-index]").length ?? 0,
+                missingMounted: options
+                  .controls!.filter(
+                    (control) =>
+                      controls?.querySelector(`[data-parameter-index="${control.index}"]`) &&
+                      !controls?.querySelector(control.selector),
+                  )
                   .map((control) => control.key),
                 placeholders: popup.querySelectorAll("[data-effect-parameter-placeholder]").length,
               };

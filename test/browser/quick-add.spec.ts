@@ -56,6 +56,10 @@ test("workspace plus and empty-world quick add use real shared actions, native f
   const addButton = page.getByTestId("canvas-add-artboard");
   await page.mouse.move(1590, 990);
   await expect(addButton).toHaveCSS("opacity", "0");
+  await artboard.hover();
+  await expect(addButton).toHaveCSS("opacity", "1");
+  await page.mouse.move(1590, 990);
+  await expect(addButton).toHaveCSS("opacity", "0");
   await addButton.focus();
   await expect(addButton).toHaveCSS("opacity", "1");
   await expect(page.getByRole("tooltip")).toHaveCount(0);

@@ -40,8 +40,9 @@ The layer list owns compositing controls, effect and mask entry points. Geometry
 
 Closed select fields display their selected label without constructing hidden option
 trees. Options mount on focus or opening and remain available for closed keyboard
-typeahead. All applicable effect controls remain directly available when the
-popover opens.
+typeahead. Long effect panels mount a bounded window of controls inside their
+normal scroll area. Scrolling and Tab/Shift+Tab reach every parameter without
+an additional button; the active control stays mounted while a draft is held.
 
 Overlay autofocus keeps normal keyboard focus and accessible button names without
 opening tooltip labels. Tooltips appear on deliberate pointer hover; merely opening

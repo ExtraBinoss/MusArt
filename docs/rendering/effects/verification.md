@@ -16,7 +16,7 @@ Use the [authoring checklist](authoring.md#delivery-checklist) when adding an ef
 | -------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | Live Ripple    | [Ripple](ripple.md)                   | Image-space refraction with an explicit phase; no fluid simulation.                                                   |
 | Shatter        | [Shatter](shatter.md)                 | Refracts a photograph through procedural facets; no physical fracture, glass meshes or path tracing.                  |
-| GPU Noise      | [Noise](../noise.md)                  | Seven bounded three-dimensional scalar fields; no simulated material or fluid history.                                |
+| Noise          | [Noise](../noise.md)                  | Seven bounded three-dimensional scalar fields; no simulated material or fluid history.                                |
 | Flash Light    | [Flash Light](flashlight.md)          | Photographic illumination; no inferred 3D geometry or surface normals.                                                |
 | Cyanotype      | [Cyanotype](cyanotype.md)             | Continuous-tone blue-print interpretation; no chemical reaction model.                                                |
 | Circle         | [Circle](circle.md)                   | Adjustable photographic dot screen; no calibrated press or area-exact print simulation.                               |

@@ -1,5 +1,9 @@
 import type { EnginePort } from "@musart/core";
-import { captureGestureOrigin, type GestureOrigin } from "../interaction/gesture-origin";
+import {
+  captureGestureOrigin,
+  isGestureOriginCurrent,
+  type GestureOrigin,
+} from "../interaction/gesture-origin";
 import type { Point } from "../viewport/view";
 
 export interface MarqueeScope {
@@ -34,21 +38,45 @@ export function prepareMarqueePage<T extends MarqueeScope>(
   gesture: { current: T | null },
   event: { clientX: number; clientY: number },
   pagePoint: (event: { clientX: number; clientY: number }) => Point,
-) {
+): boolean {
   const active = gesture.current,
     box = active?.boxSelection;
+  if (!active) return false;
+  if (!isGestureOriginCurrent(engine, active.origin)) {
+    gesture.current = null;
+    return false;
+  }
   if (
-    !active ||
     !box?.pageId ||
     Math.hypot(event.clientX - active.client.x, event.clientY - active.client.y) <= 3
   )
-    return;
+    return true;
+  const origin = active.origin,
+    targetId = box.pageId;
+  if (!origin.project.pages.some((page) => page.id === targetId)) {
+    gesture.current = null;
+    return false;
+  }
   // Authoritative page subscriptions must not mistake this intentional activation for a stale draft.
   gesture.current = null;
-  engine.setPage(box.pageId);
-  active.origin = captureGestureOrigin(engine);
-  active.from = pagePoint({ clientX: active.client.x, clientY: active.client.y });
-  box.initial = engine.getSnapshot().selection;
+  engine.setPage(targetId);
+  const snapshot = engine.getSnapshot();
+  // setPage may synchronously notify a loader/editor. Never adopt that replacement as our origin.
+  if (
+    snapshot.project !== origin.project ||
+    snapshot.revision !== origin.revision ||
+    snapshot.pageId !== targetId ||
+    snapshot.selection.length !== 0 ||
+    gesture.current !== null
+  )
+    return false;
+  const nextOrigin = captureGestureOrigin(engine),
+    from = pagePoint({ clientX: active.client.x, clientY: active.client.y });
+  if (!isGestureOriginCurrent(engine, nextOrigin) || gesture.current !== null) return false;
+  active.origin = nextOrigin;
+  active.from = from;
+  box.initial = snapshot.selection;
   delete box.pageId;
   gesture.current = active;
+  return true;
 }

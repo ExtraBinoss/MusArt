@@ -208,3 +208,50 @@ test("blend option hover and focus preview the whole selection, Escape cancels, 
   act(() => d.engine.undo());
   expect(d.engine.getSnapshot().canUndo).toBe(false);
 });
+test("changing the selected layer retains numeric controls and cancels a held draft before rebinding", () => {
+  const d = fixture("single"),
+    input = screen.getByRole("textbox", { name: "Opacité" });
+  const group = input.closest(".layer-compositing");
+  const original = d.engine.getSnapshot();
+  fireEvent.keyDown(input, { key: "ArrowDown" });
+  expect(d.store.get(previewAtom)).toMatchObject({
+    layerIds: [d.rectangle.id],
+    patch: { opacity: 0.99 },
+  });
+  act(() => d.engine.select([d.text.id]));
+  expect(screen.getByRole("textbox", { name: "Opacité" })).toBe(input);
+  expect(input.closest(".layer-compositing")).toBe(group);
+  expect(d.store.get(previewAtom)).toBeNull();
+  fireEvent.keyUp(input, { key: "ArrowDown" });
+  expect(d.engine.getSnapshot().project).toBe(original.project);
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+  fireEvent.keyDown(input, { key: "ArrowDown" });
+  fireEvent.keyUp(input, { key: "ArrowDown" });
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[1]!.opacity).toBe(0.99);
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.opacity).toBe(1);
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project).toEqual(original.project);
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+});
+test("changing selection closes its old blend editor and a late option cannot edit either owner", async () => {
+  const d = fixture("single"),
+    trigger = screen.getByRole("combobox", { name: "Fusion" });
+  const original = d.engine.getSnapshot().project;
+  fireEvent.pointerDown(trigger, { button: 0, ctrlKey: false, pointerType: "mouse" });
+  const oldOption = await screen.findByRole("option", { name: "Superposition" });
+  fireEvent.pointerMove(oldOption, { pointerType: "mouse" });
+  expect(d.store.get(previewAtom)).toMatchObject({ layerIds: [d.rectangle.id] });
+  act(() => d.engine.select([d.text.id]));
+  expect(screen.getByRole("combobox", { name: "Fusion" })).toBe(trigger);
+  expect(screen.queryByRole("listbox")).toBeNull();
+  expect(d.store.get(previewAtom)).toBeNull();
+  fireEvent.click(oldOption);
+  expect(d.engine.getSnapshot().project).toBe(original);
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+  await choose("Fusion", "Produit");
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[1]!.blendMode).toBe("multiply");
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.blendMode).toBe("normal");
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project).toEqual(original);
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+});

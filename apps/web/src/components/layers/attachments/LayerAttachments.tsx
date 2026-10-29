@@ -1,4 +1,4 @@
-import { memo, type RefObject } from "react";
+import { memo, type MouseEvent, type RefObject } from "react";
 import { Eye, EyeOff, Trash2, ScanLine } from "lucide-react";
 import {
   getEffectDefinition,
@@ -62,6 +62,15 @@ export const LayerAttachments = memo(function LayerAttachments({
         : { kind: "effect", pageId: page.id, layerId: layer.id, effectId: effectId! },
     );
   }
+  function captureAttachment(event: MouseEvent<HTMLElement>) {
+    if (!event.currentTarget.contains(event.target as Node)) return;
+    if ((event.target as Element).closest(".attachment-actions")) return;
+    selectAttachment();
+  }
+  function contextAttachment(event: MouseEvent<HTMLElement>) {
+    if (event.currentTarget.contains(event.target as Node)) selectAttachment();
+    else event.stopPropagation();
+  }
   const style = {
     position: "absolute" as const,
     top,
@@ -80,8 +89,8 @@ export const LayerAttachments = memo(function LayerAttachments({
           data-layer-tree-key={`mask:${layer.id}`}
           className={`layer-attachment-row ${selected ? "is-selected" : ""} ${mask.enabled ? "" : "is-hidden"}`}
           style={style}
-          onClickCapture={selectAttachment}
-          onContextMenu={selectAttachment}
+          onClickCapture={captureAttachment}
+          onContextMenu={contextAttachment}
         >
           <MaskPopover engine={engine} page={page} layer={layer} run={run}>
             <Button variant="ghost" className="attachment-name">
@@ -98,20 +107,23 @@ export const LayerAttachments = memo(function LayerAttachments({
             <IconButton
               disabled={disabled}
               label={t("enableMask")}
-              onClick={() =>
+              onClick={() => {
+                if (!selectAttachment()) return;
                 edit.command({
                   type: "updateMask",
                   targetId: layer.id,
                   patch: { enabled: !mask.enabled },
-                })
-              }
+                });
+              }}
             >
               {mask.enabled ? <Eye size={12} /> : <EyeOff size={12} />}
             </IconButton>
             <IconButton
               disabled={disabled}
               label={t("removeMask")}
-              onClick={() => run(capturePresentationDelete(engine))}
+              onClick={() => {
+                if (selectAttachment()) run(capturePresentationDelete(engine));
+              }}
             >
               <Trash2 size={12} />
             </IconButton>
@@ -129,8 +141,8 @@ export const LayerAttachments = memo(function LayerAttachments({
       data-layer-tree-key={`effect:${layer.id.length}:${layer.id}:${effect.id}`}
       className={`layer-attachment-row ${selected ? "is-selected" : ""} ${effect.enabled ? "" : "is-hidden"}`}
       style={style}
-      onClickCapture={selectAttachment}
-      onContextMenu={selectAttachment}
+      onClickCapture={captureAttachment}
+      onContextMenu={contextAttachment}
       draggable={!disabled}
       onDragStart={(event) => {
         event.stopPropagation();
@@ -190,20 +202,23 @@ export const LayerAttachments = memo(function LayerAttachments({
         <IconButton
           disabled={disabled}
           label={t(effect.enabled ? "disableEffect" : "enableEffect")}
-          onClick={() =>
+          onClick={() => {
+            if (!selectAttachment()) return;
             edit.commit({
               effects: layer.effects.map((item) =>
                 item.id === effect.id ? { ...item, enabled: !item.enabled } : item,
               ),
-            })
-          }
+            });
+          }}
         >
           {effect.enabled ? <Eye size={12} /> : <EyeOff size={12} />}
         </IconButton>
         <IconButton
           disabled={disabled}
           label={t("removeEffect")}
-          onClick={() => run(capturePresentationDelete(engine))}
+          onClick={() => {
+            if (selectAttachment()) run(capturePresentationDelete(engine));
+          }}
         >
           <Trash2 size={12} />
         </IconButton>

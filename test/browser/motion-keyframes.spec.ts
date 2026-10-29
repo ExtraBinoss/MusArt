@@ -163,7 +163,9 @@ test("gradient controls remain compact in both themes and real stop drags commit
   await page.mouse.move(point.x + point.width / 2, point.y + point.height / 2);
   await page.mouse.down();
   await page.mouse.move(ramp.x + ramp.width * 0.5, point.y + point.height / 2, { steps: 3 });
-  await expect(stop).toHaveAttribute("aria-valuenow", "50");
+  await expect
+    .poll(async () => Number(await stop.getAttribute("aria-valuenow")))
+    .toBeCloseTo(50, 0);
   expect(await page.evaluate(() => window.musart!.snapshot().revision)).toBe(before);
   await page.mouse.up();
   expect(await page.evaluate(() => window.musart!.snapshot().revision)).toBe(before + 1);

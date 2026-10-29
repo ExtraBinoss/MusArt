@@ -13,6 +13,9 @@
   height: 100%;
   container: inspector / inline-size;
 }
+.inspector-selection-boundary {
+  display: contents;
+}
 .inspector-title {
   height: 46px;
   display: flex;
@@ -218,11 +221,31 @@
   display: flex;
   justify-content: flex-end;
 }
+.effect-parameter-list {
+  display: grid;
+  gap: 6px;
+}
+.effect-parameter-list.is-virtual {
+  position: relative;
+  display: block;
+}
+.effect-parameter-row,
+.effect-parameter-row > * {
+  min-width: 0;
+  height: var(--effect-control-height);
+}
+.effect-parameter-list.is-virtual > .effect-parameter-row {
+  position: absolute;
+  right: 0;
+  left: 0;
+}
 .effect-controls-actions .icon-button {
   width: 26px;
   height: 26px;
 }
-.effect-controls > .number-field {
+.effect-controls > .number-field,
+.effect-parameter-row > .number-field,
+.effect-parameter-row .motion-property-input > .number-field {
   height: var(--effect-control-height);
 }
 .effect-playback {

@@ -1,4 +1,4 @@
-# GPU Noise
+# Noise
 
 Noise is a single effect with seven selectable three-dimensional fields: gradient
 Perlin, smoothly interpolated value noise, nearest-cell noise, Worley F1 distance,

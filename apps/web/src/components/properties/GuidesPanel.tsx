@@ -1,6 +1,6 @@
 import { Plus, Trash2 } from "lucide-react";
 import { useSetAtom } from "jotai";
-import { previewAtom } from "../../state/session/editor";
+import { previewAtom, useEngineValue } from "../../state/session/editor";
 import {
   createId,
   createLayerGeometryIndex,
@@ -17,33 +17,37 @@ import { GuidePresets } from "./guides/GuidePresets";
 import { guidesFromPreset } from "./guides/presets";
 import { GuideColor } from "./guides/GuideColor";
 import { DEFAULT_GUIDE_COLOR, guideColors } from "../../state/guides/colors";
+import { resolveInspectorPage } from "./inspector-scope";
 export function GuidesPanel({
   engine,
   page,
   layer,
   run,
+  canEdit,
 }: {
   engine: EnginePort;
   page: Composition;
   layer?: Layer;
   run: (action: () => void) => void;
+  canEdit?: () => boolean;
 }) {
   const { t } = useTranslation();
   const setPreview = useSetAtom(previewAtom);
+  const rulers = useEngineValue(
+    engine,
+    () => resolveInspectorPage(engine, page)?.rulers ?? page.rulers ?? false,
+  );
   const guides = layer ? (layer.guides ?? []) : page.guides;
   const targetId = layer?.id;
   const locked = !!layer && createLayerGeometryIndex(page).isLocked(layer.id);
   function current() {
-    const snapshot = engine.getSnapshot();
-    return (
-      snapshot.pageId === page.id &&
-      snapshot.project.pages.find((item) => item.id === page.id) === page
-    );
+    return !canEdit || canEdit() ? resolveInspectorPage(engine, page) : null;
   }
-  function edit(action: () => void) {
+  function edit(action: (currentPage: Composition) => void) {
     if (locked || !current()) return;
     run(() => {
-      if (current()) action();
+      const currentPage = current();
+      if (currentPage) action(currentPage);
     });
   }
   return (
@@ -54,9 +58,9 @@ export function GuidesPanel({
           bounds={layer ?? page}
           disabled={locked}
           onAppend={(preset) =>
-            edit(() =>
+            edit((currentPage) =>
               engine.transaction(
-                guidesFromPreset(layer ?? page, preset).map((guide) => ({
+                guidesFromPreset(layer ?? currentPage, preset).map((guide) => ({
                   type: "addGuide",
                   targetId,
                   guide: { ...guide, color: guideColors.read() },
@@ -72,7 +76,7 @@ export function GuidesPanel({
           <Switch
             size="sm"
             aria-label={t("showRulers")}
-            checked={page.rulers ?? false}
+            checked={rulers}
             onCheckedChange={(rulers) =>
               edit(() => engine.execute({ type: "updatePage", patch: { rulers } }))
             }
@@ -87,14 +91,17 @@ export function GuidesPanel({
             variant="outline"
             disabled={locked}
             onClick={() =>
-              edit(() =>
+              edit((currentPage) =>
                 engine.execute({
                   type: "addGuide",
                   targetId,
                   guide: {
                     id: createId("guide"),
                     axis,
-                    position: (axis === "x" ? (layer ?? page).width : (layer ?? page).height) / 2,
+                    position:
+                      (axis === "x"
+                        ? (layer ?? currentPage).width
+                        : (layer ?? currentPage).height) / 2,
                     color: guideColors.read(),
                   },
                 }),

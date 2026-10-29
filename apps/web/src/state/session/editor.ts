@@ -1,6 +1,6 @@
-import { useEffect, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { atom, useAtomValue } from "jotai";
-import type { EnginePort } from "@musart/core";
+import type { EnginePort, SessionSnapshot } from "@musart/core";
 import type { PreviewValue } from "./preview-source";
 import type { Tool } from "../../canvas/EditorCanvas";
 import type { SelectionMode } from "../../services/selection/wand/model";
@@ -33,6 +33,11 @@ export function useTheme() {
 }
 export function useEngine(engine: EnginePort) {
   return useSyncExternalStore(engine.subscribe, engine.getSnapshot, engine.getSnapshot);
+}
+/** Select immutable references or cached projections so unrelated session updates stay local. */
+export function useEngineValue<T>(engine: EnginePort, select: (snapshot: SessionSnapshot) => T) {
+  const read = useCallback(() => select(engine.getSnapshot()), [engine, select]);
+  return useSyncExternalStore(engine.subscribe, read, read);
 }
 export function applyTheme(theme: Theme) {
   const dark =

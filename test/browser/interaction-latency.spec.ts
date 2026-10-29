@@ -35,7 +35,7 @@ const receipt = createEffect("receipt", { id: effectId });
 const definition = getEffectDefinition("receipt");
 const controls = definition.parameters
   .filter((p) => isEffectParameterVisible(receipt, p))
-  .map((p) => {
+  .map((p, index) => {
     const label = JSON.stringify(i18n.t(p.labelKey));
     const selector =
       p.kind === "number"
@@ -45,7 +45,7 @@ const controls = definition.parameters
           : p.kind === "boolean"
             ? `button[role="switch"][aria-label=${label}]`
             : `button[aria-label=${label}]`;
-    return { key: p.key, selector };
+    return { key: p.key, selector, index };
   });
 
 async function start(page: Page, name: string) {
@@ -227,7 +227,7 @@ test("Lock: cold and repeated native row/Inspector/canvas feedback preserves ato
   }
 });
 
-test("Receipt: all 33 controls are immediate and no GPU queue work enters native panel presentation", async ({
+test("Receipt: its visible parameter window is immediate and no GPU queue work enters native panel presentation", async ({
   page,
 }) => {
   const samples: InteractionSample[] = [];
@@ -251,7 +251,13 @@ test("Receipt: all 33 controls are immediate and no GPU queue work enters native
       await trigger.click();
       const sample = await interactionResult(page);
       samples.push(sample);
-      expect(sample.firstReadyControls).toEqual({ total: 33, missing: [], placeholders: 0 });
+      expect(sample.firstReadyControls).toMatchObject({
+        total: 33,
+        missingMounted: [],
+        placeholders: 0,
+      });
+      expect(sample.firstReadyControls!.mounted).toBeGreaterThanOrEqual(10);
+      expect(sample.firstReadyControls!.mounted).toBeLessThanOrEqual(16);
       expect(sample.focusInside).toBe(true);
       expect(sample.submissionsBeforeReady).toEqual([]);
       expect(sample.submissionsThroughSettled).toEqual([]);

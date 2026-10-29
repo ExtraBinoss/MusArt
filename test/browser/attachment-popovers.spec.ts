@@ -170,7 +170,7 @@ test("complete effect controls keep matching heights, real seed pixels and undo,
     opacity: element.querySelector(".number-field")!.getBoundingClientRect().height,
     blend: element.querySelector('[data-slot="select-trigger"]')!.getBoundingClientRect().height,
   }));
-  expect(sizes.opacity).toBe(34);
+  expect(sizes.opacity).toBe(30);
   expect(sizes.blend).toBe(sizes.opacity);
   const before = await page.evaluate(async () => ({
     revision: window.musart!.snapshot().revision,
@@ -234,9 +234,10 @@ test("complete effect controls keep matching heights, real seed pixels and undo,
   expect(layout.height).toBeLessThanOrEqual(600);
   expect(layout.overflow).toBe("auto");
   expect(layout.scrollHeight).toBeGreaterThan(layout.clientHeight * 2);
-  await popover
-    .getByRole("textbox", { name: "Rotation du traitement", exact: true })
-    .scrollIntoViewIfNeeded();
+  // The last parameter is virtualized; native scrolling mounts it before it can be queried.
+  await viewport.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+  });
   expect(await viewport.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
   await expect(
     popover.getByRole("textbox", { name: "Rotation du traitement", exact: true }),

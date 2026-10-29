@@ -62,15 +62,21 @@ function EffectOptions({
   run: (task: () => void) => void;
   category: "effect" | "adjustment";
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const collator = new Intl.Collator(i18n.resolvedLanguage ?? i18n.language, {
+    sensitivity: "base",
+    numeric: true,
+  });
   const actions = layerActions(engine, page, run);
   return (
     <>
       {Object.values(EFFECT_CATALOG)
         .filter((item) => item.category === category)
-        .map((item) => (
+        .map((item) => ({ item, label: t(item.nameKey) }))
+        .sort((a, b) => collator.compare(a.label, b.label))
+        .map(({ item, label }) => (
           <DropdownMenuItem key={item.type} onSelect={() => actions.effect(item.type)}>
-            {t(item.nameKey)}
+            {label}
           </DropdownMenuItem>
         ))}
     </>

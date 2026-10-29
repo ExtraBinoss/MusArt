@@ -59,6 +59,7 @@ export function Rulers({
     color: string;
   } | null>(null);
   const rulers = useRef<HTMLDivElement>(null);
+  const presentations = useRef(new Map<SVGGElement, RulerPresentation>());
   useEffect(() => {
     const clear = () => {
       const current = active.current;
@@ -95,7 +96,11 @@ export function Rulers({
     if (!element) return;
     const resize = () => {
       const rect = element.getBoundingClientRect();
-      setSize({ width: rect.width, height: rect.height });
+      setSize((previous) =>
+        previous.width === rect.width && previous.height === rect.height
+          ? previous
+          : { width: rect.width, height: rect.height },
+      );
     };
     const observer = new ResizeObserver(resize);
     observer.observe(element);
@@ -106,8 +111,11 @@ export function Rulers({
     };
   }, [viewport]);
   useEffect(() => {
-    if (!page.rulers) return;
-    const presentations = new Map<SVGGElement, RulerPresentation>();
+    const retained = presentations.current;
+    if (!page.rulers) {
+      retained.clear();
+      return;
+    }
     const paint = () => {
       const current = viewSource?.read() ?? view;
       const currentPage = controller?.read().page ?? page;
@@ -119,14 +127,14 @@ export function Rulers({
           extent / 2 +
           current[axis] -
           ((axis === "x" ? currentPage.width : currentPage.height) * current.zoom) / 2;
-        let presentation = presentations.get(root);
+        let presentation = retained.get(root);
         if (!presentation) {
           presentation = new RulerPresentation(
             root,
             axis,
             root.closest<HTMLElement>(".ruler-strip")!,
           );
-          presentations.set(root, presentation);
+          retained.set(root, presentation);
         }
         presentation.paint(extent, origin, current.zoom);
       }
@@ -138,7 +146,7 @@ export function Rulers({
       stopView?.();
       stopScene?.();
     };
-  }, [page, size, view, viewSource, controller]);
+  }, [page, size.width, size.height, view, viewSource, controller]);
   if (!page.rulers) return null;
   function move(event: PointerEvent<SVGSVGElement>) {
     if (!active.current || !viewport.current) return;

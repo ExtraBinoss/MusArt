@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -12,6 +13,7 @@ export type { EditorCanvasProps } from "./session/canvas-contracts";
 import { shapeChoiceAtom } from "../components/assets/selection";
 import { createArtworkLayer } from "./interaction/shapes";
 import { completeDrawing, resizeDrawing } from "./interaction/drawing";
+import { readReleasePoint } from "./interaction/release";
 import { useTranslation } from "react-i18next";
 import {
   createLayer,
@@ -26,7 +28,6 @@ import { createCanvasView } from "./session/view-state";
 import { useRenderMetrics } from "../state/session/render-metrics";
 import { EMPTY_PREVIEW_SOURCE } from "../state/session/preview-source";
 import {
-  boxSelection,
   clickSelection,
   patchesToCommands,
   selectedRoots,
@@ -45,13 +46,13 @@ import { InactiveArtboards } from "./artboards/InactiveArtboards";
 import { captureGestureOrigin, isGestureOriginCurrent } from "./interaction/gesture-origin";
 import "./artboards/artboards.css";
 import { QuickAdd } from "./quick-add/QuickAdd";
-import { SelectionOverlays } from "./selection/SelectionOverlays";
+import { CanvasSelection } from "./selection/CanvasSelection";
 import { canvasHit } from "./selection/hit";
 import { useMarquee } from "./selection/use-marquee";
+import { createLiveMarquee } from "./selection/live-marquee";
 import * as marqueeScope from "./selection/marquee-scope";
 import { useCanvasPresentation } from "./viewport/use-canvas-presentation";
-import { Rulers } from "./guides/Rulers";
-import { GuideOverlay } from "./guides/GuideOverlay";
+import { CanvasRulers } from "./guides/CanvasRulers";
 import { Measurements } from "./guides/Measurements";
 import { useWand } from "./interaction/use-wand";
 import { PixelSelectionOverlay, PixelSelectionToolbar } from "./selection/PixelSelectionOverlay";
@@ -72,8 +73,8 @@ interface Gesture extends TransformGesture, marqueeScope.MarqueeScope {
   handle?: Handle;
   shape?: Layer;
   current: Point;
+  boxStarted?: boolean;
 }
-
 export function EditorCanvas({
   engine,
   tool,
@@ -123,25 +124,36 @@ export function EditorCanvas({
   });
   const marqueeElement = useRef<HTMLDivElement>(null);
   const marquee = useMarquee(marqueeElement);
+  const liveMarquee = useMemo(
+    () =>
+      createLiveMarquee(engine, {
+        request: (callback) => requestAnimationFrame(callback),
+        cancel: (handle) => cancelAnimationFrame(handle),
+      }),
+    [engine],
+  );
+  useEffect(() => () => liveMarquee.cancel(), [liveMarquee]);
   const [space, setSpace] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const wand = useWand({ port: services?.pixelSelection, store, tool, onError });
   const cancelWand = wand.cancel;
   const pixelSelection = services?.pixelSelection;
-  const cancelGesture = useCallback(() => {
-    cancelWand();
-    const pointerId = gesture.current?.pointerId;
-    gesture.current = null;
-    if (pointerId !== undefined && viewport.current?.hasPointerCapture(pointerId))
-      viewport.current.releasePointerCapture(pointerId);
-    patchesRef.current = [];
-    snapFeedback.clear();
-    motion.stop();
-    controller.setGesture([]);
-    marquee.clear();
-  }, [motion, controller, cancelWand, snapFeedback, marquee]);
-  const displayPage = page;
-  const displayIndex = useMemo(() => createLayerGeometryIndex(displayPage), [displayPage]);
+  const cancelGesture = useCallback(
+    (capturedPointerId?: number) => {
+      liveMarquee.cancel();
+      cancelWand();
+      const pointerId = gesture.current?.pointerId ?? capturedPointerId;
+      gesture.current = null;
+      if (pointerId !== undefined && viewport.current?.hasPointerCapture(pointerId))
+        viewport.current.releasePointerCapture(pointerId);
+      patchesRef.current = [];
+      snapFeedback.clear();
+      motion.stop();
+      controller.setGesture([]);
+      marquee.clear();
+    },
+    [motion, controller, cancelWand, snapFeedback, marquee, liveMarquee],
+  );
   const beforePaint = useCallback(() => {
     if (controller.read().playback && pixelSelection?.read()) pixelSelection.deselect();
     if (
@@ -312,7 +324,8 @@ export function EditorCanvas({
       cancelGesture();
       return;
     }
-    marqueeScope.prepareMarqueePage(engine, gesture, event, pagePoint);
+    if (!marqueeScope.prepareMarqueePage(engine, gesture, event, pagePoint))
+      return cancelGesture(active.pointerId);
     const point = pagePoint(event);
     active.current = point;
     if (active.mode === "pan") {
@@ -327,8 +340,14 @@ export function EditorCanvas({
       return;
     }
     if (active.mode === "box") {
-      if (Math.hypot(event.clientX - active.client.x, event.clientY - active.client.y) > 3)
+      if (
+        active.boxStarted ||
+        Math.hypot(event.clientX - active.client.x, event.clientY - active.client.y) > 3
+      ) {
+        active.boxStarted = true;
         marquee.show(active.from, point);
+        liveMarquee.queue(active.from, point, active.boxSelection!);
+      }
       return;
     }
     if (active.mode === "draw" && active.shape) {
@@ -351,18 +370,34 @@ export function EditorCanvas({
       cancelGesture();
       return;
     }
-    marqueeScope.prepareMarqueePage(engine, gesture, event, pagePoint);
+    if (!marqueeScope.prepareMarqueePage(engine, gesture, event, pagePoint))
+      return cancelGesture(active.pointerId);
     if (active.mode === "move" || active.mode === "resize") {
-      const finalPoint = pagePoint(event);
+      const finalPoint = readReleasePoint(active, event, () => pagePoint(event));
       if (
-        finalPoint.x !== active.current.x ||
-        finalPoint.y !== active.current.y ||
-        (active.modifiers &&
-          (active.modifiers.alt !== event.altKey || active.modifiers.shift !== event.shiftKey))
+        finalPoint &&
+        (finalPoint.x !== active.current.x ||
+          finalPoint.y !== active.current.y ||
+          (active.modifiers &&
+            (active.modifiers.alt !== event.altKey || active.modifiers.shift !== event.shiftKey)))
       ) {
         active.current = finalPoint;
         updateTransform(active, finalPoint, event.altKey, event.shiftKey);
       }
+    }
+    if (active.mode === "box") {
+      const box = active.boxSelection!;
+      if (
+        !box.intersect ||
+        active.boxStarted ||
+        Math.hypot(event.clientX - active.client.x, event.clientY - active.client.y) > 3
+      )
+        liveMarquee.queue(
+          active.from,
+          readReleasePoint(active, event, () => pagePoint(event)) ?? active.current,
+          box,
+        );
+      liveMarquee.commit();
     }
     const commands = patchesToCommands(patchesRef.current);
     // Clear the transient frame before publishing canonical edits in this same input task.
@@ -381,21 +416,6 @@ export function EditorCanvas({
         );
         engine.execute({ type: "addLayers", layers: [shape] });
         engine.select([shape.id]);
-      } else if (active.mode === "box") {
-        const box = active.boxSelection!;
-        if (
-          !box.intersect ||
-          Math.hypot(event.clientX - active.client.x, event.clientY - active.client.y) > 3
-        ) {
-          const selected = boxSelection(
-            controller.read().page,
-            active.from,
-            pagePoint(event),
-            box.intersect ? "intersect" : "contain",
-          );
-          attachmentSelection(engine).clear();
-          engine.select(box.additive ? [...new Set([...box.initial, ...selected])] : selected);
-        }
       }
     } catch (error) {
       onError?.(error instanceof Error ? error.message : String(error));
@@ -408,12 +428,6 @@ export function EditorCanvas({
   function pointerCancel(event: ReactPointerEvent<HTMLDivElement>) {
     if (!gesture.current || gesture.current.pointerId === event.pointerId) cancelGesture();
   }
-  const selected = useMemo(() => {
-    const ids = new Set(snapshot.selection);
-    return displayPage.layers.filter(
-      (layer) => ids.has(layer.id) && displayIndex.isVisible(layer.id),
-    );
-  }, [displayPage, displayIndex, snapshot.selection]);
   const gizmoProps = { engine, controller, viewSource: motion, onError };
   const cursor = tool === "hand" || space ? "grab" : tool === "pointer" ? "default" : "crosshair";
   return (
@@ -449,6 +463,7 @@ export function EditorCanvas({
             event.stopPropagation();
           }
           wand.escape();
+          if (!pendingBox?.intersect) liveMarquee.discard();
           cancelGesture();
           if (!pixelSelection && !pendingBox?.intersect) engine.select([]);
         }
@@ -509,32 +524,20 @@ export function EditorCanvas({
             fontResolver={fontResolver}
             mediaResolverFor={services?.mediaResolverFor}
           />
-          <GuideOverlay
+          <CanvasSelection
             controller={controller}
             engine={engine}
-            page={displayPage}
-            selected={snapshot.selection}
-            view={pageView}
             viewSource={pageViewSource}
             viewport={viewport}
+            showHandles={tool !== "wand" && tool !== "segment"}
+            onHandle={handlePointerDown}
           />
           <Measurements
             controller={controller}
             snapping={snapFeedback}
-            selected={snapshot.selection}
             zoom={shown.zoom}
             viewSource={motion}
           />
-          {tool !== "wand" && tool !== "segment" && (
-            <SelectionOverlays
-              page={displayPage}
-              selected={selected}
-              zoom={shown.zoom}
-              controller={controller}
-              viewSource={motion}
-              onHandle={handlePointerDown}
-            />
-          )}
           <EffectGizmo {...gizmoProps} />
           <div ref={marqueeElement} className="canvas-marquee" hidden />
         </div>
@@ -554,7 +557,7 @@ export function EditorCanvas({
         />
         <ArtboardModeFooter engine={engine} workspace={layout} view={shown} />
       </div>
-      <Rulers
+      <CanvasRulers
         controller={controller}
         engine={engine}
         page={page}

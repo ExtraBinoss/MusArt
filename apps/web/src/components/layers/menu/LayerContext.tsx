@@ -8,6 +8,7 @@ import { layerActions } from "./actions";
 import "../messages";
 import { attachmentSelection } from "../../../state/selection/attachments";
 import { useAttachmentSelection } from "../../../state/selection/use-attachment-selection";
+import { sameSelectionAvailability } from "./availability";
 export const LayerContext = memo(function LayerContext({
   engine,
   page,
@@ -25,7 +26,7 @@ export const LayerContext = memo(function LayerContext({
     actions = layerActions(engine, page, run);
   const GroupIcon = state.ungroup ? Ungroup : FolderPlus;
   return (
-    <ContextMenuContent>
+    <ContextMenuContent portalContainer={document.body}>
       <ContextMenuItem
         disabled={Boolean(attachment) || (state.ungroup ? !state.canUngroup : !state.canGroup)}
         onSelect={state.ungroup ? actions.ungroup : actions.group}
@@ -61,4 +62,4 @@ export const LayerContext = memo(function LayerContext({
       </ContextMenuItem>
     </ContextMenuContent>
   );
-});
+}, sameSelectionAvailability);

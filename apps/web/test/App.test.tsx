@@ -3,7 +3,7 @@ import { screen, fireEvent, waitFor, act, within } from "@testing-library/react"
 import { App } from "../src/App";
 import { setup } from "./support/ui";
 import { toolAtom } from "../src/state/session/editor";
-import { createProject } from "@musart/core";
+import { createEffect, createProject } from "@musart/core";
 import { createMotionTransport } from "../src/services/motion/transport";
 vi.mock("../src/canvas/EditorCanvas", () => ({
   EditorCanvas: ({
@@ -24,6 +24,41 @@ vi.mock("../src/canvas/EditorCanvas", () => ({
     </div>
   ),
 }));
+test("opening an effect on an unselected layer leaves the app shell untouched", async () => {
+  const d = setup();
+  const locationBefore = location.href;
+  history.replaceState(null, "", "?automation=1");
+  try {
+    d.engine.execute({
+      type: "updateLayers",
+      ids: [d.rectangle.id],
+      patch: { effects: [createEffect("receipt")] },
+    });
+    d.engine.select([]);
+    d.mount(<App engine={d.engine} services={d.services} />);
+    await screen.findByTestId("canvas");
+    const root = document.querySelector(".musart-app")!;
+    const before = root.getAttribute("data-react-renders");
+    fireEvent.click(screen.getByRole("button", { name: "Ticket de caisse · Rectangle bleu" }));
+    expect(screen.getByRole("dialog", { name: "Effets · Rectangle bleu" })).toBeVisible();
+    expect(root).toHaveAttribute("data-react-renders", before);
+    expect(d.engine.getSnapshot().selection).toEqual([d.rectangle.id]);
+    // Main retains secondary Inspector presentation while the attachment owns editing.
+    expect(document.querySelector(".inspector-selection-boundary")).toHaveAttribute(
+      "aria-busy",
+      "true",
+    );
+    fireEvent.keyDown(screen.getByRole("dialog", { name: "Effets · Rectangle bleu" }), {
+      key: "Escape",
+    });
+    expect(screen.getByRole("region", { name: "Propriétés" })).toHaveAttribute(
+      "data-selected-layer-id",
+      d.rectangle.id,
+    );
+  } finally {
+    history.replaceState(null, "", locationBefore);
+  }
+});
 test("assembles the pinned inspector, layers, project menu, export and import actions", async () => {
   const d = setup();
   d.mount(<App engine={d.engine} services={d.services} />);

@@ -1,9 +1,9 @@
 import { expect, test, vi } from "vitest";
-import { StrictMode } from "react";
+import { Profiler, StrictMode, type ComponentProps } from "react";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { createLayer, createPage } from "@musart/core";
 import { setup } from "../../support/ui";
-import { MagicSearch } from "../../../src/components/search/MagicSearch";
+import { MagicSearch, type SearchSurface } from "../../../src/components/search/MagicSearch";
 import { toolAtom, themeAtom } from "../../../src/state/session/editor";
 import { i18n } from "../../../src/state/i18n";
 import { createCommandPort } from "../../../src/state/keybindings/command-port";
@@ -11,10 +11,152 @@ import {
   importVectorFiles,
   VectorImportError,
 } from "../../../src/services/assets/vector/import-files";
+const shellRender = vi.hoisted(() => vi.fn());
+vi.mock("../../../src/components/search/SearchDialog", async (original) => {
+  const actual = await original<typeof import("../../../src/components/search/SearchDialog")>();
+  return {
+    ...actual,
+    SearchDialog(props: ComponentProps<typeof actual.SearchDialog>) {
+      shellRender();
+      return <actual.SearchDialog {...props} />;
+    },
+  };
+});
 vi.mock("../../../src/services/assets/vector/import-files", async (original) => ({
   ...(await original<typeof import("../../../src/services/assets/vector/import-files")>()),
   importVectorFiles: vi.fn().mockResolvedValue(undefined),
 }));
+test("closed search rerenders only when command availability changes and actions use the latest selection", () => {
+  const d = setup();
+  d.engine.select([d.rectangle.id]);
+  const surface = vi.fn((_props: SearchSurface) => null);
+  d.mount(
+    <MagicSearch
+      engine={d.engine}
+      services={d.services}
+      onTask={d.onTask}
+      onImport={vi.fn()}
+      onProjects={vi.fn()}
+      onExport={vi.fn()}
+      onPanelMode={vi.fn()}
+    >
+      {surface}
+    </MagicSearch>,
+  );
+  const renders = surface.mock.calls.length;
+  const shells = shellRender.mock.calls.length;
+  const first = surface.mock.lastCall![0];
+  act(() => d.engine.select([d.image.id]));
+  expect(surface).toHaveBeenCalledTimes(renders);
+  act(() => {
+    createCommandPort(d.engine).run("action:delete");
+  });
+  expect(d.engine.getSnapshot().project.pages[0]!.layers.map((layer) => layer.id)).toEqual([
+    d.rectangle.id,
+    d.text.id,
+  ]);
+  expect(surface.mock.calls.length).toBeGreaterThan(renders);
+  expect(shellRender).toHaveBeenCalledTimes(shells);
+  expect(surface.mock.lastCall![0].trigger).toBe(first.trigger);
+  expect(surface.mock.lastCall![0].run).toBe(first.run);
+});
+
+test("a closed search without a command surface resolves undo availability only when invoked", async () => {
+  const { SearchCatalog } = await import("../../../src/components/search/catalog/cache");
+  const commands = vi.spyOn(SearchCatalog.prototype, "commandsFor");
+  const d = fixture();
+  const shells = shellRender.mock.calls.length;
+  act(() => d.engine.select([d.rectangle.id]));
+  act(() => d.engine.execute({ type: "updatePage", patch: { name: "Latest edit" } }));
+  expect(commands).not.toHaveBeenCalled();
+  expect(shellRender).toHaveBeenCalledTimes(shells);
+  expect(d.engine.getSnapshot().canUndo).toBe(true);
+  act(() => {
+    expect(createCommandPort(d.engine).run("action:undo")).toBe(true);
+  });
+  expect(commands).toHaveBeenCalledOnce();
+  expect(d.engine.getSnapshot().project.pages[0]!.name).toBe(d.page.name);
+  expect(d.engine.getSnapshot().canUndo).toBe(false);
+  expect(shellRender).toHaveBeenCalledTimes(shells);
+});
+
+test("a retained enabled surface command rechecks availability during its urgent deferred handoff", () => {
+  const d = setup();
+  d.engine.select([d.rectangle.id]);
+  const surface = vi.fn(({ commands, run }: SearchSurface) => (
+    <button
+      disabled={!!commands.find((item) => item.id === "action:duplicate")?.disabled}
+      onClick={() => run("action:duplicate")}
+    >
+      Duplicate current selection
+    </button>
+  ));
+  let inspectUrgent = false;
+  const urgent: { renders: number; disabled: boolean }[] = [];
+  d.mount(
+    <Profiler
+      id="current-command-guard"
+      onRender={() => {
+        if (!inspectUrgent) return;
+        inspectUrgent = false;
+        urgent.push({
+          renders: surface.mock.calls.length,
+          disabled: screen.getByRole<HTMLButtonElement>("button", {
+            name: "Duplicate current selection",
+          }).disabled,
+        });
+        surface.mock.lastCall![0].run("action:duplicate");
+      }}
+    >
+      <MagicSearch
+        engine={d.engine}
+        services={d.services}
+        onTask={d.onTask}
+        onImport={vi.fn()}
+        onProjects={vi.fn()}
+        onExport={vi.fn()}
+        onPanelMode={vi.fn()}
+      >
+        {surface}
+      </MagicSearch>
+    </Profiler>,
+  );
+  const renders = surface.mock.calls.length;
+  const before = d.engine.getSnapshot();
+  inspectUrgent = true;
+  act(() => d.engine.select([]));
+  expect(urgent).toEqual([{ renders, disabled: false }]);
+  expect(surface).toHaveBeenCalledTimes(renders + 1);
+  expect(screen.getByRole("button", { name: "Duplicate current selection" })).toBeDisabled();
+  expect(d.onTask).not.toHaveBeenCalled();
+  expect(d.engine.getSnapshot().revision).toBe(before.revision);
+  expect(d.engine.getSnapshot().project).toBe(before.project);
+  expect(d.engine.getSnapshot().selection).toEqual([]);
+});
+
+test("typing in search does not rebuild the independent command surface", async () => {
+  const d = setup();
+  const surface = vi.fn(({ trigger }: SearchSurface) => trigger);
+  d.mount(
+    <MagicSearch
+      engine={d.engine}
+      services={d.services}
+      onTask={d.onTask}
+      onImport={vi.fn()}
+      onProjects={vi.fn()}
+      onExport={vi.fn()}
+      onPanelMode={vi.fn()}
+    >
+      {surface}
+    </MagicSearch>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Rechercher dans MusArt" }));
+  const input = await screen.findByRole("combobox");
+  const renders = surface.mock.calls.length;
+  fireEvent.change(input, { target: { value: "baguette" } });
+  expect(await screen.findByRole("option", { name: /Baguette magique/ })).toBeVisible();
+  expect(surface).toHaveBeenCalledTimes(renders);
+});
 function fixture(strict = false) {
   const d = setup();
   const onImport = vi.fn(),

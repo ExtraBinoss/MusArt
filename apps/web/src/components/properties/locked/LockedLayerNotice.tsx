@@ -5,6 +5,7 @@ import { useSetAtom } from "jotai";
 import { previewAtom } from "../../../state/session/editor";
 import { Button } from "../../ui/button";
 import { blockingLocks, captureUnlock } from "./unlock";
+import { resolveInspectorPage } from "../inspector-scope";
 import "./messages";
 import "./locked-layer.css";
 
@@ -27,7 +28,6 @@ export function LockedLayerNotice({
   const locks = blockingLocks(page, ids);
   if (!locks.length) return null;
   const parents = locks.filter((layer) => !selected.has(layer.id));
-  const unlock = captureUnlock(engine, page, ids);
   return (
     <div className="locked-layer-notice" role="status">
       <LockKeyhole size={15} aria-hidden />
@@ -40,11 +40,14 @@ export function LockedLayerNotice({
       <Button
         variant="secondary"
         size="sm"
-        onClick={() =>
+        onClick={() => {
+          const currentPage = resolveInspectorPage(engine, page);
+          if (!currentPage) return;
+          const unlock = captureUnlock(engine, currentPage, ids);
           run(() => {
             if (unlock()) setPreview(null);
-          })
-        }
+          });
+        }}
       >
         {t("unlock")}
       </Button>

@@ -20,8 +20,11 @@ function PopoverContent({
   asChild,
   align = "center",
   sideOffset = 4,
+  portalContainer,
   ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Content>) {
+}: React.ComponentProps<typeof PopoverPrimitive.Content> & {
+  portalContainer?: HTMLElement;
+}) {
   const content =
     asChild && React.isValidElement<{ children?: React.ReactNode }>(children) ? (
       React.cloneElement(
@@ -33,7 +36,7 @@ function PopoverContent({
       <PresentationBoundary>{children}</PresentationBoundary>
     );
   return (
-    <PopoverPrimitive.Portal>
+    <PopoverPrimitive.Portal container={portalContainer}>
       <PopoverPrimitive.Content
         asChild={asChild}
         data-slot="popover-content"

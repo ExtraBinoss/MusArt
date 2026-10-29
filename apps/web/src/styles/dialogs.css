@@ -239,3 +239,12 @@
 .new-project-fields > button {
   margin-top: 12px;
 }
+/* Keep media alignment scoped to its dialog, without a global group-has invalidation set. */
+@media (min-width: 40rem) {
+  [data-slot="alert-dialog-content"][data-size="default"]
+    > [data-slot="alert-dialog-header"]
+    > [data-slot="alert-dialog-media"]
+    ~ [data-slot="alert-dialog-title"] {
+    grid-column-start: 2;
+  }
+}

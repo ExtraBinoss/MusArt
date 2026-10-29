@@ -301,7 +301,9 @@ export class EditorEngine implements EnginePort {
     }
     const page = currentPage(project, pageId);
     const remainingIds = new Set(page.layers.map((layer) => layer.id));
-    selection = selection.filter((id) => remainingIds.has(id));
+    // Preserve presentation identity unless a command actually removed a selected layer.
+    if (selection.some((id) => !remainingIds.has(id)))
+      selection = selection.filter((id) => remainingIds.has(id));
     return this.prepared(
       before,
       project,
@@ -311,9 +313,10 @@ export class EditorEngine implements EnginePort {
         this.future = [];
         this.sequence = sequence;
         reserveProjectIds(project);
-        const committedSelection = selectionChanged
-          ? selection
-          : this.snapshot.selection.filter((id) => remainingIds.has(id));
+        // Reservations permit selection changes; an explicit handler result still takes priority.
+        let committedSelection = selectionChanged ? selection : this.snapshot.selection;
+        if (committedSelection.some((id) => !remainingIds.has(id)))
+          committedSelection = committedSelection.filter((id) => remainingIds.has(id));
         this.publish(
           {
             project,

@@ -7,16 +7,22 @@ import {
 } from "@musart/core";
 import { layerSelection } from "./selection";
 import { capturePresentationDelete } from "../../../state/selection/attachments";
+import { resolveLayerPage } from "../tree/activation";
 /** Menu operations always re-read the active selection and reject a stale page before execution. */
 export function layerActions(
   engine: EnginePort,
   page: Composition,
   run: (task: () => void) => void,
 ) {
-  function execute(make: (ids: string[]) => Command[]) {
+  function execute(make: (ids: string[], page: Composition) => Command[]) {
     const origin = engine.getSnapshot(),
-      active = origin.project.pages.find((item) => item.id === origin.pageId);
-    if (active !== page || !layerSelection(active, origin.selection).editable) return;
+      active = resolveLayerPage(engine, page);
+    if (
+      !active ||
+      origin.pageId !== active.id ||
+      !layerSelection(active, origin.selection).editable
+    )
+      return;
     const ids = [...origin.selection];
     run(() => {
       const snapshot = engine.getSnapshot();
@@ -29,7 +35,7 @@ export function layerActions(
         ids.some((id) => !currentIds.has(id))
       )
         return;
-      const commands = make(ids);
+      const commands = make(ids, active);
       if (commands.length) engine.transaction(commands);
     });
   }
@@ -39,21 +45,23 @@ export function layerActions(
     duplicate: () => execute((ids) => [{ type: "duplicateLayers", ids }]),
     remove: () => {
       const snapshot = engine.getSnapshot();
+      const active = resolveLayerPage(engine, page);
       if (
-        snapshot.project.pages.find((item) => item.id === snapshot.pageId) !== page ||
-        !layerSelection(page, snapshot.selection).editable
+        !active ||
+        snapshot.pageId !== active.id ||
+        !layerSelection(active, snapshot.selection).editable
       )
         return;
       run(capturePresentationDelete(engine));
     },
     mask: () => execute((ids) => [{ type: "createMaskFromSelection", ids }]),
     effect: (type: EffectType) =>
-      execute((ids) => {
+      execute((ids, current) => {
         const selected = new Set(ids);
         return [
           {
             type: "updateLayerPatches",
-            patches: page.layers
+            patches: current.layers
               .filter((layer) => selected.has(layer.id))
               .map((layer) => ({
                 id: layer.id,

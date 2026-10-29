@@ -107,6 +107,7 @@ export const LayerCompositing = memo(function LayerCompositing({
           >
             {(live) => (
               <SelectField
+                identity={selection}
                 label={t("blendMode")}
                 value={String(live)}
                 disabled={disabled}

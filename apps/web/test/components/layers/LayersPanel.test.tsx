@@ -22,6 +22,101 @@ function renderLayers() {
   data.mount(<Live />);
   return data;
 }
+test("footer availability defers while row selection and attachment highlighting publish immediately", () => {
+  const previousURL = location.href;
+  history.replaceState({}, "", "/?automation=1");
+  const d = renderLayers(),
+    effect = createEffect("dither");
+  try {
+    act(() => {
+      d.engine.execute({
+        type: "updateLayers",
+        ids: [d.rectangle.id],
+        patch: { effects: [effect] },
+      });
+      d.engine.load(d.engine.getSnapshot().project);
+    });
+    const panel = document.querySelector<HTMLElement>(".layers-panel")!,
+      footer = document.querySelector<HTMLElement>(".layers-footer")!,
+      duplicate = screen.getByRole("button", { name: "Dupliquer la sélection" }),
+      row = document.querySelector<HTMLElement>(`[data-layer-id="${d.rectangle.id}"]`)!,
+      initial = Number(footer.dataset.reactRenders),
+      observed: { renders: number; rowSelected: string | null; disabled: boolean }[] = [],
+      setAttribute = panel.setAttribute.bind(panel);
+    vi.spyOn(panel, "setAttribute").mockImplementation((name, value) => {
+      if (name === "data-react-renders")
+        observed.push({
+          renders: Number(footer.dataset.reactRenders),
+          rowSelected: row.getAttribute("aria-selected"),
+          disabled: (duplicate as HTMLButtonElement).disabled,
+        });
+      setAttribute(name, value);
+    });
+    expect(duplicate).toBeDisabled();
+    act(() => d.engine.select([d.rectangle.id]));
+    expect(observed[0]).toEqual({ renders: initial, rowSelected: "true", disabled: true });
+    expect(duplicate).toBeEnabled();
+    expect(Number(footer.dataset.reactRenders)).toBeGreaterThan(initial);
+    const enabledRenders = Number(footer.dataset.reactRenders);
+    observed.length = 0;
+    const page = d.engine.getSnapshot().project.pages[0]!;
+    act(() => {
+      attachmentSelection(d.engine).select(page, {
+        kind: "effect",
+        pageId: page.id,
+        layerId: d.rectangle.id,
+        effectId: effect.id,
+      });
+    });
+    expect(observed[0]).toEqual({ renders: enabledRenders, rowSelected: "false", disabled: false });
+    expect(document.querySelector(`[data-attachment-effect-id="${effect.id}"]`)).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(duplicate).toBeDisabled();
+  } finally {
+    history.replaceState({}, "", previousURL);
+  }
+});
+test("cold attachment acquisition retains already empty compositing controls", () => {
+  const previousURL = location.href;
+  history.replaceState({}, "", "/?automation=1");
+  const d = renderLayers(),
+    effect = createEffect("receipt");
+  try {
+    act(() => {
+      d.engine.execute({
+        type: "updateLayers",
+        ids: [d.rectangle.id],
+        patch: { effects: [effect] },
+      });
+      d.engine.load(d.engine.getSnapshot().project);
+    });
+    const page = d.engine.getSnapshot().project.pages[0]!,
+      group = screen.getByRole("group", { name: "Composition des calques" }),
+      opacity = within(group).getByRole("textbox", { name: "Opacité" }),
+      before = Number(group.dataset.reactRenders);
+    expect(Number.isFinite(before)).toBe(true);
+    expect(opacity).toBeDisabled();
+    act(() => {
+      attachmentSelection(d.engine).select(page, {
+        kind: "effect",
+        pageId: page.id,
+        layerId: d.rectangle.id,
+        effectId: effect.id,
+      });
+    });
+    expect(Number(group.dataset.reactRenders)).toBe(before);
+    expect(within(group).getByRole("textbox", { name: "Opacité" })).toBe(opacity);
+    expect(opacity).toBeDisabled();
+    act(() => attachmentSelection(d.engine).clear());
+    expect(opacity).toBeEnabled();
+    expect(Number(group.dataset.reactRenders)).toBeGreaterThan(before);
+    expect(d.engine.getSnapshot().selection).toEqual([d.rectangle.id]);
+  } finally {
+    history.replaceState({}, "", previousURL);
+  }
+});
 test("virtual scroll retains memoized controls even while an attachment disables compositing", () => {
   history.replaceState({}, "", "/?automation=1");
   const d = renderLayers(),

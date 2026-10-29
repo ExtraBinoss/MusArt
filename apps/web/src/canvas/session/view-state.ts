@@ -1,8 +1,6 @@
 import type { EnginePort, SessionSnapshot } from "@musart/core";
 import { sameCanvasGeometry } from "./geometry-equality";
-const sameSelection = (a: readonly string[], b: readonly string[]) =>
-  a === b || (a.length === b.length && a.every((id, index) => id === b[index]));
-/** Geometry/selection subscription: paint changes are delivered directly to SceneController. */
+/** Geometry subscription only: paint and selection have their own retained consumers. */
 export function createCanvasView(engine: EnginePort) {
   let cached: SessionSnapshot | null = null;
   let observed: SessionSnapshot | null = null;
@@ -14,14 +12,9 @@ export function createCanvasView(engine: EnginePort) {
       const previous = observed;
       observed = snapshot;
       if (cached && previous?.project === snapshot.project && previous.pageId === snapshot.pageId) {
-        if (!sameSelection(cached.selection, snapshot.selection)) cached = snapshot;
         return cached;
       }
-      if (
-        !cached ||
-        !sameCanvasGeometry(cached, snapshot) ||
-        !sameSelection(cached.selection, snapshot.selection)
-      ) {
+      if (!cached || !sameCanvasGeometry(cached, snapshot)) {
         cached = snapshot;
       }
       return cached;

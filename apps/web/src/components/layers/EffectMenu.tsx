@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { EFFECT_CATALOG, type EffectType } from "@musart/core";
+import "../properties/effects/library-messages";
 import {
   DropdownMenuSub,
   DropdownMenuSubContent,
@@ -7,7 +8,11 @@ import {
   DropdownMenuItem,
 } from "../ui/dropdown-menu";
 export function EffectMenu({ onAdd }: { onAdd: (type: EffectType) => void }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const collator = new Intl.Collator(i18n.resolvedLanguage ?? i18n.language, {
+    sensitivity: "base",
+    numeric: true,
+  });
   return (
     <>
       {(["effect", "adjustment"] as const).map((category) => (
@@ -18,9 +23,11 @@ export function EffectMenu({ onAdd }: { onAdd: (type: EffectType) => void }) {
           <DropdownMenuSubContent className="effect-catalog-menu">
             {Object.values(EFFECT_CATALOG)
               .filter((item) => item.category === category)
-              .map((item) => (
+              .map((item) => ({ item, label: t(item.nameKey) }))
+              .sort((a, b) => collator.compare(a.label, b.label))
+              .map(({ item, label }) => (
                 <DropdownMenuItem key={item.type} onSelect={() => onAdd(item.type)}>
-                  {t(item.nameKey)}
+                  {label}
                 </DropdownMenuItem>
               ))}
           </DropdownMenuSubContent>

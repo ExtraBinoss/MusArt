@@ -4,17 +4,17 @@ Read [the shared-artboard contract](../rendering/artboard-workspace.md), [measur
 
 ## Ownership map
 
-| Responsibility                                          | Source                                                                                                                                                                                                                    |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pointer capture, drawing, movement and atomic commit    | [EditorCanvas](../../apps/web/src/canvas/EditorCanvas.tsx), [interaction helpers](../../apps/web/src/canvas/interaction/gestures.ts), [drawing](../../apps/web/src/canvas/interaction/drawing.ts)                         |
-| Stale gesture scope                                     | [gesture-origin](../../apps/web/src/canvas/interaction/gesture-origin.ts)                                                                                                                                                 |
-| Trackpad, hand pan, wheel normalization and zoom motion | [use-viewport](../../apps/web/src/canvas/viewport/use-viewport.ts), [motion](../../apps/web/src/canvas/viewport/motion.ts), [view](../../apps/web/src/canvas/viewport/view.ts)                                            |
-| Imperative DOM poses and overlays                       | [use-canvas-presentation](../../apps/web/src/canvas/viewport/use-canvas-presentation.ts), [artboard presentation](../../apps/web/src/canvas/artboards/presentation.ts)                                                    |
-| React geometry/selection invalidation                   | [view-state](../../apps/web/src/canvas/session/view-state.ts), [typed geometry equality](../../apps/web/src/canvas/session/geometry-equality.ts)                                                                          |
-| Indexed local/world geometry and hit testing            | [LayerGeometryIndex](../../packages/core/src/layers/geometry-index.ts)                                                                                                                                                    |
-| Large selection representation                          | [SelectionOverlays](../../apps/web/src/canvas/selection/SelectionOverlays.tsx)                                                                                                                                            |
-| Rulers, guides and measurements                         | [guides directory](../../apps/web/src/canvas/guides), especially [ruler-presentation](../../apps/web/src/canvas/guides/ruler-presentation.ts)                                                                             |
-| Scene submission and acknowledged revisions             | [SceneController](../../apps/web/src/canvas/session/scene-controller.ts), [canonical presentation port](../../apps/web/src/state/session/canonical-presentation.ts); renderer details belong to [Rendering](rendering.md) |
+| Responsibility                                              | Source                                                                                                                                                                                                                       |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pointer capture, drawing, movement and atomic commit        | [EditorCanvas](../../apps/web/src/canvas/EditorCanvas.tsx), [interaction helpers](../../apps/web/src/canvas/interaction/gestures.ts), [drawing](../../apps/web/src/canvas/interaction/drawing.ts)                            |
+| Stale gesture scope                                         | [gesture-origin](../../apps/web/src/canvas/interaction/gesture-origin.ts)                                                                                                                                                    |
+| Trackpad, hand pan, wheel normalization and zoom motion     | [use-viewport](../../apps/web/src/canvas/viewport/use-viewport.ts), [motion](../../apps/web/src/canvas/viewport/motion.ts), [view](../../apps/web/src/canvas/viewport/view.ts)                                               |
+| Imperative DOM poses and overlays                           | [use-canvas-presentation](../../apps/web/src/canvas/viewport/use-canvas-presentation.ts), [artboard presentation](../../apps/web/src/canvas/artboards/presentation.ts)                                                       |
+| React geometry invalidation and local selection decorations | [view-state](../../apps/web/src/canvas/session/view-state.ts), [CanvasSelection](../../apps/web/src/canvas/selection/CanvasSelection.tsx), [typed geometry equality](../../apps/web/src/canvas/session/geometry-equality.ts) |
+| Indexed local/world geometry and hit testing                | [LayerGeometryIndex](../../packages/core/src/layers/geometry-index.ts)                                                                                                                                                       |
+| Large selection representation                              | [SelectionOverlays](../../apps/web/src/canvas/selection/SelectionOverlays.tsx)                                                                                                                                               |
+| Rulers, guides and measurements                             | [guides directory](../../apps/web/src/canvas/guides), especially [ruler-presentation](../../apps/web/src/canvas/guides/ruler-presentation.ts)                                                                                |
+| Scene submission and acknowledged revisions                 | [SceneController](../../apps/web/src/canvas/session/scene-controller.ts), [canonical presentation port](../../apps/web/src/state/session/canonical-presentation.ts); renderer details belong to [Rendering](rendering.md)    |
 
 `packages/core` remains DOM/React/GPU independent. Use validated engine commands for committed document edits; presentation state and transient drafts belong in the web adapter.
 
@@ -42,19 +42,24 @@ Include immediate follow-up wheel/hand input after a large commit, before flushi
 - Ordinary wheel input pans both axes. Ctrl/Cmd+wheel zooms around the pointer; normalized delta modes, spike limits, reset/fit/recenter and reduced-motion behavior remain intact.
 - Pure pan changes retained CSS/compositor poses. It must not recreate the R3F canvas/context, reprepare sources, submit the document composition or publish editor React frames continuously.
 - Property/drawing/move previews are imperative. The canonical document stays unchanged until commit; cancellation restores it and a completed gesture creates one undo entry.
+- Selection-only publications leave `App`, `CanvasArea`, `EditorCanvas` and the GPU scene untouched. The small selection component reads the current canonical page and motion pose, so paint-only guide changes and in-flight zoom do not seed stale decorations. Inspector rendering is interruptible for document edits and target changes; a neutral capture boundary blocks stale controls during the pending handoff, without inherited inert/disabled styles. Ruler metadata must not enter a pending state. Every edit/preview checks the current selection, including portaled guide colors.
+- An unchanged click release does not reread the viewport rectangle after selection has invalidated browser styles. Release-only movement and Alt/Shift changes still read the final point and apply the transform.
 - Replacing the project/page/revision cancels old gestures. Escape and pointer loss release owned captures; historical playback cannot start edits.
 - Page/ruler guides remain visible and editable in collective selection mode. Above 64 selected layers, per-layer detail handles are bounded, but full selection, metadata and bulk commands remain intact.
 - Exact nested/rotated/group/mask geometry must remain correct. Mask-source subtrees do not intercept canvas picking, but remain editable through Layers.
 
 Pointer selection accepts Shift, Ctrl or Cmd clicks to add/remove the hit layer.
 Dragging the right mouse button starts a crossing marquee even on painted artwork;
-release selects editable, visible layers whose world bounds intersect the box. Holding
+the held box selects editable, visible layers whose world bounds intersect it, at most once per frame. Release flushes the final position. Holding
 Shift/Ctrl/Cmd adds those hits to the captured selection. Left-drag on blank space
 retains containment selection. A stationary right click and canceled right marquee
 preserve selection, and selection changes never create document undo entries.
-Both marquees retain one DOM box and update its bounds imperatively, without publishing
-React or GPU preview frames on pointer movement. Pointer cancellation, capture loss,
-Escape and stale page/project/revision scopes discard the draft and release capture.
+Both marquees retain one DOM box and update its bounds imperatively. Their selection
+consumer may render the current hit set; App and the retained canvas/GPU scene do not
+render for that publication. Pointer cancellation, capture loss and a canceled right
+marquee restore the captured selection only while the gesture still owns it. Escape
+keeps the established left-marquee deselection behavior. Stale page/project/revision
+scopes discard pending work and release capture without restoring into a new document.
 These mouse gestures remain separate from the editable keyboard command registry.
 
 ## Failure triage

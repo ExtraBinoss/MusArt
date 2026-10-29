@@ -1,7 +1,7 @@
 import "./gradient-messages";
 import "./messages";
 import "./library-messages";
-import { useCallback, useRef, useState, useSyncExternalStore } from "react";
+import { memo, useCallback, useRef, useState, useSyncExternalStore } from "react";
 import { RotateCcw } from "lucide-react";
 import {
   getEffectDefinition,
@@ -10,6 +10,7 @@ import {
   patchEffectParameter,
   GRADIENT_PRESETS,
   type Effect,
+  type EffectParameter,
   type EnginePort,
   type MotionPropertyTarget,
 } from "@musart/core";
@@ -26,6 +27,7 @@ import { EffectColor } from "./EffectColor";
 import { IconButton } from "../../shared/IconButton";
 import { freezeEffectPreviews } from "../../../state/session/effect-preview";
 import { useResetFeedback } from "../../shared/use-reset-feedback";
+import { useParameterWindow } from "./use-parameter-window";
 export function EffectParameters({
   effect,
   engine,
@@ -34,6 +36,7 @@ export function EffectParameters({
   onChange,
   onStart,
   onCancel,
+  deferOffscreen = false,
 }: {
   effect: Effect;
   engine?: EnginePort;
@@ -42,6 +45,7 @@ export function EffectParameters({
   onChange: (patch: Partial<Effect>, preview?: boolean) => void;
   onStart?: () => void;
   onCancel?: () => void;
+  deferOffscreen?: boolean;
 }) {
   const { t } = useTranslation();
   const definition = getEffectDefinition(effect.type);
@@ -74,15 +78,31 @@ export function EffectParameters({
   const [colorOwner, setColorOwner] = useState(owner);
   const [openColorKey, setOpenColorKey] = useState<string | null>(null);
   const [resetVersion, setResetVersion] = useState(0);
+  const changeColorOpen = useCallback(
+    (key: string, open: boolean) => {
+      setOpenColorKey((current) => (open ? key : current === key ? null : current));
+    },
+    [setOpenColorKey],
+  );
   const root = useRef<HTMLDivElement>(null);
+  const list = useRef<HTMLDivElement>(null);
   const feedback = useResetFeedback(root);
+  const parameters = definition.parameters.filter((parameter) =>
+    isEffectParameterVisible(displayed(), parameter),
+  );
+  const window = useParameterWindow(list, owner, parameters.length, deferOffscreen);
   if (colorOwner !== owner) {
     setColorOwner(owner);
     setOpenColorKey(null);
   }
   const defaults: Effect = { id: effect.id, type: effect.type, ...definition.defaults };
+
   return (
-    <div ref={root} className="effect-controls reset-feedback">
+    <div
+      ref={root}
+      className="effect-controls reset-feedback"
+      data-effect-parameter-count={parameters.length}
+    >
       <div className="effect-controls-actions">
         <IconButton
           label={t("effectControls:resetAll")}
@@ -137,175 +157,222 @@ export function EffectParameters({
             onCancel={onCancel}
           />
         )}
-      {getEffectDefinition(effect.type)
-        .parameters.filter((parameter) => isEffectParameterVisible(displayed(), parameter))
-        .map((parameter) => {
-          const label = t(parameter.labelKey);
-          const value = getEffectParameter(effect, parameter);
-          const target: MotionPropertyTarget | undefined = ownLayerId
-            ? parameter.scope === "settings"
-              ? {
-                  kind: "effectSetting",
-                  layerId: ownLayerId,
-                  effectId: effect.id,
-                  property: parameter.key,
-                }
-              : {
-                  kind: "effect",
-                  layerId: ownLayerId,
-                  effectId: effect.id,
-                  property: parameter.key as Extract<
-                    MotionPropertyTarget,
-                    { kind: "effect" }
-                  >["property"],
-                }
-            : undefined;
-          const change = (next: number | boolean | string, preview = false) =>
-            onChange(patchEffectParameter(effect, parameter, next), preview);
-          if (parameter.kind === "boolean")
-            return (
-              <MotionField
-                engine={engine}
-                target={target}
-                label={label}
-                disabled={disabled}
-                key={`${parameter.key}:${resetVersion}`}
-              >
-                <MotionValueField engine={engine} target={target} fallback={value}>
-                  {(live) => (
-                    <label className="switch-row">
-                      <span>{label}</span>
-                      <Switch
-                        disabled={disabled}
-                        checked={Boolean(live)}
-                        aria-label={label}
-                        onCheckedChange={(next) => change(next)}
-                      />
-                    </label>
-                  )}
-                </MotionValueField>
-              </MotionField>
-            );
-          if (parameter.kind === "select")
-            return (
-              <MotionField
-                engine={engine}
-                target={target}
-                label={label}
-                disabled={disabled}
-                key={`${parameter.key}:${resetVersion}`}
-              >
-                <MotionValueField engine={engine} target={target} fallback={value}>
-                  {(live) => (
-                    <label className="effect-select-field">
-                      <span>{label}</span>
-                      <SelectField
-                        label={label}
-                        value={String(live)}
-                        disabled={disabled}
-                        onValueChange={(next) => change(next)}
-                        options={parameter.options.map((option) => {
-                          const preset =
-                            parameter.key === "preset"
-                              ? GRADIENT_PRESETS.find((item) => item.id === option.value)
-                              : undefined;
-                          return {
-                            value: option.value,
-                            label: preset ? (
-                              <span className="effect-preset-choice">
-                                <span
-                                  aria-hidden="true"
-                                  className="effect-preset-swatch"
-                                  style={{
-                                    background: `linear-gradient(100deg, ${preset.colors.join(",")})`,
-                                  }}
-                                />
-                                {t(option.labelKey)}
-                              </span>
-                            ) : (
-                              t(option.labelKey)
-                            ),
-                          };
-                        })}
-                      />
-                    </label>
-                  )}
-                </MotionValueField>
-              </MotionField>
-            );
-          if (parameter.kind === "color")
-            return (
-              <MotionField
-                engine={engine}
-                target={target}
-                label={label}
-                disabled={disabled}
-                key={`${parameter.key}:${resetVersion}`}
-              >
-                <MotionValueField engine={engine} target={target} fallback={value}>
-                  {(live) => (
-                    <EffectColor
-                      invalidation={engine ? motionTimeChanges(engine) : undefined}
-                      identity={`${effect.id}:${effect.type}:${parameter.key}`}
-                      label={label}
-                      value={String(live)}
-                      open={openColorKey === parameter.key}
-                      onOpenChange={(open) =>
-                        setOpenColorKey((current) =>
-                          open ? parameter.key : current === parameter.key ? null : current,
-                        )
-                      }
-                      resetValue={String(getEffectParameter(defaults, parameter))}
-                      onReset={() => {
-                        onCancel?.();
-                        change(getEffectParameter(defaults, parameter));
-                      }}
-                      disabled={disabled}
-                      onStart={onStart}
-                      onPreview={(next) => change(next, true)}
-                      onCommit={(next) => change(next)}
-                      onCancel={onCancel}
-                    />
-                  )}
-                </MotionValueField>
-              </MotionField>
-            );
+      <div
+        ref={list}
+        className={`effect-parameter-list ${window.virtual ? "is-virtual" : ""}`}
+        style={window.virtual ? { height: window.height } : undefined}
+        onFocusCapture={window.remember}
+        onPointerDownCapture={(event) => {
+          window.remember(event);
+          if (event.button !== 0 || !openColorKey) return;
+          const trigger = (event.target as Element).closest('[data-slot="popover-trigger"]');
+          const row = trigger?.closest<HTMLElement>("[data-parameter-index]");
+          const parameter = row && parameters[Number(row.dataset.parameterIndex)];
+          // React's discrete pointer event closes the old editor before native focus/blur can commit it.
+          if (parameter?.kind === "color" && parameter.key !== openColorKey) setOpenColorKey(null);
+        }}
+        onKeyDownCapture={window.keyDown}
+      >
+        {window.indices.map((index) => {
+          const parameter = parameters[index]!;
           return (
-            <NumberInput
-              engine={engine}
-              target={target}
-              displayScale={parameter.displayScale}
+            <div
               key={`${parameter.key}:${resetVersion}`}
-              identity={effect}
-              label={label}
-              value={Number(value) * parameter.displayScale}
-              resetValue={() =>
-                Number(
-                  getEffectParameter(
-                    {
-                      id: effect.id,
-                      type: effect.type,
-                      ...getEffectDefinition(effect.type).defaults,
-                    },
-                    parameter,
-                  ),
-                ) * parameter.displayScale
-              }
-              disabled={disabled}
-              min={parameter.min * parameter.displayScale}
-              max={parameter.max * parameter.displayScale}
-              step={parameter.step * parameter.displayScale}
-              unit={parameter.unit}
-              onStart={onStart}
-              onPreview={(next) => change(next / parameter.displayScale, true)}
-              onCancel={onCancel}
-              onCommit={(next) => change(next / parameter.displayScale)}
-            />
+              className="effect-parameter-row"
+              data-parameter-index={index}
+              style={window.virtual ? { top: window.rowTop(index) } : undefined}
+            >
+              <ParameterField
+                engine={engine}
+                layerId={ownLayerId}
+                effect={effect}
+                parameter={parameter}
+                disabled={disabled}
+                t={t}
+                colorOpen={openColorKey === parameter.key}
+                onColorOpenChange={changeColorOpen}
+                onChange={onChange}
+                onStart={onStart}
+                onCancel={onCancel}
+              />
+            </div>
           );
         })}
+      </div>
     </div>
   );
 }
+
+/** Retain mounted controls through window and focus updates; canonical edits still rebind every field. */
+const ParameterField = memo(function ParameterField({
+  effect,
+  engine,
+  layerId,
+  parameter,
+  disabled,
+  t,
+  colorOpen,
+  onColorOpenChange,
+  onChange,
+  onStart,
+  onCancel,
+}: {
+  effect: Effect;
+  engine?: EnginePort;
+  layerId?: string;
+  parameter: EffectParameter;
+  disabled: boolean;
+  t: ReturnType<typeof useTranslation>["t"];
+  colorOpen: boolean;
+  onColorOpenChange: (key: string, open: boolean) => void;
+  onChange: (patch: Partial<Effect>, preview?: boolean) => void;
+  onStart?: () => void;
+  onCancel?: () => void;
+}) {
+  const defaults: Effect = {
+    id: effect.id,
+    type: effect.type,
+    ...getEffectDefinition(effect.type).defaults,
+  };
+  const label = t(parameter.labelKey);
+  const value = getEffectParameter(effect, parameter);
+  const target: MotionPropertyTarget | undefined = layerId
+    ? parameter.scope === "settings"
+      ? {
+          kind: "effectSetting",
+          layerId,
+          effectId: effect.id,
+          property: parameter.key,
+        }
+      : {
+          kind: "effect",
+          layerId,
+          effectId: effect.id,
+          property: parameter.key as Extract<MotionPropertyTarget, { kind: "effect" }>["property"],
+        }
+    : undefined;
+  const change = (next: number | boolean | string, preview = false) =>
+    onChange(patchEffectParameter(effect, parameter, next), preview);
+  if (parameter.kind === "boolean")
+    return (
+      <MotionField engine={engine} target={target} label={label} disabled={disabled}>
+        <MotionValueField engine={engine} target={target} fallback={value}>
+          {(live) => (
+            <label className="switch-row">
+              <span>{label}</span>
+              <Switch
+                disabled={disabled}
+                checked={Boolean(live)}
+                aria-label={label}
+                onCheckedChange={(next) => change(next)}
+              />
+            </label>
+          )}
+        </MotionValueField>
+      </MotionField>
+    );
+  if (parameter.kind === "select")
+    return (
+      <MotionField engine={engine} target={target} label={label} disabled={disabled}>
+        <MotionValueField engine={engine} target={target} fallback={value}>
+          {(live) => (
+            <label className="effect-select-field">
+              <span>{label}</span>
+              <SelectField
+                identity={effect}
+                label={label}
+                value={String(live)}
+                disabled={disabled}
+                onValueChange={(next) => change(next)}
+                options={parameter.options.map((option) => {
+                  const preset =
+                    parameter.key === "preset"
+                      ? GRADIENT_PRESETS.find((item) => item.id === option.value)
+                      : undefined;
+                  return {
+                    value: option.value,
+                    label: preset ? (
+                      <span className="effect-preset-choice">
+                        <span
+                          aria-hidden="true"
+                          className="effect-preset-swatch"
+                          style={{
+                            background: `linear-gradient(100deg, ${preset.colors.join(",")})`,
+                          }}
+                        />
+                        {t(option.labelKey)}
+                      </span>
+                    ) : (
+                      t(option.labelKey)
+                    ),
+                  };
+                })}
+              />
+            </label>
+          )}
+        </MotionValueField>
+      </MotionField>
+    );
+  if (parameter.kind === "color")
+    return (
+      <MotionField engine={engine} target={target} label={label} disabled={disabled}>
+        <MotionValueField engine={engine} target={target} fallback={value}>
+          {(live) => (
+            <EffectColor
+              invalidation={engine ? motionTimeChanges(engine) : undefined}
+              identity={`${effect.id}:${effect.type}:${parameter.key}`}
+              label={label}
+              value={String(live)}
+              open={colorOpen}
+              onOpenChange={(open) => onColorOpenChange(parameter.key, open)}
+              resetValue={String(getEffectParameter(defaults, parameter))}
+              onReset={() => {
+                onCancel?.();
+                change(getEffectParameter(defaults, parameter));
+              }}
+              disabled={disabled}
+              onStart={onStart}
+              onPreview={(next) => change(next, true)}
+              onCommit={(next) => change(next)}
+              onCancel={onCancel}
+            />
+          )}
+        </MotionValueField>
+      </MotionField>
+    );
+  return (
+    <NumberInput
+      engine={engine}
+      target={target}
+      displayScale={parameter.displayScale}
+      identity={effect}
+      label={label}
+      value={Number(value) * parameter.displayScale}
+      resetValue={() =>
+        Number(
+          getEffectParameter(
+            {
+              id: effect.id,
+              type: effect.type,
+              ...getEffectDefinition(effect.type).defaults,
+            },
+            parameter,
+          ),
+        ) * parameter.displayScale
+      }
+      disabled={disabled}
+      min={parameter.min * parameter.displayScale}
+      max={parameter.max * parameter.displayScale}
+      step={parameter.step * parameter.displayScale}
+      unit={parameter.unit}
+      onStart={onStart}
+      onPreview={(next) => change(next / parameter.displayScale, true)}
+      onCancel={onCancel}
+      onCommit={(next) => change(next / parameter.displayScale)}
+    />
+  );
+});
+
 function noSubscription() {
   return () => {};
 }

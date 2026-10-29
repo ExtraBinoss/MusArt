@@ -10,8 +10,8 @@
 .artboard-heading:hover .canvas-add-artboard,
 .artboard-heading:focus-within .canvas-add-artboard,
 .canvas-add-artboard:focus-visible,
-.editor-canvas:has(.canvas-artboard[data-active="true"]:hover)
-  .artboard-heading[data-active="true"]
+.canvas-artboard-editor[data-active="true"]:hover
+  ~ .artboard-heading[data-active="true"]
   .canvas-add-artboard {
   opacity: 1;
   pointer-events: auto;

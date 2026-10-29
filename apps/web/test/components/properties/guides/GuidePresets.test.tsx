@@ -2,6 +2,39 @@ import { expect, test, vi } from "vitest";
 import { fireEvent, screen } from "@testing-library/react";
 import { GuidePresets } from "../../../../src/components/properties/guides/GuidePresets";
 import { setup } from "../../../support/ui";
+import { SOCIAL_PRESETS } from "@musart/core";
+import { i18n } from "../../../../src/state/i18n";
+
+const catalogue = vi.hoisted(() => ({ reads: vi.fn() }));
+vi.mock("@musart/core", async (original) => {
+  const core = await original<typeof import("@musart/core")>();
+  return {
+    ...core,
+    SOCIAL_PRESETS: new Proxy(core.SOCIAL_PRESETS, {
+      get(target, key, receiver) {
+        if (key === "filter") catalogue.reads();
+        return Reflect.get(target, key, receiver);
+      },
+    }),
+  };
+});
+
+test("closed and rebound preset triggers do not enumerate or translate the hidden catalogue", () => {
+  const d = setup(),
+    append = vi.fn();
+  const keys = new Set(SOCIAL_PRESETS.map((preset) => preset.nameKey));
+  const translate = vi.spyOn(i18n, "t");
+  catalogue.reads.mockClear();
+  const view = d.mount(<GuidePresets bounds={{ width: 500, height: 500 }} onAppend={append} />);
+  view.rerender(<GuidePresets bounds={{ width: 800, height: 600 }} onAppend={append} />);
+  expect(catalogue.reads).not.toHaveBeenCalled();
+  expect(translate.mock.calls.some(([key]) => keys.has(String(key)))).toBe(false);
+  expect(document.querySelector(".guide-presets-grid")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Modèles" }));
+  expect(catalogue.reads).toHaveBeenCalled();
+  expect(translate.mock.calls.some(([key]) => keys.has(String(key)))).toBe(true);
+  expect(document.querySelectorAll("[data-guide-preset]")).toHaveLength(SOCIAL_PRESETS.length);
+});
 test("real brand previews filter by category and return the genuine catalogue entry on append", () => {
   const d = setup(),
     append = vi.fn();

@@ -7,6 +7,33 @@ import { setup } from "../../support/ui";
 import { DEFAULT_GUIDE_COLOR, GUIDE_COLOR_KEY } from "../../../src/state/guides/colors";
 beforeEach(() => localStorage.setItem(GUIDE_COLOR_KEY, DEFAULT_GUIDE_COLOR));
 afterEach(() => localStorage.removeItem(GUIDE_COLOR_KEY));
+test("a retained guide-color portal rejects previews and commits once its Inspector target is stale", () => {
+  const d = setup();
+  d.engine.execute({
+    type: "addGuide",
+    targetId: d.rectangle.id,
+    guide: { id: "retained", axis: "x", position: 20 },
+  });
+  d.engine.select([d.rectangle.id]);
+  const page = d.engine.getSnapshot().project.pages[0]!;
+  d.mount(
+    <GuidesPanel
+      engine={d.engine}
+      page={page}
+      layer={page.layers[0]!}
+      run={d.run}
+      canEdit={() => d.engine.getSnapshot().selection[0] === d.rectangle.id}
+    />,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Couleur du repère" }));
+  const input = screen.getByLabelText("Couleur hexadécimale");
+  act(() => d.engine.select([d.image.id]));
+  const original = d.engine.getSnapshot();
+  fireEvent.change(input, { target: { value: "#ffaa00" } });
+  expect(d.store.get(previewAtom)).toBeNull();
+  fireEvent.blur(input);
+  expect(d.engine.getSnapshot()).toBe(original);
+});
 test("guide colors preview without edits, commit once and become the next guide's default", () => {
   const d = setup();
   d.engine.execute({ type: "addGuide", guide: { id: "colored", axis: "x", position: 20 } });
@@ -63,6 +90,30 @@ test("manages page guides and rulers through undoable commands", () => {
   expect(d.engine.getSnapshot().project.pages[0]!.guides).toHaveLength(1);
   fireEvent.click(screen.getByRole("button", { name: "Effacer les repères" }));
   expect(d.engine.getSnapshot().project.pages[0]!.guides).toHaveLength(0);
+});
+
+test("a retained Inspector page observes current rulers and keeps canonical guide previews editable", () => {
+  const d = setup();
+  d.engine.execute({ type: "addGuide", guide: { id: "live", axis: "x", position: 80 } });
+  const page = d.engine.getSnapshot().project.pages[0]!;
+  d.mount(<GuidesPanel engine={d.engine} page={page} run={d.run} />);
+  const position = screen.getByLabelText("X1");
+  act(() => d.engine.execute({ type: "updatePage", patch: { rulers: true } }));
+  expect(screen.getByLabelText("Afficher les règles")).toBeChecked();
+  expect(screen.getByLabelText("X1")).toBe(position);
+  const before = d.engine.getSnapshot();
+  fireEvent.change(position, { target: { value: "155" } });
+  expect(d.engine.getSnapshot()).toBe(before);
+  expect(d.store.get(previewAtom)).toMatchObject({
+    target: "page",
+    patch: { guides: [{ id: "live", axis: "x", position: 155 }] },
+  });
+  fireEvent.blur(position);
+  expect(d.engine.getSnapshot().project.pages[0]!.guides[0]!.position).toBe(155);
+  expect(d.engine.getSnapshot().project.pages[0]!.rulers).toBe(true);
+  expect(d.run).toHaveBeenCalledTimes(1);
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project.pages[0]!.guides[0]!.position).toBe(80);
 });
 test("keeps selected-layer guides separate from composition guides", () => {
   const d = setup();

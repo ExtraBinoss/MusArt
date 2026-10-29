@@ -63,3 +63,38 @@ test("deferred context operations retain their invocation selection and reject a
   pending!();
   expect(d.engine.getSnapshot()).toBe(replacement);
 });
+
+test("retained menus resolve metadata before invocation without loosening queued command guards", () => {
+  const d = setup();
+  d.engine.select([d.rectangle.id]);
+  let pending: (() => void) | undefined;
+  const page = d.engine.getSnapshot().project.pages[0]!;
+  const actions = layerActions(d.engine, page, (task) => {
+    pending = task;
+  });
+  d.engine.execute({ type: "updatePage", patch: { rulers: true } });
+  actions.effect("grain");
+  pending!();
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.effects[0]?.type).toBe("grain");
+
+  const current = d.engine.getSnapshot().project.pages[0]!;
+  const retained = layerActions(d.engine, current, (task) => {
+    pending = task;
+  });
+  d.engine.execute({ type: "updatePage", patch: { rulers: false } });
+  retained.duplicate();
+  d.engine.execute({ type: "updatePage", patch: { rulers: true } });
+  const intervening = d.engine.getSnapshot();
+  pending!();
+  expect(d.engine.getSnapshot()).toBe(intervening);
+
+  retained.remove();
+  pending!();
+  expect(d.engine.getSnapshot().project.pages[0]!.layers).toHaveLength(2);
+  const rejected = d.engine.getSnapshot();
+  pending = undefined;
+  retained.duplicate();
+  actions.group();
+  expect(pending).toBeUndefined();
+  expect(d.engine.getSnapshot()).toBe(rejected);
+});

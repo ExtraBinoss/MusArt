@@ -8,8 +8,13 @@ type DraftFactories = {
     command: Extract<Command, { type: K }>,
   ) => Project;
 };
-/** Opt in only handlers whose mutation contract is safe on a shallow layer draft. */
+/** Opt in only handlers whose mutation contract is safe on the declared shallow draft. */
 const factories: DraftFactories = Object.freeze({
+  updatePage: (project, pageId) => ({
+    ...project,
+    // updatePage assigns permitted top-level metadata; it never mutates layer/asset data.
+    pages: project.pages.map((page) => (page.id === pageId ? { ...page } : page)),
+  }),
   updateLayers: (project, pageId, command) =>
     createLayerPatchDraft(
       project,

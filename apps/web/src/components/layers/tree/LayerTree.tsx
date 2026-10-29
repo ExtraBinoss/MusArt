@@ -169,7 +169,7 @@ export const LayerTree = memo(function LayerTree({
     });
   }, [selection, positions, drag.dragging, scheduleReveal, engine, page]);
   return (
-    <ContextMenu>
+    <ContextMenu modal={false}>
       <ScrollShadow className="layer-tree-scroll">
         <ContextMenuTrigger asChild>
           <div

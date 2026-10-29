@@ -35,6 +35,7 @@ export function useLayerPreview(
   ids: readonly string[],
   run: (task: () => void) => void,
   requireSelection = false,
+  resolvePage?: () => Composition | null,
 ) {
   const setPreview = useSetAtom(previewAtom);
   const held = useRef<Session | null>(null);
@@ -43,6 +44,17 @@ export function useLayerPreview(
       if (!session.snapshot) return false;
       const snapshot = engine.getSnapshot();
       const sameSelection = snapshot.selection === session.snapshot.selection;
+      // An Inspector may intentionally retain its controls across ruler-only metadata.
+      // Its resolver admits only the same immutable editing scope, never changed artwork.
+      if (
+        snapshot.project !== session.snapshot.project &&
+        resolvePage?.() &&
+        snapshot.project.id === session.snapshot.project.id &&
+        snapshot.project.assets === session.snapshot.project.assets
+      ) {
+        session.snapshot = snapshot;
+        session.motion = { ...session.motion, snapshot };
+      }
       const selection = session.selection && !sameSelection ? new Set(snapshot.selection) : null;
       return (
         snapshot.project === session.snapshot.project &&
@@ -55,7 +67,7 @@ export function useLayerPreview(
             session.selection.every((id) => selection!.has(id))))
       );
     },
-    [engine],
+    [engine, resolvePage],
   );
   const cancel = useCallback(() => {
     held.current = null;
@@ -93,7 +105,7 @@ export function useLayerPreview(
     };
   }
   function begin(target?: MotionEditTarget) {
-    beginOnPage(page, target);
+    beginOnPage(resolvePage?.() ?? page, target);
   }
   function start(target?: MotionEditTarget) {
     const targets: readonly MotionPropertyTarget[] = target

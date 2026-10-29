@@ -2,20 +2,24 @@ import { expect, test, vi } from "vitest";
 import { act, fireEvent, screen } from "@testing-library/react";
 import { createEffect, type Effect } from "@musart/core";
 import { AttachmentCards } from "../../../../src/components/layers/attachments/AttachmentCards";
-import { useEngine } from "../../../../src/state/session/editor";
+import { previewAtom, useEngine } from "../../../../src/state/session/editor";
 import { attachmentSelection } from "../../../../src/state/selection/attachments";
 import { useAttachmentSelection } from "../../../../src/state/selection/use-attachment-selection";
 import type { LayerPreviewVariant } from "../../../../src/state/contracts";
 import { setup } from "../../../support/ui";
+const previews = vi.hoisted(() => ({ render: vi.fn() }));
 vi.mock("../../../../src/components/layers/rows/LayerThumbnail", () => ({
-  LayerThumbnail: ({ variant, pageId }: { variant?: LayerPreviewVariant; pageId?: string }) => (
-    <span
-      data-testid="card-preview"
-      data-kind={variant?.kind}
-      data-effect={variant?.kind === "effect" ? variant.effectId : undefined}
-      data-page={pageId}
-    />
-  ),
+  LayerThumbnail: ({ variant, pageId }: { variant?: LayerPreviewVariant; pageId?: string }) => {
+    previews.render();
+    return (
+      <span
+        data-testid="card-preview"
+        data-kind={variant?.kind}
+        data-effect={variant?.kind === "effect" ? variant.effectId : undefined}
+        data-page={pageId}
+      />
+    );
+  },
 }));
 function fixture() {
   const d = setup(),
@@ -91,4 +95,98 @@ test("context selection targets its exact card without creating document history
   });
   expect(d.engine.getSnapshot().project).toBe(before);
   expect(d.engine.getSnapshot().selection).toEqual([d.rectangle.id]);
+});
+
+function retainedCards() {
+  const d = setup();
+  d.engine.execute({
+    type: "updateLayers",
+    ids: [d.rectangle.id],
+    patch: { effects: [createEffect("dither")] },
+  });
+  d.engine.execute({ type: "attachLayerMask", sourceId: d.image.id, targetId: d.rectangle.id });
+  d.engine.load(d.engine.getSnapshot().project);
+  const page = d.engine.getSnapshot().project.pages[0]!;
+  const props = {
+    engine: d.engine,
+    page,
+    layer: page.layers[0]!,
+    assets: d.engine.getSnapshot().project.assets,
+    previewKey: "retained",
+    target: null,
+    onExpand: vi.fn(),
+    run: d.run,
+  };
+  const view = d.mount(<AttachmentCards {...props} />);
+  return { ...d, props, view };
+}
+
+test("closed cards skip metadata renders and resolve current canonical context targets", () => {
+  previews.render.mockClear();
+  const d = retainedCards();
+  expect(previews.render).toHaveBeenCalledTimes(2);
+  act(() => d.engine.execute({ type: "updatePage", patch: { rulers: true } }));
+  d.view.rerender(<AttachmentCards {...d.props} page={d.engine.getSnapshot().project.pages[0]!} />);
+  expect(previews.render).toHaveBeenCalledTimes(2);
+  fireEvent.contextMenu(screen.getByRole("button", { name: "Masque · Rectangle bleu" }));
+  expect(attachmentSelection(d.engine).editable()).toBe(true);
+  fireEvent.contextMenu(screen.getByRole("button", { name: "Dither · Rectangle bleu" }));
+  expect(attachmentSelection(d.engine).editable()).toBe(true);
+  expect(attachmentSelection(d.engine).read()?.kind).toBe("effect");
+  act(() => d.engine.load(d.engine.getSnapshot().project));
+  const replacement = d.engine.getSnapshot();
+  fireEvent.contextMenu(screen.getByRole("button", { name: "Masque · Rectangle bleu" }));
+  fireEvent.click(screen.getByRole("button", { name: "Dither · Rectangle bleu" }));
+  expect(screen.queryByRole("dialog")).toBeNull();
+  expect(d.engine.getSnapshot()).toBe(replacement);
+  expect(attachmentSelection(d.engine).editable()).toBe(false);
+});
+
+test("an open effect follows ruler metadata even when its closed card owner was retained", () => {
+  const d = retainedCards();
+  act(() => d.engine.execute({ type: "updatePage", patch: { rulers: true } }));
+  fireEvent.click(screen.getByRole("button", { name: "Dither · Rectangle bleu" }));
+  const amount = screen.getByLabelText("Intensité");
+  act(() => d.engine.execute({ type: "updatePage", patch: { rulers: false } }));
+  expect(screen.getByLabelText("Intensité")).toBe(amount);
+  const before = d.engine.getSnapshot();
+  fireEvent.change(amount, { target: { value: "60" } });
+  expect(d.store.get(previewAtom)).toMatchObject({
+    target: "layers",
+    patch: { effects: [expect.objectContaining({ amount: 0.6 })] },
+  });
+  fireEvent.blur(amount);
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.effects[0]!.amount).toBe(0.6);
+  expect(d.engine.getSnapshot().revision).toBe(before.revision + 1);
+  expect(d.store.get(previewAtom)).toBeNull();
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project).toEqual(before.project);
+});
+
+test("an open mask follows ruler metadata without donating an old queued command", () => {
+  const d = retainedCards();
+  let pending: (() => void) | undefined;
+  d.view.rerender(
+    <AttachmentCards
+      {...d.props}
+      run={(task) => {
+        pending = task;
+      }}
+    />,
+  );
+  act(() => d.engine.execute({ type: "updatePage", patch: { rulers: true } }));
+  fireEvent.click(screen.getByRole("button", { name: "Masque · Rectangle bleu" }));
+  act(() => d.engine.execute({ type: "updatePage", patch: { rulers: false } }));
+  fireEvent.click(screen.getByLabelText("Inverser le masque"));
+  act(() => d.engine.execute({ type: "updatePage", patch: { rulers: true } }));
+  const intervening = d.engine.getSnapshot();
+  act(() => pending!());
+  expect(d.engine.getSnapshot()).toBe(intervening);
+  const before = d.engine.getSnapshot();
+  fireEvent.click(screen.getByLabelText("Inverser le masque"));
+  act(() => pending!());
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.mask?.inverted).toBe(true);
+  expect(d.engine.getSnapshot().revision).toBe(before.revision + 1);
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project).toEqual(before.project);
 });

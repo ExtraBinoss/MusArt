@@ -15,7 +15,7 @@ import { Ellipsis } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import type { EnginePort } from "@musart/core";
 import type { EditorServices } from "../../state/contracts";
-import { themeAtom, toolAtom, useEngine } from "../../state/session/editor";
+import { themeAtom, toolAtom, useEngineValue } from "../../state/session/editor";
 import { changeLanguage } from "../../state/i18n";
 import { importVectorFiles, VectorImportError } from "../../services/assets/vector/import-files";
 import type { TaskRunner } from "../projects/ProjectDialog";
@@ -53,6 +53,7 @@ import {
   isGestureOriginCurrent,
 } from "../../canvas/interaction/gesture-origin";
 import { bindingLabel } from "./shortcuts";
+import { SearchCommandSurface } from "./SearchCommandSurface";
 import "./messages";
 import "./search.css";
 
@@ -84,11 +85,11 @@ export function MagicSearch({
   children,
 }: MagicSearchProps) {
   const { t, i18n } = useTranslation();
+  const locale = i18n.resolvedLanguage ?? i18n.language;
   const reducedMotion = useReducedMotion();
   const bindings = useKeybindings();
   const catalog = useMemo(() => new SearchCatalog(), []),
     timing = useMemo(() => browserSearchTiming(), []);
-  const snapshot = useEngine(engine);
   const setTool = useSetAtom(toolAtom),
     setTheme = useSetAtom(themeAtom);
   const [open, setOpenState] = useState(false),
@@ -137,17 +138,9 @@ export function MagicSearch({
   }, [setOpen]);
   const openShortcuts = useCallback(() => setHelp(true), []);
   useSearchShortcuts(toggle, openShortcuts);
-  // Closed updates change dock availability only. Document indexing belongs to an actual opening.
-  const commands = useMemo(
-    () => catalog.commandsFor(snapshot, t, bindings, i18n.resolvedLanguage ?? i18n.language),
-    [catalog, snapshot, t, bindings, i18n.resolvedLanguage, i18n.language],
-  );
-  const items = useMemo(
-    () =>
-      open
-        ? catalog.read(snapshot, t, bindings, i18n.resolvedLanguage ?? i18n.language)
-        : CLOSED_ITEMS,
-    [open, catalog, snapshot, t, bindings, i18n.resolvedLanguage, i18n.language],
+  // The closed shell keeps one stable projection; command surfaces subscribe independently.
+  const items = useEngineValue(engine, (snapshot) =>
+    open ? catalog.read(snapshot, t, bindings, locale) : CLOSED_ITEMS,
   );
   const recordOpen = useCallback(
     (milliseconds: number) => {
@@ -192,6 +185,10 @@ export function MagicSearch({
     setTheme,
     setLanguage: changeLanguage,
   };
+  const commandContext = useRef({ actions, t, bindings, locale, onTask });
+  useLayoutEffect(() => {
+    commandContext.current = { actions, t, bindings, locale, onTask };
+  });
   function choose(item: SearchItem) {
     if (item.disabled || !openRef.current) return;
     const origin = captureGestureOrigin(engine);
@@ -207,31 +204,39 @@ export function MagicSearch({
     };
     setOpen(false);
   }
-  function runCommand(id: string) {
-    const item = commands.find((item) => item.id === id);
-    if (!item) return false;
-    const origin = captureGestureOrigin(engine);
-    const execute = captureSearchItem(item, actions);
-    if (!item.disabled)
-      void onTask(() => {
-        if (
-          !scope.current.alive ||
-          scope.current.engine !== engine ||
-          !isGestureOriginCurrent(engine, origin)
-        )
-          throw new Error(t("keybindings:stale"));
-        return execute();
-      });
-    return true;
-  }
-  useLayoutEffect(() =>
-    createCommandPort(engine).subscribe((id) => {
-      if (id === "app:search") {
-        toggle();
-        return true;
-      }
-      return runCommand(id);
-    }),
+  const runCommand = useCallback(
+    (id: string) => {
+      const current = commandContext.current;
+      const item = catalog
+        .commandsFor(engine.getSnapshot(), current.t, current.bindings, current.locale)
+        .find((item) => item.id === id);
+      if (!item) return false;
+      const origin = captureGestureOrigin(engine);
+      const execute = captureSearchItem(item, current.actions);
+      if (!item.disabled)
+        void current.onTask(() => {
+          if (
+            !scope.current.alive ||
+            scope.current.engine !== engine ||
+            !isGestureOriginCurrent(engine, origin)
+          )
+            throw new Error(current.t("keybindings:stale"));
+          return execute();
+        });
+      return true;
+    },
+    [catalog, engine],
+  );
+  useLayoutEffect(
+    () =>
+      createCommandPort(engine).subscribe((id) => {
+        if (id === "app:search") {
+          toggle();
+          return true;
+        }
+        return runCommand(id);
+      }),
+    [engine, toggle, runCommand],
   );
   function categoryButton(value: SearchFilter) {
     return (
@@ -294,23 +299,35 @@ export function MagicSearch({
     );
   }
   const Content = children;
-  const triggerNode = (
-    <IconButton
-      id={triggerId}
-      label={t("search:title")}
-      shortcut={bindingLabel("app:search", bindings)}
-      className="magic-search-trigger"
-      aria-haspopup="dialog"
-      aria-expanded={open}
-      onClick={() => setOpen(true)}
-    >
-      <Ellipsis size={19} />
-    </IconButton>
+  const triggerNode = useMemo(
+    () => (
+      <IconButton
+        id={triggerId}
+        label={t("search:title")}
+        shortcut={bindingLabel("app:search", bindings)}
+        className="magic-search-trigger"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => setOpen(true)}
+      >
+        <Ellipsis size={19} />
+      </IconButton>
+    ),
+    [triggerId, t, bindings, open, setOpen],
   );
   return (
     <>
       {Content ? (
-        <Content engine={engine} trigger={triggerNode} commands={commands} run={runCommand} />
+        <SearchCommandSurface
+          engine={engine}
+          catalog={catalog}
+          t={t}
+          bindings={bindings}
+          locale={locale}
+          trigger={triggerNode}
+          run={runCommand}
+          component={Content}
+        />
       ) : (
         triggerNode
       )}
