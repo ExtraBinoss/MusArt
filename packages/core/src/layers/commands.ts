@@ -11,6 +11,8 @@ import { getLayer, assertEditable, selectedRoots, deleteLayerTree } from "./acce
 import { groupLayers, ungroupLayers } from "./grouping";
 import type { CommandHandler } from "../session/context";
 import { applyLayerPatches } from "./patches";
+import { duplicateMotionTracks } from "../motion/structure";
+import { assertMotionHierarchyChange } from "../motion/hierarchy";
 export const addLayers: CommandHandler<"addLayers"> = ({ project, page, pageId }, command) => {
   for (const asset of command.assets ?? []) {
     ensure(!Object.hasOwn(project.assets, asset.id), "INVALID_COMMAND", "Ressource déjà présente");
@@ -54,6 +56,7 @@ export const duplicateLayers: CommandHandler<"duplicateLayers"> = (
   );
   const ids = new Map(children.map((layer) => [layer.id, nextId("layer")]));
   const rootIds = new Set(roots.map((layer) => layer.id));
+  const effectIds = new Map<string, string>();
   const clones = children.map((layer) => ({
     ...layer,
     id: ids.get(layer.id)!,
@@ -61,7 +64,11 @@ export const duplicateLayers: CommandHandler<"duplicateLayers"> = (
     x: layer.x + (rootIds.has(layer.id) ? 24 : 0),
     y: layer.y + (rootIds.has(layer.id) ? 24 : 0),
     parentId: layer.parentId ? (ids.get(layer.parentId) ?? layer.parentId) : null,
-    effects: layer.effects.map((effect) => ({ ...effect, id: nextId("effect") })),
+    effects: layer.effects.map((effect) => {
+      const id = nextId("effect");
+      effectIds.set(effect.id, id);
+      return { ...effect, id };
+    }),
     ...(layer.guides
       ? { guides: layer.guides.map((guide) => ({ ...guide, id: nextId("guide") })) }
       : {}),
@@ -70,6 +77,7 @@ export const duplicateLayers: CommandHandler<"duplicateLayers"> = (
       : {}),
   }));
   page.layers.push(...clones);
+  duplicateMotionTracks(page, ids, effectIds, rootIds, nextId);
   return { pageId, selection: roots.map((layer) => ids.get(layer.id)!) };
 };
 export const reorderLayer: CommandHandler<"reorderLayer"> = ({ page, pageId }, command) => {
@@ -81,6 +89,11 @@ export const reorderLayer: CommandHandler<"reorderLayer"> = ({ page, pageId }, c
     "Position de calque invalide",
   );
   if (command.parentId !== undefined) {
+    if (command.parentId !== layer.parentId)
+      assertMotionHierarchyChange(page, [
+        layer.id,
+        ...(command.parentId ? [command.parentId] : []),
+      ]);
     if (command.parentId !== null) {
       const parent = getLayer(page, command.parentId);
       ensure(parent.kind === "group", "INVALID_HIERARCHY", "Parent non groupé");
@@ -106,11 +119,11 @@ export const reorderLayer: CommandHandler<"reorderLayer"> = ({ page, pageId }, c
   page.layers.splice(command.index, 0, layer);
   return { pageId };
 };
-export const createGroup: CommandHandler<"groupLayers"> = ({ page, pageId, nextId }, command) => ({
-  pageId,
-  selection: [groupLayers(page, command.ids, nextId)],
-});
-export const removeGroup: CommandHandler<"ungroupLayers"> = ({ page, pageId }, command) => ({
-  pageId,
-  selection: ungroupLayers(page, command.ids),
-});
+export const createGroup: CommandHandler<"groupLayers"> = ({ page, pageId, nextId }, command) => {
+  assertMotionHierarchyChange(page, command.ids);
+  return { pageId, selection: [groupLayers(page, command.ids, nextId)] };
+};
+export const removeGroup: CommandHandler<"ungroupLayers"> = ({ page, pageId }, command) => {
+  assertMotionHierarchyChange(page, command.ids);
+  return { pageId, selection: ungroupLayers(page, command.ids) };
+};

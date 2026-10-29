@@ -18,6 +18,8 @@ import { validateMaskSource, validateMaskGraph } from "../masks/validation";
 import { validateReplaySpec } from "../animation/validation";
 import { validateFillGradient } from "../paint/gradient";
 import { validateEffectExtensions } from "../effects/validation";
+import { validateCompositionMotion } from "../motion/validation";
+import type { Composition } from "./model";
 
 const kinds = ["rectangle", "ellipse", "text", "image", "group", "vector"];
 const effectTypes = Object.keys(EFFECT_CATALOG);
@@ -196,6 +198,7 @@ export function validateProject(value: unknown): asserts value is Project {
     validateHierarchy(page.layers);
     validateMaskGraph(page.layers);
     validatePageLayout(page);
+    validateCompositionMotion(page as unknown as Composition, ids);
     for (const guide of page.guides) {
       assertRecord(guide);
       assertUniqueId(guide.id, ids);

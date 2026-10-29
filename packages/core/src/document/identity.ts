@@ -20,6 +20,13 @@ export function reserveProjectIds(project: Project): void {
   for (const asset of Object.values(project.assets)) reserved.add(asset.id);
   for (const page of project.pages) {
     reserved.add(page.id);
+    for (const track of page.motion?.tracks ?? []) {
+      reserved.add(track.id);
+      for (const property of track.properties) {
+        reserved.add(property.id);
+        for (const key of property.keyframes) reserved.add(key.id);
+      }
+    }
     for (const guide of page.guides) reserved.add(guide.id);
     for (const layer of page.layers) {
       reserved.add(layer.id);

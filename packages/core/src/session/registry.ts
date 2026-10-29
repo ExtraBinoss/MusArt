@@ -9,6 +9,12 @@ import { setReplay } from "../animation/commands";
 import type { CommandHandlers } from "./context";
 import type { Command } from "../document/model";
 import { updateLayerPatches } from "../layers/patches";
+import * as motion from "../motion/commands";
+import {
+  moveMotionTrack,
+  moveMotionKeyframes,
+  deleteMotionKeyframes,
+} from "../motion/track-commands";
 /** Domain handlers are exhaustively checked against the portable command union. */
 export const COMMAND_HANDLERS: CommandHandlers = Object.freeze({
   addLayers: layers.addLayers,
@@ -34,6 +40,15 @@ export const COMMAND_HANDLERS: CommandHandlers = Object.freeze({
   updateMask: masks.updateMask,
   removeLayerMask: masks.removeLayerMask,
   setReplay,
+  setCompositionMode: motion.setCompositionMode,
+  setMotionDuration: motion.setMotionDuration,
+  setMotionTrackRange: motion.setMotionTrackRange,
+  upsertMotionKeyframe: motion.upsertMotionKeyframe,
+  moveMotionKeyframe: motion.moveMotionKeyframe,
+  deleteMotionKeyframe: motion.deleteMotionKeyframe,
+  moveMotionTrack,
+  moveMotionKeyframes,
+  deleteMotionKeyframes,
 });
 /** Transport and journal boundaries validate names against the engine's authoritative registry. */
 export function isCommandType(value: unknown): value is Command["type"] {

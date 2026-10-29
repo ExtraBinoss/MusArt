@@ -3,6 +3,7 @@ export interface CommandContext {
   project: Project;
   page: Composition;
   pageId: string;
+  revision: number;
   nextId: (prefix: string) => string;
 }
 export interface CommandResult {

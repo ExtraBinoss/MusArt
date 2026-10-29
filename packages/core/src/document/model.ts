@@ -4,6 +4,7 @@ import type { Insets, WorkingColorSpace, Alignment, LayoutReference } from "../l
 import type { ReplaySpec } from "../animation/model";
 import type { FillGradient } from "../paint/gradient";
 import type { EffectCompositeMode } from "../effects/compositing";
+import type { CompositionMotion, MotionCommand } from "../motion/model";
 /** Portable document contract. No browser, React or renderer dependencies. */
 export const FORMAT_VERSION = 1 as const;
 export type LayerKind = "rectangle" | "ellipse" | "text" | "image" | "group" | "vector";
@@ -118,6 +119,7 @@ export interface Composition {
   margins?: Insets;
   rulers?: boolean;
   colorSpace?: WorkingColorSpace;
+  motion?: CompositionMotion;
 }
 export interface Asset {
   id: string;
@@ -146,6 +148,7 @@ export interface SessionSnapshot {
   canRedo: boolean;
 }
 export type Command =
+  | MotionCommand
   | { type: "addLayers"; layers: Layer[]; assets?: Asset[] }
   | { type: "updateLayers"; ids: string[]; patch: Partial<Layer> }
   | { type: "updateLayerPatches"; patches: { id: string; patch: Partial<Layer> }[] }

@@ -116,6 +116,58 @@ export { validateReplaySpec, projectFromReplayState } from "./animation/validati
 export type { FillGradient, GradientStop } from "./paint/gradient";
 export { validateFillGradient, sampleGradientColor } from "./paint/gradient";
 export { selectionComposition } from "./export/selection";
+export type {
+  CompositionMotion,
+  MotionCommand,
+  MotionInitializationPlan,
+  MotionKeyframe,
+  MotionLayerTrack,
+  MotionPropertyTrack,
+} from "./motion/model";
+export type { MotionTime, MotionFrameRate } from "./motion/time";
+export type { MotionEasing } from "./motion/easing";
+export type { MotionPropertyTarget, MotionValue } from "./motion/properties/model";
+export { planMotionInitialization } from "./motion/initialization";
+export {
+  frameTime,
+  compareMotionTime,
+  motionTimeToSeconds,
+  normalizeMotionTime,
+  normalizeMotionFrameRate,
+  addMotionTime,
+  subtractMotionTime,
+  motionTimeProgress,
+} from "./motion/time";
+export {
+  evaluateEasing,
+  createMotionEasingPreset,
+  MOTION_EASING_PRESETS,
+  compileMotionEasing,
+  isMotionEasing,
+  validateMotionEasing,
+} from "./motion/easing";
+export type { MotionEasingPreset } from "./motion/easing";
+export type {
+  MotionPropertyDescriptor,
+  LayerMotionProperty,
+  EffectMotionProperty,
+  EffectMotionCapability,
+} from "./motion/properties/model";
+export {
+  resolveMotionProperty,
+  resolveLayerMotionProperty,
+  listMotionProperties,
+  readMotionValue,
+  validateMotionValue,
+  effectMotionCapabilityInventory,
+} from "./motion/properties/registry";
+export { applyMotionValue, applyMotionValues } from "./motion/properties/apply";
+export { compileMotion } from "./motion/compile";
+export type { MotionProgram } from "./motion/compile";
+export { evaluateMotion } from "./motion/evaluate";
+export type { MotionFramePlan, MotionEvaluationOptions } from "./motion/evaluate";
+export { applyMotionFrame } from "./motion/frame";
+export { validateMotionTime } from "./motion/time";
 export { createLayerGeometryIndex, LayerGeometryIndex } from "./layers/geometry-index";
 export { copyContent, parseClipboard, MAX_CLIPBOARD_CHARACTERS } from "./clipboard/content";
 export { pasteContent } from "./clipboard/paste";

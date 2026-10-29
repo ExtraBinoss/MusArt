@@ -4,6 +4,11 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ## [Unreleased]
 
+### Added
+
+- Added the renderer-free Motion foundation: independent per-composition timelines, one-time counted initialization, reversible Static/base editing, exact rational time, validated key/track commands, typed properties derived from the effect catalog, deterministic easing and compiled arbitrary-time evaluation. Immutable frame materialization shares the same semantics for interactive and headless adapters; unsupported animated hierarchy rewrites fail explicitly rather than discard motion.
+- Added headless `evaluate` reports with exact decimal or tick/rate times, plus artboard selection for command application. Creation, authoring and evaluation run without a browser; media rendering and encoding remain separate platform adapters.
+
 ### Changed
 
 - Prepared the isolated Motion/video workstream with a verbatim request record, supplied Figma references, primary-source UX research, traceable requirements and dependency-ordered agent checklists. The proposed architecture preserves per-artboard layers and deterministic time, requires a generic headless-capable animation engine and Mediabunny export, and separates the simplified 1–30-second Timelapse workflow. This milestone documents the plan; Motion/video implementation and performance validation remain pending.

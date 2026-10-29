@@ -10,6 +10,7 @@ import {
   serializeProject,
   type Command,
 } from "@musart/core";
+import { evaluateHeadlessMotion } from "./headless/motion";
 const { positionals, values } = parseArgs({
   args: process.argv.slice(2),
   allowPositionals: true,
@@ -22,12 +23,13 @@ const { positionals, values } = parseArgs({
     format: { type: "string", default: "png" },
     page: { type: "string" },
     webgl: { type: "boolean", default: false },
+    time: { type: "string", default: "0" },
   },
 });
 const operation = positionals[0];
-if (!operation || !["create", "apply", "render", "screenshot"].includes(operation)) {
+if (!operation || !["create", "apply", "evaluate", "render", "screenshot"].includes(operation)) {
   console.log(
-    "MusArt headless\n  create --output project.musart\n  apply --input project.musart --commands commands.json --output result.musart\n  render --input project.musart --output image.png [--scale 2] [--format png|webp|jpeg] [--page id] [--webgl]\n  screenshot --input project.musart --output editor.png\nRender/screenshot require the local app running (bun dev or bun preview); --url changes its address.",
+    "MusArt headless\n  create --output project.musart\n  apply --input project.musart --commands commands.json --output result.musart\n  evaluate --input project.musart --time 15/30 --output frame.json [--page id]\n  render --input project.musart --output image.png [--scale 2] [--format png|webp|jpeg] [--page id] [--webgl]\n  screenshot --input project.musart --output editor.png\nCreate/apply/evaluate run without a browser. Render/screenshot require the local app running; --url changes its address.",
   );
   process.exit(operation ? 1 : 0);
 }
@@ -65,8 +67,12 @@ if (operation === "create") {
   const commands: unknown = JSON.parse(await readFile(values.commands, "utf8"));
   if (!Array.isArray(commands)) throw new Error("The commands file must contain an array.");
   const engine = new EditorEngine(initial);
+  if (values.page) engine.setPage(values.page);
   engine.transaction(commands as Command[]);
   await writeFile(values.output, serializeProject(engine.getSnapshot().project));
+} else if (operation === "evaluate") {
+  const report = evaluateHeadlessMotion(initial, values.page ?? initial.pages[0]!.id, values.time);
+  await writeFile(values.output, JSON.stringify(report, null, 2));
 } else {
   const { chromium } = await import("@playwright/test");
   const browser = await chromium.launch({

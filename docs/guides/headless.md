@@ -2,12 +2,13 @@
 
 Headless mode lets you create or edit a MusArt project from the command line, export an image, or capture the editor without opening a visible browser window.
 
-| Operation    | Result                                      | Needs a running app?          |
-| ------------ | ------------------------------------------- | ----------------------------- |
-| `create`     | A starter `.musart` project.                | No                            |
-| `apply`      | A project changed by a JSON command list.   | No                            |
-| `render`     | The selected artboard as PNG, WebP or JPEG. | Yes, plus Playwright Chromium |
-| `screenshot` | A screenshot of the editor interface.       | Yes, plus Playwright Chromium |
+| Operation    | Result                                                       | Needs a running app?          |
+| ------------ | ------------------------------------------------------------ | ----------------------------- |
+| `create`     | A starter `.musart` project.                                 | No                            |
+| `apply`      | A project changed by a JSON command list.                    | No                            |
+| `evaluate`   | An exact-time Motion frame report and effective composition. | No                            |
+| `render`     | The selected artboard as PNG, WebP or JPEG.                  | Yes, plus Playwright Chromium |
+| `screenshot` | A screenshot of the editor interface.                        | Yes, plus Playwright Chromium |
 
 Run the examples from the repository root. Use the Bun version declared in [package.json](../../package.json) and install the locked dependencies first:
 
@@ -49,6 +50,22 @@ bun run headless apply \
 Commands use the same validated document engine as the editor. The complete list is applied as one transaction: a rejected edit prevents the changed project from being written. Existing files at the output path are overwritten on success, so use a different path to keep the original.
 
 Each invocation starts on the input project's first artboard. `updatePage` edits the current artboard; an `addPage` command makes the new artboard current for later commands in the same list. Commands that target layers use IDs from the project's `pages[].layers[]`. The full `Command` type is defined in [the document model](../../packages/core/src/document/model.ts), and handlers are listed in [the registry](../../packages/core/src/session/registry.ts).
+
+Pass `--page <id>` to `apply` to start its transaction on another artboard. Motion commands use the same validated engine: `setCompositionMode`, keyframe upsert/move/delete, track placement and trimming. First activation over more than three tracked layers requires an explicit, current [initialization plan](../../packages/core/src/motion/initialization.ts) and confirmation; a noninteractive caller cannot bypass it by omitting the dialog.
+
+## Evaluate authored Motion without a browser
+
+```sh
+bun run headless evaluate \
+  --input artifacts/animated.musart \
+  --page cover \
+  --time 15/30 \
+  --output artifacts/frame.json
+```
+
+`--time` accepts decimal seconds with up to nine fractional digits, or integer ticks/rate such as `15/30`. Both forms normalize to exact portable time. The JSON report contains the sampled values, temporally active layer IDs and the effective composition. It uses the same compiled evaluator and typed property registry as the editor, without DOM, GPU, storage or a running app. It does not decode media or claim to export a video.
+
+Repeated, reverse and random-order evaluation leave the authored project unchanged. Static mode reports the base design with dormant animation. Evaluation uses half-open intervals; the editor's separate terminal-preview option can show the exact final pose at the duration boundary. Browser rendering and media encoding remain platform capabilities.
 
 ## Render an image
 
@@ -98,6 +115,7 @@ This waits for the artboard's rendered revision, then captures the interface at 
 | `--output`   | All                    | Required destination path. Parent directories are created automatically.                           |
 | `--input`    | All                    | Existing `.musart` JSON. If omitted, the starter project is used.                                  |
 | `--commands` | `apply`                | Required path to a JSON array of document commands.                                                |
+| `--time`     | `evaluate`             | Exact decimal seconds or integer ticks/rate; defaults to `0`.                                      |
 | `--url`      | `render`, `screenshot` | Running app address; defaults to `http://127.0.0.1:6100`.                                          |
 | `--page`     | `render`, `screenshot` | Artboard ID from the input project's `pages[]`; defaults to the first artboard.                    |
 | `--scale`    | `render`               | Output density; defaults to `1`. Must be positive and at most `8`, within image and device limits. |

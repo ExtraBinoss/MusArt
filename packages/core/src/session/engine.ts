@@ -194,6 +194,13 @@ export class EditorEngine implements EnginePort {
     const occupied = new Set<string>([before.project.id, ...Object.keys(before.project.assets)]);
     for (const page of before.project.pages) {
       occupied.add(page.id);
+      for (const track of page.motion?.tracks ?? []) {
+        occupied.add(track.id);
+        for (const property of track.properties) {
+          occupied.add(property.id);
+          for (const key of property.keyframes) occupied.add(key.id);
+        }
+      }
       for (const layer of page.layers) {
         occupied.add(layer.id);
         for (const effect of layer.effects) occupied.add(effect.id);
@@ -216,7 +223,7 @@ export class EditorEngine implements EnginePort {
       collectExplicitIds(commands, occupied);
       if (this.commandListeners.size) detailedCommands = freeze(clone(commands));
       for (const command of clone(commands)) {
-        const result = applyCommand(project, pageId, command, nextId);
+        const result = applyCommand(project, pageId, command, nextId, before.revision);
         pageId = result.pageId;
         if (result.selection) selection = result.selection;
       }
