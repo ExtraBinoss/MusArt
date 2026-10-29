@@ -3,6 +3,7 @@ import { act, screen, fireEvent, waitFor, within } from "@testing-library/react"
 import { ProjectDialog } from "../../../src/components/projects/ProjectDialog";
 import { setup } from "../../support/ui";
 import { projectSummary } from "../../support/projects";
+import { ONBOARDING_STORAGE_KEY } from "../../../src/state/onboarding/preferences";
 test("new-project creation focuses its name so one Escape dismisses the dashboard", async () => {
   const d = setup(),
     close = vi.fn();
@@ -93,6 +94,7 @@ test("template choices use the real creation API and preserve failure state", as
   );
 });
 test("welcome cannot be dismissed and custom creation remains available without a saved project", async () => {
+  localStorage.setItem(ONBOARDING_STORAGE_KEY, '{"version":1,"completed":true}');
   const d = setup(),
     close = vi.fn();
   d.mount(
@@ -242,4 +244,27 @@ test("dashboard settings are an accessory that returns to the same two-tab works
   expect(screen.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeVisible();
   expect(screen.getAllByRole("tab")).toHaveLength(2);
   expect(close).not.toHaveBeenCalled();
+});
+
+test("first visitors finish onboarding before project actions; completed visits open the dashboard directly", async () => {
+  localStorage.removeItem(ONBOARDING_STORAGE_KEY);
+  const d = setup(),
+    close = vi.fn();
+  const view = d.mount(
+    <ProjectDialog welcome services={d.services} onClose={close} onTask={d.onTask} />,
+  );
+  expect(screen.getByRole("dialog", { name: "Bienvenue dans MusArt" })).toBeVisible();
+  expect(d.services.listProjectPage).not.toHaveBeenCalled();
+  expect(d.services.createProject).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Faire un petit tour" }));
+  fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
+  fireEvent.click(screen.getByRole("button", { name: "Ouvrir mon atelier" }));
+  await screen.findByRole("dialog", { name: "Tableau de bord MusArt" });
+  expect(close).not.toHaveBeenCalled();
+  expect(d.services.saveProject).not.toHaveBeenCalled();
+  expect(d.services.createProject).not.toHaveBeenCalled();
+  view.unmount();
+  d.mount(<ProjectDialog welcome services={d.services} onClose={close} onTask={d.onTask} />);
+  expect(screen.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeVisible();
+  expect(screen.queryByRole("dialog", { name: "Bienvenue dans MusArt" })).toBeNull();
 });

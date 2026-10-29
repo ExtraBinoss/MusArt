@@ -13,6 +13,8 @@ import { PreferencesDialog } from "./preferences/PreferencesDialog";
 import { ProjectGallery } from "./gallery/ProjectGallery";
 import { TemplateGallery } from "./templates/TemplateGallery";
 import { createProjectFromTemplate } from "../../services/projects/templates/catalog";
+import { hasCompletedOnboarding } from "../../state/onboarding/preferences";
+import { OnboardingDialog } from "../onboarding/OnboardingDialog";
 import "./dashboard/messages";
 import "./dashboard/dashboard.css";
 
@@ -28,6 +30,10 @@ export interface ProjectDialogProps {
 }
 /** The same dashboard works before the first document and above an open project. */
 export function ProjectDialog(props: ProjectDialogProps) {
+  const [onboarding, setOnboarding] = useState(() =>
+    Boolean(props.welcome && !hasCompletedOnboarding()),
+  );
+  if (onboarding) return <OnboardingDialog onComplete={() => setOnboarding(false)} />;
   return props.initialView === "settings" || props.initialView === "settingsEditor" ? (
     <PreferencesDialog
       onClose={props.onClose}

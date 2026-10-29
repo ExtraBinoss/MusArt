@@ -17,6 +17,7 @@ Start with the [project README](../README.md) for features, installation and the
 
 | Guide                                                               | What it covers                                                        |
 | ------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| [First visit](guides/first-visit.md)                                | The welcome tour, creative tools and keeping your work portable.      |
 | [Keyboard shortcuts and Magic Search](guides/keyboard-shortcuts.md) | Find actions, customize shortcuts and copy editable artwork.          |
 | [Fonts](guides/fonts.md)                                            | Choose, download or import fonts, and understand project portability. |
 | [Preferences](guides/preferences.md)                                | Language, appearance, storage and editor settings.                    |

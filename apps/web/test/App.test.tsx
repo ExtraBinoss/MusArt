@@ -120,12 +120,17 @@ test("opens the real project/export dialogs and switches panel modes through com
   expect(await screen.findByRole("dialog", { name: "Exporter la composition" })).toBeVisible();
 });
 test("starts with the shared empty dashboard and mounts the editor only after choosing a real project", async () => {
+  localStorage.removeItem("musart.onboarding.v1");
   const d = setup();
   vi.mocked(d.services.createProject).mockImplementation(async () => {
     d.engine.load(createProject({ id: "chosen-project", name: "TikTok video" }));
   });
   d.mount(<App engine={d.engine} services={d.services} welcome />);
   expect(screen.queryByTestId("canvas")).not.toBeInTheDocument();
+  expect(screen.getByRole("dialog", { name: "Bienvenue dans MusArt" })).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "Faire un petit tour" }));
+  fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
+  fireEvent.click(screen.getByRole("button", { name: "Ouvrir mon atelier" }));
   expect(
     await screen.findByRole("heading", { name: "Quel projet voulez-vous créer ?" }),
   ).toBeVisible();
