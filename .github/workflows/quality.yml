@@ -23,18 +23,13 @@ jobs:
         with:
           bun-version: 1.4.2
       - run: bun install --frozen-lockfile
-      - run: bunx playwright install --with-deps chromium
-      - run: sudo apt-get update && sudo apt-get install -y mesa-vulkan-drivers libvulkan1
-      - run: bun run check
+      - name: Verify without browser scenarios
+        run: bun run check-ci
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
           name: quality-reports
-          path: |
-            artifacts/screenshots/
-            artifacts/browser/
-            artifacts/playwright-report/
-            coverage/
+          path: coverage/
           retention-days: 7
 
   pages-build:

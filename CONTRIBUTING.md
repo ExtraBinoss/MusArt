@@ -24,7 +24,15 @@ The development loop is: implement the feature, run its focused code tests, and 
 
 For focused coverage, use `bun run test:coverage:changed -- <source-paths>`. Without paths it selects staged, unstaged and untracked executable sources from Git. Only their exact mirrored tests run, only those sources are instrumented, and partial reports go to `artifacts/coverage-related/`. Use `test:coverage:related` to include dependent consumers as well; shared barrel imports can make that selection broad. The full `coverage/` report and CI thresholds remain unchanged. Pure core tests use a shared Node worker; DOM tests use isolated VM contexts, while native storage and external animation-clock integration tests retain fresh Node realms.
 
-Run relevant static checks and `bun run check:rules` before committing. After a fix, rerun affected checks rather than starting the complete gate again. `bun run check` remains the complete CI/release gate, including repository-wide coverage and browser scenarios. Reports, captures, dependencies, builds, local projects, and secrets do not belong in commits.
+Run relevant static checks and `bun run check:rules` before committing. After a fix, rerun affected checks rather than starting the complete gate again. Reports, captures, dependencies, builds, local projects, and secrets do not belong in commits.
+
+| Command                          | Checks                                                                                                                                                                                | When to use it                                                                       |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `bun run check-ci`               | Workspace versions, repository rules, typecheck, lint, formatting, full Vitest coverage, coverage-aware rules and production build. No Chromium installation or Playwright scenarios. | Automatic pull-request/push validation and the gate before GitHub Pages publication. |
+| `bun run test:browser -- <path>` | Selected real-browser scenarios, with a production build and preview server. Requires Chromium.                                                                                       | Rendering or native interaction changes.                                             |
+| `bun run check`                  | Everything in `check-ci`, followed by the complete Playwright browser suite. Requires Chromium.                                                                                       | Requested full verification and release preparation.                                 |
+
+The automatic Quality workflow uses `check-ci`; browser tests run explicitly when needed. All source coverage requirements remain in force. Passing `check-ci` alone does not establish correct GPU output or native interactions.
 
 ## Commit and review
 

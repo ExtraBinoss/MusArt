@@ -56,7 +56,9 @@ Vitest covers document behavior and module contracts. Playwright exercises nativ
 
 ## GitHub Pages
 
-The [Quality workflow](../../.github/workflows/quality.yml) verifies changes before its Pages build and deployment jobs. Deployment is restricted to `ExtraBinoss/MusArt`, the `main` branch, and push/manual runs whose original actor and triggering actor are both `ExtraBinoss`. Pull requests and forks run verification without publishing the site.
+The [Quality workflow](../../.github/workflows/quality.yml) runs `bun run check-ci` before its Pages build and deployment jobs. This checks versions, repository rules, types, lint, formatting, full Vitest coverage, coverage-aware rules and the production build, without installing Chromium or running Playwright. Browser scenarios remain available through `bun run test:browser` and the complete `bun run check` release gate; they do not block automatic Pages publication.
+
+Deployment is restricted to `ExtraBinoss/MusArt`, the `main` branch, and push/manual runs whose original actor and triggering actor are both `ExtraBinoss`. Pull requests and forks run verification without publishing the site.
 
 In repository **Settings → Pages**, select **GitHub Actions** as the source. The workflow deploys through the `github-pages` environment to `https://extrabinoss.github.io/MusArt/`; the URL becomes available after the first successful deployment.
 
