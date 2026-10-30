@@ -126,11 +126,13 @@ test("imports a real standalone WAV, prepares a bounded waveform and schedules a
     mimeType: "audio/wav",
     buffer: Buffer.from(await wav.arrayBuffer()),
   });
-  const row = page.locator(".motion-audio-row");
+  const row = page.locator(".motion-audio-row:not(.motion-canvas-active-overlay)");
   await expect(row).toHaveCount(1);
   await expect
-    .poll(() => row.locator(".motion-audio-waveform path").first().getAttribute("d"))
-    .not.toBe("");
+    .poll(() =>
+      page.locator("canvas[data-timeline-canvas]").getAttribute("data-timeline-waveforms"),
+    )
+    .toBe("1");
   const canonical = await page.evaluate(() => window.musart!.snapshot());
   expect(canonical.project.pages[0]!.layers).toHaveLength(1);
   expect(canonical.project.pages[0]!.motion!.audioTracks).toHaveLength(1);
@@ -189,7 +191,10 @@ test("imports a real standalone WAV, prepares a bounded waveform and schedules a
     audio: window.__musartAudioWitness,
     readbacks: window.__musartVideoReadbacks,
     rows: document.querySelectorAll(".motion-audio-row").length,
-    waveformPaths: document.querySelectorAll(".motion-audio-waveform path").length,
+    waveformCanvases: Number(
+      document.querySelector<HTMLCanvasElement>("canvas[data-timeline-canvas]")?.dataset
+        .timelineWaveforms ?? 0,
+    ),
     snapshot: window.musart!.snapshot(),
   }));
   expect(evidence.audio!.running).toBe(true);

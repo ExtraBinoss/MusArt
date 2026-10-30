@@ -210,3 +210,52 @@ it("holds the insertion intent through stationary layout expansion, then retarge
   expect(d.presentation.over(next, d.page.layers[2]!, d.page, point)).toBe(true);
   expect(d.controller.read()?.target?.id).toBe("c");
 });
+
+it("keeps an accepted stationary insertion when preview motion moves a property underneath release", () => {
+  const d = fixture(),
+    point = { x: 100, y: 45, alt: false };
+  d.presentation.over(d.target, d.page.layers[1]!, d.page, point);
+  const property = document.createElement("div");
+  Object.assign(property.dataset, {
+    layerDropId: "c",
+    layerDropPageId: "one",
+    layerDropKind: "property",
+  });
+  d.viewport.append(property);
+  d.elementFromPoint.mockReturnValue(property);
+  d.presentation.invalidate();
+  d.presentation.flush();
+  expect(d.controller.read()?.target?.id).toBe("b");
+  d.presentation.move({ ...point, x: 101 });
+  d.presentation.flush();
+  expect(d.controller.read()?.target?.id).toBe("b");
+  d.presentation.move({ ...point, x: 107 });
+  d.presentation.flush();
+  expect(d.controller.read()?.target).toBeNull();
+  expect(d.controller.read()?.rejected?.reason).toBe("property");
+});
+it("a real scroll, outside hit or foreign page still retires stationary insertion", () => {
+  for (const changed of ["scroll", "outside", "foreign"] as const) {
+    const d = fixture(),
+      point = { x: 100, y: 45, alt: false };
+    d.presentation.over(d.target, d.page.layers[1]!, d.page, point);
+    if (changed === "outside") d.elementFromPoint.mockReturnValue(null);
+    else if (changed === "foreign") d.elementFromPoint.mockReturnValue(d.foreign);
+    else {
+      d.target.dataset.layerDropKind = "property";
+      d.viewport.scrollTop = 40;
+    }
+    d.presentation.flush();
+    expect(d.controller.read()?.target).toBeNull();
+  }
+});
+
+it("does not latch a property outside the actual viewport or across modifier changes", () => {
+  const d = fixture(),
+    point = { x: 100, y: 45, alt: false };
+  d.presentation.over(d.target, d.page.layers[1]!, d.page, point);
+  expect(d.presentation.retainIntent({ ...point, x: 101 }, "one", d.target)).toBe(true);
+  expect(d.presentation.retainIntent(point, "two", d.target)).toBe(false);
+  expect(d.presentation.retainIntent({ ...point, alt: true }, "one", d.target)).toBe(false);
+  expect(d.presentation.retainIntent(point, "one", document.createElement("div"))).toBe(false);
+});

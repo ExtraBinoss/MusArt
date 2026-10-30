@@ -16,7 +16,12 @@ function setup() {
     pageId: d.engine.getSnapshot().pageId,
     track: d.track(),
     asset: project.assets.sound as typeof d.asset,
-    gestures: { begin: vi.fn(), cancel: vi.fn() },
+    gestures: {
+      begin: vi.fn(),
+      cancel: vi.fn(),
+      readPreview: vi.fn(() => null),
+      subscribePreview: vi.fn(() => () => {}),
+    },
     top: 48,
     rowHeight: 24,
     scale: 120,
@@ -79,5 +84,28 @@ it("refuses stale same-ID project/track callbacks and accepts the fresh canonica
   );
   fireEvent.click(row.querySelector(".motion-row-name")!);
   expect(props.onSelect).toHaveBeenCalledOnce();
+  view.unmount();
+});
+it("keeps rename, volume, selection and keyboard deletion while omitting all temporal DOM in labelsOnly", () => {
+  const { d, props } = setup(),
+    view = render(
+      <TooltipProvider>
+        <AudioRowView {...props} labelsOnly />
+      </TooltipProvider>,
+    ),
+    row = view.container.querySelector<HTMLElement>(".motion-audio-row")!;
+  expect(row).toHaveAttribute("data-labels-only", "true");
+  expect(
+    row.querySelector(".motion-row-time,.motion-track,.motion-trim-handle,.motion-audio-waveform"),
+  ).toBeNull();
+  expect(row.querySelector(".motion-row-label")).toHaveStyle({ pointerEvents: "auto" });
+  expect(row.querySelector(".motion-audio-gain")).not.toBeNull();
+  fireEvent.click(row.querySelector(".motion-row-name")!);
+  expect(props.onSelect).toHaveBeenCalledWith(d.track().id);
+  fireEvent.keyDown(row, { key: "Delete" });
+  expect(d.page().motion!.audioTracks).toHaveLength(0);
+  d.engine.undo();
+  expect(d.page().motion!.audioTracks).toHaveLength(1);
+  expect(props.gestures.begin).not.toHaveBeenCalled();
   view.unmount();
 });

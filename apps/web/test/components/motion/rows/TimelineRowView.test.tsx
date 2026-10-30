@@ -106,3 +106,37 @@ it("key selection and deselection invalidate memoized marker leaves without a do
   view.unmount();
   gestures.dispose();
 });
+it("renders only interactive HTML labels when the temporal surface owns clips, keys and easing", () => {
+  const d = fixture();
+  counters.clips.mockClear();
+  const props = { ...d.props, labelsOnly: true, engine: d.engine, compositionId: d.page.id },
+    view = d.mount(<TimelineRowView {...props} />);
+  expect(document.querySelector(".motion-row-time")).toBeNull();
+  expect(document.querySelector(".motion-track-wrap")).toBeNull();
+  expect(counters.clips).not.toHaveBeenCalled();
+  expect(document.querySelector(".motion-row-label")).toHaveStyle({ pointerEvents: "auto" });
+  expect(document.querySelector(".motion-row")).toHaveStyle({ pointerEvents: "none" });
+  expect(document.querySelector(".motion-transition-trigger")).not.toBeNull();
+  fireEvent.click(document.querySelector(".motion-row-expand")!);
+  expect(props.onToggle).toHaveBeenCalledWith(d.rectangle.id);
+  const row = d.rows.find((entry) => entry.kind === "property")!;
+  const gestures = createTimelineGestures({
+    engine: d.engine,
+    compositionId: d.page.id,
+    transport: d.runtime.transport,
+    onSelection: vi.fn(),
+    onError: vi.fn(),
+  });
+  view.rerender(<TimelineRowView {...props} row={row} gestures={gestures} />);
+  expect(document.querySelector(".motion-row")?.getAttribute("data-motion-property-id")).toBe(
+    row.kind === "property" ? row.property.id : "",
+  );
+  expect(
+    document.querySelector(".motion-key,.motion-key-cluster,.motion-easing-segment"),
+  ).toBeNull();
+  fireEvent.click(document.querySelector(".motion-row-name")!);
+  expect(gestures.readSelected().size).toBeGreaterThan(0);
+  expect(props.onSelect).toHaveBeenCalledWith(d.rectangle.id, false);
+  view.unmount();
+  gestures.dispose();
+});

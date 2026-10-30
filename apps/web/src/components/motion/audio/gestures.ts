@@ -22,7 +22,30 @@ export function createAudioTrackGestures(
   onError: (error: unknown) => void,
 ) {
   let cancel: (() => void) | null = null;
+  let preview: { trackId: string; start: number; end: number; sourceIn: number } | null = null;
+  const listeners = new Set<() => void>();
+  function publish(next: typeof preview) {
+    if (
+      next &&
+      preview &&
+      next.trackId === preview.trackId &&
+      next.start === preview.start &&
+      next.end === preview.end &&
+      next.sourceIn === preview.sourceIn
+    )
+      return;
+    if (!next && !preview) return;
+    preview = next;
+    for (const listener of listeners) listener();
+  }
   return {
+    readPreview: () => preview,
+    subscribePreview(listener: () => void) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
     cancel() {
       cancel?.();
     },
@@ -98,6 +121,12 @@ export function createAudioTrackGestures(
         wrap!.style.setProperty("--motion-trim-width", `${Math.max(2, (end - start) * scale)}px`);
         wrap!.dataset.audioDragging = "true";
         tooltip.set(time(end - start));
+        publish({
+          trackId: track.id,
+          start,
+          end,
+          sourceIn: kind === "start" ? sourceIn + start - originalStart : sourceIn,
+        });
       }
       const scroll = createDragAutoScroll({
         viewport,
@@ -113,12 +142,14 @@ export function createAudioTrackGestures(
       function move(input: PointerEvent) {
         if (input.pointerId !== pointer) return;
         sample(input);
+        paint();
         scroll.update(x, y);
       }
       function cleanup() {
         if (stopped) return;
         stopped = true;
         if (cancel === abort) cancel = null;
+        publish(null);
         stopEngine();
         scroll.stop();
         tooltip.dispose();

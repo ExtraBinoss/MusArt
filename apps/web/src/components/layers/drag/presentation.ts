@@ -97,6 +97,26 @@ export function createLayerDragPresentation(engine: EnginePort) {
     previous = { point: input, top, left, viewport, valid, version, targetId: layer.id };
     return valid;
   }
+  function retainIntent(
+    input: LayerDragPoint,
+    pageId: string | undefined,
+    nextViewport: HTMLElement | null,
+  ) {
+    const state = controller.read();
+    // Reordered rows move underneath the cursor. The existing six-pixel drag threshold
+    // also prevents tiny hand jitter from replacing an accepted insertion with that new row.
+    return !!(
+      previous?.valid &&
+      state?.target?.id === previous.targetId &&
+      pageId === state.pageId &&
+      nextViewport !== null &&
+      previous.viewport === nextViewport &&
+      Math.hypot(previous.point.x - input.x, previous.point.y - input.y) < 6 &&
+      previous.point.alt === input.alt &&
+      previous.top === nextViewport.scrollTop &&
+      previous.left === nextViewport.scrollLeft
+    );
+  }
   function hit() {
     if (!point || !controller.read()) return;
     if (ghost) ghost.style.transform = `translate3d(${point.x + 12}px,${point.y + 12}px,0)`;
@@ -112,6 +132,7 @@ export function createLayerDragPresentation(engine: EnginePort) {
     if (nextViewport) bindViewport(nextViewport);
     const id = row.dataset.layerDropId!,
       pageId = row.dataset.layerDropPageId;
+    if (retainIntent(point, pageId, nextViewport)) return;
     if (row.dataset.layerDropKind === "property") {
       controller.clear({ id, reason: "property" });
       previous = null;
@@ -186,6 +207,9 @@ export function createLayerDragPresentation(engine: EnginePort) {
       const valid = apply(row, layer, page, input);
       scroll?.update(input.x, input.y);
       return valid;
+    },
+    retainIntent(input: LayerDragPoint, pageId: string, node: HTMLElement) {
+      return retainIntent(input, pageId, node.closest<HTMLElement>("[data-layer-drag-viewport]"));
     },
     release,
     invalidate,

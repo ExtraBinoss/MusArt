@@ -1093,6 +1093,17 @@ surface requests Canvas2D; its Blick audio waveform renderer requests WebGL2 in
 a shared worker, then publishes ImageBitmaps. Distinguish these paths rather than
 describe the entire timeline as WebGL or assume its performance transfers unchanged.
 
+## M135 — Remaining zoom and scroll stutter
+
+```text
+les zooms sont pas encore smooth dans la timeline ni niveau animation  ou autre ca lag, et pareil pour scroll c'est pas mal , ca lagm oins mais y'a quand meme un stutter je tassure
+```
+
+Keep the reported lag open after the Canvas milestone. Profile real timeline wheel
+zoom, slider zoom and scroll cadence independently of hover; preserve delivered
+input clocks, React commits, Canvas paints and matching source attribution. The
+hover result does not establish that zoom or scrolling meets the frame budget.
+
 ## Reference handling
 
 The screenshots are user-supplied Figma UI references, not MusArt product assets. They document the requested appearance and interaction target; they do not grant a license to redistribute Figma code, brand assets or an external design system inside the application. Preserve MusArt branding and use the repository's genuine shadcn/Radix controls.

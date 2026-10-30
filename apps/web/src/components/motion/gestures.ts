@@ -18,17 +18,14 @@ import type { TimelineRow } from "./tree";
 import { createTimelineMarquee } from "./selection/marquee";
 import { createDragAutoScroll } from "../shared/scroll/drag-auto-scroll";
 import { createTimelineLinkPreview } from "./link-preview";
+import { createTimelineGesturePresentation } from "./gestures/presentation";
 import { createTimelineTooltipPreview, renderTimelineGestureTooltip } from "./gestures/tooltip";
 import {
   toTimelinePointerInput,
   type TimelinePointerInput,
   type TimelinePointerMove,
 } from "./gestures/input";
-import {
-  acceptsOccurrencePlacement,
-  occurrenceMoveTargets,
-  previewOccurrenceMove,
-} from "./gestures/occurrences";
+import { acceptsOccurrencePlacement, occurrenceMoveTargets } from "./gestures/occurrences";
 import { nearestTimelineSnap, timelineSnapReferences } from "./gestures/snapping";
 import { isTimelineGestureCurrent, type TimelineGestureOrigin } from "./gestures/origin";
 export type { TimelinePointerInput, TimelinePointerMove } from "./gestures/input";
@@ -78,6 +75,7 @@ export function createTimelineGestures(options: {
     gutter?: number;
     timeWidth?: number;
   } | null = null;
+  const presentation = createTimelineGesturePresentation();
   let selected = new Set<string>();
   let active: Gesture | null = null;
   let ignorePointerClick = false;
@@ -91,6 +89,8 @@ export function createTimelineGestures(options: {
     origin: () => origin,
     selected: () => selected,
     publish: setSelection,
+    onPreview: presentation.marquee,
+    onClearPreview: presentation.clearMarquee,
     onStart: () => {
       cancel();
       options.onStart?.();
@@ -110,6 +110,7 @@ export function createTimelineGestures(options: {
         }
     if (same) return;
     selected = new Set(next);
+    presentation.notify();
     if (!disposed) options.onSelection();
   }
   function currentPage() {
@@ -120,6 +121,7 @@ export function createTimelineGestures(options: {
   }
   function clear(gesture: Gesture) {
     active = null;
+    presentation.clear();
     delete gesture.node.dataset.dragging;
     gesture.stopEngine();
     gesture.scrollLoop?.stop();
@@ -155,47 +157,9 @@ export function createTimelineGestures(options: {
   }
 
   function preview(gesture: Gesture) {
-    const root = surface?.root;
-    if (!root) return;
-    const px = motionTimeToSeconds(gesture.delta) * (surface?.scale ?? 1);
-    if (gesture.action === "keys") {
-      const ids = new Set(gesture.keyIds);
-      for (const node of root.querySelectorAll<HTMLElement>(".motion-key[data-key-id]")) {
-        if (!ids.has(node.dataset.keyId!)) continue;
-        node.style.setProperty("--motion-drag-x", `${px}px`);
-        gesture.touched.add(node);
-      }
-    } else if (gesture.action === "move") {
-      gesture.links?.shift(gesture.delta);
-      if (gesture.page.motion?.version === 2) {
-        previewOccurrenceMove(root, gesture.track!.id, gesture.keyIds, px, gesture.touched);
-      } else {
-        for (const node of root.querySelectorAll<HTMLElement>(".motion-row[data-layer-id]")) {
-          if (!gesture.layerIds.has(node.dataset.layerId!)) continue;
-          node.style.setProperty("--motion-drag-x", `${px}px`);
-          gesture.touched.add(node);
-        }
-      }
-    } else {
-      const track = gesture.track!,
-        end = track.end ?? gesture.page.motion!.duration;
-      const startTime =
-        gesture.action === "trimStart" ? addMotionTime(track.start, gesture.delta) : track.start;
-      const endTime = gesture.action === "trimEnd" ? addMotionTime(end, gesture.delta) : end;
-      for (const node of root.querySelectorAll<HTMLElement>(".motion-track-wrap[data-track-id]")) {
-        if (node.dataset.trackId !== track.id) continue;
-        node.style.setProperty(
-          "--motion-trim-left",
-          `${motionTimeToSeconds(startTime) * (surface?.scale ?? 1)}px`,
-        );
-        node.style.setProperty(
-          "--motion-trim-width",
-          `${(motionTimeToSeconds(endTime) - motionTimeToSeconds(startTime)) * (surface?.scale ?? 1)}px`,
-        );
-        gesture.touched.add(node);
-      }
-    }
-    renderTimelineGestureTooltip(surface?.feedback, gesture);
+    if (!surface) return;
+    presentation.render(gesture, surface.root, surface.scale);
+    renderTimelineGestureTooltip(surface.feedback, gesture);
   }
   function movePoint() {
     const gesture = active;
@@ -513,6 +477,9 @@ export function createTimelineGestures(options: {
     beginTrackInput,
     updatePointer,
     cancel,
+    readPreview: presentation.read,
+    readMarqueePreview: presentation.readMarquee,
+    subscribePreview: presentation.subscribe,
     readSelected: (): ReadonlySet<string> => selected,
     selectKey,
     deleteSelected,

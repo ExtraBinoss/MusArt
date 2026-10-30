@@ -6,6 +6,24 @@ import { TimelineVirtualRows } from "../../../src/components/motion/TimelineVirt
 import { TooltipProvider } from "../../../src/components/ui/tooltip";
 import { createMotionTransport } from "../../../src/services/motion/transport";
 import { audioFixture } from "../../support/audio";
+const state = vi.hoisted(() => ({ create: vi.fn(), update: vi.fn(), dispose: vi.fn() }));
+vi.mock("../../../src/components/motion/canvas/surface", () => ({
+  createTimelineCanvasSurface: () => {
+    state.create();
+    return {
+      update: state.update,
+      dispose: state.dispose,
+      invalidate: vi.fn(),
+      hitTest: vi.fn(() => null),
+    };
+  },
+}));
+vi.mock("../../../src/components/motion/canvas/overlay", () => ({
+  CanvasTimelineOverlay: () => null,
+}));
+vi.mock("../../../src/services/motion/audio/session", () => ({
+  getMotionAudioSession: () => null,
+}));
 
 it("admits bounded audio windows without rerendering its owner or editing the document", () => {
   const d = audioFixture(100),
@@ -47,6 +65,7 @@ it("admits bounded audio windows without rerendering its owner or editing the do
   );
   try {
     const ownerBefore = ownerRenders;
+    const updatesBefore = state.update.mock.calls.length;
     const viewport = screen.getByTestId("viewport");
     expect(view.container.querySelector(".motion-row-space")).toHaveStyle({ height: "2400px" });
     fireEvent.scroll(viewport, { target: { scrollTop: 1200 } });
@@ -59,6 +78,14 @@ it("admits bounded audio windows without rerendering its owner or editing the do
       view.container.querySelector<HTMLElement>(".motion-audio-row")!.dataset.audioTrackId,
     ).toBe("audio-0");
     expect(ownerRenders).toBe(ownerBefore);
+    expect(state.create).toHaveBeenCalledOnce();
+    expect(state.update).toHaveBeenCalledTimes(updatesBefore);
+    expect(
+      view.container.querySelector(
+        ".motion-row-time,.motion-key,.motion-track,.motion-audio-waveform",
+      ),
+    ).toBeNull();
+    expect(view.container.querySelector("canvas[data-timeline-canvas=true]")).not.toBeNull();
     expect(d.engine.getSnapshot()).toBe(snapshot);
   } finally {
     view.unmount();

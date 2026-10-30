@@ -225,6 +225,12 @@ it("keeps layer-row clip subtrees memoized when only key selection changes while
   expect(marker).toHaveAttribute("aria-pressed", "false");
   expect(counters.clips).toHaveBeenCalledTimes(baseline);
   expect(d.engine.getSnapshot()).toBe(before);
+  view.rerender(<TimelineRows {...props} labelsOnly />);
+  expect(document.querySelector(".motion-row-time,.motion-key,.motion-track-wrap")).toBeNull();
+  expect(
+    document.querySelector(`[data-motion-property-id="${property.property.id}"]`),
+  ).not.toBeNull();
+  expect(counters.clips).toHaveBeenCalledTimes(baseline);
   view.unmount();
   gestures.dispose();
 });

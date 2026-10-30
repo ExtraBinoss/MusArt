@@ -1,8 +1,9 @@
-import { act, fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { listLayerMotionOccurrences } from "@musart/core";
 import { setup } from "../../../support/ui";
 import { createMotionTransport } from "../../../../src/services/motion/transport";
+import * as transitionRequests from "../../../../src/components/motion/transitions/requests";
 import { TrackClips } from "../../../../src/components/motion/occurrences/TrackClips";
 
 test("readmits gap hover after dragging and a range commit without pointer reentry", () => {
@@ -185,4 +186,76 @@ test("rejects stale hover copies and cancels its owned RAF on teardown", () => {
   expect(() => pending?.(0)).not.toThrow();
   raf.mockRestore();
   cancel.mockRestore();
+});
+
+test("hands the pointed occurrence and context anchor to the persistent transition editor", async () => {
+  const d = setup();
+  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const page = d.engine.getSnapshot().project.pages[0]!,
+    track = page.motion!.tracks[0]!;
+  const request = vi.spyOn(transitionRequests, "requestLayerTransition").mockResolvedValue(true);
+  const view = d.mount(
+    <TrackClips
+      engine={d.engine}
+      page={page}
+      layerId={d.rectangle.id}
+      name="Hero"
+      tracks={[track]}
+      duration={2}
+      scale={100}
+      disabled={false}
+      transport={createMotionTransport(d.engine)}
+      onSelect={() => {}}
+    />,
+  );
+  fireEvent.contextMenu(view.container.querySelector(".motion-track-wrap")!, {
+    clientX: 280,
+    clientY: 150,
+  });
+  fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une transition au clip" }));
+  await waitFor(() =>
+    expect(request).toHaveBeenCalledWith(
+      d.engine,
+      page.id,
+      d.rectangle.id,
+      { x: 280, y: 150 },
+      track.id,
+    ),
+  );
+  view.unmount();
+  request.mockRestore();
+});
+
+test("rejects a stale transition handoff before the retired menu releases focus", async () => {
+  const d = setup();
+  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const page = d.engine.getSnapshot().project.pages[0]!,
+    track = page.motion!.tracks[0]!,
+    error = vi.fn();
+  const request = vi.spyOn(transitionRequests, "requestLayerTransition").mockResolvedValue(true);
+  const view = d.mount(
+    <TrackClips
+      engine={d.engine}
+      page={page}
+      layerId={d.rectangle.id}
+      name="Hero"
+      tracks={[track]}
+      duration={2}
+      scale={100}
+      disabled={false}
+      transport={createMotionTransport(d.engine)}
+      onSelect={() => {}}
+      onError={error}
+    />,
+  );
+  fireEvent.contextMenu(view.container.querySelector(".motion-track-wrap")!, {
+    clientX: 280,
+    clientY: 150,
+  });
+  fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une transition au clip" }));
+  act(() => d.engine.execute({ type: "renameProject", name: "Replaced while menu closes" }));
+  await waitFor(() => expect(error).toHaveBeenCalledWith("changed"));
+  expect(request).not.toHaveBeenCalled();
+  view.unmount();
+  request.mockRestore();
 });

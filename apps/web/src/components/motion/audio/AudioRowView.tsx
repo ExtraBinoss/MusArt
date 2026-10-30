@@ -33,6 +33,7 @@ export interface AudioRowViewProps {
   selected: boolean;
   unit: TimelineUnit;
   onSelect: (id: string) => void;
+  labelsOnly?: boolean;
 }
 
 /** Retained rows keep their menus, waveform and handlers during vertical window changes. */
@@ -53,6 +54,7 @@ export const AudioRowView = memo(function AudioRowView({
   selected,
   unit,
   onSelect,
+  labelsOnly = false,
 }: AudioRowViewProps) {
   const { t } = useTranslation("motionAudio");
   const start = motionTimeToSeconds(track.start),
@@ -81,7 +83,8 @@ export const AudioRowView = memo(function AudioRowView({
       data-layer-kind="audio"
       data-audio-track-id={track.id}
       data-muted={track.mute || undefined}
-      style={{ top, height: rowHeight }}
+      data-labels-only={labelsOnly || undefined}
+      style={{ top, height: rowHeight, pointerEvents: labelsOnly ? "none" : undefined }}
       onPointerDown={(event) => event.stopPropagation()}
       onKeyDown={(event) => {
         if (
@@ -100,77 +103,82 @@ export const AudioRowView = memo(function AudioRowView({
         }
       }}
     >
-      <div className="motion-row-label" style={{ paddingLeft: 30 }}>
+      <div
+        className="motion-row-label"
+        style={{ paddingLeft: 30, pointerEvents: labelsOnly ? "auto" : undefined }}
+      >
         <Music2 size={12} aria-hidden />
         <AudioTrackName engine={engine} track={track} active={active} onSelect={select} />
         <AudioGainControl engine={engine} track={track} disabled={!active} onSelect={select} />
       </div>
-      <div className="motion-row-time">
-        {end > start && (
-          <AudioClipMenu engine={engine} track={track} disabled={!active} onSelect={select}>
-            {(openProcessing) => (
-              <TrackDurationTooltip
-                trackId={track.id}
-                start={track.start}
-                end={track.end}
-                unit={unit}
-              >
-                <div
-                  className="motion-track-wrap"
-                  style={{
-                    left: `var(--motion-trim-left, ${clipLeft}px)`,
-                    width: `var(--motion-trim-width, ${clipWidth}px)`,
-                  }}
+      {!labelsOnly && (
+        <div className="motion-row-time">
+          {end > start && (
+            <AudioClipMenu engine={engine} track={track} disabled={!active} onSelect={select}>
+              {(openProcessing) => (
+                <TrackDurationTooltip
+                  trackId={track.id}
+                  start={track.start}
+                  end={track.end}
+                  unit={unit}
                 >
-                  <button
-                    type="button"
-                    className="motion-track motion-audio-track"
-                    disabled={!active}
-                    aria-label={t("clip", { name: track.name })}
-                    onClick={select}
-                    onPointerDown={(event) => {
-                      if (!select()) return;
-                      gestures.begin(event, track, asset, "move", scale);
+                  <div
+                    className="motion-track-wrap"
+                    style={{
+                      left: `var(--motion-trim-left, ${clipLeft}px)`,
+                      width: `var(--motion-trim-width, ${clipWidth}px)`,
                     }}
                   >
-                    <AudioWaveform
-                      engine={engine}
-                      asset={asset}
-                      track={track}
-                      width={clipWidth}
-                      left={Math.max(0, left - clipLeft)}
-                      visibleWidth={width}
+                    <button
+                      type="button"
+                      className="motion-track motion-audio-track"
+                      disabled={!active}
+                      aria-label={t("clip", { name: track.name })}
+                      onClick={select}
+                      onPointerDown={(event) => {
+                        if (!select()) return;
+                        gestures.begin(event, track, asset, "move", scale);
+                      }}
+                    >
+                      <AudioWaveform
+                        engine={engine}
+                        asset={asset}
+                        track={track}
+                        width={clipWidth}
+                        left={Math.max(0, left - clipLeft)}
+                        visibleWidth={width}
+                      />
+                    </button>
+                    <button
+                      type="button"
+                      className="motion-trim-handle is-start"
+                      disabled={!active}
+                      aria-label={t("trimStart", { name: track.name })}
+                      onPointerDown={(event) => {
+                        if (!select()) return;
+                        gestures.begin(event, track, asset, "start", scale);
+                      }}
                     />
-                  </button>
-                  <button
-                    type="button"
-                    className="motion-trim-handle is-start"
-                    disabled={!active}
-                    aria-label={t("trimStart", { name: track.name })}
-                    onPointerDown={(event) => {
-                      if (!select()) return;
-                      gestures.begin(event, track, asset, "start", scale);
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="motion-trim-handle is-end"
-                    disabled={!active}
-                    aria-label={t("trimEnd", { name: track.name })}
-                    onPointerDown={(event) => {
-                      if (!select()) return;
-                      gestures.begin(event, track, asset, "end", scale);
-                    }}
-                  />
-                  {clipWidth > 32 && (
-                    <AudioFadeButtons disabled={!active} onOpen={openProcessing} />
-                  )}
-                </div>
-              </TrackDurationTooltip>
-            )}
-          </AudioClipMenu>
-        )}
-      </div>
+                    <button
+                      type="button"
+                      className="motion-trim-handle is-end"
+                      disabled={!active}
+                      aria-label={t("trimEnd", { name: track.name })}
+                      onPointerDown={(event) => {
+                        if (!select()) return;
+                        gestures.begin(event, track, asset, "end", scale);
+                      }}
+                    />
+                    {clipWidth > 32 && (
+                      <AudioFadeButtons disabled={!active} onOpen={openProcessing} />
+                    )}
+                  </div>
+                </TrackDurationTooltip>
+              )}
+            </AudioClipMenu>
+          )}
+        </div>
+      )}
     </div>
   );
 });

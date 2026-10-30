@@ -27,6 +27,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
+- Replace the Motion timeline's temporal artwork with one viewport-bounded Canvas2D surface, shared projection/hit testing, temporal indexes and an idle-safe measurement/paint queue. Keep virtualized HTML labels and lazily admitted DOM editing controls, with imperative move/trim/key/marquee previews and the existing engine commands. Canvas hover feedback is immediate; ordinary editing controllers wait for a short dwell, while clicks, context menus and keyboard intentions remain synchronous. The recorded capped Chromium Sound Playground cohort reduces visual-scroll JavaScript by 42.9% and audio-scroll JavaScript by 73.9%, with unchanged editor-root/panel counters and zero instrumented production pixel reads; the remaining frame-cadence limits are documented in `docs/performance/motion-timeline.md`.
 - Give every built-in sound a ready Canvas mountain waveform, native-clock gray/green playback progress and compact grouped virtualized browsing. Reuse bounded prepared WAV/PCM/native-buffer caches and one idle-safe worker instead of reopening a decoder for every audition; move license details behind the bank's Info action.
 - Construct transition-editor controls only while their Radix content is present, retaining selections and exit animations without rebuilding closed forms during timeline updates.
 - Unify layer reordering across Layers, timeline labels and clip bars with one engine-scoped controller. Vertical drags update canonical stacking order; horizontal drags retain deterministic timing. Add owner-safe cancellation, explicit invalid-drop cues, cached geometry, virtualized source retention and shared edge scrolling.
@@ -72,6 +73,9 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 - Locked artwork remains inspectable on the canvas with a constant-size lock badge and no editing handles. Layer rows expose persistent protection indicators, while the inspector and effect/mask popovers identify blocking parent locks and unlock only that chain in one undoable transaction.
 
 ### Fixed
+
+- Keep viewport Canvas timeline controls aligned with their painted targets, share real animated label poses with painting and drop hit testing, and retain insertion intent through stationary row motion and small hand jitter. Actual movement, scrolling, modifier changes and stale documents still revalidate the drop.
+- Preserve Canvas audio volume popovers across recognized mix commits and undo, invalidate incompatible waveform peaks before painting a replaced original, keep direct fade-button clicks with their own DOM command, and hand clip-menu transitions to the persistent editor only after the previous focus scope closes.
 
 - Preserve sound-bank Canvas geometry through development StrictMode replay and virtualized remounts. Bound high-DPR fallback surfaces before allocation and prevent a retired asynchronous insertion from closing a newer bank owner.
 - Localize timeline virtual-window updates to the row body, admit bounded row blocks through a generic constant-time planner and cache viewport dimensions outside scroll handlers. Construct sound-bank controls only during Radix's actual content lifetime, preserving popup animations while removing closed-catalog work from scrolling.

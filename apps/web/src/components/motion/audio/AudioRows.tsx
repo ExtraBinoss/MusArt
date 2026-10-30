@@ -23,6 +23,9 @@ export function AudioRows({
   unit = "ms",
   visualSelected,
   onError,
+  labelsOnly = false,
+  selectedAudioId,
+  onAudioSelect,
 }: {
   engine: EnginePort;
   tracks: readonly MotionAudioTrack[];
@@ -40,6 +43,9 @@ export function AudioRows({
   unit?: TimelineUnit;
   visualSelected: boolean;
   onError: (error: unknown) => void;
+  labelsOnly?: boolean;
+  selectedAudioId?: string | null;
+  onAudioSelect?: (id: string | null) => void;
 }) {
   const [selected, setSelected] = useState<string | null>(null);
   if (selected && (visualSelected || !tracks.some((track) => track.id === selected)))
@@ -53,12 +59,14 @@ export function AudioRows({
     if (!active) gestures.cancel();
   }, [active, gestures]);
   const { project, pageId } = engine.getSnapshot();
+  const controlled = selectedAudioId !== undefined;
   const select = useCallback(
     (id: string) => {
-      setSelected(id);
+      if (!controlled) setSelected(id);
+      onAudioSelect?.(id);
       if (engine.getSnapshot().selection.length) engine.select([]);
     },
-    [engine],
+    [engine, controlled, onAudioSelect],
   );
   return tracks
     .slice(Math.max(0, first - offset), Math.max(0, last - offset))
@@ -82,9 +90,10 @@ export function AudioRows({
           left={left}
           width={width}
           active={active}
-          selected={selected === track.id}
+          selected={(selectedAudioId === undefined ? selected : selectedAudioId) === track.id}
           unit={unit}
           onSelect={select}
+          labelsOnly={labelsOnly}
         />
       );
     });

@@ -62,6 +62,15 @@ export function TrackClips(props: Props) {
   const [contextTime, setContextTime] = useState(transport.read().time);
   const [contextTrack, setContextTrack] = useState<string | null>(null);
   const contextOrigin = useRef<{ project: object; revision: number } | null>(null);
+  const menuGeneration = useRef(0);
+  const transitionHandoff = useRef<{
+    project: object;
+    revision: number;
+    generation: number;
+    trackId: string;
+    point: { x: number; y: number } | undefined;
+  } | null>(null);
+  const contextPoint = useRef<{ x: number; y: number } | undefined>(undefined);
   const surface = useRef<HTMLDivElement>(null),
     ghost = useRef<HTMLButtonElement>(null);
   const proposal = useRef<{ plan: OccurrencePlacement; project: object; revision: number } | null>(
@@ -287,12 +296,16 @@ export function TrackClips(props: Props) {
         );
         if (!engine || !page) return <div key={track.id}>{bar}</div>;
         const duplicate = planOccurrencePlacement(page, layerId, contextTime, track.id);
+        const generation = menuGeneration.current;
         return (
           <ContextMenu
             key={track.id}
+            modal={false}
             onOpenChange={(open) => {
               setContextTrack(open ? track.id : null);
               if (open) {
+                menuGeneration.current++;
+                transitionHandoff.current = null;
                 transport.pause();
                 const snapshot = engine.getSnapshot();
                 contextOrigin.current = { project: snapshot.project, revision: snapshot.revision };
@@ -300,14 +313,55 @@ export function TrackClips(props: Props) {
               }
             }}
           >
-            <ContextMenuTrigger asChild>{bar}</ContextMenuTrigger>
+            <ContextMenuTrigger
+              asChild
+              onContextMenu={(event) => {
+                contextPoint.current = { x: event.clientX, y: event.clientY };
+              }}
+            >
+              {bar}
+            </ContextMenuTrigger>
             {contextTrack === track.id && (
-              <ContextMenuContent>
+              <ContextMenuContent
+                onCloseAutoFocus={(event) => {
+                  const action = transitionHandoff.current;
+                  if (!action) return;
+                  event.preventDefault();
+                  if (
+                    action.generation !== generation ||
+                    generation !== menuGeneration.current ||
+                    action.trackId !== track.id
+                  )
+                    return;
+                  transitionHandoff.current = null;
+                  const current = engine.getSnapshot();
+                  if (
+                    current.project !== action.project ||
+                    current.revision !== action.revision ||
+                    current.pageId !== page.id
+                  ) {
+                    props.onError?.("changed");
+                    return;
+                  }
+                  void requestLayerTransition(
+                    engine,
+                    page.id,
+                    layerId,
+                    action.point,
+                    action.trackId,
+                  ).catch((error: unknown) => props.onError?.(formatUiError(error)));
+                }}
+              >
                 <ContextMenuItem
                   disabled={disabled}
                   onSelect={() => {
                     if (menuCurrent())
-                      void requestLayerTransition(engine, page.id, layerId, undefined, track.id);
+                      transitionHandoff.current = {
+                        ...contextOrigin.current!,
+                        generation,
+                        trackId: track.id,
+                        point: contextPoint.current,
+                      };
                   }}
                 >
                   <WandSparkles />

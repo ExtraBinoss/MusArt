@@ -30,6 +30,7 @@ export function TimelineRows({
   onZoomRange,
   interactive = true,
   drag,
+  labelsOnly = false,
 }: {
   rows: readonly TimelineRow[];
   first: number;
@@ -51,6 +52,7 @@ export function TimelineRows({
   onZoomRange?: (start: number, end: number) => void;
   interactive?: boolean;
   drag?: TimelineLayerDrag;
+  labelsOnly?: boolean;
 }) {
   const hover = useMemo(() => (engine ? createTimelineHoverSource(engine) : null), [engine]);
   const reduced = !!useReducedMotion();
@@ -119,7 +121,8 @@ export function TimelineRows({
       onZoomRange={onZoomRange}
       interactive={interactive}
       drag={drag}
-      keySelection={row.kind === "property" ? keySelection : undefined}
+      labelsOnly={labelsOnly}
+      keySelection={!labelsOnly && row.kind === "property" ? keySelection : undefined}
       showHover={showHover}
       clearHover={clearHover}
     />

@@ -146,3 +146,73 @@ it("trims source time and rejects stale track objects before capturing a pointer
   expect(d.errors).not.toHaveBeenCalled();
   d.dispose();
 });
+
+it("publishes exact audio drafts before RAF, deduplicates input and clears queued work on cancel", () => {
+  const callbacks = new Map<number, FrameRequestCallback>();
+  let next = 0;
+  const request = vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((callback) => {
+    callbacks.set(++next, callback);
+    return next;
+  });
+  const cancel = vi.spyOn(globalThis, "cancelAnimationFrame").mockImplementation((id) => {
+    callbacks.delete(id);
+  });
+  const d = setup(),
+    before = d.engine.getSnapshot();
+  const seen: ReturnType<typeof d.gestures.readPreview>[] = [];
+  const stop = d.gestures.subscribePreview(() => seen.push(d.gestures.readPreview()));
+  try {
+    expect(d.gestures.readPreview()).toBeNull();
+    d.begin();
+    expect(seen).toEqual([]);
+    d.event("pointermove", 35);
+    expect(d.gestures.readPreview()).toEqual({
+      trackId: "clip",
+      start: 1.25,
+      end: 3.25,
+      sourceIn: 0,
+    });
+    expect(seen).toEqual([d.gestures.readPreview()]);
+    expect(callbacks.size).toBe(1);
+    expect(d.engine.getSnapshot()).toBe(before);
+    expect(d.wrap.style.getPropertyValue("--motion-trim-left")).toBe("125px");
+    d.event("pointermove", 35);
+    d.event("pointermove", 90, 2);
+    expect(seen).toHaveLength(1);
+    d.event("pointermove", 60);
+    expect(seen).toHaveLength(2);
+    expect(seen[1]).toEqual({ trackId: "clip", start: 1.5, end: 3.5, sourceIn: 0 });
+    expect(callbacks.size).toBe(1);
+    const pending = [...callbacks.values()][0]!;
+    d.gestures.cancel();
+    expect(d.gestures.readPreview()).toBeNull();
+    expect(seen).toHaveLength(3);
+    expect(seen[2]).toBeNull();
+    expect(callbacks.size).toBe(0);
+    expect(d.wrap.dataset.audioDragging).toBeUndefined();
+    expect(d.wrap.style.getPropertyValue("--motion-trim-left")).toBe("");
+    expect(d.wrap.style.getPropertyValue("--motion-trim-width")).toBe("");
+    pending(16);
+    expect(seen).toHaveLength(3);
+    stop();
+    stop();
+    d.begin("start");
+    d.event("pointermove", 60);
+    expect(d.gestures.readPreview()).toEqual({
+      trackId: "clip",
+      start: 1.5,
+      end: 3,
+      sourceIn: 0.5,
+    });
+    expect(seen).toHaveLength(3);
+    d.event("pointerup", 60);
+    expect(d.gestures.readPreview()).toBeNull();
+    expect(d.track().sourceIn).toEqual({ value: 1, rate: 2 });
+    expect(callbacks.size).toBe(0);
+  } finally {
+    stop();
+    d.dispose();
+    request.mockRestore();
+    cancel.mockRestore();
+  }
+});

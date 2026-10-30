@@ -121,3 +121,47 @@ it("preserves retained waveform nodes and React commits across vertical scrollin
     history.replaceState(null, "", old);
   }
 });
+it("uses discrete controlled audio selection for canvas labels without constructing waveforms", () => {
+  const d = audioFixture(3),
+    transport = createMotionTransport(d.engine),
+    onAudioSelect = vi.fn(),
+    props = {
+      engine: d.engine,
+      tracks: d.page().motion!.audioTracks!,
+      assets: d.engine.getSnapshot().project.assets,
+      transport,
+      first: 0,
+      last: 3,
+      offset: 0,
+      rowHeight: 24,
+      scale: 120,
+      duration: 3,
+      left: 0,
+      width: 300,
+      active: true,
+      visualSelected: false,
+      onError: vi.fn(),
+      labelsOnly: true,
+      onAudioSelect,
+    };
+  const view = render(
+    <TooltipProvider>
+      <AudioRows {...props} selectedAudioId="audio-0" />
+    </TooltipProvider>,
+  );
+  const rows = view.container.querySelectorAll<HTMLElement>(".motion-audio-row");
+  expect(view.container.querySelector(".motion-row-time,.motion-audio-waveform")).toBeNull();
+  expect(rows[0]).toHaveClass("is-selected");
+  fireEvent.click(rows[1]!.querySelector(".motion-row-name")!);
+  expect(onAudioSelect).toHaveBeenCalledExactlyOnceWith("audio-1");
+  expect(rows[1]).not.toHaveClass("is-selected");
+  view.rerender(
+    <TooltipProvider>
+      <AudioRows {...props} selectedAudioId="audio-1" />
+    </TooltipProvider>,
+  );
+  expect(rows[0]).not.toHaveClass("is-selected");
+  expect(rows[1]).toHaveClass("is-selected");
+  view.unmount();
+  transport.dispose();
+});
