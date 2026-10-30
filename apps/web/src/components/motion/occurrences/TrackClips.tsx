@@ -12,6 +12,7 @@ import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
+  ContextMenuSeparator,
   ContextMenuTrigger,
 } from "../../ui/context-menu";
 import { getMotionOccurrenceSelection } from "../../../state/motion/occurrence-selection";
@@ -383,7 +384,9 @@ export function TrackClips(props: Props) {
                   <Copy />
                   {t("duplicateOccurrence")}
                 </ContextMenuItem>
+                <ContextMenuSeparator />
                 <ContextMenuItem
+                  variant="destructive"
                   disabled={disabled}
                   onSelect={() => {
                     if (!menuCurrent()) return;

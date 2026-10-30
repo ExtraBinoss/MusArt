@@ -89,8 +89,20 @@ test("motion presets stay simple, preview natively and persist globally across p
   await page.locator(".motion-timeline-dock").hover();
   const repin = page.getByRole("button", { name: "Pin timeline", exact: true });
   if (await repin.isVisible()) await repin.click();
-  await applied.click();
-  await page.keyboard.press("Delete");
+  await applied.click({ button: "right" });
+  await page.getByRole("menuitem", { name: "Save as preset", exact: true }).click();
+  const saveDialog = page.getByRole("dialog", { name: "Save as preset", exact: true });
+  await expect(saveDialog).toBeVisible();
+  await saveDialog.getByRole("textbox", { name: "Preset name" }).fill("From the context menu");
+  await saveDialog.getByRole("button", { name: "Save as preset", exact: true }).click();
+  await expect(saveDialog).toBeHidden();
+  await applied.click({ button: "right" });
+  const remove = page.getByRole("menuitem", { name: "Delete animation", exact: true });
+  await expect(remove).toHaveAttribute("data-variant", "destructive");
+  expect(await remove.evaluate((node) => node.previousElementSibling?.getAttribute("role"))).toBe(
+    "separator",
+  );
+  await remove.click();
   await expect(page.locator(".motion-animation-block[data-animation-id]")).toHaveCount(0);
   await page.evaluate(() => window.musart!.undo());
   await expect(page.locator(".motion-animation-block[data-animation-id]")).toHaveCount(1);

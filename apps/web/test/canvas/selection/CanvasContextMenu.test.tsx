@@ -6,6 +6,7 @@ import { setup } from "../../support/ui";
 import { createMotionTransport } from "../../../src/services/motion/transport";
 import * as requests from "../../../src/components/motion/transitions/requests";
 import { TransitionRequestHost } from "../../../src/components/motion/transitions/TransitionRequestHost";
+import type { CanvasContextTarget } from "../../../src/canvas/interaction/transfers";
 import { EditorEngine, type EnginePort } from "@musart/core";
 
 vi.mock("../../../src/components/motion/transitions/TransitionPreview", () => ({
@@ -14,7 +15,11 @@ vi.mock("../../../src/components/motion/transitions/TransitionPreview", () => ({
 
 function fixture(withHost = false) {
   const d = setup(),
-    target = vi.fn(() => ({ compositionId: d.page.id, layerId: d.rectangle.id, locked: false }));
+    target = vi.fn((): CanvasContextTarget | null => ({
+      compositionId: d.page.id,
+      layerId: d.rectangle.id,
+      locked: false,
+    }));
   const content = (engine: EnginePort) => (
     <>
       {withHost && <TransitionRequestHost engine={engine} />}
@@ -179,3 +184,43 @@ it.each(["edit", "replacement", "unmount"] as const)(
     }
   },
 );
+
+it("preserves an existing multiselection and separates destructive deletion with one undo", async () => {
+  const d = fixture();
+  d.engine.select([d.rectangle.id, d.text.id]);
+  const before = d.engine.getSnapshot().project;
+  fireEvent.contextMenu(d.canvas, { button: 0 });
+  const remove = await screen.findByRole("menuitem", { name: "Supprimer" });
+  expect(remove).toHaveAttribute("data-variant", "destructive");
+  expect(remove.previousElementSibling).toHaveAttribute("role", "separator");
+  expect(d.engine.getSnapshot().selection).toEqual([d.rectangle.id, d.text.id]);
+  expect(screen.getByRole("menuitem", { name: "Ajouter une animation" })).toHaveAttribute(
+    "data-disabled",
+  );
+  fireEvent.click(remove);
+  expect(d.engine.getSnapshot().project.pages[0]!.layers.map((layer) => layer.id)).toEqual([
+    d.image.id,
+  ]);
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project).toEqual(before);
+});
+
+it("offers Paste and Select all on empty canvas without a destructive action", async () => {
+  const d = fixture();
+  d.target.mockReturnValue(null);
+  fireEvent.contextMenu(d.canvas, { button: 0 });
+  expect(await screen.findByRole("menuitem", { name: "Coller" })).toBeVisible();
+  expect(screen.queryByRole("menuitem", { name: "Supprimer" })).toBeNull();
+  fireEvent.click(screen.getByRole("menuitem", { name: "Tout sélectionner" }));
+  expect(d.engine.getSnapshot().selection).toEqual(d.page.layers.map((layer) => layer.id));
+});
+
+it("rejects a menu action when its captured document changes", async () => {
+  const d = fixture();
+  fireEvent.contextMenu(d.canvas, { button: 0 });
+  const remove = await screen.findByRole("menuitem", { name: "Supprimer" });
+  act(() => d.engine.execute({ type: "renameProject", name: "Another revision" }));
+  const before = d.engine.getSnapshot();
+  fireEvent.click(remove);
+  expect(d.engine.getSnapshot()).toBe(before);
+});

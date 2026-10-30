@@ -212,7 +212,7 @@ test("hands the pointed occurrence and context anchor to the persistent transiti
     clientX: 280,
     clientY: 150,
   });
-  fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une transition au clip" }));
+  fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une animation au clip" }));
   await waitFor(() =>
     expect(request).toHaveBeenCalledWith(
       d.engine,
@@ -252,7 +252,7 @@ test("rejects a stale transition handoff before the retired menu releases focus"
     clientX: 280,
     clientY: 150,
   });
-  fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une transition au clip" }));
+  fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une animation au clip" }));
   act(() => d.engine.execute({ type: "renameProject", name: "Replaced while menu closes" }));
   await waitFor(() => expect(error).toHaveBeenCalledWith("changed"));
   expect(request).not.toHaveBeenCalled();

@@ -11,6 +11,8 @@ The default timeline shows animation blocks and timed content, without property 
 - Disable, duplicate, or delete the instance.
 - Drag a block to move it, or drag either edge to retime it. Each completed drag is one undo entry. Escape cancels the drag; arrow keys adjust placement. Delete removes the focused animation rather than its object.
 
+Right-click an animation block to edit, add motion, enable/disable, reverse, duplicate or save it as a preset. A separator isolates the red **Delete animation** action; it removes only that animation. Canvas and layer menus offer contextual object editing, with destructive deletion separated at the bottom. Right-click empty canvas for Paste and Select all.
+
 Relative movement adapts to the target's size. Scale transforms the object around its center, including a group's children, without changing text layout or source dimensions.
 
 ## Detailed control

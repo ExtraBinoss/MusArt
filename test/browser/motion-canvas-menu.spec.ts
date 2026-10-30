@@ -59,6 +59,11 @@ test("canvas right-click targets the visible occurrence and preserves right-drag
   await page.mouse.click(point.x, point.y, { button: "right" });
   const action = page.getByRole("menuitem", { name: "Ajouter une animation", exact: true });
   await expect(action).toBeVisible();
+  const remove = page.getByRole("menuitem", { name: "Supprimer", exact: true });
+  await expect(remove).toHaveAttribute("data-variant", "destructive");
+  expect(await remove.evaluate((node) => node.previousElementSibling?.getAttribute("role"))).toBe(
+    "separator",
+  );
   // The modal menu correctly hides its background controls from the accessibility tree.
   await expect(page.locator('.motion-timeline button[aria-label="Lire"]')).toBeVisible();
   await action.click();

@@ -1,0 +1,33 @@
+import { registerFeatureTranslations } from "../../../state/i18n/feature-resources";
+registerFeatureTranslations("objectMenu", {
+  en: {
+    copy: "Copy",
+    paste: "Paste",
+    duplicate: "Duplicate",
+    group: "Group",
+    ungroup: "Ungroup",
+    mask: "Create mask",
+    hide: "Hide",
+    show: "Show",
+    lock: "Lock",
+    unlock: "Unlock",
+    remove: "Delete",
+    removeAnimation: "Delete animation",
+    selectAll: "Select all",
+  },
+  fr: {
+    copy: "Copier",
+    paste: "Coller",
+    duplicate: "Dupliquer",
+    group: "Grouper",
+    ungroup: "Dégrouper",
+    mask: "Créer un masque",
+    hide: "Masquer",
+    show: "Afficher",
+    lock: "Verrouiller",
+    unlock: "Déverrouiller",
+    remove: "Supprimer",
+    removeAnimation: "Supprimer l’animation",
+    selectAll: "Tout sélectionner",
+  },
+});

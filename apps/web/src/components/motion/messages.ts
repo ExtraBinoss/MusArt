@@ -107,7 +107,7 @@ export const messages = {
     addOccurrence: "Ajouter un clip de {{name}} ici",
     duplicateOccurrence: "Dupliquer le clip à la tête de lecture",
     deleteOccurrence: "Retirer ce clip",
-    occurrenceTransition: "Ajouter une transition au clip",
+    occurrenceTransition: "Ajouter une animation au clip",
     space: "Espace",
     wheel: "Molette",
     autoKey: "Images clés automatiques",

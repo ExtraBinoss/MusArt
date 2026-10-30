@@ -477,7 +477,7 @@ test("Canvas gap duplication and clip right-click transition preserve independen
   const second = await point(page, layerLabel, 10.5),
     revisionBefore = await revision(page);
   await page.mouse.click(second.x, second.y, { button: "right" });
-  await page.getByRole("menuitem", { name: "Ajouter une transition au clip", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Ajouter une animation au clip", exact: true }).click();
   const editor = page.getByRole("dialog", { name: "Ajouter une animation", exact: true });
   await expect(editor).toBeVisible();
   await editor.screenshot({ path: `${output}/clip-context-transition.png` });

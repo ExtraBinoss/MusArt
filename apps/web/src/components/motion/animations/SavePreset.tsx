@@ -9,13 +9,19 @@ import "./messages";
 export function SavePreset({
   create,
   label,
+  initialOpen = false,
+  initialName = "",
+  onSaved,
 }: {
   create: (name: string, id: string) => MotionAnimationPreset;
   label?: string;
+  initialOpen?: boolean;
+  initialName?: string;
+  onSaved?: () => void;
 }) {
   const { t } = useTranslation("animations");
-  const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
+  const [open, setOpen] = useState(initialOpen);
+  const [name, setName] = useState(initialName);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "failed">("idle");
   async function save() {
     if (!name.trim() || status === "saving") return;
@@ -25,6 +31,7 @@ export function SavePreset({
       await store.save(create(name.trim(), crypto.randomUUID()));
       setStatus("saved");
       setOpen(false);
+      onSaved?.();
     } catch {
       setStatus("failed");
     } finally {

@@ -1,6 +1,5 @@
+import { CanvasMenuItems } from "./CanvasMenuItems";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Blend } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import {
   getMotionOccurrenceAt,
   type EnginePort,
@@ -12,7 +11,6 @@ import type { CanvasContextTarget } from "../interaction/transfers";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu";
 import {
@@ -28,7 +26,9 @@ interface MenuScope {
   project: Project;
   revision: number;
   point: Point;
-  target: CanvasContextTarget;
+  target: CanvasContextTarget | null;
+  compositionId: string;
+  selection: string[];
   trackId?: string;
 }
 /** Right-click releases open the menu; a right-button marquee remains a real canvas gesture. */
@@ -43,7 +43,6 @@ export function CanvasContextMenu({
   onError?: (message: string) => void;
   children: ReactNode;
 }) {
-  const { t } = useTranslation("transitions");
   const [menu, setMenu] = useState<MenuScope | null>(null);
   const right = useRef<{
     pointer: number;
@@ -73,7 +72,9 @@ export function CanvasContextMenu({
       scope.engine === engine &&
       current.project === scope.project &&
       current.revision === scope.revision &&
-      current.pageId === scope.target.compositionId
+      current.pageId === scope.compositionId &&
+      current.selection.length === scope.selection.length &&
+      current.selection.every((id) => scope.selection.includes(id))
     );
   }
   function open(
@@ -83,19 +84,20 @@ export function CanvasContextMenu({
     const current = engine.getSnapshot();
     if (current.project !== scope.project || current.revision !== scope.revision) return;
     const target = resolveTarget(point);
-    if (!target) return;
     const transport = createMotionTransport(engine);
     transport.pause();
-    if (current.pageId !== target.compositionId) engine.setPage(target.compositionId);
-    const page = current.project.pages.find((page) => page.id === target.compositionId);
+    const compositionId = target?.compositionId ?? current.pageId;
+    if (current.pageId !== compositionId) engine.setPage(compositionId);
+    const page = current.project.pages.find((page) => page.id === compositionId);
     const trackId =
-      page?.motion?.mode === "motion"
+      target && page?.motion?.mode === "motion"
         ? getMotionOccurrenceAt(page, target.layerId, transport.read().time, {
             terminalPreview: true,
           })?.id
         : undefined;
     attachmentSelection(engine).clear();
-    engine.select([target.layerId]);
+    const selected = engine.getSnapshot().selection;
+    engine.select(target ? (selected.includes(target.layerId) ? selected : [target.layerId]) : []);
     pending.current = null;
     setMenu({
       engine,
@@ -103,6 +105,8 @@ export function CanvasContextMenu({
       revision: current.revision,
       point,
       target,
+      compositionId,
+      selection: [...engine.getSnapshot().selection],
       trackId,
     });
   }
@@ -196,7 +200,12 @@ export function CanvasContextMenu({
             pending.current = null;
             // Modal content survives its close animation. Hand the captured action to the
             // persistent host only when Radix actually releases this menu's focus scope.
-            if (action && action.generation === mounted.current && isCurrent(action.scope)) {
+            if (
+              action &&
+              action.scope.target &&
+              action.generation === mounted.current &&
+              isCurrent(action.scope)
+            ) {
               const { target, point, trackId } = action.scope;
               void requestLayerTransition(
                 engine,
@@ -213,16 +222,19 @@ export function CanvasContextMenu({
               focus.current?.focus({ preventScroll: true });
           }}
         >
-          <DropdownMenuItem
-            disabled={menu?.target.locked}
-            onSelect={() => {
-              if (menu && isCurrent(menu))
-                pending.current = { scope: menu, generation: mounted.current };
-            }}
-          >
-            <Blend size={14} />
-            {t("add")}
-          </DropdownMenuItem>
+          {menu && (
+            <CanvasMenuItems
+              engine={engine}
+              page={menu.project.pages.find((page) => page.id === menu.compositionId)!}
+              selection={menu.selection}
+              layerId={menu.target?.layerId}
+              current={() => isCurrent(menu)}
+              onError={onError}
+              motion={() => {
+                if (isCurrent(menu)) pending.current = { scope: menu, generation: mounted.current };
+              }}
+            />
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

@@ -1,3 +1,4 @@
+import { requestLayerTransition } from "../transitions/requests";
 import { useMobileLayout } from "../../workspace/mobile/use-mobile";
 import { useState, type ReactElement } from "react";
 import { Sparkles } from "lucide-react";
@@ -108,9 +109,18 @@ export function MotionPopover({
           return;
         }
         transport.pause();
-        setOrigin(
-          captureTransitionOrigin(engine, compositionId, layerId, trackId, transport.read().time),
+        const captured = captureTransitionOrigin(
+          engine,
+          compositionId,
+          layerId,
+          trackId,
+          transport.read().time,
         );
+        if (captured) setOrigin(captured);
+        else
+          void requestLayerTransition(engine, compositionId, layerId, undefined, trackId).catch(
+            () => setError("applyFailed"),
+          );
       }}
     >
       {anchor ? (

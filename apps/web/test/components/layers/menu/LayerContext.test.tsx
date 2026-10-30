@@ -75,3 +75,39 @@ test("a direct layer transition action initializes Static and survives the closi
   expect(screen.queryByRole("menu")).toBeNull();
   expect(d.engine.getSnapshot().project.pages[0]!.motion?.mode).toBe("motion");
 });
+
+test("layer visibility and locking remain undoable and Delete stays below its own separator", async () => {
+  const d = setup();
+  d.engine.select([d.rectangle.id]);
+  function Live() {
+    const s = useEngine(d.engine);
+    return (
+      <ContextMenu>
+        <ContextMenuTrigger>Stack</ContextMenuTrigger>
+        <LayerContext
+          engine={d.engine}
+          page={s.project.pages[0]!}
+          selection={s.selection}
+          run={d.run}
+        />
+      </ContextMenu>
+    );
+  }
+  d.mount(<Live />);
+  fireEvent.contextMenu(screen.getByText("Stack"));
+  const remove = await screen.findByRole("menuitem", { name: /Supprimer/ });
+  expect(remove).toHaveAttribute("data-variant", "destructive");
+  expect(remove.previousElementSibling).toHaveAttribute("role", "separator");
+  fireEvent.click(screen.getByRole("menuitem", { name: "Masquer" }));
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.visible).toBe(false);
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.visible).toBe(true);
+  fireEvent.contextMenu(screen.getByText("Stack"));
+  fireEvent.click(await screen.findByRole("menuitem", { name: "Verrouiller" }));
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.locked).toBe(true);
+  fireEvent.contextMenu(screen.getByText("Stack"));
+  fireEvent.click(await screen.findByRole("menuitem", { name: "Déverrouiller" }));
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.locked).toBe(false);
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.locked).toBe(true);
+});

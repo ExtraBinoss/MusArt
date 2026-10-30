@@ -26,6 +26,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Added
 
+- Unified canvas and layer context actions, added animation-block editing/duplication/reversal/preset saving, and isolated destructive Delete actions below a separator. Clip deletion keeps its occurrence scope; animation deletion preserves its object and supports undo.
+
 - Added editable Motion animation blocks with 61 built-in presets, a two-column hover-preview library, per-layer animation controls, optional detailed keyframes, and globally saved personal presets in IndexedDB.
 - Added declarative composable animation channels, target-relative custom timeline extraction, and centered layer/group scaling shared by geometry, native GPU rendering and export.
 - Added the editable Share Your Work photo-collage template, recreating the supplied reference cadence with replacement photographs, scale/blur entrances and compact action tracks.
