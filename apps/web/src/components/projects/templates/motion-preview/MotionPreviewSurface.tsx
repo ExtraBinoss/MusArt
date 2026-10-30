@@ -1,4 +1,6 @@
-import { useEffect, useRef } from "react";
+import { createBrandActivity } from "../../../../ui/brand/activity";
+import { BrandStatus } from "../../../../ui/brand/BrandStatus";
+import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { PreviewOwner, PreviewStatus } from "./runtime";
 import type { ReactNode } from "react";
@@ -26,6 +28,7 @@ export function MotionPreviewSurface({
   const root = useRef<HTMLSpanElement>(null);
   const viewport = useRef<HTMLSpanElement>(null);
   const feedback = useRef<HTMLSpanElement>(null);
+  const loading = useMemo(() => createBrandActivity(), []);
   useEffect(() => {
     const element = root.current;
     const host = viewport.current;
@@ -40,6 +43,7 @@ export function MotionPreviewSurface({
     let preview: PreviewOwner | null = null;
     function status(value: PreviewStatus, error?: unknown) {
       if (!alive || !element) return;
+      loading.set(value === "loading");
       element.dataset.previewStatus = value;
       element.setAttribute("aria-busy", String(value === "loading"));
       if (feedback.current) {
@@ -112,6 +116,7 @@ export function MotionPreviewSurface({
     return () => {
       stop();
       alive = false;
+      loading.set(false);
       owner.removeEventListener("pointerenter", start);
       owner.removeEventListener("pointerleave", stop);
       owner.removeEventListener("focusin", start);
@@ -126,11 +131,14 @@ export function MotionPreviewSurface({
       reduced.removeEventListener("change", stop);
       carousel?.removeEventListener("musart:carousel-motion", carouselMotion);
     };
-  }, [startPreview, disabled, t]);
+  }, [startPreview, disabled, t, loading]);
   return (
     <span ref={root} className={`motion-template-preview ${className}`} data-preview-status="idle">
       {poster ? <img src={poster} alt="" loading="lazy" draggable={false} /> : children}
       <span ref={viewport} className="motion-template-preview-canvas" aria-hidden />
+      <span className="motion-template-preview-loading-mark">
+        <BrandStatus size={34} state="preparing" activity={loading} />
+      </span>
       <span ref={feedback} className="motion-template-preview-status" role="status" />
     </span>
   );

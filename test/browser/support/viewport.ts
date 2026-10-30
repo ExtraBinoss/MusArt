@@ -4,7 +4,7 @@ import { MAX_WHEEL_ZOOM_PIXELS, WHEEL_ZOOM_GAIN } from "../../../apps/web/src/ca
 export async function fitViewport(page: Page) {
   await page.keyboard.press("Control+k");
   await page
-    .getByRole("combobox", { name: "Rechercher dans MusArt", exact: true })
+    .getByRole("combobox", { name: "Rechercher dans Melt", exact: true })
     .fill("ajuster écran");
   await page.getByRole("option", { name: /Ajuster à l’écran/ }).click();
   await expect(page.getByTestId("artboard")).toHaveAttribute("data-view-moving", "false");

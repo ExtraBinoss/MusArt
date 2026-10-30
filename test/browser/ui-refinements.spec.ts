@@ -135,7 +135,7 @@ test("spotlight reveals only bounded result rows over an opaque neutral surface 
     () => document.documentElement.dataset.refinementAnimationArmed === "true",
   );
   await page.keyboard.press("Control+k");
-  const dialog = page.getByRole("dialog", { name: "Rechercher dans MusArt", exact: true });
+  const dialog = page.getByRole("dialog", { name: "Rechercher dans Melt", exact: true });
   await expect(dialog).toBeVisible();
   await expect(dialog).toHaveCSS("background-color", "rgb(42, 42, 42)");
   expect(await dialog.getByRole("option").count()).toBeLessThanOrEqual(20);
@@ -167,9 +167,7 @@ test("spotlight reveals only bounded result rows over an opaque neutral surface 
     "filter",
     "blur(0px)",
   );
-  await page
-    .getByRole("combobox", { name: "Rechercher dans MusArt", exact: true })
-    .fill("rectangle");
+  await page.getByRole("combobox", { name: "Rechercher dans Melt", exact: true }).fill("rectangle");
   await page
     .getByRole("option", { name: /Rectangle/ })
     .first()

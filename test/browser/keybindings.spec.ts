@@ -34,7 +34,7 @@ async function ready(page: Page) {
   await expect(page.locator('.canvas-artboard canvas[data-renderer-ready="true"]')).toBeVisible();
 }
 const searchDialog = (page: Page) =>
-  page.getByRole("dialog", { name: "Rechercher dans MusArt", exact: true });
+  page.getByRole("dialog", { name: "Rechercher dans Melt", exact: true });
 async function opening(page: Page) {
   await page.keyboard.press("Control+k");
   const dialog = searchDialog(page);
@@ -107,9 +107,9 @@ test("edited shortcuts persist across reload, display real keycaps and open the 
   await recordSave.click();
   await page.keyboard.press("Control+Alt+p");
   await expect(recordSave).toContainText("P");
-  await filter.fill("Rechercher dans MusArt");
+  await filter.fill("Rechercher dans Melt");
   await editor
-    .getByRole("button", { name: "Modifier le raccourci de Rechercher dans MusArt", exact: true })
+    .getByRole("button", { name: "Modifier le raccourci de Rechercher dans Melt", exact: true })
     .click();
   await page.keyboard.press("Control+Alt+k");
   await filter.fill("Importer des images");

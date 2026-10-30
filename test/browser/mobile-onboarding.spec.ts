@@ -113,7 +113,7 @@ test("mobile landing, project library, presets and creation lead to the full-wid
   const projectLabel = page.getByRole("button", { name: "Actions du projet", exact: true });
   const beforeLogo = await projectLabel.textContent();
   await page.getByRole("button", { name: "Menu du projet", exact: true }).click();
-  await expect(page.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Tableau de bord Melt" })).toBeVisible();
   await expect(page.getByRole("dialog", { name: "Un nouvel espace pour vos idées." })).toHaveCount(
     0,
   );
@@ -121,7 +121,7 @@ test("mobile landing, project library, presets and creation lead to the full-wid
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(projectLabel).toHaveText(beforeLogo!);
   await openProjectLibrary(page);
-  await expect(page.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Tableau de bord Melt" })).toBeVisible();
   await expect(page.getByRole("searchbox", { name: "Rechercher un projet" })).toBeVisible();
 });
 

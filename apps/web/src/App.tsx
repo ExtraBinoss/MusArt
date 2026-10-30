@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useStore } from "jotai";
 import { useRenderMetrics } from "./state/session/render-metrics";
-import { MusArtLogo } from "./components/branding/MusArtLogo";
+import { MeltLogo } from "./ui/brand/MeltLogo";
 import { useTranslation } from "react-i18next";
 import type { EnginePort } from "@musart/core";
 import type { AppProps } from "./state/contracts";
@@ -175,7 +175,7 @@ export function App({ engine, services, welcome = false }: AppProps) {
                           aria-label={t("projectMenu")}
                           onClick={() => setProjectMenu("projects")}
                         >
-                          <MusArtLogo />
+                          <MeltLogo />
                         </Button>
                         <ProjectPill
                           key={projectId}

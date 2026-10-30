@@ -1,3 +1,4 @@
+import { brand } from "../../ui/brand/config";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { AnimatePresence } from "motion/react";
@@ -12,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "../ui/button";
 import { LibrarySidebar } from "./dashboard/LibrarySidebar";
 import { MobileLibraryNavigation } from "./dashboard/MobileLibraryNavigation";
-import { MusArtLogo } from "../branding/MusArtLogo";
+import { MeltLogo } from "../../ui/brand/MeltLogo";
 import { NewProjectForm } from "./creation/NewProjectForm";
 import { PreferencesDialog } from "./preferences/PreferencesDialog";
 import { ProjectGallery } from "./gallery/ProjectGallery";
@@ -210,8 +211,8 @@ function ProjectDashboard({
             disabled={busy}
             onClick={home}
           >
-            <MusArtLogo size={32} />
-            <span>MusArt</span>
+            <MeltLogo size={32} />
+            <span>{brand.name}</span>
           </Button>
           <LibrarySidebar
             services={services}

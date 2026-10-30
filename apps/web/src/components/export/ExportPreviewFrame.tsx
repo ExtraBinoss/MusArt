@@ -1,5 +1,6 @@
+import { BrandStatus } from "../../ui/brand/BrandStatus";
 import { useCallback, useState } from "react";
-import { LoaderCircle, ZoomIn, ZoomOut } from "lucide-react";
+import { ZoomIn, ZoomOut } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { IconButton } from "../shared/IconButton";
 import { ScrollShadow } from "../shared/scroll/ScrollShadow";
@@ -115,7 +116,7 @@ export function ExportPreviewFrame({
               />
             ) : (
               <span role="status">
-                {loading && <LoaderCircle size={18} className="animate-spin" />}
+                {loading && <BrandStatus size={22} state="preparing" />}
                 {t(loading ? "exportPanel:preparing" : "exportPanel:failed")}
               </span>
             )}

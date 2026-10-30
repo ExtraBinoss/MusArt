@@ -136,7 +136,7 @@ test("saved Motion projects preview real persisted originals without replacing t
   await page
     .getByRole("button", { name: "Créer depuis In Bloom — Démo Motion", exact: true })
     .click();
-  await expect(page.getByRole("dialog", { name: "Tableau de bord MusArt" })).toHaveCount(0);
+  await expect(page.getByRole("dialog", { name: "Tableau de bord Melt" })).toHaveCount(0);
   await expect(page.locator('.canvas-artboard canvas[data-renderer-ready="true"]')).toBeVisible();
   const savedId = await page.evaluate(async () => {
     const api = window.musart!;

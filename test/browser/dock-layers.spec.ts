@@ -42,7 +42,7 @@ test("compact header and dock expose real commands, persist pins and support key
   const search = page.locator(".toolbar .magic-search-trigger");
   await expect(search).toHaveText("");
   await search.click();
-  await expect(page.getByRole("dialog", { name: "Rechercher dans MusArt" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Rechercher dans Melt" })).toBeVisible();
   await page.keyboard.press("Escape");
   await page.keyboard.press("Control+k");
   await expect(page.getByRole("combobox")).toBeFocused();

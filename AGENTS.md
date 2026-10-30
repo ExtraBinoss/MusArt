@@ -1,4 +1,4 @@
-# MusArt contribution rules
+# Melt contribution rules
 
 Direct user instructions take precedence. Read the relevant architecture contracts and documentation before changing a subsystem.
 
@@ -18,7 +18,7 @@ Direct user instructions take precedence. Read the relevant architecture contrac
 - Render on demand, bound caches and queues, and dispose resources, workers, listeners, timers and object URLs explicitly.
 - Continuous property previews use imperative subscriptions. They must not rerender App, Inspector, CanvasArea, EditorCanvas or EditorScene. Commit once per completed gesture, with one undo entry; cancellation restores the original value.
 - Wheel/trackpad pans both axes. Ctrl/Cmd+wheel zooms around the pointer. Keep 100% reset, fit and recenter controls available.
-- Keep UI text in English/French resources and documentation in English. Use the supplied MusArt brand assets without recoloring them.
+- Keep UI text in English/French resources and documentation in English. Use the shared `apps/web/src/ui/brand` configuration, theme tokens and SVG mascot; preserve upstream notices and legacy portable-format and persistence identifiers.
 
 ## Persistence and concurrency
 

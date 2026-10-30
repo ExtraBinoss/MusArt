@@ -1,0 +1,7 @@
+/* Generated from ui/brand/config.ts by bun scripts/brand-assets.ts. */
+:root {
+  --brand-primary: #a259ff;
+  --brand-primary-foreground: #1b102b;
+  --brand-soft: #f2e9ff;
+  --brand-ink: #2b1745;
+}

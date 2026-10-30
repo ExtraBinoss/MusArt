@@ -75,7 +75,7 @@ async function currentX(page: Page) {
 }
 async function searchAction(page: Page, query: string, label: string, enabled: boolean) {
   await page.keyboard.press("Control+k");
-  await page.getByRole("combobox", { name: "Rechercher dans MusArt", exact: true }).fill(query);
+  await page.getByRole("combobox", { name: "Rechercher dans Melt", exact: true }).fill(query);
   await page.getByRole("option", { name: new RegExp(label) }).click();
   await expect(page.locator(".magic-search-dialog")).toHaveCount(0);
   // Search commands execute after closing presence/focus cleanup. Wait for their actual

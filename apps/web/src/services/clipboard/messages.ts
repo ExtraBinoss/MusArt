@@ -1,3 +1,4 @@
+import { brand } from "../../ui/brand/config";
 import { registerFeatureTranslations } from "../../state/i18n/feature-resources";
 export const messages = {
   en: {
@@ -6,7 +7,7 @@ export const messages = {
     readFailed:
       "The clipboard could not be read. Allow clipboard access or use your browser’s Paste command.",
     writeFailed: "The selection could not be copied to the clipboard.",
-    invalid: "This clipboard content is not a supported MusArt document.",
+    invalid: `This clipboard content is not a supported ${brand.name} document.`,
     missingImages:
       "The original images are unavailable in this project. Copy again with Include images enabled in General settings.",
     tooLarge:
@@ -20,7 +21,7 @@ export const messages = {
     readFailed:
       "Impossible de lire le presse-papiers. Autorisez son accès ou utilisez la commande Coller du navigateur.",
     writeFailed: "Impossible de copier la sélection dans le presse-papiers.",
-    invalid: "Le contenu du presse-papiers n’est pas un document MusArt pris en charge.",
+    invalid: `Le contenu du presse-papiers n’est pas un document ${brand.name} pris en charge.`,
     missingImages:
       "Les images originales sont absentes de ce projet. Recopiez avec Inclure les images activé dans Général.",
     tooLarge:

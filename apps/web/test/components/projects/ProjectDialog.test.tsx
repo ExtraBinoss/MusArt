@@ -20,7 +20,7 @@ test("editor creation Escape closes without mounting the library or editing the 
   expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
   fireEvent.keyDown(name, { key: "Escape" });
   await waitFor(() => expect(close).toHaveBeenCalledOnce());
-  expect(screen.queryByRole("dialog", { name: "Tableau de bord MusArt" })).toBeNull();
+  expect(screen.queryByRole("dialog", { name: "Tableau de bord Melt" })).toBeNull();
   expect(d.services.createProject).not.toHaveBeenCalled();
 });
 test("shares a clean two-section dashboard between welcome and open-project states", async () => {
@@ -29,7 +29,7 @@ test("shares a clean two-section dashboard between welcome and open-project stat
   d.mount(
     <ProjectDialog services={d.services} projectName="Atelier" onClose={close} onTask={d.onTask} />,
   );
-  const dialog = screen.getByRole("dialog", { name: "Tableau de bord MusArt" });
+  const dialog = screen.getByRole("dialog", { name: "Tableau de bord Melt" });
   await screen.findByText("Aucun projet enregistré.");
   const navigation = within(dialog).getByRole("navigation", { name: "Navigation de l’atelier" });
   expect(within(navigation).getByRole("button", { name: "Projets" })).toHaveAttribute(
@@ -118,7 +118,7 @@ test("welcome cannot be dismissed and custom creation remains available without 
   fireEvent.keyDown(dialog, { key: "Escape" });
   await waitFor(() => expect(screen.queryByLabelText("Nom")).toBeNull());
   expect(close).not.toHaveBeenCalled();
-  expect(screen.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeVisible();
+  expect(screen.getByRole("dialog", { name: "Tableau de bord Melt" })).toBeVisible();
   expect(screen.queryByRole("button", { name: "Fermer" })).toBeNull();
 });
 test("late work cannot dismiss a replacement dashboard after unmount", async () => {
@@ -298,7 +298,7 @@ test("dashboard settings are an accessory that returns to the same two-section w
   fireEvent.mouseDown(shortcuts, { button: 0 });
   expect(within(settings).getByPlaceholderText("Rechercher un raccourci…")).toBeVisible();
   fireEvent.click(within(settings).getByRole("button", { name: "Fermer" }));
-  expect(screen.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeVisible();
+  expect(screen.getByRole("dialog", { name: "Tableau de bord Melt" })).toBeVisible();
   expect(screen.queryAllByRole("tab")).toHaveLength(0);
   expect(close).not.toHaveBeenCalled();
 });
@@ -310,7 +310,7 @@ test("welcome opens the landing page and enters the library without creating a d
   expect(screen.getByRole("heading", { name: "Créez. Animez." })).toBeVisible();
   expect(d.services.listProjectPage).not.toHaveBeenCalled();
   fireEvent.click(screen.getAllByRole("button", { name: "Commencer à créer" })[0]!);
-  await screen.findByRole("dialog", { name: "Tableau de bord MusArt" });
+  await screen.findByRole("dialog", { name: "Tableau de bord Melt" });
   expect(d.services.createProject).not.toHaveBeenCalled();
   expect(d.services.saveProject).not.toHaveBeenCalled();
   expect(close).not.toHaveBeenCalled();
@@ -361,11 +361,11 @@ test("the library brand returns to landing without modifying the open document",
   const d = setup();
   d.mount(<ProjectDialog services={d.services} onClose={vi.fn()} onTask={d.onTask} />);
   await screen.findByText("Aucun projet enregistré.");
-  fireEvent.click(screen.getByRole("button", { name: "Accueil MusArt" }));
+  fireEvent.click(screen.getByRole("button", { name: "Accueil Melt" }));
   expect(screen.getByRole("heading", { name: "Créez. Animez." })).toBeVisible();
   expect(d.services.createProject).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "Try MusArt" }));
-  expect(screen.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "Try Melt" }));
+  expect(screen.getByRole("dialog", { name: "Tableau de bord Melt" })).toBeVisible();
 });
 
 test("recent project shortcuts share the library mutation gate", async () => {

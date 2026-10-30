@@ -3,7 +3,7 @@ import type { ProjectSummary } from "../../../state/contracts";
 import { TEMPLATE_CATALOG } from "../../../services/projects/templates/catalog";
 import { SearchInput } from "../../assets/SearchInput";
 import { SocialBrandIcon } from "../../assets/SocialBrandIcon";
-import { MusArtLogo } from "../../branding/MusArtLogo";
+import { MeltLogo } from "../../../ui/brand/MeltLogo";
 import { ModeIcon } from "../../motion/ModeIcon";
 import { SegmentedTabs } from "../../shared/segmented/SegmentedTabs";
 import "./messages";
@@ -35,7 +35,7 @@ export function LibraryToolbar({
           preview: project.thumbnail ? (
             <img src={project.thumbnail} alt="" />
           ) : (
-            <MusArtLogo size={20} />
+            <MeltLogo size={20} />
           ),
         }))
       : TEMPLATE_CATALOG.filter((item) => item.mode === mode)
@@ -57,7 +57,7 @@ export function LibraryToolbar({
           hints={
             hints.length
               ? hints
-              : [{ label: t("dashboard:projects"), preview: <MusArtLogo size={20} /> }]
+              : [{ label: t("dashboard:projects"), preview: <MeltLogo size={20} /> }]
           }
           value={query}
           disabled={disabled}

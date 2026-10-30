@@ -1,6 +1,6 @@
 # Technical stack and choices
 
-MusArt is a browser-based creative editor. Projects are stored on the device and can be downloaded as editable `.musart` files. Editing does not require an account or an application backend.
+Melt is a browser-based creative editor. Projects are stored on the device and can be downloaded as editable `.musart` files. Editing does not require an account or an application backend.
 
 ## Application
 

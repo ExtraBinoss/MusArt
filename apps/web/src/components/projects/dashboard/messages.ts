@@ -1,7 +1,8 @@
+import { brand } from "../../../ui/brand/config";
 import { registerFeatureTranslations } from "../../../state/i18n/feature-resources";
 export const messages = {
   en: {
-    home: "MusArt home",
+    home: `${brand.name} home`,
     backHome: "Back",
     createActions: "Creation options",
     backHomeLabel: "Back to home",
@@ -9,7 +10,7 @@ export const messages = {
     noResults: "No matching project in the loaded items. Load more or try another name.",
     preferencesHint: "Personalize the editor’s appearance and language.",
     editShortcuts: "Customize shortcuts",
-    title: "MusArt dashboard",
+    title: `${brand.name} dashboard`,
     tabs: "Workspace",
     projects: "Projects",
     modeStatic: "Static",
@@ -28,7 +29,7 @@ export const messages = {
     previewCount: "{{current}} of {{total}} artboards",
   },
   fr: {
-    home: "Accueil MusArt",
+    home: `Accueil ${brand.name}`,
     backHome: "Retour",
     createActions: "Options de création",
     backHomeLabel: "Retour à l’accueil",
@@ -37,7 +38,7 @@ export const messages = {
       "Aucun projet correspondant parmi les éléments chargés. Chargez la suite ou essayez un autre nom.",
     preferencesHint: "Personnalisez l’apparence et la langue de l’éditeur.",
     editShortcuts: "Personnaliser les raccourcis",
-    title: "Tableau de bord MusArt",
+    title: `Tableau de bord ${brand.name}`,
     tabs: "Espace de travail",
     projects: "Projets",
     modeStatic: "Statique",
