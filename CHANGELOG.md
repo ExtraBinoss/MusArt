@@ -6,7 +6,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Added
 
-- Added reproducible production Cmd+K profiling with real native typing, 150-layer and 50-image/100-effect documents, immediate input after a committed edit, actual React/GPU/readback counters, retained CPU/Blink traces and mapped source attribution. The measured report records typing improvements and the first candidate's remaining cold-opening regression without treating profiled timings as latency guarantees.
+- Added reproducible production Cmd+K profiling with real native typing, 150-layer and 50-image/100-effect documents, immediate input after a committed edit, actual React/GPU/readback counters, retained CPU/Blink traces and mapped source attribution. The order-matched comparison preserves mixed latency results, cold-opening variability and all candidate history without claiming a general speedup or treating profiled timings as latency guarantees.
 
 - Saved Motion project cards now play their actual authored artboard on hover through the same bounded GPU preview owner as templates. Readonly, abortable snapshots leave project persistence, current selection and document history untouched; video originals stay lazy, while Static pages retain their cached page carousel.
 
@@ -84,7 +84,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 - Search now supplies its enabled selection before mounting and after every query change, so immediate Enter uses the new result. Opening focuses the input only once without scrolling the page, and the opaque fixed palette contains its own layout, style and paint work.
 
-- Cmd/Ctrl+K search now keeps typing, native keyboard selection and result updates inside a retained palette, ranks only the best 80 cached matches, and preserves existing command guards. The palette uses one panel entrance and lightweight individual result animations, removes footer instructions, and types real translated effect/settings examples without React updates or idle work while hidden.
+- Cmd/Ctrl+K search now keeps typing, native keyboard selection and result updates inside a retained palette, retains and sorts only the best 80 matches, and preserves existing command guards. The palette uses one panel entrance and lightweight individual result animations, removes footer instructions, and types real translated effect/settings examples without React updates or idle work while hidden.
 
 - Mobile Layers sheets now use one shared header for the title, live count and existing layer actions, without a duplicate panel heading. Blend selectors stay vertically centered against the opacity slider for empty, single and multiple selections; desktop panels and Motion keyframe controls retain their behavior.
 
