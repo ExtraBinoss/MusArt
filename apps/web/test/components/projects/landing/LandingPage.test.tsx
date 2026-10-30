@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { act, fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, screen, within } from "@testing-library/react";
 import { LandingPage } from "../../../../src/components/projects/landing/LandingPage";
 import { setup } from "../../../support/ui";
 import { i18n } from "../../../../src/state/i18n";
@@ -36,13 +36,17 @@ test("pending template loading disables creation and offers the actual cancellat
   const d = setup(),
     cancel = vi.fn();
   d.mount(<LandingPage onCreate={vi.fn()} onTemplate={vi.fn()} busy onCancel={cancel} />);
-  expect(screen.getByRole("status")).toHaveTextContent("Préparation de votre modèle");
+  const status = screen
+    .getByText("Préparation de votre modèle…")
+    .closest<HTMLElement>('[role="status"]');
+  expect(status).toBeVisible();
+  expect(status).toHaveTextContent("Préparation de votre modèle");
   for (const button of screen.getAllByRole("button"))
     if (
       button.textContent === "Commencer à créer" ||
       button.getAttribute("aria-label")?.startsWith("Créer depuis")
     )
       expect(button).toBeDisabled();
-  fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
+  fireEvent.click(within(status!).getByRole("button", { name: "Annuler" }));
   expect(cancel).toHaveBeenCalledOnce();
 });

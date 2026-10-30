@@ -230,7 +230,7 @@ describe("canvas input and renderer integration", () => {
     fireEvent.wheel(canvas(), { deltaX: 240, deltaY: 200 });
     expect(artboard()).toHaveAttribute("data-zoom", "1");
     expect(artboard()).toHaveAttribute("data-pan-x", "-120");
-    fireEvent.click(await screen.findByRole("button", { name: "Recentrer la vue" }));
+    fireEvent.click(await screen.findByRole("button", { name: "100 % et recentrer" }));
     expect(artboard()).toHaveAttribute("data-pan-y", "0");
     fireEvent.wheel(canvas(), { deltaY: -30, ctrlKey: true, clientX: 500, clientY: 400 });
     expect(Number(artboard().dataset.zoom)).toBeGreaterThan(1);
@@ -257,10 +257,8 @@ describe("canvas input and renderer integration", () => {
     fireEvent.wheel(canvas(), { deltaX: 10000, deltaY: -10000 });
     expect(artboard()).toHaveAttribute("data-pan-x", "-240");
     expect(artboard()).toHaveAttribute("data-pan-y", "240");
-    expect(await screen.findByRole("button", { name: "Recentrer la vue" })).toHaveClass(
-      "floating-panel",
-    );
-    expect(document.querySelector(".canvas-controls")).toHaveClass("floating-panel");
+    const reset = await screen.findByRole("button", { name: "100 % et recentrer" });
+    expect(reset.closest(".canvas-controls")).toHaveClass("floating-panel");
     act(() => {
       actions.run("recenter");
     });
@@ -525,9 +523,11 @@ describe("canvas input and renderer integration", () => {
     engine.select([child.id]);
     const { container } = render(<EditorCanvas engine={engine} tool="pointer" />);
     await ready();
-    expect(container.querySelector(".canvas-selection")).not.toBeInTheDocument();
+    const retained = container.querySelector(".canvas-selection");
+    expect(retained).toHaveStyle({ display: "none" });
     act(() => engine.execute({ type: "updateLayers", ids: [group.id], patch: { visible: true } }));
-    expect(container.querySelector(".canvas-selection")).toBeInTheDocument();
+    expect(container.querySelector(".canvas-selection")).toBe(retained);
+    expect(retained).toBeVisible();
     expect(screen.queryByRole("button", { name: /Redimensionner/ })).not.toBeInTheDocument();
     act(() => engine.execute({ type: "updateLayers", ids: [group.id], patch: { locked: false } }));
     expect(

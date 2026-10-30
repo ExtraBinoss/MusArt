@@ -90,6 +90,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
+- Restored CI verification by provisioning FFprobe for source-backed Motion templates and aligning integration tests with the complete 33-command registry, retained selection overlays, shared zoom controls, timeline state and metadata-stable attachment previews. Assertions still verify real values, identity, stale-input guards and cancellation.
+
 - Kept the Inspector immediately ready between consecutive edits to the same selected object and assets. Selection/resource handoffs remain guarded, attachment editing retains secondary panels, and native rapid color gestures preserve exact values, one undo entry per gesture and zero Inspector renders during previews.
 
 - Fixed live canvas sharpness after zoom and device-density changes by observing DPR independently and estimating actual batched/clipped GPU targets and fixed effect references. Stable fractional tiers retain the existing preview/device limits, source reservations stay separate from target costs, and infeasible fixed content reports a real failure instead of degrading to one pixel. Native live/PNG comparisons and remaining high-zoom limits are documented in `docs/performance/preview-density.md`.

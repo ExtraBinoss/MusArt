@@ -8,19 +8,25 @@ import { useAttachmentSelection } from "../../../../src/state/selection/use-atta
 import type { LayerPreviewVariant } from "../../../../src/state/contracts";
 import { setup } from "../../../support/ui";
 const previews = vi.hoisted(() => ({ render: vi.fn() }));
-vi.mock("../../../../src/components/layers/rows/LayerThumbnail", () => ({
-  LayerThumbnail: ({ variant, pageId }: { variant?: LayerPreviewVariant; pageId?: string }) => {
-    previews.render();
-    return (
-      <span
-        data-testid="card-preview"
-        data-kind={variant?.kind}
-        data-effect={variant?.kind === "effect" ? variant.effectId : undefined}
-        data-page={pageId}
-      />
-    );
-  },
-}));
+vi.mock("../../../../src/components/layers/rows/LayerThumbnail", async () => {
+  const { memo } = await import("react");
+  return {
+    // The real thumbnail is memoized too; retain that boundary around local popover updates.
+    LayerThumbnail: memo(
+      ({ variant, pageId }: { variant?: LayerPreviewVariant; pageId?: string }) => {
+        previews.render();
+        return (
+          <span
+            data-testid="card-preview"
+            data-kind={variant?.kind}
+            data-effect={variant?.kind === "effect" ? variant.effectId : undefined}
+            data-page={pageId}
+          />
+        );
+      },
+    ),
+  };
+});
 function fixture() {
   const d = setup(),
     effects: Effect[] = Array.from({ length: 12 }, (_unused, index) =>
@@ -124,10 +130,14 @@ function retainedCards() {
 test("closed cards skip metadata renders and resolve current canonical context targets", () => {
   previews.render.mockClear();
   const d = retainedCards();
-  expect(previews.render).toHaveBeenCalledTimes(2);
+  const mountedPreviews = screen.getAllByTestId("card-preview");
+  expect(mountedPreviews).toHaveLength(2);
+  // Radix settles its trigger/virtual anchor at mount; metadata must do no further work.
+  previews.render.mockClear();
   act(() => d.engine.execute({ type: "updatePage", patch: { rulers: true } }));
   d.view.rerender(<AttachmentCards {...d.props} page={d.engine.getSnapshot().project.pages[0]!} />);
-  expect(previews.render).toHaveBeenCalledTimes(2);
+  expect(previews.render).not.toHaveBeenCalled();
+  expect(screen.getAllByTestId("card-preview")).toEqual(mountedPreviews);
   fireEvent.contextMenu(screen.getByRole("button", { name: "Masque · Rectangle bleu" }));
   expect(attachmentSelection(d.engine).editable()).toBe(true);
   fireEvent.contextMenu(screen.getByRole("button", { name: "Dither · Rectangle bleu" }));
@@ -150,11 +160,15 @@ test("an open effect follows ruler metadata even when its closed card owner was 
   act(() => d.engine.execute({ type: "updatePage", patch: { rulers: false } }));
   expect(screen.getByLabelText("Intensité")).toBe(amount);
   const before = d.engine.getSnapshot();
+  fireEvent.pointerDown(amount, { button: 0 });
+  fireEvent.focus(amount);
   fireEvent.change(amount, { target: { value: "60" } });
   expect(d.store.get(previewAtom)).toMatchObject({
     target: "layers",
     patch: { effects: [expect.objectContaining({ amount: 0.6 })] },
   });
+  expect(d.engine.getSnapshot().project).toBe(before.project);
+  expect(d.engine.getSnapshot().revision).toBe(before.revision);
   fireEvent.blur(amount);
   expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.effects[0]!.amount).toBe(0.6);
   expect(d.engine.getSnapshot().revision).toBe(before.revision + 1);

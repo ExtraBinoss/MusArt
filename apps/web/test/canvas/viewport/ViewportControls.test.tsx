@@ -1,13 +1,22 @@
 import { expect, it, vi } from "vitest";
 import { act, fireEvent, render as baseRender, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
+import { Provider, createStore } from "jotai";
 import { TooltipProvider } from "../../../src/components/ui/tooltip";
 import { ViewportControls } from "../../../src/canvas/viewport/ViewportControls";
 import { createViewportActions } from "../../../src/canvas/session/viewport-actions";
 import { EditorEngine } from "@musart/core";
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
-const render = (node: ReactNode) =>
-  baseRender(node, { wrapper: ({ children }) => <TooltipProvider>{children}</TooltipProvider> });
+const render = (node: ReactNode) => {
+  const store = createStore();
+  return baseRender(node, {
+    wrapper: ({ children }) => (
+      <Provider store={store}>
+        <TooltipProvider>{children}</TooltipProvider>
+      </Provider>
+    ),
+  });
+};
 it("keeps zoom controls and toggles the Motion timeline while recenter remains a shared action", () => {
   const actions = createViewportActions(new EditorEngine()),
     listener = vi.fn(),
@@ -23,6 +32,8 @@ it("keeps zoom controls and toggles the Motion timeline while recenter remains a
   expect(listener.mock.calls.map(([action]) => action)).toEqual(["zoomOut", "reset", "zoomIn"]);
   rerender(<ViewportControls actions={actions} view={{ x: 81, y: 0, zoom: 1 }} motionEnabled />);
   const timeline = screen.getByRole("button", { name: "motion:timeline" });
+  expect(timeline).toHaveAttribute("aria-pressed", "false");
+  fireEvent.click(timeline);
   expect(timeline).toHaveAttribute("aria-pressed", "true");
   fireEvent.click(timeline);
   expect(timeline).toHaveAttribute("aria-pressed", "false");
