@@ -15,6 +15,7 @@ import { Button } from "../../ui/button";
 import { Switch } from "../../ui/switch";
 import { MotionPopover } from "./MotionPopover";
 import { AnimationActions } from "./AnimationActions";
+import { TypographyControls } from "./TypographyControls";
 import { AnimationDetailsDisclosure } from "./AnimationDetails";
 import { Collapsible, CollapsibleTrigger } from "../../ui/collapsible";
 import { SavePreset } from "./SavePreset";
@@ -73,6 +74,10 @@ export function LayerAnimations({ engine, layerId }: { engine: EnginePort; layer
       {tracks.flatMap((track) =>
         (track.animations ?? []).map((animation) => {
           const selected = presentation.selected === animation.id;
+          const subject = page.layers.find((layer) => layer.id === layerId)!;
+          const geometryEffect = subject.effects.find(
+            (effect) => effect.type === "morph" && animation.effectIds.includes(effect.id),
+          );
           return (
             <Collapsible
               className="animation-instance"
@@ -134,14 +139,41 @@ export function LayerAnimations({ engine, layerId }: { engine: EnginePort; layer
                     <NumberInput
                       identity={animation}
                       label={t("intensity")}
-                      value={animation.strength * 100}
+                      value={(geometryEffect?.amount ?? animation.strength) * 100}
                       min={0}
-                      max={1000}
+                      max={geometryEffect ? 100 : 1000}
                       unit="%"
                       disabled={locked}
-                      onCommit={(value) => update(animation, { strength: value / 100 })}
+                      onCommit={(value) =>
+                        geometryEffect
+                          ? run(() =>
+                              engine.execute({
+                                type: "updateLayerPatches",
+                                patches: [
+                                  {
+                                    id: subject.id,
+                                    patch: {
+                                      effects: subject.effects.map((effect) =>
+                                        effect.id === geometryEffect.id
+                                          ? { ...effect, amount: value / 100 }
+                                          : effect,
+                                      ),
+                                    },
+                                  },
+                                ],
+                              }),
+                            )
+                          : update(animation, { strength: value / 100 })
+                      }
                     />
                   </div>
+                  <TypographyControls
+                    engine={engine}
+                    layer={page.layers.find((layer) => layer.id === layerId)!}
+                    animation={animation}
+                    run={run}
+                    disabled={locked}
+                  />
                   <AnimationDetailsDisclosure
                     engine={engine}
                     animation={animation}

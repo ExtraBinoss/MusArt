@@ -6,6 +6,12 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Excluded portable template payloads and generated contour coordinates from Tailwind class discovery, preventing the development server and production CSS build from blocking on large numeric data.
+
+- Restored preset channel points in the optional Keyframes timeline, including source-preserving drag previews, endpoint retiming, intermediate-point deletion and easing edits with undo/redo. Corrected vertical canvas ruler labels that were rotated outside the visible strip.
+
+- Added native GPU contour morphing with hole correspondence, bounded multi-state geometry, per-letter timing and independent animation-source selection. Added editable Inflate/Stretch presets, simple intensity/stagger/order controls, live preset capture/duplication and a faithful one-object Morphing Type reference template.
+
 - Added preview-first project/template cards with an author panel, direct Open actions, double-click opening and persistent transactional favorites above the library. Shared Motion hover intent now resumes the card beneath a stationary pointer after scrolling, includes every registered Motion template, and shows compact loading indicators. Unified the Add motion typewriter search and refined the gradient mascot, hover animation and Clash Display interface headings. Removed legacy editor logo overrides so the landing, library and editor consistently use the shared brand primary.
 
 - Moved the Add motion preset scrollbar to the outer right/bottom gutter, made its category scrollbar subtle until hovered, and replaced category arrows with immediately visible scroll shadows that auto-scroll on hover. Preserved wheel, touch and keyboard navigation through the shared horizontal controller.

@@ -1,5 +1,6 @@
 import type { BlendMode } from "../layers/blending/catalog";
 import type { VectorDefinition } from "../vector/model";
+import type { ShapeMorph } from "../effects/morph/model";
 import type { Insets, WorkingColorSpace, Alignment, LayoutReference } from "../layout/model";
 import type { ReplaySpec } from "../animation/model";
 import type { FillGradient } from "../paint/gradient";
@@ -19,6 +20,7 @@ import type { ApplyMotionTransitionCommand } from "../motion/transitions/model";
 export const FORMAT_VERSION = 1 as const;
 export type LayerKind = "rectangle" | "ellipse" | "text" | "image" | "video" | "group" | "vector";
 export type EffectType =
+  | "morph"
   | "dither"
   | "ascii"
   | "brightness"
@@ -56,6 +58,7 @@ export type EffectType =
 /** Effect-owned scalar settings are validated against that effect's definition. */
 export type EffectSettings = Partial<Record<string, number | boolean | string>>;
 export interface Effect {
+  shapeMorph?: ShapeMorph;
   id: string;
   type: EffectType;
   enabled: boolean;

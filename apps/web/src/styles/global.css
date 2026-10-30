@@ -9,3 +9,7 @@
 
 @import "./number-input.css";
 @import "./projects.css";
+
+/* Portable template payloads and contour coordinates never contain UI utility classes. */
+@source not "../../public/templates";
+@source not "../services/projects/templates/motion/morph-reference.json";

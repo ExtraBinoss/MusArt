@@ -56,7 +56,7 @@ it("retains tick nodes through pan/zoom, replaces only major labels and removes 
   expect(second.querySelector("text")).toBeNull();
   expect(second.querySelector("line")).toHaveAttribute("x1", "16");
   paintRuler(root, "y", [{ value: 20, position: 30, major: true }]);
-  expect(second.querySelector("text")).toHaveAttribute("transform", "rotate(-90 3 -3)");
+  expect(second.querySelector("text")).toHaveAttribute("transform", "rotate(-90 10 -3)");
   paintRuler(root, "y", []);
   expect(root.children).toHaveLength(0);
 });

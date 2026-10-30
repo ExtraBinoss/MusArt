@@ -1,4 +1,6 @@
 import {
+  projectMotionProperties,
+  projectAnimationProperties,
   compareMotionTime,
   compileMotionEasing,
   createMotionEasingPreset,
@@ -84,9 +86,9 @@ export function captureEasingOrigin(
   const snapshot = engine.getSnapshot();
   const page = snapshot.project.pages.find((item) => item.id === pageId);
   const track = page?.motion?.tracks.find((track) =>
-    track.properties.some((property) => property.id === propertyId),
+    projectMotionProperties(track).some((property) => property.id === propertyId),
   );
-  const property = track?.properties.find((item) => item.id === propertyId);
+  const property = track && projectMotionProperties(track).find((item) => item.id === propertyId);
   const key = property?.keyframes.find((item) => item.id === keyId);
   if (snapshot.pageId !== pageId || page?.motion?.mode !== "motion" || !property || !key)
     throw new EngineError("INVALID_COMMAND", "Easing target is unavailable.");
@@ -116,6 +118,20 @@ export function commitEasing(
   )
     throw new EngineError("INVALID_COMMAND", "Easing target changed.");
   if (sameEasing(origin.key.easing, easing)) return "unchanged";
+  const page = engine.getSnapshot().project.pages.find((page) => page.id === origin.pageId)!;
+  const track = page.motion!.tracks.find((track) => track.id === origin.trackId)!;
+  const source = projectAnimationProperties(track).find(
+    (entry) => entry.property.id === origin.property.id,
+  );
+  if (source) {
+    const preset = structuredClone(source.animation.preset);
+    const index = source.property.keyframes.findIndex((key) => key.id === origin.key.id);
+    preset.channels[source.channelIndex]!.points[index]!.easing = { ...easing };
+    engine.transaction([
+      { type: "updateMotionAnimation", animationId: source.animation.id, patch: { preset } },
+    ]);
+    return "committed";
+  }
   engine.transaction([
     {
       type: "upsertMotionKeyframe",

@@ -17,7 +17,7 @@ test("every registered effect has exactly one presentation family and retains it
     const entries = effectCatalogEntries(category, i18n.getFixedT("fr"), "fr");
     expect(entries.map((entry) => entry.type).sort()).toEqual(
       Object.values(EFFECT_CATALOG)
-        .filter((item) => item.category === category)
+        .filter((item) => item.category === category && !item.source)
         .map((item) => item.type)
         .sort(),
     );

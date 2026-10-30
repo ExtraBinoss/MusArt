@@ -18,9 +18,9 @@ test("indexes all real actions, effects and every page/layer with localized labe
   const items = createSearchItems(d.engine.getSnapshot(), t);
   expect(new Set(items.map((item) => item.id)).size).toBe(items.length);
   expect(items.filter((item) => item.target.kind === "effect")).toHaveLength(
-    Object.keys(EFFECT_CATALOG).length,
+    Object.values(EFFECT_CATALOG).filter((effect) => !effect.source).length,
   );
-  for (const definition of Object.values(EFFECT_CATALOG)) {
+  for (const definition of Object.values(EFFECT_CATALOG).filter((effect) => !effect.source)) {
     const label = t(definition.nameKey);
     expect(label).not.toBe(definition.nameKey);
     expect(items.find((item) => item.id === `effect:${definition.type}`)).toMatchObject({

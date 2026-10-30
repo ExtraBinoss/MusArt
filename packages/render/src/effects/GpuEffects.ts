@@ -1,5 +1,5 @@
 import { compileGpuScene } from "../compositing/compile";
-import { resolveGradientSettings, type Effect } from "@musart/core";
+import { getEffectDefinition, resolveGradientSettings, type Effect } from "@musart/core";
 import {
   Mesh,
   MeshBasicNodeMaterial,
@@ -160,7 +160,9 @@ export class GpuEffects {
   }
   /** Allocation high-water mark remains accounted for until explicit disposal. */
   projectedBytes(width: number, height: number, effects: readonly Effect[]): number {
-    const enabled = effects.filter((effect) => effect.enabled);
+    const enabled = effects.filter(
+      (effect) => effect.enabled && getEffectDefinition(effect.type).source !== "geometry",
+    );
     const stages = enabled.reduce((sum, effect) => sum + effectStages(effect).length, 0);
     if (stages) assertTextureSize(width, height, gpuTextureLimit(this.renderer));
     const scratch =
@@ -232,7 +234,9 @@ export class GpuEffects {
       logical.height <= 0
     )
       throw new Error("Invalid logical effect dimensions.");
-    const enabled = effects.filter((effect) => effect.enabled);
+    const enabled = effects.filter(
+      (effect) => effect.enabled && getEffectDefinition(effect.type).source !== "geometry",
+    );
     if (!enabled.length) return source;
     if (source === output.texture)
       throw new Error("La source et la cible GPU doivent être distinctes.");

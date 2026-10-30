@@ -15,7 +15,9 @@ import {
 it("enumerates every catalog control without hiding conditional/dormant parameters", () => {
   const page = createPage({
     layers: Object.values(EFFECT_CATALOG).map((definition) =>
-      createLayer("rectangle", { effects: [createEffect(definition.type)] }),
+      createLayer(definition.source ? "text" : "rectangle", {
+        effects: [createEffect(definition.type)],
+      }),
     ),
   });
   const descriptors = listMotionProperties(page);

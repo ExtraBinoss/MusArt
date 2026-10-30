@@ -129,6 +129,55 @@ export function evaluateMotion(
       );
     if (layer.animations?.length)
       evaluateAnimations(layer.animations, sampledTime, values, firstValue);
+    if (layer.geometrySources?.length) {
+      const available = layer.geometrySources.filter(
+        (source) =>
+          source.enabled &&
+          !values
+            .slice(firstValue)
+            .some(
+              (value) =>
+                value.target.kind === "effect" &&
+                value.target.effectId === source.effectId &&
+                value.target.property === "enabled" &&
+                value.value === false,
+            ),
+      );
+      const started = available.filter(
+        (source) => compareMotionTime(sampledTime, source.start) >= 0,
+      );
+      const candidates = started.length ? started : available;
+      const winner = candidates.reduce<(typeof candidates)[number] | undefined>(
+        (best, source) =>
+          !best ||
+          (started.length
+            ? compareMotionTime(source.start, best.start) >= 0
+            : compareMotionTime(source.start, best.start) < 0)
+            ? source
+            : best,
+        undefined,
+      );
+      for (const source of layer.geometrySources) {
+        const entry: MotionFrameValue = Object.freeze({
+          target: {
+            kind: "effect" as const,
+            layerId: layer.id,
+            effectId: source.effectId,
+            property: "enabled" as const,
+          },
+          value: source.effectId === winner?.effectId,
+        });
+        const index = values.findIndex(
+          (value) =>
+            value.target.kind === "effect" &&
+            value.target.layerId === layer.id &&
+            value.target.effectId === source.effectId &&
+            value.target.property === "enabled",
+        );
+        if (index < 0) values.push(entry);
+        else values[index] = entry;
+      }
+    }
   }
   const plan: MotionFramePlan = Object.freeze({
     compositionId: program.compositionId,

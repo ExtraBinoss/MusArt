@@ -54,9 +54,15 @@ export async function createAnimationPreviewDocument(
           height: 144,
           background: "#20232b",
           layers: [
-            createLayer("image", {
+            createLayer(preset.category === "typography" ? "text" : "image", {
               id: "subject",
-              assetId: "photo",
+              assetId: preset.category === "typography" ? null : "photo",
+              text: "MORPH",
+              fontSize: 32,
+              fontWeight: 800,
+              fontFamily: "Inter Variable",
+              fill: "#00bdf5",
+              textAlign: "center",
               x: 21,
               y: 15.75,
               width: 150,

@@ -6,9 +6,14 @@ import type { EffectParameter } from "./definition";
 import { getEffectDefinition } from "./catalog";
 import type { EffectType } from "../document/model";
 import { validateEffectParameter } from "./parameters";
+import { validateShapeMorph } from "./morph/validation";
 
 /** Optional fields keep old documents valid; every supplied setting remains strictly validated. */
 export function validateEffectExtensions(value: Record<string, unknown>): void {
+  if (value.shapeMorph !== undefined) {
+    ensure(value.type === "morph", "INVALID_DOCUMENT", "Shape geometry belongs to Morph");
+    validateShapeMorph(value.shapeMorph);
+  }
   if (value.blendMode !== undefined)
     ensure(
       typeof value.blendMode === "string" && Object.hasOwn(BLEND_CATALOG, value.blendMode),

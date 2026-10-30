@@ -27,6 +27,13 @@ function effect(type: "blur" | "transition", patch: Parameters<typeof createEffe
   const { id: _id, ...definition } = createEffect(type, { ...patch, id: "preset-effect" });
   return definition;
 }
+function effectMorph(inflate: number, stretch: number) {
+  const { id: _id, ...definition } = createEffect("morph", {
+    amount: 0.65,
+    settings: { progress: 1, stagger: 0.45, inflate, stretch, order: "forward" },
+  });
+  return definition;
+}
 const blur = (values: number[]): AnimationChannel => ({
   target: { kind: "effect", slot: 0, property: "amount" },
   operation: "replace",
@@ -144,6 +151,29 @@ for (const recipe of recipes.filter((recipe) => recipe.id === "scale-grow"))
 /** Real native GPU operators plus authored property recipes, rather than aliases counted twice. */
 export const MOTION_ANIMATION_PRESETS: readonly MotionAnimationPreset[] = freezeValue([
   ...recipes,
+  ...[
+    ["inflate", "Inflate", 0.9, 1],
+    ["inflate-stretch", "Inflate & stretch", 0.9, 3],
+    ["letter-stretch", "Letter stretch", 0, 3],
+  ].map(([id, name, inflate, stretch]) =>
+    preset(
+      `type-${id}`,
+      String(name),
+      "typography",
+      [
+        {
+          target: { kind: "effectSetting", slot: 0, property: "progress" },
+          operation: "replace",
+          points: [
+            { at: 0, value: 0 },
+            { at: 1, value: 1 },
+          ],
+        },
+      ],
+      [effectMorph(Number(inflate), Number(stretch))],
+      1200,
+    ),
+  ),
   ...TRANSITION_CATALOG.map((entry) =>
     preset(
       `reveal-${entry.id}`,

@@ -1,3 +1,5 @@
+import { MorphResource, morphResourceKey, sourceMorph } from "../morph/resource";
+import { textMorph } from "../morph/text";
 import { compileGpuScene } from "../../compositing/compile";
 import type { Composition, Layer } from "@musart/core";
 import {
@@ -39,6 +41,8 @@ export function textGeometryKey(layer: Layer): string {
 
 /** Per-layer outline identity excludes continuous layout; document edits still invalidate pixels. */
 export function textResourceKey(layer: Layer): string {
+  const morph = sourceMorph(layer);
+  if (morph) return `morph:${morphResourceKey(layer, morph)}`;
   return JSON.stringify([
     layer.id,
     normalizeFontFamily(layer.fontFamily),
@@ -186,7 +190,7 @@ export class TextSources {
         if (layer.kind !== "text") continue;
         this.assertOpen();
         const key = `text:${textResourceKey(layer)}`;
-        let resource = this.cache.get<TextResource>(key);
+        let resource = this.cache.get<TextResource | MorphResource>(key);
         if (resource?.matchesLayout(layer)) {
           if (options.target)
             await resource.prepare(this.renderer, options.target, options.canContinue);
@@ -200,7 +204,7 @@ export class TextSources {
           this.pending.set(key, job);
         }
         await job;
-        resource = this.cache.get<TextResource>(key);
+        resource = this.cache.get<TextResource | MorphResource>(key);
         if (options.target && resource)
           await resource.prepare(this.renderer, options.target, options.canContinue);
       }
@@ -212,12 +216,15 @@ export class TextSources {
     try {
       this.assertOpen();
       const layout = layoutText(layer, lease.font);
-      const existing = this.cache.get<TextResource>(key);
-      if (existing?.canUpdateLayout(layout)) {
+      const existing = this.cache.get<TextResource | MorphResource>(key);
+      if (existing instanceof TextResource && existing.canUpdateLayout(layout)) {
         existing.updateLayout(layer, layout, lease.font.unitsPerEm);
         return;
       }
-      const resource = new TextResource(layer, lease.font, layout);
+      const effect = sourceMorph(layer);
+      const resource = effect
+        ? new MorphResource(layer, effect, textMorph(layer, effect, lease.font, layout))
+        : new TextResource(layer, lease.font, layout);
       // The GPU resource contains copied curves and no longer depends on its font face.
       this.cache.set(key, resource);
       this.parses++;
@@ -230,9 +237,10 @@ export class TextSources {
   }
   render(layer: Layer, target: RenderTarget): void {
     this.assertOpen();
-    const resource = this.cache.get<TextResource>(`text:${textResourceKey(layer)}`);
+    const resource = this.cache.get<TextResource | MorphResource>(`text:${textResourceKey(layer)}`);
     if (!resource?.matchesLayout(layer)) throw new Error("Text outline source was not prepared.");
     updateTextPaint(resource.paint, layer);
+    if (resource instanceof MorphResource) resource.update(layer, sourceMorph(layer)!);
     const previous = this.renderer.getRenderTarget(),
       auto = this.renderer.autoClear;
     try {

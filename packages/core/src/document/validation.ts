@@ -125,6 +125,16 @@ function validateLayer(value: unknown, ids: Set<string>, assets: Record<string, 
 
   assertList(value.effects, 64);
   for (const effect of value.effects) validateEffect(effect, ids);
+  for (const effect of value.effects) {
+    const source = effect as { type: string; shapeMorph?: unknown };
+    ensure(
+      source.type !== "morph" ||
+        value.kind === "text" ||
+        (value.kind === "vector" && source.shapeMorph !== undefined),
+      "INVALID_DOCUMENT",
+      "Morph needs text or authored vector contours",
+    );
+  }
 }
 
 function validateHierarchy(layers: unknown[]): void {

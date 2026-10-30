@@ -19,11 +19,21 @@ import { HorizontalScroll } from "../../shared/scroll/HorizontalScroll";
 import "./messages";
 import "./animations.css";
 
+function compatible(preset: MotionAnimationPreset, kind: string) {
+  return (
+    !preset.effects.some((effect) => effect.type === "morph") ||
+    kind === "text" ||
+    (kind === "vector" && preset.effects.some((effect) => effect.shapeMorph))
+  );
+}
+
 export function PresetPicker({
   engine,
   apply,
+  subjectKind = "image",
 }: {
   engine: EnginePort;
+  subjectKind?: string;
   apply: (preset: MotionAnimationPreset) => void;
 }) {
   const { t } = useTranslation("animations");
@@ -65,12 +75,13 @@ export function PresetPicker({
         : saved.map((record) => record.preset)
       ).filter(
         (preset) =>
+          compatible(preset, subjectKind) &&
           (category === "all" || preset.category === category) &&
           `${preset.name} ${t(`category.${preset.category}`)}`
             .toLocaleLowerCase()
             .includes(query.toLocaleLowerCase()),
       ),
-    [source, saved, category, query, t],
+    [source, saved, category, query, t, subjectKind],
   );
   async function more() {
     if (!before || !store || busy) return;
@@ -115,7 +126,11 @@ export function PresetPicker({
         </strong>
         <span>
           {t("count", {
-            count: source === "library" ? MOTION_ANIMATION_PRESETS.length : saved.length,
+            count:
+              source === "library"
+                ? MOTION_ANIMATION_PRESETS.filter((preset) => compatible(preset, subjectKind))
+                    .length
+                : saved.length,
           })}
         </span>
       </header>
@@ -147,19 +162,23 @@ export function PresetPicker({
         edgeControls="shadows"
       >
         <div className="animation-categories">
-          {["all", ...ANIMATION_CATEGORIES].map((value) => (
-            <Button
-              key={value}
-              size="xs"
-              variant={category === value ? "secondary" : "ghost"}
-              aria-pressed={category === value}
-              onClick={() => {
-                setCategory(value);
-              }}
-            >
-              {t(value === "all" ? "all" : `category.${value}`)}
-            </Button>
-          ))}
+          {["all", ...ANIMATION_CATEGORIES]
+            .filter(
+              (value) => value !== "typography" || subjectKind === "text" || source === "mine",
+            )
+            .map((value) => (
+              <Button
+                key={value}
+                size="xs"
+                variant={category === value ? "secondary" : "ghost"}
+                aria-pressed={category === value}
+                onClick={() => {
+                  setCategory(value);
+                }}
+              >
+                {t(value === "all" ? "all" : `category.${value}`)}
+              </Button>
+            ))}
         </div>
       </HorizontalScroll>
       <PresetGrid

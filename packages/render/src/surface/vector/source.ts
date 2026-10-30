@@ -1,3 +1,4 @@
+import { MorphResource, morphResourceKey, sourceMorph } from "../morph/resource";
 import type { Layer, VectorPart } from "@musart/core";
 import {
   DoubleSide,
@@ -125,6 +126,30 @@ export class VectorSources {
     private readonly cache: GpuResourceCache,
   ) {}
   render(layer: Layer, target: RenderTarget, displayP3 = false): void {
+    const morph = sourceMorph(layer);
+    if (morph) {
+      if (!morph.shapeMorph) throw Error("Vector morph requires authored contour states");
+      const key = `morph:${morphResourceKey(layer, morph)}`;
+      let resource = this.cache.get<MorphResource>(key);
+      if (!resource) {
+        resource = new MorphResource(layer, morph, morph.shapeMorph);
+        this.cache.set(key, resource);
+        this.parses++;
+      }
+      resource.update(layer, morph);
+      const previous = this.renderer.getRenderTarget(),
+        auto = this.renderer.autoClear;
+      try {
+        this.renderer.autoClear = false;
+        this.renderer.setRenderTarget(target);
+        this.renderer.render(resource.scene, resource.camera);
+        this.passes++;
+      } finally {
+        this.renderer.setRenderTarget(previous);
+        this.renderer.autoClear = auto;
+      }
+      return;
+    }
     const key = `vector:${vectorGeometryKey(layer)}`;
     let resource = this.cache.get<VectorResource>(key);
     if (!resource) {

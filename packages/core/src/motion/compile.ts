@@ -19,6 +19,7 @@ export interface CompiledMotionProperty {
 }
 
 export interface CompiledMotionLayer {
+  readonly geometrySources?: readonly { effectId: string; start: MotionTime; enabled: boolean }[];
   readonly id: string;
   /** Several disjoint segments may share this canonical id; trackId identifies their occurrence. */
   readonly trackId?: string;

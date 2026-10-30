@@ -24,7 +24,11 @@ test("creates the declared 50-photo/100-effect mixed-media workload, with bounde
   const effects = page.layers.flatMap((layer) => layer.effects);
   expect(effects).toHaveLength(100);
   expect(new Set(effects.map((effect) => effect.type))).toEqual(
-    new Set(Object.keys(EFFECT_CATALOG)),
+    new Set(
+      Object.values(EFFECT_CATALOG)
+        .filter((effect) => !effect.source)
+        .map((effect) => effect.type),
+    ),
   );
   expect(page.layers.filter((layer) => layer.kind === "group")).toHaveLength(5);
   expect(

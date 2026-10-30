@@ -10,7 +10,9 @@ import type { BindingSnapshot, CommandId } from "../../../state/keybindings/mode
 
 export const SEARCH_COMMAND_IDS: readonly string[] = Object.freeze([
   ...ACTIONS.map((item) => `action:${item.action}`),
-  ...Object.keys(EFFECT_CATALOG).map((type) => `effect:${type}`),
+  ...Object.keys(EFFECT_CATALOG)
+    .filter((type) => !EFFECT_CATALOG[type as keyof typeof EFFECT_CATALOG].source)
+    .map((type) => `effect:${type}`),
 ]);
 
 /** Stable commands can be pinned without enumerating project pages or layers. */
@@ -45,16 +47,18 @@ export function createSearchCommandItems(
     disabled: item.gate ? disabled[item.gate] : undefined,
     target: { kind: "action", action: item.action },
   }));
-  const effects: SearchItem[] = Object.values(EFFECT_CATALOG).map((effect) => ({
-    id: `effect:${effect.type}`,
-    label: t(effect.nameKey),
-    category: effect.category === "effect" ? "effects" : "adjustments",
-    terms: `${effect.type} effect effet adjustment correction couleur color`,
-    detail: t("search:applyToSelection"),
-    disabled: disabled.editable,
-    shortcut: shortcut(`effect:${effect.type}`),
-    target: { kind: "effect", effect: effect.type },
-  }));
+  const effects: SearchItem[] = Object.values(EFFECT_CATALOG)
+    .filter((effect) => !effect.source)
+    .map((effect) => ({
+      id: `effect:${effect.type}`,
+      label: t(effect.nameKey),
+      category: effect.category === "effect" ? "effects" : "adjustments",
+      terms: `${effect.type} effect effet adjustment correction couleur color`,
+      detail: t("search:applyToSelection"),
+      disabled: disabled.editable,
+      shortcut: shortcut(`effect:${effect.type}`),
+      target: { kind: "effect", effect: effect.type },
+    }));
   return [...actions, ...effects].sort(
     (a, b) => SEARCH_CATEGORIES.indexOf(a.category) - SEARCH_CATEGORIES.indexOf(b.category),
   );

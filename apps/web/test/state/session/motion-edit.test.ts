@@ -29,7 +29,11 @@ import {
 
 function fixture(type: EffectType = "noise") {
   const effect = createEffect(type, { id: "fx" });
-  const layer = createLayer("rectangle", { id: "shape", x: 10, effects: [effect] });
+  const layer = createLayer(type === "morph" ? "text" : "rectangle", {
+    id: "shape",
+    x: 10,
+    effects: [effect],
+  });
   const engine = new EditorEngine(
     createProject({ pages: [createPage({ id: "page", layers: [layer] })] }),
   );

@@ -15,6 +15,16 @@ export interface ProjectTemplate {
   readonly descriptionKey?: string;
 }
 export const TEMPLATE_CATALOG: readonly ProjectTemplate[] = Object.freeze([
+  Object.freeze({
+    id: "morphing-type",
+    nameKey: "templates:morphingType",
+    descriptionKey: "templates:morphingTypeDescription",
+    width: 790,
+    height: 480,
+    mode: "motion",
+    category: "artwork",
+    preview: `${import.meta.env.BASE_URL}templates/motion/morphing-type.webp`,
+  }),
   ...DESIGNED_TEMPLATES.map((template) =>
     Object.freeze({
       ...template,
@@ -97,6 +107,7 @@ export async function createProjectFromTemplate(
     return;
   }
   if (
+    templateId === "morphing-type" ||
     templateId === "in-bloom" ||
     templateId === "motion-stress-lab" ||
     templateId === "sound-playground" ||

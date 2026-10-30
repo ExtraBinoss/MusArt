@@ -426,6 +426,33 @@
 .animation-remove-action:hover {
   color: var(--foreground);
 }
+.animation-typography-controls {
+  display: grid;
+  gap: 5px;
+}
+.animation-typography-title {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.animation-typography-controls [role="combobox"] {
+  width: 100%;
+  height: 34px;
+  font-size: 11px;
+}
+.animation-card-type {
+  display: grid;
+  place-items: center;
+  position: absolute;
+  inset: 0;
+  color: #00b9fc;
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  background: #111232;
+}
 .animation-action-menu {
   max-width: min(260px, calc(100vw - 24px));
   font-size: 12px;

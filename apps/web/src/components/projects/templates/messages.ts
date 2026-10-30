@@ -2,6 +2,8 @@ import { i18n } from "../../../state/i18n";
 
 const resources = {
   en: {
+    morphingType: "Morphing Type",
+    morphingTypeDescription: "2.23 s · Editable text, letter morphing, inflation and stretch",
     shareYourWork: "Share Your Work",
     shareYourWorkDescription:
       "1.5 s · Staggered photo cards, scale, blur and editable motion blocks",
@@ -33,6 +35,9 @@ const resources = {
     cancel: "Cancel",
   },
   fr: {
+    morphingType: "Morphing Type",
+    morphingTypeDescription:
+      "2,23 s · Texte modifiable, morphing des lettres, gonflement et étirement",
     shareYourWork: "Share Your Work",
     shareYourWorkDescription: "1,5 s · Cartes photo décalées, scale, flou et blocs modifiables",
     soundPlayground: "Sound Playground",

@@ -17,7 +17,9 @@ import {
 } from "./support/effect-control-input";
 import { exerciseEffectComposition } from "./support/effect-composition-controls";
 
-for (const type of Object.keys(EFFECT_CATALOG) as EffectType[]) {
+for (const type of Object.values(EFFECT_CATALOG)
+  .filter((effect) => !effect.source)
+  .map((effect) => effect.type) as EffectType[]) {
   test(`${type}: every parameter preserves selection, preview cancellation and one-edit undo`, async ({
     page,
     browser,

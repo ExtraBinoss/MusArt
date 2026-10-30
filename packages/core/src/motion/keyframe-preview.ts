@@ -1,3 +1,5 @@
+import { captureAnimationPointMove } from "./animations/keyframes";
+import { compileAnimations } from "./animations/compile";
 import { ensure } from "../errors";
 import { freezeValue } from "../document/immutable";
 import { assertEditable, getLayer } from "../layers/access";
@@ -21,7 +23,10 @@ export function createMotionKeyframePreview(
     "INVALID_COMMAND",
     "Invalid keyframe selection",
   );
-  const found = new Set<string>();
+  const animationMove = captureAnimationPointMove(program.composition, ids);
+  for (const { track } of animationMove.entries)
+    assertEditable(program.composition, getLayer(program.composition, track.layerId));
+  const found = new Set<string>(animationMove.found);
   const tracks = new Map(program.composition.motion?.tracks.map((track) => [track.id, track]));
   const affected = new Map(
     program.layers.flatMap((layer, layerIndex) => {
@@ -48,6 +53,7 @@ export function createMotionKeyframePreview(
   const accepts = (delta: MotionTime): boolean => {
     try {
       validateMotionTime(delta);
+      animationMove.sample(delta);
       for (const { moving, fixed } of constraints) {
         if (
           program.composition.motion!.version !== 2 &&
@@ -75,6 +81,7 @@ export function createMotionKeyframePreview(
   const sample = (delta: MotionTime): MotionProgram => {
     validateMotionTime(delta);
     if (delta.value === 0) return program;
+    const animationDrafts = animationMove.sample(delta);
     const authored = new Map<string, MotionPropertyTrack>();
     const layers = program.layers.map((layer, layerIndex) => {
       const entries = affected.get(layerIndex);
@@ -130,9 +137,17 @@ export function createMotionKeyframePreview(
       motion: {
         ...motion,
         tracks: motion.tracks.map((track) =>
-          track.properties.some((property) => authored.has(property.id))
+          track.properties.some((property) => authored.has(property.id)) ||
+          track.animations?.some((animation) => animationDrafts.has(animation.id))
             ? {
                 ...track,
+                ...(track.animations
+                  ? {
+                      animations: track.animations.map(
+                        (animation) => animationDrafts.get(animation.id) ?? animation,
+                      ),
+                    }
+                  : {}),
                 properties: track.properties.map(
                   (property) => authored.get(property.id) ?? property,
                 ),
@@ -141,7 +156,35 @@ export function createMotionKeyframePreview(
         ),
       },
     });
-    return Object.freeze({ ...program, composition, layers: Object.freeze(layers) });
+    const compiled = new Map(
+      composition.motion.tracks
+        .filter((track) => track.animations?.some((animation) => animationDrafts.has(animation.id)))
+        .map((track) => [track.id, { track, channels: compileAnimations(composition, track) }]),
+    );
+    return Object.freeze({
+      ...program,
+      composition,
+      layers: Object.freeze(
+        layers.map((layer) => {
+          const draft = layer.trackId && compiled.get(layer.trackId);
+          if (!draft) return layer;
+          return Object.freeze({
+            ...layer,
+            animations: draft.channels,
+            ...(layer.geometrySources
+              ? {
+                  geometrySources: layer.geometrySources.map((source) => {
+                    const owner = draft.track.animations?.find((animation) =>
+                      animation.effectIds.includes(source.effectId),
+                    );
+                    return owner ? { ...source, start: owner.start } : source;
+                  }),
+                }
+              : {}),
+          });
+        }),
+      ),
+    });
   };
   return Object.freeze({ accepts, sample });
 }

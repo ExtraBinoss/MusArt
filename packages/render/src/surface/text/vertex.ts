@@ -16,11 +16,12 @@ import {
   vec4,
   viewportSize,
 } from "three/tsl";
+import type { Node } from "three/webgpu";
 
 /** Expand each corner in actual framebuffer pixels, not cached layer-space pixels. */
-export function glyphPosition() {
+export function glyphPosition(override?: Node<"vec4">) {
   return Fn(() => {
-    const placement = attribute("glyphPosition", "vec4"),
+    const placement = override ?? attribute("glyphPosition", "vec4"),
       uv = attribute("uv", "vec2");
     const point = uv.mul(placement.zw).add(placement.xy).toVar();
     const direction = uv.mul(2).sub(1).toVar(),
@@ -52,9 +53,9 @@ export function glyphPosition() {
 }
 
 /** Coverage and paint must interpolate the same dilated point as the rendered quad. */
-export function glyphVertex() {
-  const position = glyphPosition().toVar();
-  const placement = attribute("glyphPosition", "vec4"),
+export function glyphVertex(override?: Node<"vec4">) {
+  const position = glyphPosition(override).toVar();
+  const placement = override ?? attribute("glyphPosition", "vec4"),
     bounds = attribute("glyphBounds", "vec4");
   const coordinate = position.xy
     .sub(placement.xy)

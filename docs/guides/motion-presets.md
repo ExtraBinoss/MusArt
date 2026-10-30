@@ -31,4 +31,8 @@ Personal presets live in this browser profile's global IndexedDB storage. They s
 
 ## Reference example
 
+For editable typography, choose a text object → **Animations → + → Typography**. **Inflate**, **Inflate & stretch**, and **Letter stretch** keep the text in one object. Set duration, intensity, letter stagger and order directly on the animation card; keyframes stay optional. Changing the text or font regenerates its contours. Saving and duplicating preserve the current letter settings.
+
+Open **Templates → Morphing Type** for the supplied 2.23-second reference reconstruction: regular letters, staggered balloon shapes, settling and a full-frame stretch. Its specific designed contour states remain native editable animation data; the original video is not embedded.
+
 Open **Templates → Share Your Work** for the reconstructed 1.5-second card collage: eight replacement photographs, ten staggered scale/blur entrances, editable photo drop shadows, interleaved text and one separate movement. It contains native editable layers and animation blocks, rather than a flattened reference video.

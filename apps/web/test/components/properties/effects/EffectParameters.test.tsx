@@ -10,6 +10,7 @@ import {
   type EffectType,
   planMotionInitialization,
 } from "@musart/core";
+import { animationPresentation } from "../../../../src/components/motion/animations/presentation";
 import { EffectParameters } from "../../../../src/components/properties/effects/EffectParameters";
 import { i18n } from "../../../../src/state/i18n";
 import { setup } from "../../../support/ui";
@@ -45,6 +46,7 @@ test("all parameter kinds retain a shared row and diamond slot across Static and
     expect(row.querySelectorAll("[data-motion-diamond]")).toHaveLength(1);
     expect(row.querySelector<HTMLElement>("[data-motion-diamond]")!.hidden).toBe(true);
   }
+  act(() => animationPresentation(d.engine).set({ details: true }));
   act(() =>
     d.engine.execute({
       type: "setCompositionMode",

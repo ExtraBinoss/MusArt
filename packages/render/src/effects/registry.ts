@@ -35,7 +35,7 @@ import { receiptNode } from "./receipt/node";
 import { pinkPhosphorNode } from "./pink-phosphor/node";
 /** Renderer implementation registry. Metadata/defaults live in the pure core catalogue. */
 export const EFFECT_NODES: Readonly<
-  Record<Exclude<EffectType, "gradient" | "transition">, EffectNodeBuilder>
+  Record<Exclude<EffectType, "gradient" | "transition" | "morph">, EffectNodeBuilder>
 > = Object.freeze({
   dither: ditherNode,
   ascii: asciiNode,

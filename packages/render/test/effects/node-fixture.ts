@@ -1,6 +1,14 @@
 import { expect, vi } from "vitest";
 import { createEffect, type EffectType } from "@musart/core";
-import { JoinNode, SplitNode, Texture, TextureNode, VarNode, type Node } from "three/webgpu";
+import {
+  JoinNode,
+  SplitNode,
+  Texture,
+  TextureNode,
+  VarNode,
+  NodeBuilder,
+  type Node,
+} from "three/webgpu";
 import { texture } from "three/tsl";
 import { createEffectUniforms } from "../../src/effects/shared/uniforms";
 
@@ -15,6 +23,7 @@ export function nodeFixture(type: EffectType) {
     atlas,
     controls,
     source,
+    backdrop: source,
     getGlyphAtlas,
     dispose: () => {
       input.dispose();
@@ -22,7 +31,9 @@ export function nodeFixture(type: EffectType) {
     },
   };
 }
+class GraphBuilder extends NodeBuilder {}
 export function graphNodes(node: Node): Set<Node> {
+  const builder = new GraphBuilder();
   const nodes = new Set<Node>();
   const pending = [node];
   while (pending.length) {
@@ -30,6 +41,12 @@ export function graphNodes(node: Node): Set<Node> {
     if (nodes.has(current)) continue;
     nodes.add(current);
     pending.push(...current.getChildren());
+    const call = current as Node & {
+      isShaderCallNodeInternal?: boolean;
+      getOutputNode?: (builder: NodeBuilder) => Node;
+    };
+    if (call.isShaderCallNodeInternal && call.getOutputNode)
+      pending.push(call.getOutputNode(builder));
   }
   return nodes;
 }

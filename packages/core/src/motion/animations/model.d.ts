@@ -4,6 +4,7 @@ import type { LayerMotionProperty, EffectMotionProperty, MotionValue } from "../
 import type { MotionTime } from "../time";
 
 export type AnimationCategory =
+  | "typography"
   | "move"
   | "scale"
   | "rotate"

@@ -27,7 +27,11 @@ test("motion presets stay simple, preview natively and persist globally across p
   const picker = page.locator(".motion-animation-popover");
   await expect(picker.locator(".animation-preset-grid")).toHaveAttribute(
     "data-total-presets",
-    String(MOTION_ANIMATION_PRESETS.length),
+    String(
+      MOTION_ANIMATION_PRESETS.filter(
+        (preset) => !preset.effects.some((effect) => effect.type === "morph"),
+      ).length,
+    ),
   );
   expect(await picker.locator(".animation-preset-card").count()).toBeLessThan(25);
   await expect(picker.locator("footer")).toHaveCount(0);

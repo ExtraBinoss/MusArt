@@ -38,6 +38,16 @@ export const addMotionAnimation: CommandHandler<"addMotionAnimation"> = (context
   ensure(track, "NOT_FOUND", "Animation occurrence is missing");
   const layer = getLayer(page, track.layerId);
   assertEditable(page, layer);
+  ensure(
+    command.preset.effects.every(
+      (effect) =>
+        effect.type !== "morph" ||
+        layer.kind === "text" ||
+        (layer.kind === "vector" && !!effect.shapeMorph),
+    ),
+    "INVALID_COMMAND",
+    "Morph requires text or authored vector contours",
+  );
   const effects = command.preset.effects.map((effect) => ({
     ...cloneValue(effect),
     id: nextId("effect"),

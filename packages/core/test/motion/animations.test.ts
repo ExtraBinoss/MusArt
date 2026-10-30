@@ -20,15 +20,13 @@ import {
   type MotionAnimationPreset,
 } from "../../src/index";
 const time = (value: number) => ({ value: Math.round(value * 1000), rate: 1000 });
-function fixture() {
+function fixture(kind: "rectangle" | "text" = "rectangle") {
   const engine = new EditorEngine(
     createProject({
       pages: [
         createPage({
           id: "page",
-          layers: [
-            createLayer("rectangle", { id: "subject", x: 100, y: 80, width: 200, height: 100 }),
-          ],
+          layers: [createLayer(kind, { id: "subject", x: 100, y: 80, width: 200, height: 100 })],
         }),
       ],
     }),
@@ -58,7 +56,7 @@ describe("editable motion actions", () => {
     );
     for (const preset of MOTION_ANIMATION_PRESETS) {
       validateMotionAnimationPreset(preset);
-      const f = fixture();
+      const f = fixture(preset.category === "typography" ? "text" : "rectangle");
       f.apply(preset.id);
       const halfway = f.sample(0.5);
       f.sample(0.99);

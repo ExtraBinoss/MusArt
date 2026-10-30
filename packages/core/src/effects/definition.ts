@@ -49,6 +49,7 @@ export type EffectParameter =
   | ChoiceEffectParameter
   | ColorEffectParameter;
 export interface EffectDefinition {
+  readonly source?: "geometry";
   readonly type: EffectType;
   readonly nameKey: string;
   readonly category: "effect" | "adjustment";

@@ -146,7 +146,11 @@ export function PresetGrid({
                       onClick={() => apply(preset)}
                     >
                       <span className="animation-card-image">
-                        <img src={ANIMATION_PREVIEW_IMAGE} alt="" loading="lazy" />
+                        {preset.category === "typography" ? (
+                          <span className="animation-card-type">MORPH</span>
+                        ) : (
+                          <img src={ANIMATION_PREVIEW_IMAGE} alt="" loading="lazy" />
+                        )}
                         <div className="animation-card-live" aria-hidden />
                       </span>
                       <span className="animation-card-name">{preset.name}</span>

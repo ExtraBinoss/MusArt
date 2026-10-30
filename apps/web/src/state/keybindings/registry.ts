@@ -46,12 +46,14 @@ export const BINDING_COMMANDS: readonly BindingCommand[] = Object.freeze([
         (normalized ? [key(normalized, tokens!.includes("Mod"), tokens!.includes("Shift"))] : []),
     };
   }),
-  ...Object.values(EFFECT_CATALOG).map((effect): BindingCommand => ({
-    id: `effect:${effect.type}`,
-    label: effect.nameKey,
-    category: effect.category === "effect" ? "effects" : "adjustments",
-    defaults: [],
-  })),
+  ...Object.values(EFFECT_CATALOG)
+    .filter((effect) => !effect.source)
+    .map((effect): BindingCommand => ({
+      id: `effect:${effect.type}`,
+      label: effect.nameKey,
+      category: effect.category === "effect" ? "effects" : "adjustments",
+      defaults: [],
+    })),
   { id: "app:search", label: "search:title", category: "help", defaults: [key("k", true)] },
   ...directions.flatMap((direction): BindingCommand[] => [
     {

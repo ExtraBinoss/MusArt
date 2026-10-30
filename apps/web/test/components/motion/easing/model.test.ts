@@ -7,6 +7,8 @@ import {
   createMotionEasingPreset,
   evaluateEasing,
   MOTION_EASING_PRESETS,
+  MOTION_ANIMATION_PRESETS,
+  projectAnimationProperties,
 } from "@musart/core";
 import {
   captureEasingOrigin,
@@ -108,4 +110,31 @@ it("retains the owning occurrence while editing easing on a key outside its trim
   const tracks = d.engine.getSnapshot().project.pages[0]!.motion!.tracks;
   expect(tracks[0]!.properties[0]!.keyframes[1]!.easing).toEqual({ type: "hold" });
   expect(tracks[1]!.properties[0]!.keyframes[1]!.easing).toBeUndefined();
+});
+
+it("edits a preset segment in its original channel and rejects stale menus", () => {
+  const d = fixture();
+  d.engine.execute({
+    type: "addMotionAnimation",
+    trackId: d.page.motion!.tracks[0]!.id,
+    preset:
+      MOTION_ANIMATION_PRESETS.find((preset) => preset.id === "move-left") ??
+      MOTION_ANIMATION_PRESETS[0]!,
+    start: { value: 0, rate: 1 },
+  });
+  const page = d.engine.getSnapshot().project.pages[0]!;
+  const source = projectAnimationProperties(page.motion!.tracks[0]!)[0]!;
+  const key = source.property.keyframes[1]!;
+  const origin = captureEasingOrigin(d.engine, page.id, source.property.id, key.id);
+  const before = d.engine.getSnapshot();
+  expect(commitEasing(d.engine, origin, { type: "hold" })).toBe("committed");
+  expect(d.engine.getSnapshot().revision).toBe(before.revision + 1);
+  expect(
+    d.engine.getSnapshot().project.pages[0]!.motion!.tracks[0]!.animations![0]!.preset.channels[0]!
+      .points[1]!.easing,
+  ).toEqual({ type: "hold" });
+  expect(d.engine.getSnapshot().project.pages[0]!.motion!.tracks[0]!.properties).toHaveLength(1);
+  expect(() => commitEasing(d.engine, origin, { type: "linear" })).toThrow("changed");
+  d.engine.undo();
+  expect(d.engine.getSnapshot().project).toBe(before.project);
 });

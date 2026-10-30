@@ -37,7 +37,7 @@ test.each(["effect", "adjustment"] as const)(
         const items = await screen.findAllByRole("menuitem");
         const labels = items.map((node) => node.textContent!.trim());
         expect(labels).toHaveLength(
-          Object.values(EFFECT_CATALOG).filter((e) => e.category === category).length,
+          Object.values(EFFECT_CATALOG).filter((e) => e.category === category && !e.source).length,
         );
         for (const group of screen.getAllByRole("group")) {
           const grouped = within(group)

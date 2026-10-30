@@ -165,7 +165,14 @@ export function AnimationContextMenu({
                 engine.execute({
                   type: "addMotionAnimation",
                   trackId,
-                  preset: animation.preset,
+                  preset: captureMotionAnimationPreset(
+                    page,
+                    layerId,
+                    animation,
+                    animation.preset.name,
+                    animation.preset.id,
+                    { bakeStrength: false },
+                  ),
                   start: addMotionTime(animation.start, animation.duration),
                   duration: animation.duration,
                   strength: animation.strength,

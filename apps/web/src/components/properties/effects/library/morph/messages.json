@@ -1,0 +1,24 @@
+{
+  "en": {
+    "name": "Morph",
+    "progress": "Progress",
+    "stagger": "Letter stagger",
+    "inflate": "Inflation",
+    "stretch": "Stretch",
+    "order": "Letter order",
+    "forward": "First to last",
+    "reverse": "Last to first",
+    "center": "From center"
+  },
+  "fr": {
+    "name": "Morphing",
+    "progress": "Progression",
+    "stagger": "Décalage des lettres",
+    "inflate": "Gonflement",
+    "stretch": "Étirement",
+    "order": "Ordre des lettres",
+    "forward": "Début vers fin",
+    "reverse": "Fin vers début",
+    "center": "Depuis le centre"
+  }
+}

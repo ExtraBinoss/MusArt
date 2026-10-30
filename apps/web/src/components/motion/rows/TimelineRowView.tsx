@@ -125,7 +125,10 @@ export const TimelineRowView = memo(function TimelineRowView(props: TimelineRowV
   }
   const MotionAction = labelsOnly ? TimelineMotionAction : TransitionPopover;
   const Icon = row.kind === "property" ? Diamond : (layerIcons[row.layer.kind] ?? Layers);
-  const name = row.kind === "property" ? propertyName(row.property.target, row) : row.layer.name;
+  const name =
+    row.kind === "property"
+      ? `${row.animation ? `${row.animation.preset.name} · ` : ""}${propertyName(row.property.target, row)}`
+      : row.layer.name;
   const easingAvailable =
     !labelsOnly &&
     row.kind === "property" &&

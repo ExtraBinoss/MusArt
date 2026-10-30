@@ -14,13 +14,21 @@ export function captureMotionAnimationPreset(
   animation: MotionAnimation,
   name: string,
   id: string,
+  options: { bakeStrength?: boolean } = {},
 ): MotionAnimationPreset {
   const preset = cloneValue(animation.preset);
   preset.id = id;
   preset.name = name;
-  preset.duration = Math.max(1, Math.round(motionTimeToSeconds(animation.duration) * 1000));
+  if (options.bakeStrength !== false)
+    preset.duration = Math.max(1, Math.round(motionTimeToSeconds(animation.duration) * 1000));
   const layer = page.layers.find((layer) => layer.id === layerId);
   ensure(layer, "NOT_FOUND", "Animation subject is missing");
+  preset.effects = animation.effectIds.map((effectId) => {
+    const source = layer.effects.find((effect) => effect.id === effectId);
+    ensure(source, "NOT_FOUND", "Animation effect is missing");
+    const { id: _id, ...definition } = cloneValue(source);
+    return definition;
+  });
   for (const channel of preset.channels) {
     const base = readMotionValue(page, animationTarget(layerId, animation, channel.target));
     for (const point of channel.points) {
@@ -31,7 +39,8 @@ export function captureMotionAnimationPreset(
           : channel.operation === "multiply"
             ? 1
             : base / (channel.unit ? layer[channel.unit] : 1);
-      point.value = neutral + (point.value - neutral) * animation.strength;
+      if (options.bakeStrength !== false)
+        point.value = neutral + (point.value - neutral) * animation.strength;
     }
   }
   validateMotionAnimationPreset(preset);

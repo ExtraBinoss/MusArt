@@ -1,4 +1,5 @@
 import {
+  projectMotionProperties,
   getDescendants,
   addMotionTime,
   compareMotionTime,
@@ -50,7 +51,7 @@ export function timelineGestureBounds(
       : { minimum: subtractMotionTime(tick, span), maximum: subtractMotionTime(duration, end) };
   }
   const times = page.motion!.tracks.flatMap((item) =>
-    item.properties.flatMap((property) =>
+    projectMotionProperties(item).flatMap((property) =>
       property.keyframes.filter((key) => keyIds.has(key.id)).map((key) => key.time),
     ),
   );
@@ -112,7 +113,7 @@ export function occurrenceMoveTargets(
       page.motion?.version === 2 ? track.id === trackId : layerIds.has(track.layerId),
     )
     .flatMap((track) =>
-      track.properties.flatMap((property) => property.keyframes.map((key) => key.id)),
+      projectMotionProperties(track).flatMap((property) => property.keyframes.map((key) => key.id)),
     );
   return { layerIds, keyIds, trackIds: new Set<string>() };
 }

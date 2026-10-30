@@ -7,6 +7,7 @@ import {
 } from "@musart/core";
 import { AssetIdentities } from "./asset-identities";
 import { SourceIdentities } from "./source-identities";
+import { morphIdentity } from "../surface/morph/identity";
 
 const sourceIdentities = new SourceIdentities();
 const assetIds = new AssetIdentities();
@@ -92,7 +93,14 @@ export function createSourceKeys(
         : null;
       const key = sourceIdentities.intern(
         JSON.stringify([
-          source,
+          {
+            ...source,
+            effects: source.effects.map((effect) =>
+              effect.shapeMorph
+                ? { ...effect, shapeMorph: morphIdentity(effect.shapeMorph) }
+                : effect,
+            ),
+          },
           scale,
           page.colorSpace ?? "srgb",
           maskKey,

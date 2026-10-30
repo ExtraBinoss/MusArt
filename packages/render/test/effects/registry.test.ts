@@ -7,7 +7,12 @@ describe("effect implementation registry", () => {
   it("implements every core catalogue type without a central type switch", () => {
     expect(Object.keys(EFFECT_NODES).sort()).toEqual(
       Object.keys(EFFECT_CATALOG)
-        .filter((type) => type !== "gradient" && type !== "transition")
+        .filter(
+          (type) =>
+            type !== "gradient" &&
+            type !== "transition" &&
+            !EFFECT_CATALOG[type as keyof typeof EFFECT_CATALOG].source,
+        )
         .sort(),
     );
     expect(Object.isFrozen(EFFECT_NODES)).toBe(true);
@@ -23,6 +28,7 @@ describe("effect implementation registry", () => {
           [...graphNodes(node)].some(
             (child) => child instanceof TextureNode && child.value === fixture.input,
           ),
+          type,
         ).toBe(true);
       }
       fixture.dispose();

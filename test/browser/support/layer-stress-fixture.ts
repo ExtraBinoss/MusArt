@@ -27,7 +27,9 @@ export function layerStressProject(layerCount: number, effectCount: number): Pro
       (layer) => layer.kind !== "group" && layer.width >= 24 && layer.height >= 24,
     ),
   );
-  const types = Object.keys(EFFECT_CATALOG) as EffectType[];
+  const types = Object.values(EFFECT_CATALOG)
+    .filter((effect) => !effect.source)
+    .map((effect) => effect.type) as EffectType[];
   let existing = pages.reduce(
     (count, page) => count + page.layers.reduce((sum, layer) => sum + layer.effects.length, 0),
     0,

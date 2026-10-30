@@ -37,9 +37,9 @@ export function paintRuler(root: SVGGElement, axis: "x" | "y", ticks: RulerTick[
     group.querySelector("text")?.remove();
     if (tick.major) {
       const text = document.createElementNS(namespace, "text");
-      text.setAttribute("x", "3");
+      text.setAttribute("x", axis === "x" ? "3" : "10");
       text.setAttribute("y", axis === "x" ? "10" : "-3");
-      if (axis === "y") text.setAttribute("transform", "rotate(-90 3 -3)");
+      if (axis === "y") text.setAttribute("transform", "rotate(-90 10 -3)");
       text.textContent = String(Math.round(tick.value * 100) / 100);
       group.append(text);
     }

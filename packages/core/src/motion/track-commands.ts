@@ -1,3 +1,4 @@
+import { captureAnimationPointMove, removeAnimationPoints } from "./animations/keyframes";
 import { ensure } from "../errors";
 import { assertEditable, getLayer } from "../layers/access";
 import { planMotionTrackMove } from "./track-move";
@@ -66,7 +67,16 @@ export const moveMotionKeyframes: CommandHandler<"moveMotionKeyframes"> = (
   );
   const ids = new Set(command.keyframeIds);
   ensure(ids.size === command.keyframeIds.length, "INVALID_COMMAND", "Duplicate selected keyframe");
-  let found = 0;
+  const animationMove = captureAnimationPointMove(page, ids);
+  for (const { track } of animationMove.entries)
+    assertEditable(page, getLayer(page, track.layerId));
+  const animations = animationMove.sample(command.delta);
+  for (const track of page.motion.tracks)
+    if (track.animations)
+      track.animations = track.animations.map(
+        (animation) => animations.get(animation.id) ?? animation,
+      );
+  let found = animationMove.found.size;
   for (const track of page.motion.tracks)
     for (const property of track.properties) {
       let changed = false;
@@ -112,7 +122,10 @@ export const deleteMotionKeyframes: CommandHandler<"deleteMotionKeyframes"> = (
   );
   const ids = new Set(command.keyframeIds);
   ensure(ids.size === command.keyframeIds.length, "INVALID_COMMAND", "Duplicate selected keyframe");
-  let found = 0;
+  const animationSelection = captureAnimationPointMove(page, ids);
+  for (const { track } of animationSelection.entries)
+    assertEditable(page, getLayer(page, track.layerId));
+  let found = removeAnimationPoints(page, ids);
   for (const track of page.motion.tracks)
     for (const property of track.properties) {
       const kept = property.keyframes.filter((key) => !ids.has(key.id));

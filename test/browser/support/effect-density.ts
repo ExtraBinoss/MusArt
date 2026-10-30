@@ -61,7 +61,9 @@ const gradient = (settings: Partial<NonNullable<Effect["settings"]>>) =>
     },
   });
 export const DENSITY_CASES: readonly DensityCase[] = [
-  ...Object.keys(EFFECT_CATALOG)
+  ...Object.values(EFFECT_CATALOG)
+    .filter((effect) => !effect.source)
+    .map((effect) => effect.type)
     .filter((type) => type !== "gradient")
     .map((type) => ({
       name: type,

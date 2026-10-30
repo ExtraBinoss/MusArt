@@ -53,7 +53,7 @@ it("searches and rejects a stale project without applying a selected preset", as
   const d = fixture(),
     user = userEvent.setup();
   await user.click(screen.getByRole("button", { name: "Ajouter une animation" }));
-  fireEvent.change(screen.getByRole("textbox", { name: "Rechercher une animation…" }), {
+  fireEvent.change(screen.getByLabelText("Rechercher une animation…"), {
     target: { value: "Scale & focus" },
   });
   expect(document.querySelectorAll(".animation-preset-card")).toHaveLength(1);
@@ -76,6 +76,7 @@ it("fits a preset to the visible positive range of a pre-roll occurrence", async
     }),
   );
   await user.click(screen.getByRole("button", { name: "Ajouter une animation" }));
+  await user.click(screen.getByRole("button", { name: "Flou" }));
   await user.click(screen.getByRole("button", { name: "Focus" }));
   const animation = d.engine.getSnapshot().project.pages[0]!.motion!.tracks[0]!.animations![0]!;
   expect(animation.start.value).toBe(0);

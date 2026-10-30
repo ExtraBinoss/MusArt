@@ -1,5 +1,6 @@
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
 import {
+  projectMotionProperties,
   addMotionTime,
   getAncestors,
   motionTimeToSeconds,
@@ -492,7 +493,9 @@ export function createTimelineGestures(options: {
       origin = { projectId, revision };
       const existing = new Set(
         currentPage()?.motion?.tracks.flatMap((track) =>
-          track.properties.flatMap((property) => property.keyframes.map((key) => key.id)),
+          projectMotionProperties(track).flatMap((property) =>
+            property.keyframes.map((key) => key.id),
+          ),
         ) ?? [],
       );
       const kept = new Set([...selected].filter((id) => existing.has(id)));

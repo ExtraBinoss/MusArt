@@ -1,6 +1,7 @@
 import type { Command, ImageAsset, Project, VideoAsset, AudioAsset } from "@musart/core";
 
 export type MotionTemplateId =
+  | "morphing-type"
   | "in-bloom"
   | "motion-stress-lab"
   | "sound-playground"

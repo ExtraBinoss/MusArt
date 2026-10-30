@@ -94,7 +94,10 @@ for (const forceWebGL of [false, true])
     const failures: string[] = [];
     try {
       expect([...new Set(DENSITY_CASES.map((fixture) => fixture.effect.type))].sort()).toEqual(
-        Object.keys(EFFECT_CATALOG).sort(),
+        Object.values(EFFECT_CATALOG)
+          .filter((effect) => !effect.source)
+          .map((effect) => effect.type)
+          .sort(),
       );
       for (const fixture of DENSITY_CASES) {
         const disabled = { ...fixture, effect: { ...fixture.effect, enabled: false } };

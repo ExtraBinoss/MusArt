@@ -23,6 +23,7 @@ export const EFFECT_FAMILIES: readonly EffectFamily[] = [
 
 /** Presentation-only families; the portable effect/adjustment taxonomy stays authoritative. */
 export const EFFECT_FAMILY = {
+  morph: "motion",
   dither: "texture",
   ascii: "texture",
   brightness: "tone",
@@ -75,7 +76,7 @@ export function effectCatalogEntries(
 ): readonly CatalogEntry[] {
   const collator = new Intl.Collator(language, { sensitivity: "base", numeric: true });
   return Object.values(EFFECT_CATALOG)
-    .filter((definition) => definition.category === category)
+    .filter((definition) => definition.category === category && !definition.source)
     .map((definition) => {
       const family = EFFECT_FAMILY[definition.type],
         label = translate(definition.nameKey);

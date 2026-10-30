@@ -26,6 +26,14 @@ export const messages = {
     remove: "Delete animation",
     duplicate: "Duplicate animation",
     details: "Details",
+    letterMotion: "Letter animation",
+    letterMotionHint:
+      "The text stays editable. Stagger spreads letter starts across the animation; 0% moves them together. Custom outlines automatically adapt when you change the text.",
+    letterStagger: "Stagger",
+    letterOrder: "Letter order",
+    letterOrder_forward: "First to last",
+    letterOrder_reverse: "Last to first",
+    letterOrder_center: "From center",
     detailsHelp: "About animation details",
     aboutProperty: "About {{name}}",
     simple: "Animations",
@@ -82,6 +90,7 @@ export const messages = {
     endpointHint:
       "Start stays at 0% and end at 100%. Edit their values, or remove the whole property with its − button.",
     category: {
+      typography: "Typography",
       move: "Move",
       scale: "Scale",
       rotate: "Rotate",
@@ -117,6 +126,14 @@ export const messages = {
     remove: "Supprimer l’animation",
     duplicate: "Dupliquer l’animation",
     details: "Détails",
+    letterMotion: "Animation des lettres",
+    letterMotionHint:
+      "Le texte reste modifiable. Le décalage répartit le départ des lettres ; 0 % les anime ensemble. Les contours s’adaptent automatiquement si tu changes le texte.",
+    letterStagger: "Décalage",
+    letterOrder: "Ordre des lettres",
+    letterOrder_forward: "Début vers fin",
+    letterOrder_reverse: "Fin vers début",
+    letterOrder_center: "Depuis le centre",
     detailsHelp: "Comprendre les détails de l’animation",
     aboutProperty: "À propos de {{name}}",
     simple: "Animations",
@@ -173,6 +190,7 @@ export const messages = {
     endpointHint:
       "Le départ reste à 0 % et l’arrivée à 100 %. Modifie leurs valeurs, ou retire toute la propriété avec son bouton −.",
     category: {
+      typography: "Typographie",
       move: "Déplacement",
       scale: "Scale",
       rotate: "Rotation",

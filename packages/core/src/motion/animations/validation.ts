@@ -10,6 +10,7 @@ import type { MotionAnimation, MotionAnimationPreset } from "./model";
 import { animationTarget } from "./targets";
 
 export const ANIMATION_CATEGORIES = [
+  "typography",
   "move",
   "scale",
   "rotate",

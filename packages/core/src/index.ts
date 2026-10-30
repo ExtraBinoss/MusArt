@@ -1,4 +1,7 @@
 export { validateAssetDescription } from "./assets/validation";
+export type { MorphPoint, MorphContour, MorphShapeFrame, ShapeMorph } from "./effects/morph/model";
+export { prepareMorphShape } from "./effects/morph/geometry";
+export { validateShapeMorph } from "./effects/morph/validation";
 export { FORMAT_VERSION } from "./document/model";
 export type { PreparedEngineTransaction } from "./session/reservation";
 export type { ImageAsset, VideoAsset, AudioAsset, OriginalMediaAsset } from "./assets/model";
@@ -235,3 +238,10 @@ export {
   captureMotionAnimationPreset,
   extractMotionAnimationPreset,
 } from "./motion/animations/extract";
+
+export {
+  projectMotionProperties,
+  projectAnimationProperties,
+  animationPropertyId,
+  animationPointId,
+} from "./motion/animations/keyframes";

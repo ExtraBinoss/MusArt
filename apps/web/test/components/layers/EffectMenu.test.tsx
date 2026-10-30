@@ -35,7 +35,7 @@ test.each(["effect", "adjustment"] as const)(
         const menu = within(item.closest('[role="menu"]') as HTMLElement);
         const labels = menu.getAllByRole("menuitem").map((node) => node.textContent!.trim());
         expect(labels).toHaveLength(
-          Object.values(EFFECT_CATALOG).filter((e) => e.category === category).length,
+          Object.values(EFFECT_CATALOG).filter((e) => e.category === category && !e.source).length,
         );
         for (const group of menu.getAllByRole("group")) {
           const grouped = within(group)

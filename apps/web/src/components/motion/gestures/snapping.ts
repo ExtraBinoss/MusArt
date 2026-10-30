@@ -1,4 +1,9 @@
-import { motionTimeToSeconds, type Composition, type MotionTime } from "@musart/core";
+import {
+  projectMotionProperties,
+  motionTimeToSeconds,
+  type Composition,
+  type MotionTime,
+} from "@musart/core";
 
 export interface TimelineSnapReference {
   readonly seconds: number;
@@ -17,7 +22,7 @@ export function timelineSnapReferences(
       time: page.motion.duration,
     });
   for (const track of page.motion?.tracks ?? [])
-    for (const property of track.properties)
+    for (const property of projectMotionProperties(track))
       for (const key of property.keyframes)
         if (!movingKeys.has(key.id))
           references.push({ seconds: motionTimeToSeconds(key.time), time: key.time });

@@ -8,6 +8,7 @@ import type { EffectType } from "../../src/document/model";
 describe("portable effect definitions", () => {
   it("describes every supported effect once, with the existing deterministic defaults", () => {
     expect(Object.keys(EFFECT_CATALOG)).toEqual([
+      "morph",
       "dither",
       "ascii",
       "brightness",
@@ -61,6 +62,7 @@ describe("portable effect definitions", () => {
   });
   it("provides typed controls in document units and meaningful display metadata", () => {
     const expected: Record<EffectType, string[]> = {
+      morph: ["amount", "progress", "stagger", "inflate", "stretch", "order"],
       transition: ["amount", "style", "progress", "softness", "strength", "detail", "direction"],
       dither: ["amount", "scale", "levels", "color", "seed"],
       ascii: ["amount", "scale", "color"],
@@ -361,6 +363,7 @@ describe("portable effect definitions", () => {
           "receipt",
           "pink-phosphor",
           "transition",
+          "morph",
         ].includes(definition.type)
           ? "effect"
           : "adjustment",

@@ -98,7 +98,12 @@ const traceCurve = Fn(
   },
 );
 
-export const glyphCoverage = (atlas: DataTexture, atlasWidth: number, sample?: Node<"vec2">) =>
+export const glyphCoverage = (
+  atlas: DataTexture,
+  atlasWidth: number,
+  sample?: Node<"vec2">,
+  curveReader?: (pointer: Node<"int">) => { first: Node<"vec4">; last: Node<"vec4"> },
+) =>
   Fn(() => {
     const bands = varying(attribute("glyphBands", "vec2"));
     const range = varying(attribute("glyphRange", "vec4"));
@@ -130,16 +135,18 @@ export const glyphCoverage = (atlas: DataTexture, atlasWidth: number, sample?: N
           weight = float(0).toVar();
         Loop({ start: int(0), end: int(header.y), type: "int", condition: "<" }, ({ i }) => {
           const pointer = int(fetch(int(header.x).add(i)).x);
-          const first = fetch(pointer),
-            last = fetch(pointer.add(1));
+          const curve = curveReader?.(pointer);
+          const first = curve?.first ?? fetch(pointer),
+            last = curve?.last ?? fetch(pointer.add(1));
           const along0 = vertical ? first.y : first.x,
             along1 = vertical ? first.w : first.z,
             along2 = vertical ? last.y : last.x,
             point = vertical ? coordinate.y : coordinate.x,
             scale = vertical ? pixelScale.y : pixelScale.x;
-          If(max(max(along0, along1), along2).sub(point).mul(scale).lessThan(-0.5), () => {
-            Break();
-          });
+          if (!curveReader)
+            If(max(max(along0, along1), along2).sub(point).mul(scale).lessThan(-0.5), () => {
+              Break();
+            });
           const ray = traceCurve(
             vertical ? first.yx : first.xy,
             vertical ? first.wz : first.zw,

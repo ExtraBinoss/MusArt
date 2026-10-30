@@ -143,7 +143,16 @@ export function MotionPopover({
         data-canvas-control
         data-keybinding-capture
       >
-        <PresetPicker engine={engine} apply={apply} />
+        <PresetPicker
+          engine={engine}
+          apply={apply}
+          subjectKind={
+            engine
+              .getSnapshot()
+              .project.pages.find((page) => page.id === compositionId)
+              ?.layers.find((layer) => layer.id === layerId)?.kind
+          }
+        />
         {error && <p role="alert">{t(error)}</p>}
       </PopoverContent>
     </Popover>

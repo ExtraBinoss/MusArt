@@ -1,4 +1,5 @@
 import {
+  projectMotionProperties,
   addMotionTime,
   compareMotionTime,
   resolveMotionProperty,
@@ -27,7 +28,7 @@ export function createTimelineLinkPreview(
 ) {
   const selected = new Set(keyIds);
   const properties = (page.motion?.tracks ?? []).flatMap((track, trackIndex) =>
-    track.properties.flatMap((property, propertyIndex) =>
+    projectMotionProperties(track).flatMap((property, propertyIndex) =>
       property.keyframes.some((key) => selected.has(key.id)) &&
       resolveMotionProperty(page, property.target)?.interpolation === "continuous"
         ? [{ id: property.id, trackIndex, propertyIndex }]
@@ -64,7 +65,9 @@ export function createTimelineLinkPreview(
       }
       for (const { id, trackIndex, propertyIndex } of properties) {
         const row = rows.get(id),
-          property = preview.motion?.tracks[trackIndex]?.properties[propertyIndex];
+          property =
+            preview.motion?.tracks[trackIndex] &&
+            projectMotionProperties(preview.motion.tracks[trackIndex]!)[propertyIndex];
         if (!row || !property || property.id !== id) continue;
         let draft = drafts.get(id);
         if (!draft) {

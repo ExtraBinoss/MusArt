@@ -47,7 +47,8 @@ for (const language of ["fr", "en"]) {
         label.trim(),
       );
       expect(labels).toHaveLength(
-        Object.values(EFFECT_CATALOG).filter((item) => item.category === category).length,
+        Object.values(EFFECT_CATALOG).filter((item) => item.category === category && !item.source)
+          .length,
       );
       for (const group of await menu.getByRole("group").all()) {
         const grouped = (await group.getByRole("menuitem").allTextContents()).map((label) =>

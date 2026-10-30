@@ -1,4 +1,5 @@
 import { compileAnimations } from "./animations/compile";
+import { getEffectDefinition } from "../effects/catalog";
 import { isVideoAsset } from "../assets/identity";
 import type { Asset } from "../assets/model";
 import type { Composition } from "../document/model";
@@ -73,6 +74,28 @@ export function compileMotionLayers(
         }
       }
       const common = {
+        ...(mode === "motion" &&
+        layer.effects.some((effect) => getEffectDefinition(effect.type).source === "geometry")
+          ? {
+              geometrySources: layer.effects
+                .filter((effect) => getEffectDefinition(effect.type).source === "geometry")
+                .map((effect) => {
+                  const owner = track?.animations?.find((animation) =>
+                    animation.effectIds.includes(effect.id),
+                  );
+                  const owned = authored?.some((occurrence) =>
+                    occurrence.animations?.some((animation) =>
+                      animation.effectIds.includes(effect.id),
+                    ),
+                  );
+                  return {
+                    effectId: effect.id,
+                    start: owner?.start ?? zero,
+                    enabled: effect.enabled && (owner ? owner.enabled : !owned),
+                  };
+                }),
+            }
+          : {}),
         id: layer.id,
         ...(track ? { trackId: track.id } : {}),
         ...(media ? { media } : {}),

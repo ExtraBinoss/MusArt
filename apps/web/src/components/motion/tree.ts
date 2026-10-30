@@ -1,5 +1,7 @@
 import {
   motionTimeToSeconds,
+  projectAnimationProperties,
+  type MotionAnimation,
   listLayerMotionOccurrences,
   type Composition,
   type Layer,
@@ -13,6 +15,7 @@ export type TimelineRow = {
   layer: Layer;
   depth: number;
   track?: MotionLayerTrack;
+  animation?: MotionAnimation;
   occurrences?: readonly MotionLayerTrack[];
 } & (
   | { kind: "layer"; expandable: boolean; expanded: boolean }
@@ -38,13 +41,26 @@ export function projectTimelineRows(
     const occurrences = listLayerMotionOccurrences(page, layer.id);
     const track = occurrences.find((item) => item.id === chosen?.get(layer.id)) ?? occurrences[0];
     const expanded = !collapsed.has(layer.id);
-    const expandable = !!children.get(layer.id)?.length || !!track?.properties.length;
+    const animationProperties = track ? projectAnimationProperties(track) : [];
+    const expandable =
+      !!children.get(layer.id)?.length ||
+      !!track?.properties.length ||
+      !!animationProperties.length;
     const common = { layer, depth, occurrences, ...(track ? { track } : {}) };
     rows.push({ ...common, kind: "layer", key: layer.id, expandable, expanded });
     if (!expanded) continue;
     for (const property of track?.properties ?? [])
       rows.push({
         ...common,
+        kind: "property",
+        key: property.id,
+        depth: depth + 1,
+        property,
+      });
+    for (const { animation, property } of animationProperties)
+      rows.push({
+        ...common,
+        animation,
         kind: "property",
         key: property.id,
         depth: depth + 1,
