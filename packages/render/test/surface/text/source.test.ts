@@ -53,6 +53,19 @@ it("reuses curve geometry and resources during paint/gradient/position edits, an
     blendDstAlpha: OneFactor,
     premultipliedAlpha: true,
   });
+  const geometry = resource.geometry,
+    material = resource.material;
+  const positions = geometry.getAttribute("glyphPosition").array.slice();
+  const lowTarget = new RenderTarget(20, 10),
+    highTarget = new RenderTarget(800, 400);
+  sources.render(layer, lowTarget);
+  sources.render(layer, highTarget);
+  expect(sources.parses).toBe(1);
+  expect(resource.geometry).toBe(geometry);
+  expect(resource.material).toBe(material);
+  expect(geometry.getAttribute("glyphPosition").array).toEqual(positions);
+  lowTarget.dispose();
+  highTarget.dispose();
   expect(resource.bytes).toBeGreaterThan(0);
   fake.render.mockImplementationOnce(() => {
     throw new Error("GPU lost");

@@ -87,20 +87,16 @@ export class GpuPasses {
     // Three deduplicates sampler uniforms by the texture UUID at compilation.
     // Each logical input must have a distinct, valid texture before the shader
     // is built; later changing .value cannot separate an already shared binding.
-    const inputs = Array.from(
-      { length: 3 },
-      () =>
-        new RenderTarget(1, 1, {
-          type: target.texture.type,
-          format: target.texture.format,
-          colorSpace: target.texture.colorSpace,
-          minFilter: target.texture.minFilter,
-          magFilter: target.texture.magFilter,
-          generateMipmaps: target.texture.generateMipmaps,
-          depthBuffer: false,
-          stencilBuffer: false,
-        }),
-    );
+    const inputs = Array.from({ length: 3 }, () => {
+      const input = new RenderTarget(1, 1, { depthBuffer: false, stencilBuffer: false });
+      input.texture.type = target.texture.type;
+      input.texture.format = target.texture.format;
+      input.texture.colorSpace = target.texture.colorSpace;
+      input.texture.minFilter = target.texture.minFilter;
+      input.texture.magFilter = target.texture.magFilter;
+      input.texture.generateMipmaps = target.texture.generateMipmaps;
+      return input;
+    });
     this.copy.source.value = this.mask.source.value = this.blend.source.value = inputs[0]!.texture;
     this.blend.backdrop.value = inputs[1]!.texture;
     this.mask.mask.value = inputs[2]!.texture;

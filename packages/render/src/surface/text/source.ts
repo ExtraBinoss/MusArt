@@ -19,7 +19,8 @@ import { FontRepository, normalizeFontFamily, type FontResolver, type OutlineFon
 import { buildCurveAtlas, type CurveAtlas } from "./atlas";
 import { layoutText, type PlacedGlyph } from "./layout";
 import { glyphGeometry, updateGlyphGeometry } from "./geometry";
-import { glyphCoverage, glyphPosition } from "./coverage";
+import { glyphCoverage } from "./coverage";
+import { glyphVertex } from "./vertex";
 import { textPaint, textPaintNode, updateTextPaint } from "./paint";
 
 export function textGeometryKey(layer: Layer): string {
@@ -89,9 +90,10 @@ export class TextResource implements GpuResource {
       });
       this.camera = new OrthographicCamera(0, layer.width, 0, layer.height, 0, 100);
       this.camera.position.z = 10;
-      material.positionNode = glyphPosition();
-      const paint = textPaintNode(this.paint),
-        coverage = glyphCoverage(atlas.texture, atlas.width);
+      const vertex = glyphVertex();
+      material.positionNode = vertex.position;
+      const paint = textPaintNode(this.paint, vertex.pixel),
+        coverage = glyphCoverage(atlas.texture, atlas.width, vertex.coordinate);
       material.fragmentNode = vec4(paint.rgb, paint.a.mul(coverage));
       const mesh = new Mesh(geometry, material);
       mesh.frustumCulled = false;

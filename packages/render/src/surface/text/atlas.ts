@@ -27,26 +27,42 @@ export function buildCurveAtlas(glyphs: Glyph[], unitsPerEm: number): CurveAtlas
     const width = Math.max(0, box.x2 - box.x1),
       height = Math.max(0, box.y2 - box.y1);
     const bands = 16,
+      epsilon = unitsPerEm / 1024,
       curveBase = data.length / 4;
+    const bounds = curves.map((curve, index) => ({
+      index,
+      min: [
+        Math.min(curve.p0[0], curve.p1[0], curve.p2[0]),
+        Math.min(curve.p0[1], curve.p1[1], curve.p2[1]),
+      ],
+      max: [
+        Math.max(curve.p0[0], curve.p1[0], curve.p2[0]),
+        Math.max(curve.p0[1], curve.p1[1], curve.p2[1]),
+      ],
+    }));
     for (const curve of curves) data.push(...curve.p0, ...curve.p1, ...curve.p2, 0, 0);
     const header = data.length / 4;
     data.push(...Array.from({ length: bands * 2 * 4 }, () => 0));
     for (let axis = 0; axis < 2; axis++) {
       const min = axis === 0 ? box.y1 : box.x1,
         span = axis === 0 ? height : width;
+      // Horizontal bands trace +X; vertical bands trace +Y. Curve records
+      // retain their original addresses; only these reference lists are sorted.
+      const ordered = [...bounds].sort((a, b) => b.max[axis]! - a.max[axis]! || a.index - b.index);
+      const across = 1 - axis;
       for (let band = 0; band < bands; band++) {
         const start = data.length / 4,
-          lower = min + (span * band) / bands,
-          upper = min + (span * (band + 1)) / bands;
-        for (const [index, curve] of curves.entries()) {
-          const positions = [curve.p0[1 - axis]!, curve.p1[1 - axis]!, curve.p2[1 - axis]!];
+          lower = min + (span * band) / bands - epsilon,
+          upper = min + (span * (band + 1)) / bands + epsilon;
+        for (const curve of ordered) {
+          // Parallel lines have no crossing on this axis, even inside overlap.
           if (
-            Math.max(...positions) < lower ||
-            Math.min(...positions) > upper ||
-            positions.every((v) => v === positions[0])
+            curve.max[across]! < lower ||
+            curve.min[across]! > upper ||
+            curve.min[across] === curve.max[across]
           )
             continue;
-          data.push(curveBase + index * 2, 0, 0, 0);
+          data.push(curveBase + curve.index * 2, 0, 0, 0);
         }
         const count = data.length / 4 - start;
         if (count > 1024) throw new Error("Glyph band exceeds the 1024-curve limit.");

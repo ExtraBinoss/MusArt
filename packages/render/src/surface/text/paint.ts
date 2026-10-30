@@ -1,21 +1,7 @@
 import type { Layer } from "@musart/core";
-import { Vector2, Vector4 } from "three/webgpu";
-import {
-  abs,
-  Fn,
-  If,
-  attribute,
-  clamp,
-  cos,
-  length,
-  max,
-  mix,
-  sin,
-  uniform,
-  varying,
-  vec2,
-  vec4,
-} from "three/tsl";
+import { Vector2, Vector4, type Node } from "three/webgpu";
+import { abs, Fn, If, clamp, cos, length, max, mix, sin, uniform, vec2, vec4 } from "three/tsl";
+import { glyphVertex } from "./vertex";
 import { parseColor } from "../../compositing/nodes/color";
 
 export function textPaint() {
@@ -42,10 +28,9 @@ export function updateTextPaint(controls: ReturnType<typeof textPaint>, layer: L
     controls.offsets[index]!.value = stop?.offset ?? (index ? 1 : 0);
   }
 }
-export const textPaintNode = (controls: ReturnType<typeof textPaint>) =>
+export const textPaintNode = (controls: ReturnType<typeof textPaint>, coordinate?: Node<"vec2">) =>
   Fn(() => {
-    const placement = attribute("glyphPosition", "vec4");
-    const pixel = varying(attribute("uv", "vec2").mul(placement.zw).add(placement.xy));
+    const pixel = coordinate ?? glyphVertex().pixel;
     const point = pixel.div(controls.size).toVar();
     const direction = vec2(cos(controls.angle), sin(controls.angle)).toVar();
     const projected = pixel

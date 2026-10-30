@@ -88,6 +88,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
+- Stabilized analytical text at small sizes and low zoom with MVP/viewport glyph dilation, weighted Slug coverage and overlapping sorted bands. Coverage and gradients follow the same dilated point; native WebGPU/WebGL witnesses cover fractional glyphs and original outlines. Pinned MIT-licensed WGSL snapshots and a function-level TSL map record the exact sources and numerical adaptations.
+
 - Flush the final native saturation/value sample before committing, retire delayed picker callbacks, and reject updates after cancellation or unmount so a rapid release saves the intended color in one undo step.
 
 - Compiled independent source, backdrop and mask sampler bindings with distinct owned textures. This fixes incorrect Multiply colors and partial masks on both Three backends, restores external bindings after preparation and disposes temporary inputs on success, failure and cancellation.
