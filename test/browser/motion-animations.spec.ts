@@ -25,7 +25,32 @@ test("motion presets stay simple, preview natively and persist globally across p
   await expect(page.locator(".inspector-selection-boundary")).toHaveAttribute("aria-busy", "false");
   await animations.getByRole("button", { name: "Add motion", exact: true }).click();
   const picker = page.locator(".motion-animation-popover");
-  await expect(picker.locator(".animation-preset-card")).toHaveCount(61);
+  await expect(picker.locator(".animation-preset-grid")).toHaveAttribute(
+    "data-total-presets",
+    "61",
+  );
+  expect(await picker.locator(".animation-preset-card").count()).toBeLessThan(25);
+  await expect(picker.locator("footer")).toHaveCount(0);
+  const strip = picker.locator(".horizontal-scroll-viewport");
+  const categoryBounds = await strip
+    .locator("button")
+    .evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().top));
+  expect(new Set(categoryBounds).size).toBe(1);
+  await picker.locator("[data-horizontal-direction='1']").hover();
+  await expect.poll(() => strip.evaluate((node) => node.scrollLeft)).toBeGreaterThan(30);
+  await picker.locator("header").hover();
+  await strip.evaluate((node) => {
+    node.scrollLeft = 0;
+  });
+  const scroller = picker.locator(".animation-preset-scroll");
+  await scroller.evaluate((node) => {
+    node.scrollTop = node.scrollHeight;
+  });
+  await expect(picker.getByRole("button", { name: "Mosaic", exact: true })).toBeVisible();
+  expect(await picker.locator(".animation-preset-card").count()).toBeLessThan(25);
+  await scroller.evaluate((node) => {
+    node.scrollTop = 0;
+  });
   const originalPosition = await picker.boundingBox();
   await picker.getByRole("radio", { name: "My presets", exact: true }).click();
   await expect(
@@ -37,7 +62,7 @@ test("motion presets stay simple, preview natively and persist globally across p
   expect(personalPosition!.height).toBeCloseTo(originalPosition!.height, 0);
   await picker.getByRole("radio", { name: "Library", exact: true }).click();
   const columns = await picker
-    .locator(".animation-preset-grid")
+    .locator(".animation-preset-window")
     .evaluate((node) => getComputedStyle(node).gridTemplateColumns.split(" ").length);
   expect(columns).toBe(2);
   await picker.getByRole("button", { name: "Scale", exact: true }).click();
@@ -55,7 +80,8 @@ test("motion presets stay simple, preview natively and persist globally across p
   await expect(page.locator(".motion-animation-block[data-animation-id]")).toHaveCount(1);
   await expect(page.locator(".inspector-selection-boundary")).toHaveAttribute("aria-busy", "false");
   const instance = animations.locator(".animation-instance");
-  await instance.getByRole("button", { name: "Save as preset", exact: true }).click();
+  await instance.getByRole("button", { name: "More animation actions", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Save as preset", exact: true }).click();
   await instance.getByRole("textbox", { name: "Preset name" }).fill("My native pop");
   await instance.getByRole("button", { name: "Save as preset", exact: true }).click();
   await expect(instance.getByRole("status")).toContainText("Saved");

@@ -12,12 +12,14 @@ export function SavePreset({
   initialOpen = false,
   initialName = "",
   onSaved,
+  onCancel,
 }: {
   create: (name: string, id: string) => MotionAnimationPreset;
   label?: string;
   initialOpen?: boolean;
   initialName?: string;
   onSaved?: () => void;
+  onCancel?: () => void;
 }) {
   const { t } = useTranslation("animations");
   const [open, setOpen] = useState(initialOpen);
@@ -60,7 +62,15 @@ export function SavePreset({
           <Button size="xs" disabled={!name.trim() || status === "saving"}>
             {t("save")}
           </Button>
-          <Button type="button" variant="ghost" size="xs" onClick={() => setOpen(false)}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            onClick={() => {
+              setOpen(false);
+              onCancel?.();
+            }}
+          >
             {t("cancel")}
           </Button>
         </form>

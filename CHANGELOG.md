@@ -6,7 +6,13 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Simplified animation cards to a single compact Details/action footer, added named tooltips for duplicate/delete, moved Reverse and Save to a secondary menu with a plain-language reverse explanation, and matched easing select/menu density to the animation fields.
+
+- Expanded the Motion picker's usable grid, removed its redundant hover hint, added two-column virtualization with keyboard navigation and vertical scroll shadows, and moved categories into one horizontal row with a subtle scrollbar and continuous hover-edge scrolling. Picker entry/exit now uses a short composited fade/slide.
+
 - Added generic, configurable idle video proxies with resumable Mediabunny conversion, native 960px previews and bounded session caches; audio and exports retain originals. Five-video playback now shares a decoded-memory budget, admits up to eight streams, avoids duplicate poster decoders and retires old upload textures safely. The five-1080p cohort completed 56.1 canvas compositions/s with proxies versus 21.1/s with originals (median of three runs); see `docs/performance/video-preview.md` for the workload and limits.
+
+- Added interruptible height, opacity and chevron transitions to Motion animation accordions and nested Details, with reduced-motion support, lazy closed content and inert controls during closing.
 
 - Stabilized the live timeline counter with fixed tabular width and readable playback precision while keeping exact editable times and imperative frame updates. Added configurable Ctrl/Cmd+Space playback from the canvas and timeline, with platform-aware keycaps and protected text entry.
 - Added one delegated named tooltip for layer effect/mask previews and expanded effect rows, keeping closed virtual rows free of per-attachment tooltip trees.

@@ -1,9 +1,8 @@
+import { AnimatedCollapsibleContent } from "../../shared/disclosure/AnimatedCollapsibleContent";
 import { useState, useSyncExternalStore } from "react";
-import { ChevronDown, ChevronRight, Copy, Plus, Sparkles, Trash2 } from "lucide-react";
+import { ChevronRight, Plus, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
-  addMotionTime,
-  captureMotionAnimationPreset,
   createLayerGeometryIndex,
   extractMotionAnimationPreset,
   motionTimeToSeconds,
@@ -15,7 +14,9 @@ import { NumberInput } from "../../shared/NumberInput";
 import { Button } from "../../ui/button";
 import { Switch } from "../../ui/switch";
 import { MotionPopover } from "./MotionPopover";
-import { AnimationDetails } from "./AnimationDetails";
+import { AnimationActions } from "./AnimationActions";
+import { AnimationDetailsDisclosure } from "./AnimationDetails";
+import { Collapsible, CollapsibleTrigger } from "../../ui/collapsible";
 import { SavePreset } from "./SavePreset";
 import { animationPresentation, useAnimationPresentation } from "./presentation";
 import "./messages";
@@ -73,25 +74,29 @@ export function LayerAnimations({ engine, layerId }: { engine: EnginePort; layer
         (track.animations ?? []).map((animation) => {
           const selected = presentation.selected === animation.id;
           return (
-            <div className="animation-instance" key={animation.id} data-selected={selected}>
+            <Collapsible
+              className="animation-instance"
+              key={animation.id}
+              data-selected={selected}
+              open={selected}
+              onOpenChange={(open) =>
+                animationPresentation(engine).set({ selected: open ? animation.id : null })
+              }
+            >
               <div className="animation-instance-header">
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  aria-label={t("details")}
-                  aria-expanded={selected}
-                  onClick={() =>
-                    animationPresentation(engine).set({ selected: selected ? null : animation.id })
-                  }
-                >
-                  {selected ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                </Button>
-                <button
-                  className="animation-instance-name"
-                  onClick={() => animationPresentation(engine).set({ selected: animation.id })}
-                >
-                  {animation.preset.name}
-                </button>
+                <CollapsibleTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    className="animation-disclosure-trigger"
+                    aria-label={`${t("details")} · ${animation.preset.name}`}
+                  >
+                    <ChevronRight size={12} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleTrigger asChild>
+                  <button className="animation-instance-name">{animation.preset.name}</button>
+                </CollapsibleTrigger>
                 <Switch
                   aria-label={t("enabled")}
                   checked={animation.enabled}
@@ -99,7 +104,7 @@ export function LayerAnimations({ engine, layerId }: { engine: EnginePort; layer
                   onCheckedChange={(enabled) => update(animation, { enabled })}
                 />
               </div>
-              {selected && (
+              <AnimatedCollapsibleContent open={selected} className="animation-disclosure">
                 <div className="animation-instance-body">
                   <div className="animation-instance-fields">
                     <NumberInput
@@ -137,79 +142,26 @@ export function LayerAnimations({ engine, layerId }: { engine: EnginePort; layer
                       onCommit={(value) => update(animation, { strength: value / 100 })}
                     />
                   </div>
-                  <div className="animation-instance-actions">
-                    <Button
-                      variant="ghost"
-                      size="xs"
-                      disabled={locked}
-                      onClick={() =>
-                        update(animation, {
-                          preset: {
-                            ...animation.preset,
-                            channels: animation.preset.channels.map((channel) => ({
-                              ...channel,
-                              points: channel.points
-                                .map((point) => ({ ...point, at: 1 - point.at }))
-                                .reverse(),
-                            })),
-                          },
-                        })
-                      }
-                    >
-                      {t("reverse")}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      aria-label={t("duplicate")}
-                      disabled={locked}
-                      onClick={() =>
-                        run(() =>
-                          engine.execute({
-                            type: "addMotionAnimation",
-                            trackId: track.id,
-                            preset: animation.preset,
-                            start: addMotionTime(animation.start, animation.duration),
-                            duration: animation.duration,
-                            strength: animation.strength,
-                            enabled: animation.enabled,
-                          }),
-                        )
-                      }
-                    >
-                      <Copy size={12} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      aria-label={t("remove")}
-                      disabled={locked}
-                      onClick={() =>
-                        run(() =>
-                          engine.execute({
-                            type: "deleteMotionAnimation",
-                            animationId: animation.id,
-                          }),
-                        )
-                      }
-                    >
-                      <Trash2 size={12} />
-                    </Button>
-                    <SavePreset
-                      create={(name, id) =>
-                        captureMotionAnimationPreset(page, layerId, animation, name, id)
-                      }
-                    />
-                  </div>
-                  <details>
-                    <summary>{t("details")}</summary>
-                    <fieldset disabled={locked}>
-                      <AnimationDetails engine={engine} animation={animation} run={run} />
-                    </fieldset>
-                  </details>
+                  <AnimationDetailsDisclosure
+                    engine={engine}
+                    animation={animation}
+                    run={run}
+                    disabled={locked}
+                    actions={
+                      <AnimationActions
+                        engine={engine}
+                        page={page}
+                        layerId={layerId}
+                        trackId={track.id}
+                        animation={animation}
+                        run={run}
+                        disabled={locked}
+                      />
+                    }
+                  />
                 </div>
-              )}
-            </div>
+              </AnimatedCollapsibleContent>
+            </Collapsible>
           );
         }),
       )}

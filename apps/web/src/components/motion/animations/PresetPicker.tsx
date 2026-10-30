@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Search, Trash2, Sparkles } from "lucide-react";
+import { Search, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   ANIMATION_CATEGORIES,
@@ -14,8 +14,8 @@ import {
 import { SegmentedTabs } from "../../shared/segmented/SegmentedTabs";
 import { Input } from "../../ui/input";
 import { Button } from "../../ui/button";
-import { PresetPreview } from "./PresetPreview";
-import { ANIMATION_PREVIEW_IMAGE } from "./preview-document";
+import { PresetGrid } from "./PresetGrid";
+import { HorizontalScroll } from "../../shared/scroll/HorizontalScroll";
 import "./messages";
 import "./animations.css";
 
@@ -31,8 +31,6 @@ export function PresetPicker({
   const [source, setSource] = useState("library");
   const [category, setCategory] = useState("all");
   const [query, setQuery] = useState("");
-  const [hovered, setHovered] = useState<string | null>(null);
-  const [mount, setMount] = useState<HTMLDivElement | null>(null);
   const [saved, setSaved] = useState<SavedMotionPreset[]>([]);
   const [before, setBefore] = useState<[number, string] | null>(null);
   const [store, setStore] = useState<MotionPresetStore | null>(null);
@@ -133,7 +131,6 @@ export function PresetPicker({
         onValueChange={(value) => {
           setSource(value);
           setCategory("all");
-          setHovered(null);
         }}
       />
       <label className="animation-search">
@@ -145,78 +142,40 @@ export function PresetPicker({
           onChange={(event) => setQuery(event.target.value)}
         />
       </label>
-      <div className="animation-categories" role="group" aria-label={t("title")}>
-        {["all", ...ANIMATION_CATEGORIES].map((value) => (
-          <Button
-            key={value}
-            size="xs"
-            variant={category === value ? "secondary" : "ghost"}
-            aria-pressed={category === value}
-            onClick={() => {
-              setCategory(value);
-              setHovered(null);
-            }}
-          >
-            {t(value === "all" ? "all" : `category.${value}`)}
-          </Button>
-        ))}
-      </div>
-      <div className="animation-preset-scroll">
-        <div className="animation-preset-grid">
-          {entries.map((preset) => (
-            <div className="animation-preset-cell" key={preset.id}>
-              <button
-                className="animation-preset-card"
-                type="button"
-                aria-label={preset.name}
-                onPointerEnter={(event) => {
-                  setHovered(preset.id);
-                  setMount(
-                    event.currentTarget.querySelector<HTMLDivElement>(".animation-card-live"),
-                  );
-                }}
-                onPointerLeave={() =>
-                  setHovered((current) => (current === preset.id ? null : current))
-                }
-                onFocus={(event) => {
-                  setHovered(preset.id);
-                  setMount(
-                    event.currentTarget.querySelector<HTMLDivElement>(".animation-card-live"),
-                  );
-                }}
-                onBlur={() => setHovered((current) => (current === preset.id ? null : current))}
-                onClick={() => apply(preset)}
-              >
-                <span className="animation-card-image">
-                  <img src={ANIMATION_PREVIEW_IMAGE} alt="" loading="lazy" />
-                  <div className="animation-card-live" aria-hidden />
-                </span>
-                <span className="animation-card-name">{preset.name}</span>
-                <span className="animation-card-category">{t(`category.${preset.category}`)}</span>
-              </button>
-              {source === "mine" && (
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  className="animation-preset-delete"
-                  disabled={busy}
-                  aria-label={t("deletePreset")}
-                  onClick={() => {
-                    const record = saved.find((record) => record.id === preset.id);
-                    if (record) void remove(record);
-                  }}
-                >
-                  <Trash2 size={12} />
-                </Button>
-              )}
-            </div>
+      <HorizontalScroll label={t("categories")} className="animation-category-strip">
+        <div className="animation-categories">
+          {["all", ...ANIMATION_CATEGORIES].map((value) => (
+            <Button
+              key={value}
+              size="xs"
+              variant={category === value ? "secondary" : "ghost"}
+              aria-pressed={category === value}
+              onClick={() => {
+                setCategory(value);
+              }}
+            >
+              {t(value === "all" ? "all" : `category.${value}`)}
+            </Button>
           ))}
         </div>
-        {!entries.length && (
-          <p className="animation-picker-empty">
-            {t(source === "mine" && !saved.length ? "emptyLibrary" : "noResults")}
-          </p>
-        )}
+      </HorizontalScroll>
+      <PresetGrid
+        key={`${source}:${category}:${query}`}
+        engine={engine}
+        entries={entries}
+        apply={apply}
+        busy={busy}
+        onError={previewError}
+        empty={t(source === "mine" && !saved.length ? "emptyLibrary" : "noResults")}
+        remove={
+          source === "mine"
+            ? (id) => {
+                const record = saved.find((record) => record.id === id);
+                if (record) void remove(record);
+              }
+            : undefined
+        }
+      >
         {source === "mine" && before && (
           <Button
             ref={loadMore}
@@ -228,15 +187,8 @@ export function PresetPicker({
             {t("more")}
           </Button>
         )}
-      </div>
-      <PresetPreview
-        engine={engine}
-        preset={entries.find((preset) => preset.id === hovered)}
-        mount={hovered ? mount : null}
-        onError={previewError}
-      />
+      </PresetGrid>
       {error && <p role="alert">{t("failed")}</p>}
-      <footer>{t("hover")}</footer>
     </div>
   );
 }

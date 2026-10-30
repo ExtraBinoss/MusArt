@@ -70,6 +70,7 @@ test("canvas right-click targets the visible occurrence and preserves right-drag
   const editor = page.getByRole("dialog", { name: "Ajouter une animation", exact: true });
   await expect(editor).toBeVisible();
   await editor.screenshot({ path: "artifacts/motion/ui/canvas-transition.png" });
+  await editor.getByRole("textbox", { name: "Rechercher une animation…" }).fill("Fade");
   await editor.getByRole("button", { name: "Fade", exact: true }).click();
   const authored = await page.evaluate(() => window.musart!.snapshot());
   const tracks = authored.project.pages[0]!.motion!.tracks;

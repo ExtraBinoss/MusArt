@@ -18,6 +18,7 @@ export function SelectField({
   id,
   disabled,
   className,
+  contentClassName,
   side,
   selectedLabel,
   identity,
@@ -31,6 +32,7 @@ export function SelectField({
   id?: string;
   disabled?: boolean;
   className?: string;
+  contentClassName?: string;
   side?: "top" | "right" | "bottom" | "left";
   selectedLabel?: ReactNode;
   identity?: SelectFieldIdentity;
@@ -143,7 +145,7 @@ export function SelectField({
         <SelectContent
           position={side ? "popper" : "item-aligned"}
           side={side}
-          className="property-select-menu"
+          className={["property-select-menu", contentClassName].filter(Boolean).join(" ")}
           onCloseAutoFocus={(event) => {
             if (current.current !== owner.token) event.preventDefault();
           }}

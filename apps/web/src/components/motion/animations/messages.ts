@@ -38,6 +38,8 @@ export const messages = {
     more: "Load more",
     deletePreset: "Delete saved preset",
     reverse: "Reverse",
+    reverseHint: "Swap this animation’s start and end.",
+    moreActions: "More animation actions",
     point: "Point {{index}}",
     addPoint: "Add point",
     deletePoint: "Remove point",
@@ -50,6 +52,7 @@ export const messages = {
     select: "Select an object to add motion",
     custom: "Custom animation",
     cancel: "Cancel",
+    categories: "Animation categories",
     category: {
       move: "Move",
       scale: "Scale",
@@ -98,6 +101,8 @@ export const messages = {
     more: "Charger la suite",
     deletePreset: "Supprimer le preset enregistré",
     reverse: "Inverser",
+    reverseHint: "Échanger le départ et l’arrivée de cette animation.",
+    moreActions: "Autres actions de l’animation",
     point: "Point {{index}}",
     addPoint: "Ajouter un point",
     deletePoint: "Retirer le point",
@@ -110,6 +115,7 @@ export const messages = {
     select: "Sélectionne un objet pour ajouter une animation",
     custom: "Animation personnalisée",
     cancel: "Annuler",
+    categories: "Catégories d’animations",
     category: {
       move: "Déplacement",
       scale: "Scale",

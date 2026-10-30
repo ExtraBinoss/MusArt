@@ -1,9 +1,12 @@
-import { Plus, Trash2 } from "lucide-react";
+import { AnimatedCollapsibleContent } from "../../shared/disclosure/AnimatedCollapsibleContent";
+import { useState, type ReactNode } from "react";
+import { Plus, Trash2, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { EnginePort, MotionAnimation, MotionAnimationPreset } from "@musart/core";
 import { NumberInput } from "../../shared/NumberInput";
 import { Button } from "../../ui/button";
 import { SelectField } from "../../shared/SelectField";
+import { Collapsible, CollapsibleTrigger } from "../../ui/collapsible";
 
 /** Detail edits change the authoritative channels, never a generated duplicate keyframe set. */
 export function AnimationDetails({
@@ -86,6 +89,9 @@ export function AnimationDetails({
           ))}
           <SelectField
             label={t("curve")}
+            className="animation-curve-select"
+            contentClassName="animation-curve-menu"
+            side="bottom"
             value={channel.points[1]?.easing?.type ?? "linear"}
             options={[
               { value: "linear", label: t("linear") },
@@ -136,5 +142,40 @@ export function AnimationDetails({
         </div>
       ))}
     </div>
+  );
+}
+
+export function AnimationDetailsDisclosure({
+  engine,
+  animation,
+  run,
+  disabled,
+  actions,
+}: {
+  engine: EnginePort;
+  animation: MotionAnimation;
+  run: (action: () => void) => void;
+  disabled: boolean;
+  actions?: ReactNode;
+}) {
+  const { t } = useTranslation("animations");
+  const [open, setOpen] = useState(false);
+  return (
+    <Collapsible className="animation-details-disclosure" open={open} onOpenChange={setOpen}>
+      <div className="animation-instance-footer">
+        <CollapsibleTrigger asChild>
+          <button type="button" className="animation-details-toggle animation-disclosure-trigger">
+            <ChevronRight size={12} />
+            {t("details")}
+          </button>
+        </CollapsibleTrigger>
+        {actions}
+      </div>
+      <AnimatedCollapsibleContent open={open} className="animation-disclosure">
+        <fieldset disabled={disabled}>
+          <AnimationDetails engine={engine} animation={animation} run={run} />
+        </fieldset>
+      </AnimatedCollapsibleContent>
+    </Collapsible>
   );
 }

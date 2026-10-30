@@ -31,7 +31,11 @@ it("browses a two-column motion library without editing the document, then appli
   const before = d.engine.getSnapshot().project;
   await user.click(screen.getByRole("button", { name: "Ajouter une animation" }));
   const dialog = screen.getByRole("dialog", { name: "Ajouter une animation" });
-  expect(dialog.querySelectorAll(".animation-preset-card")).toHaveLength(61);
+  expect(dialog.querySelector(".animation-preset-grid")).toHaveAttribute(
+    "data-total-presets",
+    "61",
+  );
+  expect(dialog.querySelectorAll(".animation-preset-card").length).toBeLessThan(25);
   fireEvent.click(screen.getByRole("button", { name: "Déplacement" }));
   expect(dialog.querySelectorAll(".animation-preset-card")).toHaveLength(8);
   await user.hover(screen.getByRole("button", { name: "Move · Left" }));
