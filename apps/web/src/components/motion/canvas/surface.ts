@@ -78,7 +78,7 @@ function sameHover(
   if ("trackId" in a && "trackId" in b) return a.trackId === b.trackId;
   return a.kind === "gap" && b.kind === "gap" && a.start === b.start && a.end === b.end;
 }
-function sameModel(a: TimelineCanvasModel, b: TimelineCanvasModel) {
+function sameGeometry(a: TimelineCanvasModel, b: TimelineCanvasModel) {
   return (
     a.rows === b.rows &&
     a.audioTracks === b.audioTracks &&
@@ -94,9 +94,12 @@ function sameModel(a: TimelineCanvasModel, b: TimelineCanvasModel) {
     a.audioDraft === b.audioDraft &&
     a.selectionPreview === b.selectionPreview &&
     a.rowPositions === b.rowPositions &&
-    sameHover(a.hoverHit, b.hoverHit) &&
     a.waveformPeaks === b.waveformPeaks
   );
+}
+
+function sameModel(a: TimelineCanvasModel, b: TimelineCanvasModel) {
+  return sameGeometry(a, b) && sameHover(a.hoverHit, b.hoverHit);
 }
 
 /**
@@ -320,8 +323,10 @@ export function createTimelineCanvasSurface(
     update(next) {
       if (disposed || (model && sameModel(model, next))) return;
       const gutterChanged = model?.gutter !== next.gutter;
+      const geometryChanged = !model || !sameGeometry(model, next);
       model = next;
-      dirty = true;
+      dirty ||= geometryChanged;
+      if (!geometryChanged && scene) scene = { ...scene, hoverHit: next.hoverHit ?? null };
       if (reorderActive() || trackingRows) {
         trackingRows = true;
         queue.request("measure", measureRows);

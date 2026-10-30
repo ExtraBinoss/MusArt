@@ -5,6 +5,7 @@ import {
   TIMELINE_CANVAS_BYTES,
   TIMELINE_ZOOM_PRESENT,
 } from "../../../../src/components/motion/canvas/surface";
+import * as projection from "../../../../src/components/motion/canvas/projection";
 import { canvasContext, canvasFixture } from "./support";
 
 afterEach(() => {
@@ -328,5 +329,30 @@ it("parks a stationary held reorder until new geometry arrives instead of repain
   d.flush();
   expect(d.canvas.dataset.timelineRowPositions).toBe("");
   expect(d.frames.size).toBe(0);
+  d.surface.dispose();
+});
+
+it("reuses projected geometry for hover-only paints, including the first paint after scroll hit testing", () => {
+  const d = fixture(),
+    data = canvasFixture();
+  const project = vi.spyOn(projection, "projectTimelineCanvas");
+  d.surface.update(data.model);
+  d.flush();
+  expect(project).toHaveBeenCalledOnce();
+  project.mockClear();
+  d.surface.update({ ...data.model, hoverHit: d.surface.hitTest(50, 12) });
+  d.flush();
+  expect(project).not.toHaveBeenCalled();
+  expect(d.canvas.dataset.timelineHoverKind).toBe("clip");
+  d.viewport.scrollLeft = 20;
+  d.viewport.dispatchEvent(new Event("scroll"));
+  const pointed = d.surface.hitTest(95, 12);
+  d.surface.update({ ...data.model, hoverHit: pointed });
+  d.flush();
+  expect(project).toHaveBeenCalledOnce();
+  project.mockClear();
+  d.surface.update({ ...data.model, selectedLayerIds: new Set(["hero"]), hoverHit: pointed });
+  d.flush();
+  expect(project).toHaveBeenCalledOnce();
   d.surface.dispose();
 });

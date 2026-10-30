@@ -426,3 +426,61 @@ every stall. The original three runs and their qualifiers remain available.
 `audio-{before,after}.json`, controls and screenshots preserve the executable and
 raw observations. The native regression also opens the actual volume editor,
 restores focus and inspects genuine painted envelopes after rapid reversal.
+
+### Lazy indexes, sparse keys and horizontal bindings — third pass
+
+The next pass targets remaining work in the temporal canvas:
+
+- The canvas previously indexed every visual/property row on the first request.
+  It now builds only consulted rows, with a 64-row LRU per immutable row revision.
+  Property-only queries do not construct duplicate occurrence interval trees;
+  explicit track queries retain their prior semantics.
+- Key buckets advance across empty ranges, and easing neighbors are reconsidered
+  at key boundaries rather than every eight pixels. An extra boundary bucket
+  preserves the original inverse-arithmetic behavior for fractional scales and
+  signed drafts. The ignored reference runner compares 2,000 seeded cases with
+  the prior implementation, including selected/moved keys and marquee ranges.
+- Hover-only paints retain projected geometry. A scroll hit test followed by a
+  hover update no longer projects the same scene a second time before painting.
+- Overlay scroll updates write only pose; viewport width is measured at layout/
+  resize, removing a potentially layout-forcing read from each native callback.
+- Native horizontal offsets no longer rerender the canvas React subtree via
+  unused `left`/`width` props and a freshly allocated label callback. Scale,
+  document/selection changes and interaction callbacks still update normally.
+
+The same frozen-source method retains the preceding optimized build as baseline
+and changes only the six owned presentation files. The production workload is
+1,000 hidden visual layers with 20 X keyframes each, 120 seconds, Keyframes view,
+and 18 native **horizontal** wheel packets with the same ±600/±1,200/±3,000 px
+sequence and 24 ms requested waits. It uses Chromium 156.0.8078.4 / reported Intel
+Xe LPG WebGPU, Linux, 1440 × 1000, DPR 1, nice 15 and no CPU quota on the shared
+workstation. Setup and source publication precede the measured input phase.
+
+| Third production pair          |     Before |      After |
+| ------------------------------ | ---------: | ---------: |
+| ScriptDuration delta           | 139.597 ms | 119.943 ms |
+| TaskDuration delta             | 697.178 ms | 446.953 ms |
+| RAF-gap p95                    |    16.8 ms |    16.8 ms |
+| Delivered native wheel packets |         18 |         18 |
+| Long tasks in observer window  |          0 |          0 |
+| HTML control RAF-gap p95       |    16.8 ms |    16.8 ms |
+| HTML control dispatch p95      |    32.9 ms |    32.8 ms |
+
+This pair records 14.1% less script and 35.9% less task time, with unchanged frame
+cadence. It is a distinct workload from the previous visual/audio pairs; the
+percentages are not cumulative and do not establish a general FPS gain.
+
+A separate Bun 1.4.2 CPU microbenchmark alternates five before/after samples. For
+1,000 property rows with 512 keys each, preparing an index and consulting the
+first 16 rows takes a median **11.784 → 0.592 ms**. The new path indexes 8,192 keys
+instead of eagerly deriving entries for all 512,000. For 2,000 projections of a
+20-key sparse property row into a 1,196 px window, median time is
+**47.713 → 4.033 ms**. These isolate algorithm work; JIT/GC effects are visible in
+the raw samples and they are not browser interaction measurements.
+
+Exact source snapshots, builds/maps, native input/frame arrays, matching HTML
+controls, PNGs, equivalence runner, CPU driver and raw samples are retained under
+ignored `artifacts/motion/perf/scroll-third/`. Focused regressions cover cache
+admission/eviction, fractional bucket boundaries, hover geometry reuse and
+viewport-width read counts. Native checks cover same-frame two-axis scrolling,
+zoom alignment and dense key selection.

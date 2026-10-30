@@ -8,7 +8,7 @@ import { canvasFixture } from "./support";
 
 it("culls occurrences horizontally, retaining full authored gap bounds", () => {
   const d = canvasFixture();
-  const indexed = indexTimelineCanvas(d.rows)[0]!;
+  const indexed = indexTimelineCanvas(d.rows).get(0)!;
   const result = projectCanvasClips(indexed, 0, d.model, {
     left: 130,
     top: 0,
@@ -50,7 +50,7 @@ it("previews only the selected occurrence's trim and keeps independent audio sou
       layerIds: new Set<string>(),
     },
   };
-  const result = projectCanvasClips(indexTimelineCanvas(d.rows)[0]!, 0, model, {
+  const result = projectCanvasClips(indexTimelineCanvas(d.rows).get(0)!, 0, model, {
     left: 0,
     top: 0,
     width: 400,
@@ -85,7 +85,7 @@ it("previews only the selected occurrence's trim and keeps independent audio sou
 });
 it("moves every captured group descendant occurrence while leaving unrelated clips at their authored time", () => {
   const d = canvasFixture(),
-    indexed = indexTimelineCanvas(d.rows)[0]!;
+    indexed = indexTimelineCanvas(d.rows).get(0)!;
   const moved = projectCanvasClips(
     indexed,
     0,

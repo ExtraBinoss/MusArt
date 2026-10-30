@@ -1,4 +1,10 @@
-import { memo, useSyncExternalStore, type ComponentProps, type RefObject } from "react";
+import {
+  memo,
+  useCallback,
+  useSyncExternalStore,
+  type ComponentProps,
+  type RefObject,
+} from "react";
 import { useTranslation } from "react-i18next";
 import type { Asset, EnginePort, MotionAudioTrack } from "@musart/core";
 import { useVirtualList } from "../shared/scroll/use-virtual-list";
@@ -39,6 +45,47 @@ export const TimelineVirtualRows = memo(function TimelineVirtualRows({
   ...props
 }: Props) {
   const { t } = useTranslation("motion");
+  const renderLabels = useCallback(
+    (host: TimelineCanvasHost) => (
+      <LabelsVirtualRows
+        viewport={viewport}
+        audioTracks={audioTracks}
+        assets={assets}
+        onAudioError={onAudioError}
+        host={host}
+        rows={props.rows}
+        rowHeight={props.rowHeight}
+        selected={props.selected}
+        engine={props.engine}
+        compositionId={props.compositionId}
+        transport={props.transport}
+        gestures={props.gestures}
+        drag={props.drag}
+        interactive={props.interactive}
+        onToggle={props.onToggle}
+        onSelect={props.onSelect}
+        onError={props.onError}
+      />
+    ),
+    [
+      viewport,
+      audioTracks,
+      assets,
+      onAudioError,
+      props.rows,
+      props.rowHeight,
+      props.selected,
+      props.engine,
+      props.compositionId,
+      props.transport,
+      props.gestures,
+      props.drag,
+      props.interactive,
+      props.onToggle,
+      props.onSelect,
+      props.onError,
+    ],
+  );
   return (
     <div
       className="motion-row-space"
@@ -53,34 +100,28 @@ export const TimelineVirtualRows = memo(function TimelineVirtualRows({
     >
       <CanvasTimelineBody
         key={props.compositionId}
-        {...props}
+        engine={props.engine}
+        compositionId={props.compositionId}
+        rows={props.rows}
+        rowHeight={props.rowHeight}
+        selected={props.selected}
+        pixelsPerSecond={props.pixelsPerSecond}
+        duration={props.duration}
+        unit={props.unit}
+        transport={props.transport}
+        gestures={props.gestures}
+        drag={props.drag}
+        interactive={props.interactive}
+        onSelect={props.onSelect}
+        onError={props.onError}
+        onZoomRange={props.onZoomRange}
         viewport={viewport}
         gutter={gutter}
         audioTracks={audioTracks}
         assets={assets}
         onAudioError={onAudioError}
       >
-        {(host) => (
-          <LabelsVirtualRows
-            viewport={viewport}
-            audioTracks={audioTracks}
-            assets={assets}
-            onAudioError={onAudioError}
-            host={host}
-            rows={props.rows}
-            rowHeight={props.rowHeight}
-            selected={props.selected}
-            engine={props.engine}
-            compositionId={props.compositionId}
-            transport={props.transport}
-            gestures={props.gestures}
-            drag={props.drag}
-            interactive={props.interactive}
-            onToggle={props.onToggle}
-            onSelect={props.onSelect}
-            onError={props.onError}
-          />
-        )}
+        {renderLabels}
       </CanvasTimelineBody>
     </div>
   );

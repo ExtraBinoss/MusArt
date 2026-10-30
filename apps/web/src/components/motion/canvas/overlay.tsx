@@ -57,13 +57,18 @@ export function CanvasTimelineOverlay(props: CanvasTimelineOverlayProps) {
     const sync = () => {
       const node = target.current;
       if (!node) return;
-      const model = props.model ?? host.readModel();
-      node.style.width = `${Math.max(viewport.clientWidth - model.gutter, Math.min(1_000_000, model.duration * model.scale + 64))}px`;
       node.style.transform = `translate(${-viewport.scrollLeft}px, ${-viewport.scrollTop}px)`;
     };
-    sync();
+    const measure = () => {
+      const node = target.current;
+      if (!node) return;
+      const model = props.model ?? host.readModel();
+      node.style.width = `${Math.max(viewport.clientWidth - model.gutter, Math.min(1_000_000, model.duration * model.scale + 64))}px`;
+      sync();
+    };
+    measure();
     viewport.addEventListener("scroll", sync, { passive: true });
-    const resize = new ResizeObserver(sync);
+    const resize = new ResizeObserver(measure);
     resize.observe(viewport);
     return () => {
       viewport.removeEventListener("scroll", sync);

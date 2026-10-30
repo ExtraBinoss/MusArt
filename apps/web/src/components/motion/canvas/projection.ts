@@ -86,7 +86,7 @@ export function projectTimelineCanvas(
     }
   }
   for (const at of admitted) {
-    const indexed = index[at];
+    const indexed = index.get(at);
     if (indexed) {
       const { row } = indexed;
       const projected =

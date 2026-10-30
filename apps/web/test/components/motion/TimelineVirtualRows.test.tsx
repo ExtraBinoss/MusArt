@@ -210,6 +210,23 @@ it("retains visual and audio names through zoom, horizontal windows and unit pre
     );
     expect(d.engine.getSnapshot()).toBe(snapshot);
 
+    const bodies = state.overlay.mock.calls.length;
+    const updates = state.update.mock.calls.length;
+    for (const left of [600, 1200, 2400])
+      view.rerender(
+        renderOwner({
+          ...props,
+          pixelsPerSecond: 480,
+          duration: 5,
+          left,
+          width: 1100,
+          unit: "s",
+          onZoomRange: zoomRange,
+        }),
+      );
+    expect(state.overlay).toHaveBeenCalledTimes(bodies);
+    expect(state.update).toHaveBeenCalledTimes(updates);
+
     const onSelect = vi.fn();
     view.rerender(renderOwner({ ...props, onSelect }));
     fireEvent.click(names[0]!);

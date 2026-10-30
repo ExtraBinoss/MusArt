@@ -8,6 +8,8 @@ import type {
   TimelineCanvasViewport,
 } from "./model";
 
+const keyTime = (entry: CanvasIndexedKey) => entry.time;
+
 interface Partition {
   selected: readonly CanvasIndexedKey[];
   other: readonly CanvasIndexedKey[];
@@ -77,17 +79,22 @@ export function projectCanvasKeys(
   const firstPixel = Math.floor((viewport.left - 9) / 8) * 8;
   for (const run of runs) {
     if (!run.keys.length) continue;
-    for (let pixel = firstPixel; pixel <= viewport.left + viewport.width + 9; pixel += 8) {
-      const first = timelineLowerBound(
-        run.keys,
-        pixel / model.scale - run.offset,
-        (entry) => entry.time,
-      );
-      const after = timelineLowerBound(
-        run.keys,
-        (pixel + 8) / model.scale - run.offset,
-        (entry) => entry.time,
-      );
+    let first = timelineLowerBound(run.keys, firstPixel / model.scale - run.offset, keyTime);
+    for (
+      let pixel = firstPixel;
+      pixel <= viewport.left + viewport.width + 9 && first < run.keys.length;
+      pixel += 8
+    ) {
+      const occupied = Math.floor(((run.keys[first]!.time + run.offset) * model.scale) / 8) * 8;
+      // Start one bucket early: inverse time/scale arithmetic can place an exact
+      // boundary key in the preceding bucket after floating-point cancellation.
+      const nextPixel = Math.max(pixel, occupied - 8);
+      if (nextPixel !== pixel) {
+        pixel = nextPixel;
+        first = timelineLowerBound(run.keys, pixel / model.scale - run.offset, keyTime);
+      }
+      if (pixel > viewport.left + viewport.width + 9) break;
+      const after = timelineLowerBound(run.keys, (pixel + 8) / model.scale - run.offset, keyTime);
       if (first === after) continue;
       const entry = run.keys[first]!,
         last = run.keys[after - 1]!;
@@ -111,6 +118,7 @@ export function projectCanvasKeys(
           afterKeyIndex: Math.max(existing?.hit.afterKeyIndex ?? -Infinity, last.index + 1),
         },
       });
+      first = after;
     }
   }
   const segments: TimelineCanvasEasing[] = [];
@@ -122,7 +130,7 @@ export function projectCanvasKeys(
       let next: { entry: CanvasIndexedKey; time: number } | null = null;
       // Merge only the neighboring keys of each sorted offset run; crossing keys need no full sort.
       for (const run of runs) {
-        const at = timelineLowerBound(run.keys, time - run.offset, (entry) => entry.time);
+        const at = timelineLowerBound(run.keys, time - run.offset, keyTime);
         const left = run.keys[at - 1],
           right = run.keys[at];
         if (left) {
@@ -140,13 +148,24 @@ export function projectCanvasKeys(
             next = { entry: right, time: value };
         }
       }
-      if (!before || !next || seen.has(next.entry.key.id)) continue;
+      if (!next) break;
+      const resume = viewport.left + Math.floor((next.time * model.scale - viewport.left) / 8) * 8;
+      const jump = () => {
+        pixel = Math.max(pixel, resume - 8);
+      };
+      if (!before || seen.has(next.entry.key.id)) {
+        jump();
+        continue;
+      }
       seen.add(next.entry.key.id);
       const start = before.time * model.scale - viewport.left;
       const end = next.time * model.scale - viewport.left;
       const x = Math.max(0, start),
         right = Math.min(viewport.width, end);
-      if (right - x < 14) continue;
+      if (right - x < 14) {
+        jump();
+        continue;
+      }
       const bounds = { x, y: y + 3, width: right - x, height: Math.max(2, model.rowHeight - 6) };
       segments.push({
         kind: "easing",
@@ -160,6 +179,7 @@ export function projectCanvasKeys(
           bounds: { ...bounds, x: x + (right - x - 14) / 2, width: 14 },
         },
       });
+      jump();
     }
   }
   return [...segments, ...buckets.values()];

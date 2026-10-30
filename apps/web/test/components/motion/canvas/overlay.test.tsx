@@ -337,3 +337,18 @@ it("cancels pending semantic work on leave, scroll, document replacement and unm
   expect(state.render).not.toHaveBeenCalled();
   expect(vi.getTimerCount()).toBe(0);
 });
+
+it("native scroll updates overlay pose without remeasuring viewport width", () => {
+  const d = overlayFixture();
+  const width = vi.fn(() => 644);
+  Object.defineProperty(d.viewport, "clientWidth", { get: width });
+  const view = render(<CanvasTimelineOverlay {...d.props} />);
+  const reads = width.mock.calls.length;
+  expect(reads).toBeGreaterThan(0);
+  d.viewport.scrollLeft = 180;
+  d.viewport.scrollTop = 48;
+  fireEvent.scroll(d.viewport);
+  expect(width).toHaveBeenCalledTimes(reads);
+  expect(view.container.firstElementChild).toHaveStyle({ transform: "translate(-180px, -48px)" });
+  view.unmount();
+});

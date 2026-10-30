@@ -14,7 +14,7 @@ it("bounds dense keys by visible buckets and keeps cluster counts and authored i
     value: index,
   }));
   const rows: TimelineRow[] = [{ ...row, property: { ...row.property, keyframes } }];
-  const indexed = indexTimelineCanvas(rows)[0]!;
+  const indexed = indexTimelineCanvas(rows).get(0)!;
   const result = projectCanvasKeys(
     indexed,
     0,
@@ -30,7 +30,7 @@ it("bounds dense keys by visible buckets and keeps cluster counts and authored i
 });
 it("previews signed key movement without mutating keys and exposes only a small easing hit target", () => {
   const d = canvasFixture();
-  const indexed = indexTimelineCanvas(d.rows)[1]!;
+  const indexed = indexTimelineCanvas(d.rows).get(1)!;
   const model = {
     ...d.model,
     selectedKeyIds: new Set(["b"]),
@@ -49,7 +49,7 @@ it("previews signed key movement without mutating keys and exposes only a small 
   expect(easing?.hit.bounds.width).toBe(14);
   expect(indexed.keys[1]?.key.time).toEqual({ value: 1, rate: 1 });
   expect(
-    projectCanvasKeys(indexTimelineCanvas(d.rows)[0]!, 0, d.model, {
+    projectCanvasKeys(indexTimelineCanvas(d.rows).get(0)!, 0, d.model, {
       left: 0,
       top: 0,
       width: 100,
@@ -59,7 +59,7 @@ it("previews signed key movement without mutating keys and exposes only a small 
 });
 it("paints marquee ranges immediately while keeping only the captured additive base outside the rectangle", () => {
   const d = canvasFixture(),
-    indexed = indexTimelineCanvas(d.rows)[1]!;
+    indexed = indexTimelineCanvas(d.rows).get(1)!;
   const viewport = { left: 0, top: 0, width: 200, height: 48 };
   const initial = projectCanvasKeys(
     indexed,
@@ -113,7 +113,7 @@ it("relinks crossed keys in current temporal order without sorting the full auth
       },
     },
   ];
-  const indexed = indexTimelineCanvas(rows)[0]!;
+  const indexed = indexTimelineCanvas(rows).get(0)!;
   const moved = projectCanvasKeys(
     indexed,
     0,
@@ -141,7 +141,7 @@ it("relinks crossed keys in current temporal order without sorting the full auth
 });
 it("retimes child channels from a group capture even though the primary track ID belongs to its parent", () => {
   const d = canvasFixture(),
-    indexed = indexTimelineCanvas(d.rows)[1]!;
+    indexed = indexTimelineCanvas(d.rows).get(1)!;
   const moved = projectCanvasKeys(
     indexed,
     1,
@@ -160,4 +160,45 @@ it("retimes child channels from a group capture even though the primary track ID
   );
   expect(moved.filter((item) => item.kind === "key").map((key) => key.bounds.x)).toEqual([41, 141]);
   expect(indexed.keys.map((key) => key.time)).toEqual([0, 1]);
+});
+
+it("keeps exact inverse-arithmetic bucket boundaries when sparse keys move across pixels", () => {
+  const d = canvasFixture(),
+    row = d.rows[1]!;
+  if (row.kind !== "property") throw Error("Missing property fixture");
+  const rows: TimelineRow[] = [
+    {
+      ...row,
+      property: {
+        ...row.property,
+        keyframes: [
+          { id: "edge-a", time: { value: 300, rate: 1000 }, value: 0 },
+          { id: "edge-b", time: { value: 306, rate: 1000 }, value: 1 },
+        ],
+      },
+    },
+  ];
+  const result = projectCanvasKeys(
+    indexTimelineCanvas(rows).get(0)!,
+    0,
+    {
+      ...d.model,
+      rows,
+      scale: 640,
+      selectedKeyIds: new Set(),
+      draft: {
+        action: "keys",
+        delta: { value: 14, rate: 10 },
+        keyIds: new Set(["edge-a", "edge-b"]),
+        layerIds: new Set(),
+      },
+    },
+    { left: 210.91983327642083, top: 0, width: 1196, height: 24 },
+  );
+  expect(
+    result.filter((item) => item.kind === "key").map((item) => [item.hit.keyId, item.count]),
+  ).toEqual([
+    ["edge-a", 1],
+    ["edge-b", 1],
+  ]);
 });
