@@ -28,9 +28,9 @@ Completed implementation checkpoint: 2026-10-30, branch `feat/mobile-onboarding`
   shadows on desktop/mobile timelines.
 - Responsive desktop dock with hover/wheel scrolling, shared shadows, ruler
   insets, consistent floating-control geometry and bottom zoom tooltips.
-- The canvas logo opens the shared creation dialog directly over the editor.
-  Cancel returns to the same canvas; the project-name menu exposes Projects on
-  desktop and phones without needing an open Tools sheet.
+- The canvas logo opens the Projects/Templates library. Explicit creation commands
+  open the shared dialog over the canvas; cancelling returns to the same document.
+  The project-name menu also exposes Projects on desktop and phones.
 - Integrated the verified Motion milestone `88675a9`, preserving both histories,
   project layout/zoom preferences and dock Pin/peek behavior. Mobile single-panel
   layouts never overwrite saved desktop split proportions.

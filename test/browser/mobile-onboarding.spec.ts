@@ -107,11 +107,11 @@ test("mobile landing, project library, presets and creation lead to the full-wid
   expect(box!.height).toBeGreaterThan(700);
   const projectLabel = page.getByRole("button", { name: "Actions du projet", exact: true });
   const beforeLogo = await projectLabel.textContent();
-  await page.getByRole("button", { name: "Nouveau projet", exact: true }).click();
-  await expect(
-    page.getByRole("dialog", { name: "Un nouvel espace pour vos idées." }),
-  ).toBeVisible();
-  await expect(page.getByRole("dialog", { name: "Tableau de bord MusArt" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Menu du projet", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Un nouvel espace pour vos idées." })).toHaveCount(
+    0,
+  );
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(projectLabel).toHaveText(beforeLogo!);
@@ -192,6 +192,56 @@ test("mobile property gestures keep canonical state and canvas React commits sta
     webgl: 0,
     canvas: 0,
   });
+});
+
+test("mobile Layers keeps one heading and centers compositing with empty and multiple selections", async ({
+  page,
+}, info) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ colorScheme: "dark" });
+  await loadWitness(page);
+  await page.evaluate(
+    (layer) => {
+      const project = window.musart!.snapshot().project;
+      project.pages[0]!.layers.push(layer);
+      window.musart!.load(project);
+      window.musart!.select([]);
+    },
+    createLayer("rectangle", {
+      id: "mobile-second",
+      name: "Second rectangle",
+      x: 20,
+      y: 30,
+      width: 60,
+      height: 70,
+    }),
+  );
+  await page.getByRole("button", { name: "Calques", exact: true }).click();
+  const sheet = page.getByRole("dialog", { name: "Calques", exact: true });
+  const header = sheet.locator(".mobile-sheet-header");
+  await expect(sheet.getByRole("heading", { name: "Calques", exact: true })).toHaveCount(1);
+  await expect(sheet.locator(".layers-panel > .panel-heading")).toHaveCount(0);
+  await expect(header.locator(".small-count")).toHaveText("2");
+  await expect(sheet.locator(".layers-header-actions")).toHaveCount(1);
+  await expect(header.locator(".layers-header-actions")).toHaveCount(1);
+  const blend = sheet.getByRole("combobox", { name: "Fusion", exact: true });
+  for (const ids of [[], ["mobile-witness"], ["mobile-witness", "mobile-second"]]) {
+    await page.evaluate((selection) => window.musart!.select(selection), ids);
+    if (ids.length) await expect(blend).toBeEnabled();
+    else await expect(blend).toBeDisabled();
+    await expect
+      .poll(() =>
+        sheet.locator(".layer-compositing").evaluate((node) => {
+          const opacity = node.firstElementChild!.getBoundingClientRect();
+          const select = node
+            .querySelector('[data-slot="select-trigger"]')!
+            .getBoundingClientRect();
+          return Math.abs(opacity.top + opacity.height / 2 - select.top - select.height / 2);
+        }),
+      )
+      .toBeLessThan(1);
+    await sheet.screenshot({ path: info.outputPath(`layers-${ids.length}-selected.png`) });
+  }
 });
 
 test("native mobile slider drags preserve layout and commit one reversible edit", async ({

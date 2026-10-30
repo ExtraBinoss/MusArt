@@ -33,7 +33,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 - Matched saved-project captions to template cards with a title and resolution on the left, the actual Static/Motion mode on the right, and theme-aware fading. Caption resolution follows the first Motion artboard shown by the preview, or the first Static artboard. Lightweight per-artboard mode metadata comes from existing bounded manifest reads; legacy artboards remain Static and listing never hydrates originals or history.
 
-- The canvas logo now opens the shared creation dialog directly over the editor. Cancelling returns to the same canvas without mounting the project library or changing the document. The project-name menu keeps an always-available Projects action on desktop and touch layouts.
+- Restored the canvas logo as navigation to the Projects/Templates library, without implicitly opening project creation. Explicit creation commands still open the shared dialog directly over the editor, and the project-name menu keeps an always-available Projects action on desktop and touch layouts.
 
 - Integrated the verified Motion UI checkpoint (`88675a9`) with the mobile editor, keeping project-scoped layout/zoom preferences, dock Pin and hover behavior, compact mobile controls and horizontal scroll shadows. Mobile single-panel layouts suspend desktop split restoration and never overwrite the saved desktop proportions. Later Motion work-in-progress checkpoints remain outside this integration.
 

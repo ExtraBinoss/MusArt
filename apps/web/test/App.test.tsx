@@ -81,9 +81,10 @@ test("assembles the pinned inspector, layers, project menu, export and import ac
   fireEvent.click(screen.getByRole("button", { name: "Exporter" }));
   expect(screen.getByRole("dialog")).toHaveAccessibleName("Exporter la composition");
   fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Annuler" }));
-  fireEvent.click(screen.getByRole("button", { name: "Nouveau projet" }));
-  await screen.findByRole("dialog", { name: "Un nouvel espace pour vos idées." });
-  expect(screen.queryByRole("dialog", { name: "Tableau de bord MusArt" })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Menu du projet" }));
+  await screen.findByRole("dialog", { name: "Tableau de bord MusArt" });
+  expect(screen.queryByRole("dialog", { name: "Un nouvel espace pour vos idées." })).toBeNull();
+  expect(d.services.createProject).not.toHaveBeenCalled();
   fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Fermer" }));
   fireEvent.click(screen.getByRole("button", { name: "Actions du projet" }));
   fireEvent.click(screen.getByRole("button", { name: "Projets" }));

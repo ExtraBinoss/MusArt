@@ -17,7 +17,7 @@ Choose a project or template to open the editor. The creation button’s adjacen
 
 **New project** opens a separate dialog. Give the project a name, choose a visual format preset or enter custom dimensions, then select **Create**. The preview updates as the dimensions change. The link button locks or unlocks the aspect ratio. New projects use the standard canvas background; background editing remains available in the editor. Escape closes the creation dialog and returns to the library.
 
-In the editor, the MusArt logo opens that same creation dialog directly over the canvas. Cancelling returns to the current document. The project-name menu's **Projects** action opens the library on desktop and phones; the Projects command in the tool/search menu remains available too.
+In the editor, the MusArt logo opens the Projects/Templates library. The project-name menu's **Projects** action opens it too, on desktop and phones. Explicit creation commands open the shared creation dialog over the canvas; cancelling returns to the current document.
 
 ## On a phone
 

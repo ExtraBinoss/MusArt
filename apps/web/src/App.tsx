@@ -172,8 +172,8 @@ export function App({ engine, services, welcome = false }: AppProps) {
                         <Button
                           variant="ghost"
                           className="brand-button floating-panel"
-                          aria-label={t("newProject")}
-                          onClick={() => setProjectMenu("newProject")}
+                          aria-label={t("projectMenu")}
+                          onClick={() => setProjectMenu("projects")}
                         >
                           <MusArtLogo />
                         </Button>
