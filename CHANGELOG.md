@@ -8,6 +8,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 - Unified toolbar, Layers and DOM/canvas timeline reorder drags on a shared deferred session engine. Rows stay in canonical order until drop, with one translated destination/error cue and deduplicated console errors for rejected targets. Cancellation, stale-source protection and single-command undo remain intact.
 
+- Softened Melt accents and the Dahlia mascot to pastel violet, with a deeper action fill, white primary-button labels and white dark-theme switch thumbs. Light, Dark and System color changes crossfade the complete interface, respect reduced motion and supersede stale transitions without React frame updates.
+
 - Reduced agent coordination overhead with bounded implementation ownership, fresh contexts for independent tasks, concise handoffs and one integrated validation owner. Tests now protect behavior without requiring an exact mirror for every source file; focused coverage falls back to related tests when mirrors are absent, while full CI coverage thresholds remain unchanged.
 
 ### Added

@@ -1,11 +1,11 @@
 # Melt brand and SVG animation API
 
 The interface identity lives in `apps/web/src/ui/brand/`. `config.ts` supplies
-`brand.name`, the exact primary `#A259FF`, the palette, mascot and asset paths.
+`brand.name`, the pastel primary `#B39ADB` and action fill `#8763C8`, the palette, mascot and asset paths.
 The generated palette.css takes its values from config.ts; regenerate with the asset script.
 Global CSS variables apply the same palette to both themes and Radix portals.
-The primary action text uses a dark plum for legibility; the mascot's eyes stay
-white. Translated product copy uses `brand.name`, not separate hardcoded names.
+Primary actions and dark-theme switch thumbs use white. The slightly deeper
+action fill keeps white labels legible while accent lines and the mascot stay pastel. Translated product copy uses `brand.name`, not separate hardcoded names.
 
 Existing local projects, `.musart` imports/exports, clipboard payloads, database
 keys, automation methods, package names and GitHub URLs keep their established
@@ -55,7 +55,7 @@ import { MorphPath } from "@/ui/brand";
 <svg viewBox="0 0 40 40">
   <MorphPath
     d={open ? "M4 16L20 28L36 16" : "M4 24L20 12L36 24"}
-    stroke="#A259FF"
+    stroke="#B39ADB"
     fill="none"
     strokeWidth={3}
   />
@@ -116,3 +116,5 @@ decodes all three install-icon sizes, and holds a genuine template download whil
 observing the animated SVG. Its pending/reduced-motion witness preserves all
 five editor React counters, performs zero GPU/WebGL/Canvas readbacks and cancels
 without changing the current document.
+
+Theme changes crossfade the complete interface through native View Transitions when available. Initial application, unchanged resolved colors and reduced motion apply immediately. System-color changes use the same path; rapid selections supersede pending transitions without a React frame loop.

@@ -18,7 +18,7 @@ test("exports the exact genuine engine frame as SVG and an inset maskable icon",
     expect(svg).toContain(`transform="${eye.matrix}"`);
   }
   expect(svg).toContain('aria-label="Melt"');
-  expect(svg).toContain('fill="#A259FF"');
+  expect(svg).toContain('fill="#B39ADB"');
   expect(renderBrandSvg(true)).toContain("translate(256 256) scale(1.7)");
 });
 test("public install icons are exact copies of the canonical source SVGs and match their checksum manifest", async () => {

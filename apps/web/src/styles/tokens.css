@@ -7,6 +7,8 @@
   --color-card-foreground: var(--foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--foreground);
+  --color-action: var(--action);
+  --color-action-foreground: var(--action-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
@@ -30,9 +32,9 @@
   --foreground: #24252b;
   --card: #ffffff;
   --popover: #ffffff;
-  --primary: var(--action);
+  --primary: var(--brand-primary);
   --primary-foreground: var(--action-foreground);
-  --action: var(--brand-primary);
+  --action: var(--brand-action);
   --action-foreground: var(--brand-primary-foreground);
   --media-image: var(--primary);
   --motion-accent: var(--primary);
@@ -62,12 +64,12 @@
   --media-video: #a78bfa;
   --media-audio: #4ade80;
   --background: #222222;
-  --foreground: #e8e8e8;
+  --foreground: #ffffff;
   --card: #262626;
   --popover: #2a2a2a;
-  --primary: var(--action);
+  --primary: var(--brand-primary);
   --primary-foreground: var(--action-foreground);
-  --action: var(--brand-primary);
+  --action: var(--brand-action);
   --action-foreground: var(--brand-primary-foreground);
   --secondary: #353535;
   --muted: #303030;

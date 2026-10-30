@@ -2,8 +2,8 @@
   "generator": "bun scripts/brand-assets.ts --png",
   "source": "melt.svg; melt-maskable.svg for Apple Touch",
   "files": {
-    "melt-icon-180.png": "752b3b366a7c9221ab096c2775e4ceab56d0630e0163a997a811c173a7276c9c",
-    "melt-icon-192.png": "9dc2ee0978f2a2955dd40e3ce94c9b6ccb93635d1a66f408e0d9f1556c6c66a9",
-    "melt-icon-512.png": "0969d8f28f57b429183579a98b9d5083e09ac451edf9c6471ca3043aad97d378"
+    "melt-icon-180.png": "c139b4bab1082b21fc47d811c9c6ca79fc57e10509b6af8ecbf63183272c005b",
+    "melt-icon-192.png": "0cd973dae2cdb6a32083105fb0e5b52c4f94b66f0ce212fccc7e930bd02985e6",
+    "melt-icon-512.png": "bfd50b7531ef4b6286b23dc66648265e0465a35f5cca808340c3c6a82e3a8258"
   }
 }

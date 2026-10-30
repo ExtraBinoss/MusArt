@@ -30,7 +30,7 @@ export async function writeBrandAssets(
   await mkdir(publicFolder, { recursive: true });
   await writeFile(
     resolve(root, "apps/web/src/ui/brand/palette.css"),
-    `/* Generated from ui/brand/config.ts by bun scripts/brand-assets.ts. */\n:root {\n  --brand-primary: ${brand.colors.primary.toLowerCase()};\n  --brand-primary-foreground: ${brand.colors.onPrimary.toLowerCase()};\n  --brand-soft: ${brand.colors.soft.toLowerCase()};\n  --brand-ink: ${brand.colors.ink.toLowerCase()};\n}\n`,
+    `/* Generated from ui/brand/config.ts by bun scripts/brand-assets.ts. */\n:root {\n  --brand-primary: ${brand.colors.primary.toLowerCase()};\n  --brand-action: ${brand.colors.action.toLowerCase()};\n  --brand-primary-foreground: ${brand.colors.onPrimary.toLowerCase()};\n  --brand-soft: ${brand.colors.soft.toLowerCase()};\n  --brand-ink: ${brand.colors.ink.toLowerCase()};\n}\n`,
   );
   await writeFile(
     resolve(root, "apps/web/public/manifest.webmanifest"),

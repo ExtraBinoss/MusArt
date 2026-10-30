@@ -70,8 +70,8 @@
   height: 16px;
 }
 .glass-switch[data-state="checked"] {
-  background: var(--primary);
-  border-color: var(--primary);
+  background: var(--action);
+  border-color: var(--action);
 }
 .glass-switch:focus-visible {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 30%, transparent);
@@ -110,7 +110,7 @@
   background: var(--primary-foreground);
 }
 .dark .glass-switch[data-state="unchecked"] .glass-switch-thumb {
-  background: var(--foreground);
+  background: var(--brand-primary-foreground);
 }
 @media (prefers-reduced-motion: reduce) {
   .glass-slider-thumb,
