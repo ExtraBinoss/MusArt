@@ -1,4 +1,4 @@
-import { parseProject } from "@musart/core";
+import { parseProject, type Project } from "@musart/core";
 import type { EditorServices } from "../../../../state/contracts";
 import type { TemplateLoadOptions } from "../motion/loader";
 import { DESIGNED_TEMPLATES, type DesignedTemplateId } from "./catalog";
@@ -61,16 +61,15 @@ async function download(response: Response, signal?: AbortSignal): Promise<strin
   }
   return new TextDecoder().decode(bytes);
 }
-export async function openDesignedTemplate(
-  services: Pick<EditorServices, "openMediaProject">,
+export async function prepareDesignedTemplate(
   id: DesignedTemplateId,
-  options: TemplateLoadOptions = {},
+  options: Pick<TemplateLoadOptions, "signal" | "timing"> = {},
   fetcher: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response> = fetch,
-): Promise<void> {
+): Promise<Project> {
   options.signal?.throwIfAborted();
-  if (!services.openMediaProject) throw new DesignedTemplateError("unavailable");
   const definition = DESIGNED_TEMPLATES.find((entry) => entry.id === id);
   if (!definition) throw new DesignedTemplateError("invalid");
+  options.timing?.stage("Download template manifest");
   let response: Response;
   try {
     response = await fetcher(`${import.meta.env.BASE_URL}templates/designed/${id}.json`, {
@@ -82,6 +81,7 @@ export async function openDesignedTemplate(
   }
   const text = await download(response, options.signal);
   options.signal?.throwIfAborted();
+  options.timing?.stage("Parse + validate template");
   let project;
   try {
     const manifest = JSON.parse(text) as {
@@ -104,6 +104,20 @@ export async function openDesignedTemplate(
   } catch {
     throw new DesignedTemplateError("invalid");
   }
+  options.signal?.throwIfAborted();
+  return project;
+}
+
+/** Installation and hover consume the same validated bounded preparation. */
+export async function openDesignedTemplate(
+  services: Pick<EditorServices, "openMediaProject">,
+  id: DesignedTemplateId,
+  options: TemplateLoadOptions = {},
+  fetcher: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response> = fetch,
+): Promise<void> {
+  options.signal?.throwIfAborted();
+  if (!services.openMediaProject) throw new DesignedTemplateError("unavailable");
+  const project = await prepareDesignedTemplate(id, options, fetcher);
   const now = new Date().toISOString();
   options.signal?.throwIfAborted();
   await services.openMediaProject(

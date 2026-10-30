@@ -1,3 +1,4 @@
+import { beginProjectTiming } from "../../../../services/performance/project-timing";
 import {
   applyMotionFrame,
   compileMotion,
@@ -52,12 +53,14 @@ export interface MotionPreviewSource {
 /** One owner shared by saved projects and templates; one active frame plus one latest request. */
 export function startMotionPreview(
   options: {
+    label?: string;
     prepare: (signal: AbortSignal) => Promise<MotionPreviewSource>;
     host: HTMLElement;
     onStatus: (status: PreviewStatus, error?: unknown) => void;
   },
   dependencies: Omit<PreviewDependencies, "prepare"> = native,
 ): PreviewOwner {
+  const timing = beginProjectTiming(options.label ?? "Hover preview");
   const previous = active;
   const abort = new AbortController();
   let stopped = false;
@@ -74,6 +77,7 @@ export function startMotionPreview(
   }
   function stop(notify: boolean): Promise<void> {
     if (disposal) return disposal;
+    timing?.finish("cancelled");
     stopped = true;
     abort.abort();
     if (frame !== null) dependencies.cancelFrame(frame);
@@ -97,14 +101,18 @@ export function startMotionPreview(
   options.onStatus("loading");
   bootstrap = (async () => {
     try {
+      timing?.stage("Release previous preview");
       await previous?.release();
       abort.signal.throwIfAborted();
+      timing?.stage("Read + validate preview source");
       const prepared = await options.prepare(abort.signal);
+      timing?.identify(prepared.project.name);
       abort.signal.throwIfAborted();
       const page = prepared.compositionId
         ? prepared.project.pages.find((item) => item.id === prepared.compositionId)
         : prepared.project.pages[0];
       if (!page) throw new Error("The saved Motion preview artboard is no longer available.");
+      timing?.stage("Compile animation");
       const program = compileMotion(prepared.project, { compositionId: page.id });
       if (program.mode !== "motion" || !program.duration)
         throw new Error("The preview does not contain a Motion composition.");
@@ -122,6 +130,7 @@ export function startMotionPreview(
           return original.blob;
         },
       };
+      timing?.stage("Create GPU preview session");
       session = await dependencies.createSession({
         maxBytes: 128 * 1024 * 1024,
         fontResolver: prepared.fontResolver,
@@ -180,14 +189,17 @@ export function startMotionPreview(
         }
         frame = dependencies.requestFrame(tick);
       }
+      timing?.stage("First frame: fonts, geometry + GPU render");
       await render(0);
       if (!alive()) return;
       options.onStatus("playing");
+      timing?.finish("ready");
       began = dependencies.now();
       lastSample = 0;
       frame = dependencies.requestFrame(tick);
     } catch (error) {
       if (alive()) {
+        timing?.finish("failed", error);
         options.onStatus("failed", error);
         // Queue cleanup after bootstrap resolves rather than awaiting ourselves.
         queueMicrotask(() => {
@@ -209,7 +221,11 @@ export function startMotionTemplatePreview(
   dependencies: PreviewDependencies = native,
 ): PreviewOwner {
   return startMotionPreview(
-    { ...options, prepare: (signal) => dependencies.prepare(options.templateId, signal) },
+    {
+      ...options,
+      label: `Hover template ${options.templateId}`,
+      prepare: (signal) => dependencies.prepare(options.templateId, signal),
+    },
     dependencies,
   );
 }

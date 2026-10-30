@@ -22,6 +22,7 @@ export function ProjectMotionPreview({
   const start = useCallback(
     (host: HTMLElement, onStatus: (status: PreviewStatus, error?: unknown) => void) =>
       startMotionPreview({
+        label: "Hover saved project",
         host,
         onStatus,
         prepare: async (signal) => {

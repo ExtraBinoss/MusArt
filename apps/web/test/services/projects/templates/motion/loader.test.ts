@@ -144,7 +144,7 @@ test("reports download, malformed JSON, bounded stream overflow and original int
     new Response(
       new ReadableStream({
         start(controller) {
-          controller.enqueue(new Uint8Array(2 * 1024 * 1024 + 1));
+          controller.enqueue(new Uint8Array(8 * 1024 * 1024 + 1));
         },
         cancel,
       }),

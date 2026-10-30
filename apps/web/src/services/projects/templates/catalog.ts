@@ -1,3 +1,4 @@
+import { beginProjectTiming } from "../../performance/project-timing";
 import { PRESETS, createProject, serializeProject } from "@musart/core";
 import type { EditorServices } from "../../../state/contracts";
 import type { TemplateLoadOptions } from "./motion/loader";
@@ -95,7 +96,7 @@ export const TEMPLATE_CATALOG: readonly ProjectTemplate[] = Object.freeze([
 ]);
 
 /** Creates an independent, durably saved project through the normal validated service ports. */
-export async function createProjectFromTemplate(
+async function openProjectTemplate(
   services: Pick<EditorServices, "createProject" | "openPortable" | "openMediaProject">,
   templateId: string,
   options: TemplateLoadOptions = {},
@@ -138,4 +139,21 @@ export async function createProjectFromTemplate(
     height: preset.height,
     background: "#ffffff",
   });
+}
+
+/** One timing follows the whole template operation, including the native first frame. */
+export async function createProjectFromTemplate(
+  services: Pick<EditorServices, "createProject" | "openPortable" | "openMediaProject">,
+  templateId: string,
+  options: TemplateLoadOptions = {},
+): Promise<void> {
+  const timing = options.timing ?? beginProjectTiming("Open template", { templateId });
+  timing?.stage("Resolve template");
+  try {
+    await openProjectTemplate(services, templateId, { ...options, ...(timing ? { timing } : {}) });
+    if (!timing?.waitingForFrame) timing?.finish("published");
+  } catch (error) {
+    timing?.finish(options.signal?.aborted ? "cancelled" : "failed", error);
+    throw error;
+  }
 }

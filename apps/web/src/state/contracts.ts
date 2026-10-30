@@ -1,3 +1,4 @@
+import type { ProjectTiming } from "../services/performance/project-timing";
 import type { Composition, EnginePort, Project } from "@musart/core";
 import type { MediaOriginalInput } from "../services/projects/media/model";
 import type { FontLibraryPort } from "../services/fonts/model";
@@ -151,6 +152,7 @@ export interface EditorServices {
     options?: {
       signal?: AbortSignal;
       expectedOrigin?: { projectId: string; pageId: string; revision: number };
+      timing?: ProjectTiming;
     },
   ): Promise<void>;
   exportProject(this: void): Promise<void>;

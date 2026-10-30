@@ -1,3 +1,7 @@
+import type { ProjectTiming } from "../../../performance/project-timing";
+import { isDesignedTemplateId } from "../designed/catalog";
+import { prepareDesignedTemplate } from "../designed/load";
+import { isMotionTemplateId } from "./identity";
 import { isOriginalMediaAsset, parseProject, type Project } from "@musart/core";
 import type { EditorServices } from "../../../../state/contracts";
 import { i18n } from "../../../../state/i18n";
@@ -31,6 +35,7 @@ export class MotionTemplateError extends Error {
 }
 
 export interface TemplateLoadOptions {
+  readonly timing?: ProjectTiming;
   readonly signal?: AbortSignal;
   readonly expectedOrigin?: {
     readonly projectId: string;
@@ -170,20 +175,25 @@ export interface PreparedMotionTemplate {
 /** Bounded original-only preparation shared by hover previews and durable installation. */
 export async function prepareMotionTemplate(
   templateId: MotionTemplateId,
-  options: Pick<TemplateLoadOptions, "signal"> = {},
+  options: Pick<TemplateLoadOptions, "signal" | "timing"> = {},
   fetcher: TemplateFetcher = fetch,
 ): Promise<PreparedMotionTemplate> {
   options.signal?.throwIfAborted();
-  if (
-    templateId !== "in-bloom" &&
-    templateId !== "motion-stress-lab" &&
-    templateId !== "sound-playground" &&
-    templateId !== "share-your-work"
-  )
-    throw new MotionTemplateError("invalid");
+  if (!isMotionTemplateId(templateId)) throw new MotionTemplateError("invalid");
+  if (isDesignedTemplateId(templateId)) {
+    const project = await prepareDesignedTemplate(templateId, options, (input, init) =>
+      fetcher(
+        typeof input === "string" ? input : input instanceof URL ? input.href : input.url,
+        init,
+      ),
+    );
+    return { project, originals: [] };
+  }
   const base = `${import.meta.env.BASE_URL}templates/motion/`;
+  options.timing?.stage("Download template manifest");
   const response = await download(`${base}${templateId}.json`, fetcher, options.signal);
-  const bytes = await boundedResponse(response, 2 * 1024 * 1024, options.signal);
+  const bytes = await boundedResponse(response, 8 * 1024 * 1024, options.signal);
+  options.timing?.stage("Parse + validate template");
   let parsed: unknown;
   try {
     parsed = JSON.parse(new TextDecoder().decode(bytes));
@@ -191,6 +201,7 @@ export async function prepareMotionTemplate(
     throw new MotionTemplateError("invalid");
   }
   const manifest = parseMotionTemplateManifest(parsed, templateId);
+  options.timing?.stage("Load + verify media originals");
   const originals: MediaOriginalInput[] = [];
   for (const original of manifest.originals) {
     const result = await download(`${base}${original.file}`, fetcher, options.signal);
@@ -219,13 +230,7 @@ export async function openMotionTemplate(
   fetcher: TemplateFetcher = fetch,
 ): Promise<void> {
   options.signal?.throwIfAborted();
-  if (
-    templateId !== "in-bloom" &&
-    templateId !== "motion-stress-lab" &&
-    templateId !== "sound-playground" &&
-    templateId !== "share-your-work"
-  )
-    throw new MotionTemplateError("invalid");
+  if (!isMotionTemplateId(templateId)) throw new MotionTemplateError("invalid");
   if (!services.openMediaProject) throw new MotionTemplateError("unsupported");
   const prepared = await prepareMotionTemplate(templateId, options, fetcher);
   options.signal?.throwIfAborted();

@@ -1,3 +1,4 @@
+import { beginProjectTiming } from "../performance/project-timing";
 import {
   createId,
   isOriginalMediaAsset,
@@ -92,39 +93,49 @@ export function createEditorServices(
     await dependencies.flush?.();
   };
   const create = async (options: NewProjectOptions) => {
-    await switchReady();
-    const now = new Date().toISOString();
-    const preset = PRESETS.find((item) => item.id === options.presetId);
-    const safe = preset?.safeArea;
-    const project = createProject({
-      id: crypto.randomUUID(),
-      name: options.name,
-      createdAt: now,
-      updatedAt: now,
-      pages: [
-        createPage({
-          name: "Composition 1",
-          width: options.width,
-          height: options.height,
-          background: options.background,
-          ...(safe
-            ? {
-                margins: safe,
-                rulers: true,
-                guides: [
-                  { id: createId(), axis: "x" as const, position: safe.left },
-                  { id: createId(), axis: "x" as const, position: options.width - safe.right },
-                  { id: createId(), axis: "y" as const, position: safe.top },
-                  { id: createId(), axis: "y" as const, position: options.height - safe.bottom },
-                ],
-              }
-            : {}),
-        }),
-      ],
-    });
-    await store.save(project);
-    thumbnails?.schedule(project);
-    engine.load(project);
+    const timing = beginProjectTiming("Create project", { name: options.name });
+    try {
+      timing?.stage("Wait for previous project saves");
+      await switchReady();
+      const now = new Date().toISOString();
+      const preset = PRESETS.find((item) => item.id === options.presetId);
+      const safe = preset?.safeArea;
+      const project = createProject({
+        id: crypto.randomUUID(),
+        name: options.name,
+        createdAt: now,
+        updatedAt: now,
+        pages: [
+          createPage({
+            name: "Composition 1",
+            width: options.width,
+            height: options.height,
+            background: options.background,
+            ...(safe
+              ? {
+                  margins: safe,
+                  rulers: true,
+                  guides: [
+                    { id: createId(), axis: "x" as const, position: safe.left },
+                    { id: createId(), axis: "x" as const, position: options.width - safe.right },
+                    { id: createId(), axis: "y" as const, position: safe.top },
+                    { id: createId(), axis: "y" as const, position: options.height - safe.bottom },
+                  ],
+                }
+              : {}),
+          }),
+        ],
+      });
+      timing?.stage("Persist new project");
+      await store.save(project);
+      thumbnails?.schedule(project);
+      timing?.stage("Publish document");
+      engine.load(project);
+      timing?.waitForFrame(engine.getSnapshot());
+    } catch (error) {
+      timing?.finish("failed", error);
+      throw error;
+    }
   };
   return {
     exportComposition,
@@ -174,9 +185,20 @@ export function createEditorServices(
       }
     },
     async openProject(id) {
-      await switchReady();
-      const project = await store.load(id, { remember: true });
-      engine.load(project);
+      const timing = beginProjectTiming("Open saved project", { projectId: id });
+      try {
+        timing?.stage("Wait for previous project saves");
+        await switchReady();
+        timing?.stage("Read + validate saved project");
+        const project = await store.load(id, { remember: true });
+        timing?.identify(project.name);
+        timing?.stage("Publish document");
+        engine.load(project);
+        timing?.waitForFrame(engine.getSnapshot());
+      } catch (error) {
+        timing?.finish("failed", error);
+        throw error;
+      }
     },
     createProject: create,
     async saveProject() {
@@ -257,32 +279,45 @@ export function createEditorServices(
       if (command.type === "addLayers") engine.select(command.layers.map((layer) => layer.id));
     },
     async openPortable(file) {
-      if (file.size > 200 * 1024 * 1024)
-        throw new Error("Projet trop volumineux (maximum 200 Mo).");
-      const text = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          if (typeof reader.result === "string") resolve(reader.result);
-          else reject(new Error("Contenu du fichier invalide."));
-        };
-        reader.onerror = () => reject(new Error("Lecture du projet impossible."));
-        reader.readAsText(file);
-      });
-      const parsed = parseProject(text);
-      const exists = (await store.list()).some((item) => item.id === parsed.id);
-      const deleted = await store.isDeleted(parsed.id);
-      let project = exists || deleted ? { ...parsed, id: crypto.randomUUID() } : parsed;
-      await switchReady();
+      const timing = beginProjectTiming("Import project", { file: file.name });
       try {
-        await store.save(project);
+        timing?.stage("Read portable file");
+        if (file.size > 200 * 1024 * 1024)
+          throw new Error("Projet trop volumineux (maximum 200 Mo).");
+        const text = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            if (typeof reader.result === "string") resolve(reader.result);
+            else reject(new Error("Contenu du fichier invalide."));
+          };
+          reader.onerror = () => reject(new Error("Lecture du projet impossible."));
+          reader.readAsText(file);
+        });
+        timing?.stage("Parse + validate document");
+        const parsed = parseProject(text);
+        timing?.identify(parsed.name);
+        const exists = (await store.list()).some((item) => item.id === parsed.id);
+        const deleted = await store.isDeleted(parsed.id);
+        let project = exists || deleted ? { ...parsed, id: crypto.randomUUID() } : parsed;
+        timing?.stage("Wait for previous project saves");
+        await switchReady();
+        timing?.stage("Persist imported project");
+        try {
+          await store.save(project);
+        } catch (error) {
+          // Another session can retire the identity after the import's initial read.
+          if (!(error instanceof DeletedProjectError)) throw error;
+          project = { ...parsed, id: crypto.randomUUID() };
+          await store.save(project);
+        }
+        thumbnails?.schedule(project);
+        timing?.stage("Publish document");
+        engine.load(project);
+        timing?.waitForFrame(engine.getSnapshot());
       } catch (error) {
-        // Another session can retire the identity after the import's initial read.
-        if (!(error instanceof DeletedProjectError)) throw error;
-        project = { ...parsed, id: crypto.randomUUID() };
-        await store.save(project);
+        timing?.finish("failed", error);
+        throw error;
       }
-      thumbnails?.schedule(project);
-      engine.load(project);
     },
     async exportProject() {
       freezeEffectPreviews(engine);

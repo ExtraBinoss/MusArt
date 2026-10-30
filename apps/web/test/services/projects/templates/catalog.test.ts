@@ -55,7 +55,14 @@ test("routes Motion bundles to the binary-capable installation service and keeps
     expect(template.mode).toBe("motion");
     expect(template.descriptionKey).toBeTruthy();
     await createProjectFromTemplate(services, id, { signal, expectedOrigin });
-    expect(open).toHaveBeenLastCalledWith(services, id, { signal, expectedOrigin });
+    expect(open).toHaveBeenLastCalledWith(services, id, {
+      signal,
+      expectedOrigin,
+      timing: expect.objectContaining({
+        stage: expect.any(Function),
+        finish: expect.any(Function),
+      }),
+    });
   }
   expect(
     TEMPLATE_CATALOG.filter((item) => item.id.startsWith("preset:")).every(

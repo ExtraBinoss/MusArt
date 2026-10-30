@@ -6,6 +6,10 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Added development-only `[Melt perf]` console groups for project/template opening and Motion hover previews, with stage milliseconds, true first-frame acknowledgements, cancellation and failure results. Production builds do not enable these logs.
+
+- Fixed Motion library previews that sent designed templates to the media-bundle loader. Hover and installation now share validated preparation for designed projects, and the complete registered Motion catalogue includes the Morphing Type bundle within an explicit 8 MiB manifest limit.
+
 - Fixed duplicate React keys in typewriter search hints when distinct projects or templates share the same display name.
 
 - Replaced the pastel brand primary with saturated violet `#8B5CF6` and deeper `#7C3AED` action fills across both themes, the shared mascot gradient and generated browser/install icons.

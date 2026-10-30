@@ -1,4 +1,8 @@
 import {
+  reportProjectPresentation,
+  reportProjectRenderFailure,
+} from "../../services/performance/project-timing";
+import {
   GpuCompositor,
   gpuTextureLimit,
   type FontResolver,
@@ -344,6 +348,7 @@ export class PlaneResources {
     } catch (error) {
       if (this.canPresent(request) && !abort.signal.aborted) {
         if (request.fontTicket) this.fontPresenter?.fail(request.fontTicket, error);
+        if (request.origin) reportProjectRenderFailure(request.origin, request.page.id, error);
         this.report(error);
       }
     } finally {
@@ -428,6 +433,8 @@ export class PlaneResources {
           element.dataset.canonicalRevision = String(this.preparedTicket.revision);
         if (this.preparedTicket.canonical)
           element.dataset.canonicalPresentedAt = String(performance.now());
+        if (this.preparedTicket.canonical)
+          reportProjectPresentation(this.preparedTicket, this.preparedRequest.page.id);
       }
       this.publish();
     }
