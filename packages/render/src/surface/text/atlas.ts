@@ -1,4 +1,4 @@
-import type { Glyph } from "opentype.js";
+import type { OutlineGlyph } from "./outlines";
 import { DataTexture, FloatType, NearestFilter, NoColorSpace, RGBAFormat } from "three/webgpu";
 import { quadraticCurves } from "./curves";
 
@@ -16,7 +16,7 @@ export interface CurveAtlas {
   bytes: number;
 }
 /** Slug-style horizontal/vertical band lists; no raster glyph atlas or distance field. */
-export function buildCurveAtlas(glyphs: Glyph[], unitsPerEm: number): CurveAtlas {
+export function buildCurveAtlas(glyphs: OutlineGlyph[], unitsPerEm: number): CurveAtlas {
   const data: number[] = [],
     records = new Map<number, GlyphBand>();
   for (const glyph of glyphs) {

@@ -2,7 +2,7 @@
 
 The original shader files are preserved **verbatim** in [`third_party/slug-webgpu-reference`](../../third_party/slug-webgpu-reference/README.md), from [diffusionstudio/slug-webgpu at `12d8bdf333263c1340a7ca5de0c36f7f90721be0`](https://github.com/diffusionstudio/slug-webgpu/tree/12d8bdf333263c1340a7ca5de0c36f7f90721be0). The manifest records SHA-256 and Git blob IDs, and both MIT copyright notices are retained. The original HLSL was also inspected at [EricLengyel/Slug `be3c13eb7d63f9e8aa5c583e42d92c374cb91d98`](https://github.com/EricLengyel/Slug/tree/be3c13eb7d63f9e8aa5c583e42d92c374cb91d98).
 
-The runtime is a TSL translation of the default nonzero-fill, no-optical-weight-boost path. It is **not** described as a verbatim mathematical copy where an adaptation is listed below. There is no handwritten WGSL/GLSL production pipeline: Three generates both backends from the same nodes. HarfBuzz/OpenType shaping, glyph identity, resource ownership, paints, masks and document commands retain their existing owners.
+The runtime is a TSL translation of the default nonzero-fill, no-optical-weight-boost path. It is **not** described as a verbatim mathematical copy where an adaptation is listed below. There is no handwritten WGSL/GLSL production pipeline: Three generates both backends from the same nodes. CPU font preparation, glyph identity, resource ownership, paints, masks and document commands retain their existing owners. The later text-shaper migration changes the CPU font backend while preserving this Three/TSL coverage graph.
 
 ## Function and block mapping
 

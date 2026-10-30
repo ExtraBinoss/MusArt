@@ -10,7 +10,7 @@ production code must not call pixel readback APIs into JavaScript.
 | ------------------- | ----------------------------------------- | --------------------------------------------------------------------------------- |
 | Composition         | `packages/render/src/compositing/`        | Retained targets, ordered batches, masks and blends                               |
 | Primitive runs      | `compositing/primitives/`                 | Bounded instancing and decoded paint cache                                        |
-| Text                | `packages/render/src/surface/text/`       | HarfBuzz, curves, instanced analytical coverage and leased fonts                  |
+| Text                | `packages/render/src/surface/text/`       | text-shaper, curves, instanced analytical coverage and leased fonts               |
 | Effects             | `packages/render/src/effects/`            | Individual TSL factories and shared scratch targets                               |
 | Live display        | `apps/web/src/canvas/render/`             | One retained renderer, latest-only preparation and display plane                  |
 | Drawing density     | `canvas/render/drawing-density.ts`        | Shared imperative DPR configuration for rendering and Fiber resizing              |

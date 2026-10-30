@@ -35,7 +35,7 @@ Portable `.musart` JSON includes the document and its original image assets. Fon
 
 | Technology                                 | Role                                                                                                                                                                           |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| OpenType.js and HarfBuzz.js                | Prepare font outlines and text shaping; analytical curve coverage is rendered on the GPU.                                                                                      |
+| text-shaper                                | Prepare font outlines and text shaping; analytical curve coverage is rendered on the GPU. OpenType.js remains for UI import metadata validation and test references.           |
 | Fontsource and the checked-in font catalog | Local interface fonts, bundled editing fonts and metadata for on-demand font downloads.                                                                                        |
 | Transformers.js and pinned SlimSAM weights | Optional object selection in a local worker, using WebGPU or a WASM fallback. Model/runtime files download on first preparation; images remain on the device.                  |
 | Browser image encoders and fflate          | PNG, WebP and JPEG export, plus ZIP downloads of multiple artboards.                                                                                                           |

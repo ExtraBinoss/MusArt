@@ -97,7 +97,7 @@ the pixel witness.
 | Renderer topic          | Contract                                                                                                                                                       |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Images                  | Original decoded image textures are uploaded once per original.                                                                                                |
-| Text                    | Text is shaped with HarfBuzz and rendered from cached analytical glyph curves; paint changes update GPU controls.                                              |
+| Text                    | Text is shaped with text-shaper and rendered from cached analytical glyph curves; paint changes update GPU controls.                                           |
 | SVG geometry and paints | SVG paths are parsed with Three's `SVGLoader` and triangulated once per geometry identity; subsequent fill and branded part paint changes update GPU uniforms. |
 | SVG semantics           | SVG viewBox origins, part transforms, even-odd holes and stroke geometry are retained.                                                                         |
 

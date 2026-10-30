@@ -1,4 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
+import { readFile } from "node:fs/promises";
 import { FONT_CATALOG } from "@musart/assets";
 import {
   FontRepository,
@@ -256,5 +257,19 @@ it("rejects explicit imported/system identities when no platform resolver is ava
   for (const family of ["custom:abcdef", "local:MyFont"])
     await expect(repository.acquire(family)).rejects.toThrow("requires a font resolver");
   expect(fetcher).not.toHaveBeenCalled();
+  repository.clear();
+});
+
+it("owns lazy font bytes independently of a mutable platform resolver buffer", async () => {
+  const bytes = new Uint8Array(await readFile("apps/web/public/fonts/inter/font.ttf"));
+  const repository = new FontRepository({ resolver: async () => bytes.buffer });
+  const lease = await repository.acquire("custom:owned-font", 800);
+  bytes.fill(0);
+  const glyph = lease.font.charToGlyph("é");
+  expect(glyph.index).toBeGreaterThan(0);
+  const path = weightedGlyph(lease.font, glyph, 800).getPath(0, 0, lease.font.unitsPerEm);
+  expect(path.commands.length).toBeGreaterThan(0);
+  expect(lease.font.shape!("AV", 800)).toHaveLength(2);
+  lease.release();
   repository.clear();
 });
