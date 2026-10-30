@@ -90,6 +90,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 - Flush the final native saturation/value sample before committing, retire delayed picker callbacks, and reject updates after cancellation or unmount so a rapid release saves the intended color in one undo step.
 
+- Compiled independent source, backdrop and mask sampler bindings with distinct owned textures. This fixes incorrect Multiply colors and partial masks on both Three backends, restores external bindings after preparation and disposes temporary inputs on success, failure and cancellation.
+
 - Kept color and gradient gestures stable across callback refreshes and normal Radix capture release. Gradient thumbs preserve their grab offset and final release position; interrupted drags and abandoned previews restore the original value. Native GPU checks verify one undo entry and exact saved/reopened solid and gradient values.
 
 - Command search uses native inertness during its closing animation without hiding a still-focused input through `aria-hidden`. Its opening animation starts on the first available frame after mounting, keeping initial results and the panel entrance coordinated while focus remains immediate.
