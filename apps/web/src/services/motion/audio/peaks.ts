@@ -53,8 +53,8 @@ export async function prepareAudioPeaks(
       signal?.throwIfAborted();
       const end = Math.min(duration, offset + 0.5);
       const chunks = await source.readWindow(first + offset, first + end, { signal });
+      signal?.throwIfAborted();
       accumulatePeaks(peaks, chunks, first, duration);
-      await new Promise<void>((resolve) => setTimeout(resolve, 0));
     }
     return peaks;
   } finally {

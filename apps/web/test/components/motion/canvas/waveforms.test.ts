@@ -9,7 +9,7 @@ async function settle() {
   await Promise.resolve();
   await Promise.resolve();
 }
-function fixture(count = 3) {
+function fixture(count = 3, overscan = 0) {
   const d = audioFixture(count),
     assets = Object.fromEntries(
       Array.from({ length: count }, (_, index) => {
@@ -61,6 +61,7 @@ function fixture(count = 3) {
     controller = createTimelineCanvasWaveforms({
       engine: d.engine,
       prepare,
+      overscan,
       publish,
       onError,
       readModel: () => model,
@@ -78,6 +79,28 @@ function fixture(count = 3) {
     },
   };
 }
+it("prioritizes the current visible originals ahead of lookahead after a scroll settles or changes viewport", async () => {
+  const d = fixture(7, 2);
+  d.controller.setPaused(true);
+  d.controller.update(72, 24, 0, 240);
+  expect(d.prepare).not.toHaveBeenCalled();
+  d.controller.setPaused(false);
+  expect(d.prepare.mock.calls[0]![0].id).toBe("sound-3");
+  d.controller.setPaused(true);
+  d.controller.update(144, 24, 0, 240);
+  d.controller.setPaused(false);
+  d.pending[0]!.resolve(new Float32Array([0.3]));
+  await settle();
+  expect(d.prepare.mock.calls[1]![0].id).toBe("sound-6");
+  expect(d.publish).not.toHaveBeenCalled();
+  d.pending[1]!.resolve(new Float32Array([0.6]));
+  await settle();
+  expect(d.publish).toHaveBeenLastCalledWith(new Map([["audio-6", [expect.closeTo(0.6)]]]));
+  expect(d.prepare.mock.calls[2]![0].id).toBe("sound-4");
+  d.controller.dispose();
+  d.pending[2]!.resolve(new Float32Array([0.4]));
+  await settle();
+});
 it("prepares only intersecting visible tracks serially and discards work retired by a rapid vertical jump", async () => {
   const d = fixture();
   d.controller.update(0, 24, 0, 240);

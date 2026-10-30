@@ -484,3 +484,50 @@ ignored `artifacts/motion/perf/scroll-third/`. Focused regressions cover cache
 admission/eviction, fractional bucket boundaries, hover geometry reuse and
 viewport-width read counts. Native checks cover same-frame two-axis scrolling,
 zoom alignment and dense key selection.
+
+### Cold waveform preparation and visible priority — fourth pass
+
+The waveform controller now admits the current viewport's originals ahead of
+its two-row lookahead. Previously, the leading offscreen rows could occupy the
+serial queue before any cold visible envelope. A passive scroll still lets the
+single active decode finish; the next admission follows the latest viewport,
+without restarting useful work or enlarging the cache/queue.
+
+The dedicated preparation worker no longer inserts `setTimeout(0)` after every
+half-second decode window. Native decoding already awaits asynchronous reads;
+these extra timer waits accumulated before publishing the complete envelope.
+The original 500 ms windows, PCM limits, serial worker, 2,048 bins and cache
+budgets remain unchanged. An abort following an awaited read is checked before
+accumulation, and the source is closed through the existing `finally` path.
+
+A frozen production harness loads both algorithms with the same actual
+Mediabunny decoder and starts a fresh dedicated worker per invocation. Five pairs
+alternate before/after order for each generated 30-second PCM16 WAV original.
+Every envelope is compared exactly, including all bins, against its cohort's
+first reference; all **20 runs** match. Both versions perform 60 serial reads.
+
+| Worker preparation, median of five |   Before |    After | Reduction |
+| ---------------------------------- | -------: | -------: | --------: |
+| 48 kHz stereo, 30 s WAV            | 440.6 ms | 271.3 ms |     38.4% |
+| 192 kHz mono, 30 s WAV             | 577.0 ms | 446.3 ms |     22.7% |
+
+The boundary starts immediately before `prepareAudioPeaks` and ends after its
+source disposal. It excludes worker module initialization, original creation,
+transport, IndexedDB and UI publication; these are **not** end-to-end waveform
+arrival or scroll/FPS measurements. Raw ranges remain visible: 352.6–489.4 vs
+200.5–360.7 ms at 48 kHz, and 448.0–780.4 vs 380.3–589.8 ms at 192 kHz.
+
+The environment is Linux / headless Chromium 156.0.8078.4, viewport 800×600,
+DPR 1, one foreground page, one worker at a time, nice 15, an enforced 100% CPU
+quota, 1,800 MiB memory high / 2,200 MiB maximum and no swap on the shared host.
+This audio-only harness uses no artwork/GPU path. The production UI verification
+uses the separately frozen full editor, real Sound Playground originals, rapid
+backscroll, actual volume popup/focus and instrumented zero pixel readbacks.
+
+An attempted 750 ms window variant failed exact native envelope comparison and
+was rejected. Its source, mismatch and failed driver log remain preserved; none
+of its timings are included above. Unit regressions cover visible-first admission
+after viewport changes, unchanged fractional-PTS/bin coverage, disposal/errors
+and cancellation after an awaited read. Sources, dependency snapshots, compiled
+JavaScript/maps, genuine WAV originals, all peak arrays and exact drivers are in
+ignored `artifacts/motion/perf/waveform-fourth/`.

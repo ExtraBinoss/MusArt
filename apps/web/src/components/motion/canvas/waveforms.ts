@@ -169,10 +169,12 @@ export function createTimelineCanvasWaveforms({
       if (closed) return;
       const model = readModel(),
         offset = model.rows.length,
+        visibleFirst = Math.max(0, Math.floor(top / model.rowHeight) - offset),
+        visibleAfter = Math.max(0, Math.ceil((top + height) / model.rowHeight) - offset),
         first = Math.max(0, Math.floor(top / model.rowHeight) - offset - overscan),
         after = Math.max(0, Math.ceil((top + height) / model.rowHeight) - offset + overscan),
         next = new Map<string, Wanted>();
-      for (const track of model.audioTracks.slice(first, after)) {
+      const admit = (track: (typeof model.audioTracks)[number]) => {
         const start =
             model.audioDraft?.trackId === track.id
               ? model.audioDraft.start
@@ -191,9 +193,15 @@ export function createTimelineCanvasWaveforms({
           !asset ||
           !isAudioAsset(asset)
         )
-          continue;
+          return;
         next.set(track.id, { asset, identity: assetOriginalIdentity(asset) });
-      }
+      };
+      // Visible originals lead the serial queue; lookahead must not delay a cold viewport.
+      for (const track of model.audioTracks.slice(visibleFirst, visibleAfter)) admit(track);
+      for (const track of model.audioTracks.slice(first, Math.min(after, visibleFirst)))
+        admit(track);
+      for (const track of model.audioTracks.slice(Math.max(first, visibleAfter), after))
+        admit(track);
       const changed =
         next.size !== wanted.size ||
         [...next].some(([id, entry]) => wanted.get(id)?.identity !== entry.identity);
