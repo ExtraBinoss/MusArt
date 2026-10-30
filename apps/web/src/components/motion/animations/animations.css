@@ -1,6 +1,9 @@
 .motion-animation-popover {
   width: min(360px, calc(100vw - 24px));
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  height: min(640px, calc(100dvh - 24px));
   max-height: min(calc(100dvh - 24px), var(--radix-popover-content-available-height, 800px));
   overflow: hidden;
 }
@@ -9,7 +12,9 @@
   flex-direction: column;
   gap: 12px;
   padding: 14px;
-  max-height: inherit;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 .animation-picker header {
   display: flex;
@@ -47,8 +52,7 @@
 .animation-preset-scroll {
   overflow-y: auto;
   overscroll-behavior: contain;
-  max-height: min(440px, calc(100dvh - 300px));
-  min-height: 120px;
+  min-height: 0;
   flex: 1 1 auto;
   scrollbar-width: thin;
 }
@@ -88,10 +92,10 @@
 }
 .animation-card-image > img {
   position: absolute;
-  width: 56.25%;
-  height: 83.333%;
-  left: 21.875%;
-  top: 8.333%;
+  width: 78.125%;
+  height: 78.125%;
+  left: 10.9375%;
+  top: 10.9375%;
   object-fit: cover;
 }
 .animation-card-live {

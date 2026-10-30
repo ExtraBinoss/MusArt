@@ -9,7 +9,7 @@ import {
   type MotionAnimationPreset,
 } from "@musart/core";
 
-export const ANIMATION_PREVIEW_IMAGE = `${import.meta.env.BASE_URL}templates/motion/media/painted-hand-298-332.jpg`;
+export const ANIMATION_PREVIEW_IMAGE = `${import.meta.env.BASE_URL}benchmark/06-boathouse-1.jpg`;
 let photo: Promise<string> | undefined;
 const originals = new WeakMap<MotionProgram, Project["assets"]>();
 export function animationPreviewAssets(program: MotionProgram) {
@@ -40,10 +40,10 @@ export async function createAnimationPreviewDocument(
       assets: {
         photo: {
           id: "photo",
-          name: "Painted hand",
+          name: "Alpine lake — Luca Bravo",
           mime: "image/jpeg",
-          width: 298,
-          height: 332,
+          width: 1280,
+          height: 960,
           dataUrl: image,
         },
       },
@@ -57,10 +57,10 @@ export async function createAnimationPreviewDocument(
             createLayer("image", {
               id: "subject",
               assetId: "photo",
-              x: 42,
-              y: 12,
-              width: 108,
-              height: 120,
+              x: 21,
+              y: 15.75,
+              width: 150,
+              height: 112.5,
             }),
           ],
         }),

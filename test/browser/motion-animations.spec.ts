@@ -26,6 +26,16 @@ test("motion presets stay simple, preview natively and persist globally across p
   await animations.getByRole("button", { name: "Add motion", exact: true }).click();
   const picker = page.locator(".motion-animation-popover");
   await expect(picker.locator(".animation-preset-card")).toHaveCount(61);
+  const originalPosition = await picker.boundingBox();
+  await picker.getByRole("radio", { name: "My presets", exact: true }).click();
+  await expect(
+    picker.getByText("Save an animation to find it here, in every project."),
+  ).toBeVisible();
+  const personalPosition = await picker.boundingBox();
+  expect(personalPosition!.x).toBeCloseTo(originalPosition!.x, 0);
+  expect(personalPosition!.y).toBeCloseTo(originalPosition!.y, 0);
+  expect(personalPosition!.height).toBeCloseTo(originalPosition!.height, 0);
+  await picker.getByRole("radio", { name: "Library", exact: true }).click();
   const columns = await picker
     .locator(".animation-preset-grid")
     .evaluate((node) => getComputedStyle(node).gridTemplateColumns.split(" ").length);
