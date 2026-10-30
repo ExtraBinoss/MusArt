@@ -139,3 +139,25 @@ it("relinks crossed keys in current temporal order without sorting the full auth
   ]);
   expect(indexed.keys.map((entry) => entry.key.id)).toEqual(["a", "b", "c"]);
 });
+it("retimes child channels from a group capture even though the primary track ID belongs to its parent", () => {
+  const d = canvasFixture(),
+    indexed = indexTimelineCanvas(d.rows)[1]!;
+  const moved = projectCanvasKeys(
+    indexed,
+    1,
+    {
+      ...d.model,
+      draft: {
+        action: "move",
+        delta: { value: 1, rate: 2 },
+        trackId: "parent",
+        trackIds: new Set(["parent", "first"]),
+        layerIds: new Set(["parent", "hero"]),
+        keyIds: new Set(["a", "b"]),
+      },
+    },
+    { left: 0, top: 0, width: 200, height: 48 },
+  );
+  expect(moved.filter((item) => item.kind === "key").map((key) => key.bounds.x)).toEqual([41, 141]);
+  expect(indexed.keys.map((key) => key.time)).toEqual([0, 1]);
+});

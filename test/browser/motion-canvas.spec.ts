@@ -111,6 +111,12 @@ test("a thousand rows use one bounded Canvas and cover both-axis scroll on the f
     expect(sample.last).toBeGreaterThanOrEqual(Math.ceil((sample.top + sample.height) / 24));
     expect(sample.rows).toBeLessThanOrEqual(Math.ceil(sample.height / 24) + 2);
     expect(sample.items).toBeGreaterThan(0);
+    for (
+      let row = Math.floor(sample.top / 24);
+      row < Math.ceil((sample.top + sample.height) / 24);
+      row++
+    )
+      expect(sample.labels).toContain(row);
     samples.push(sample);
   }
   expect(samples[0]!.top).toBeGreaterThan(0);
@@ -125,6 +131,85 @@ test("a thousand rows use one bounded Canvas and cover both-axis scroll on the f
     `${output}/first-scroll-frames.json`,
     JSON.stringify({ bounds, samples }, null, 2),
   );
+});
+
+test("zoom anchors keep the Canvas, ruler and native extent aligned with generic side shadows", async ({
+  page,
+}) => {
+  await prepare(page, fixture());
+  const slider = page.getByRole("slider", { name: "Zoom de la timeline", exact: true });
+  const scroll = page.locator(".motion-timeline-scroll"),
+    shadow = page.locator(".motion-scroll-shadow");
+  const read = () =>
+    page.evaluate(() => {
+      const canvas = document.querySelector<HTMLCanvasElement>(
+        "canvas[data-timeline-canvas=true]",
+      )!;
+      const view = document.querySelector<HTMLElement>(".motion-timeline-scroll")!;
+      const clip = document.querySelector<HTMLElement>(".motion-playhead-clip")!;
+      const content = document.querySelector<HTMLElement>(".motion-timeline-content")!;
+      return {
+        scale: Number(canvas.dataset.scale),
+        paintedLeft: Number(canvas.dataset.timelineLeft),
+        left: view.scrollLeft,
+        maximum: view.scrollWidth - view.clientWidth,
+        clipEnd: parseFloat(clip.style.left) + parseFloat(clip.style.width),
+        extent: content.clientWidth,
+        end: parseFloat(document.querySelector<HTMLElement>(".motion-end-marker")!.style.left),
+        labels: [...document.querySelectorAll<HTMLElement>("[data-labels-only=true]")].map((n) => [
+          n.dataset.motionRowKey,
+          n.dataset.reactRenders,
+        ]),
+      };
+    });
+  const original = await authored(page),
+    quiet = await counters(page);
+  await slider.focus();
+  await page.keyboard.press("Home");
+  await frames(page);
+  const labels = (await read()).labels;
+  const box = (await page.locator(surface).boundingBox())!;
+  await page.mouse.move(box.x + box.width * 0.4, box.y + 12);
+  await page.keyboard.down("Control");
+  try {
+    for (let i = 0; i < 8; i++) await page.mouse.wheel(0, -8);
+  } finally {
+    await page.keyboard.up("Control");
+  }
+  await frames(page);
+  const fit = await read();
+  expect(fit.maximum).toBe(0);
+  expect(fit.left).toBe(0);
+  expect(fit.scale).toBeCloseTo(Number(await slider.getAttribute("aria-valuenow")), 5);
+  expect(fit.end).toBeCloseTo(30 * fit.scale, 3);
+  expect(fit.paintedLeft).toBe(fit.left);
+  expect(fit.labels).toEqual(labels);
+  await slider.focus();
+  await page.keyboard.press("End");
+  await frames(page);
+  await expect(shadow).toHaveAttribute("data-overflow-right", "");
+  await expect(shadow.locator(":scope > .scroll-shadow-inline-end")).toHaveCSS(
+    "pointer-events",
+    "none",
+  );
+  await scroll.evaluate((n) => {
+    n.scrollLeft = n.scrollWidth;
+  });
+  await frames(page);
+  await expect(shadow).not.toHaveAttribute("data-overflow-right", "");
+  await expect(shadow).toHaveAttribute("data-overflow-left", "");
+  await slider.focus();
+  await page.keyboard.press("Home");
+  await frames(page);
+  const reset = await read();
+  expect(reset.maximum).toBe(0);
+  expect(reset.left).toBe(0);
+  expect(reset.paintedLeft).toBe(0);
+  expect(reset.clipEnd).toBeLessThanOrEqual(reset.extent);
+  expect(reset.labels).toEqual(labels);
+  expect(await counters(page)).toEqual(quiet);
+  expect(await authored(page)).toEqual(original);
+  await page.screenshot({ path: `${output}/zoom-side-shadows.png` });
 });
 
 test("Canvas key hits, decorative marquee and live drag preserve one undo and native easing", async ({
@@ -217,6 +302,20 @@ test("Canvas clip movement and trim preview immediately and each release needs o
     await undo(page);
     expect(await authored(page)).toEqual(original);
   }
+  const origin = await point(page, layerLabel, 2.5);
+  await page.mouse.move(origin.x, origin.y);
+  await page.mouse.down();
+  await page.mouse.move(20, origin.y);
+  await expect(page.locator(".motion-timeline")).toHaveAttribute("data-timeline-boundary", "start");
+  await expect(page.locator(".motion-start-boundary")).toHaveCSS("opacity", "1");
+  await page.screenshot({ path: `${output}/clip-start-boundary.png` });
+  await page.mouse.up();
+  await expect(page.locator(".motion-timeline")).not.toHaveAttribute("data-timeline-boundary");
+  expect(
+    motionTimeToSeconds((await authored(page)).find((track) => track.id === "card-first")!.start),
+  ).toBe(0);
+  await undo(page);
+  expect(await authored(page)).toEqual(original);
 });
 
 test("Play moves its own playhead without repainting the static Canvas body or React roots", async ({
@@ -271,6 +370,10 @@ test("active audio DOM overlays retain real fade and volume editors after Canvas
   const snapshot = await page.evaluate(() => window.musart!.snapshot());
   const track = snapshot.project.pages[0]!.motion!.audioTracks![0]!;
   const label = `[data-audio-track-id="${track.id}"]`;
+  await expect
+    .poll(async () => Number(await page.locator(surface).getAttribute("data-timeline-waveforms")))
+    .toBe(1);
+  await page.locator(surface).screenshot({ path: `${output}/audio-mountain.png` });
   const hit = await point(page, label, 0.5);
   await page.mouse.move(hit.x, hit.y);
   await page

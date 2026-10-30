@@ -18,6 +18,14 @@ type Props = Omit<
   assets: Record<string, Asset>;
   onAudioError: (error: unknown) => void;
 };
+type LabelProps = Omit<
+  Props,
+  "pixelsPerSecond" | "duration" | "left" | "width" | "unit" | "onZoomRange"
+>;
+
+// Legacy row ports require temporal fields, but HTML gutter labels never consume them.
+const LABEL_TIME = { pixelsPerSecond: 1, duration: 0, left: 0, width: 0, unit: "ms" } as const;
+const LABEL_ADMISSION = { synchronousScroll: true } as const;
 
 /** The canvas body does not subscribe to HTML label admission. */
 export const TimelineVirtualRows = memo(function TimelineVirtualRows({
@@ -50,12 +58,23 @@ export const TimelineVirtualRows = memo(function TimelineVirtualRows({
       >
         {(host) => (
           <LabelsVirtualRows
-            {...props}
             viewport={viewport}
             audioTracks={audioTracks}
             assets={assets}
             onAudioError={onAudioError}
             host={host}
+            rows={props.rows}
+            rowHeight={props.rowHeight}
+            selected={props.selected}
+            engine={props.engine}
+            compositionId={props.compositionId}
+            transport={props.transport}
+            gestures={props.gestures}
+            drag={props.drag}
+            interactive={props.interactive}
+            onToggle={props.onToggle}
+            onSelect={props.onSelect}
+            onError={props.onError}
           />
         )}
       </CanvasTimelineBody>
@@ -71,12 +90,13 @@ const LabelsVirtualRows = memo(function LabelsVirtualRows({
   onAudioError,
   host,
   ...props
-}: Props & { host: TimelineCanvasHost }) {
+}: LabelProps & { host: TimelineCanvasHost }) {
   const { first, last } = useVirtualList(
     props.rows.length + audioTracks.length,
     props.rowHeight,
     viewport,
     5,
+    LABEL_ADMISSION,
   );
   const selectedAudioId = useSyncExternalStore(
     host.subscribeAudioSelection,
@@ -85,7 +105,7 @@ const LabelsVirtualRows = memo(function LabelsVirtualRows({
   );
   return (
     <>
-      <TimelineRows {...props} first={first} last={last} labelsOnly />
+      <TimelineRows {...props} {...LABEL_TIME} first={first} last={last} labelsOnly />
       <AudioRows
         key={props.compositionId}
         engine={props.engine}
@@ -96,13 +116,13 @@ const LabelsVirtualRows = memo(function LabelsVirtualRows({
         last={last}
         offset={props.rows.length}
         rowHeight={props.rowHeight}
-        scale={props.pixelsPerSecond}
-        duration={props.duration}
-        left={props.left}
-        width={props.width}
+        scale={LABEL_TIME.pixelsPerSecond}
+        duration={LABEL_TIME.duration}
+        left={LABEL_TIME.left}
+        width={LABEL_TIME.width}
         active={props.interactive ?? true}
         visualSelected={props.selected.size > 0}
-        unit={props.unit}
+        unit={LABEL_TIME.unit}
         onError={onAudioError}
         labelsOnly
         selectedAudioId={selectedAudioId}

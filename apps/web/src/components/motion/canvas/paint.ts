@@ -29,8 +29,8 @@ function waveform(ctx: CanvasRenderingContext2D, item: TimelineCanvasClip, width
   const start = Math.max(0, bounds.x),
     end = Math.min(width, bounds.x + bounds.width);
   if (end <= start) return;
-  const middle = bounds.y + bounds.height / 2;
-  const amplitude = Math.max(1, bounds.height / 2 - 1);
+  const bottom = bounds.y + bounds.height - 0.5;
+  const amplitude = Math.max(1, bounds.height - 1.5);
   const points: { x: number; amplitude: number }[] = [];
   const sample = (pixel: number) =>
     ((item.sourceIn + ((pixel - bounds.x) / bounds.width) * item.duration) / item.sourceDuration) *
@@ -56,25 +56,21 @@ function waveform(ctx: CanvasRenderingContext2D, item: TimelineCanvasClip, width
     { scale: 0.7, opacity: 0.72 },
   ]) {
     ctx.beginPath();
-    ctx.moveTo(points[0]!.x, middle);
-    for (const direction of [1, -1]) {
-      const first = direction === 1 ? 0 : points.length - 1;
-      const initial = points[first]!;
-      const side = -direction * layer.scale;
-      ctx.lineTo(initial.x, middle + side * initial.amplitude);
-      for (let index = first + direction; index >= 0 && index < points.length; index += direction) {
-        const previous = points[index - direction]!,
-          current = points[index]!;
-        ctx.quadraticCurveTo(
-          previous.x,
-          middle + side * previous.amplitude,
-          (previous.x + current.x) / 2,
-          middle + (side * (previous.amplitude + current.amplitude)) / 2,
-        );
-      }
-      const last = points[direction === 1 ? points.length - 1 : 0]!;
-      ctx.lineTo(last.x, middle + side * last.amplitude);
+    ctx.moveTo(points[0]!.x, bottom);
+    ctx.lineTo(points[0]!.x, bottom - layer.scale * points[0]!.amplitude);
+    for (let index = 1; index < points.length; index++) {
+      const previous = points[index - 1]!,
+        current = points[index]!;
+      ctx.quadraticCurveTo(
+        previous.x,
+        bottom - layer.scale * previous.amplitude,
+        (previous.x + current.x) / 2,
+        bottom - (layer.scale * (previous.amplitude + current.amplitude)) / 2,
+      );
     }
+    const last = points[points.length - 1]!;
+    ctx.lineTo(last.x, bottom - layer.scale * last.amplitude);
+    ctx.lineTo(last.x, bottom);
     ctx.closePath();
     ctx.globalAlpha = alpha * layer.opacity;
     ctx.fill();

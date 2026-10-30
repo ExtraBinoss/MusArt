@@ -12,6 +12,7 @@ import type {
 } from "./model";
 
 export const TIMELINE_CANVAS_BYTES = 16 * 1024 * 1024;
+export const TIMELINE_ZOOM_PRESENT = "musart:timeline-zoom-present";
 const MAX_DIMENSION = 8192;
 
 /** A viewport allocation, independent of document duration, track count and scroll extent. */
@@ -270,6 +271,11 @@ export function createTimelineCanvasSurface(
     if (trackingRows) queue.request("measure", measureRows);
     invalidate();
   };
+  // The panel emits this after its layout effect applies the native zoom anchor.
+  const presentZoom = () => {
+    invalidate();
+    queue.flush();
+  };
   const resized = () => {
     if (disposed) return;
     queue.request("measure", measure);
@@ -305,6 +311,7 @@ export function createTimelineCanvasSurface(
     attributeFilter: ["data-layer-reorder-active"],
   });
   viewport.addEventListener("scroll", scrolled, { passive: true });
+  viewport.addEventListener(TIMELINE_ZOOM_PRESENT, presentZoom);
   window.addEventListener("resize", resized);
   measure();
   return {
@@ -346,6 +353,7 @@ export function createTimelineCanvasSurface(
       reorderObserver.disconnect();
       rowReader.dispose();
       viewport.removeEventListener("scroll", scrolled);
+      viewport.removeEventListener(TIMELINE_ZOOM_PRESENT, presentZoom);
       window.removeEventListener("resize", resized);
       reducedMotion?.removeEventListener("change", motionChanged);
       canvas.width = canvas.height = 1;

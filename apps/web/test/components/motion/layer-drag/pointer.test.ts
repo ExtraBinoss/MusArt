@@ -252,3 +252,35 @@ it("treats an invalid release as cancellation without adding history or retainin
   expect(d.controller.read()).toBeNull();
   expect(document.querySelector(".layer-drag-preview")).toBeNull();
 });
+
+it("reports factual browser cancellation, lost capture and retired adapter ownership", () => {
+  const d = fixture(),
+    warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+  d.send("pointerdown", 100);
+  d.send("pointercancel", 100);
+  expect(warn).toHaveBeenLastCalledWith(
+    "[MusArt DnD]",
+    expect.objectContaining({
+      stage: "pointerCancel",
+      reason: "browserPointerCancelled",
+      input: "pointer",
+      sourceIds: [d.rectangle.id],
+      targetId: d.rectangle.id,
+    }),
+  );
+  d.send("pointerdown", 100);
+  d.send("lostpointercapture", 100);
+  expect(warn).toHaveBeenLastCalledWith(
+    "[MusArt DnD]",
+    expect.objectContaining({ reason: "pointerCaptureLost" }),
+  );
+  d.send("pointerdown", 100);
+  d.adapter.dispose();
+  expect(warn).toHaveBeenLastCalledWith(
+    "[MusArt DnD]",
+    expect.objectContaining({ reason: "adapterDisposed" }),
+  );
+  expect(d.controller.read()).toBeNull();
+  expect(d.engine.getSnapshot().selection).toEqual([d.text.id]);
+  warn.mockRestore();
+});

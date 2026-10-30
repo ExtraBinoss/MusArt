@@ -28,6 +28,7 @@ export function observeDockInteraction(root: HTMLElement, actions: DockActions) 
     suppressed = false,
     engaged = false,
     keyboard = false,
+    nativeDrag = false,
     disposed = false;
   let previousExpansion = actions.expanded();
   let bounds: DOMRect | null = null;
@@ -83,6 +84,8 @@ export function observeDockInteraction(root: HTMLElement, actions: DockActions) 
       actions.pinned() ||
       nearHandle ||
       pointers.size > 0 ||
+      nativeDrag ||
+      document.documentElement.dataset.layerReorderActive === "true" ||
       dockRegions(root).size > 1 ||
       (owns(focused) &&
         (keyboard ||
@@ -147,6 +150,28 @@ export function observeDockInteraction(root: HTMLElement, actions: DockActions) 
     }
     reconsider();
   };
+  const dragStart = (event: DragEvent) => {
+    if (!owns(event.target)) return;
+    nativeDrag = true;
+    engaged = true;
+    clear();
+  };
+  const dragOver = (event: DragEvent) => {
+    if (!owns(event.target)) return;
+    nativeDrag = true;
+    hovering = true;
+    engaged = true;
+    clear();
+    if (!actions.expanded()) actions.open();
+  };
+  const dragEnd = () => {
+    if (!nativeDrag) return;
+    nativeDrag = false;
+    pointers.clear();
+    hovering = false;
+    actions.idle();
+    reconsider();
+  };
   const key = (event: KeyboardEvent) => {
     if (event.key === "Tab") keyboard = true;
   };
@@ -173,16 +198,25 @@ export function observeDockInteraction(root: HTMLElement, actions: DockActions) 
     attributes: true,
     attributeFilter: ["aria-expanded", "aria-controls", "data-state"],
   });
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-layer-reorder-active"],
+  });
   document.addEventListener("pointerover", over, true);
   document.addEventListener("pointerout", out, true);
   document.addEventListener("pointerdown", down, true);
   document.addEventListener("pointerup", up, true);
   document.addEventListener("pointercancel", up, true);
+  document.addEventListener("dragstart", dragStart, true);
+  document.addEventListener("dragover", dragOver, true);
+  document.addEventListener("drop", dragEnd, true);
+  document.addEventListener("dragend", dragEnd, true);
   document.addEventListener("pointermove", move, true);
   document.addEventListener("keydown", key, true);
   document.addEventListener("focusin", focus, true);
   document.addEventListener("focusout", focus, true);
   const blur = () => {
+    nativeDrag = false;
     pointers.clear();
     hovering = false;
     nearHandle = false;
@@ -194,7 +228,10 @@ export function observeDockInteraction(root: HTMLElement, actions: DockActions) 
   window.addEventListener("blur", blur);
   window.addEventListener("resize", layout);
   return {
-    dragging: () => pointers.size > 0,
+    dragging: () =>
+      pointers.size > 0 ||
+      nativeDrag ||
+      document.documentElement.dataset.layerReorderActive === "true",
     refresh() {
       const expanded = actions.expanded();
       if (!expanded && previousExpansion && !suppressed && held()) {
@@ -226,6 +263,10 @@ export function observeDockInteraction(root: HTMLElement, actions: DockActions) 
       document.removeEventListener("pointerdown", down, true);
       document.removeEventListener("pointerup", up, true);
       document.removeEventListener("pointercancel", up, true);
+      document.removeEventListener("dragstart", dragStart, true);
+      document.removeEventListener("dragover", dragOver, true);
+      document.removeEventListener("drop", dragEnd, true);
+      document.removeEventListener("dragend", dragEnd, true);
       document.removeEventListener("pointermove", move, true);
       document.removeEventListener("keydown", key, true);
       document.removeEventListener("focusin", focus, true);

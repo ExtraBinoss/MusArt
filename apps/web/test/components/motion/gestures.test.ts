@@ -7,11 +7,13 @@ import { makeTransport } from "./support";
 afterEach(() => {
   document.body.innerHTML = "";
 });
-function fixture() {
+function fixture(movable = false, duration = 2) {
   const a = createLayer("rectangle", { id: "a" }),
     b = createLayer("rectangle", { id: "b" });
   const engine = new EditorEngine(createProject({ pages: [createPage({ layers: [a, b] })] }));
   engine.execute({ type: "setCompositionMode", mode: "motion" });
+  if (duration !== 2)
+    engine.execute({ type: "setMotionDuration", duration: { value: duration, rate: 1 } });
   for (const [layerId, value] of [
     ["a", 0],
     ["a", 1],
@@ -25,6 +27,13 @@ function fixture() {
     });
   const page = () => engine.getSnapshot().project.pages[0]!;
   const track = () => page().motion!.tracks.find((item) => item.layerId === "a")!;
+  if (movable)
+    engine.execute({
+      type: "setMotionTrackRange",
+      trackId: track().id,
+      start: { value: 0, rate: 1 },
+      end: { value: 3, rate: 2 },
+    });
   const root = document.createElement("section"),
     viewport = document.createElement("div"),
     row = document.createElement("div"),
@@ -105,7 +114,7 @@ function fixture() {
 }
 
 it("publishes track drags only to DOM and commits one complete undoable transaction", () => {
-  const d = fixture(),
+  const d = fixture(true),
     before = d.engine.getSnapshot().project;
   const transactions = vi.spyOn(d.engine, "transaction");
   d.controls.beginTrack(d.event(), d.track(), "move");
@@ -190,7 +199,8 @@ it("rejects stale origins and retires all pending work after an authored revisio
 });
 
 it("moves a Shift-selected key set atomically, snaps to exact playhead time and deletes in one batch", () => {
-  const d = fixture(),
+  // The later selected key needs real authored room for the half-second move.
+  const d = fixture(false, 3),
     first = d.keys[0]!,
     secondLayerKey = d.page().motion!.tracks.find((track) => track.layerId === "b")!.properties[0]!
       .keyframes[0]!;
@@ -288,7 +298,7 @@ it("retires gesture DOM immediately when the transport replaces its draft owner"
 });
 
 it("hands off a delayed horizontal intent using original coordinates and commits once", () => {
-  const d = fixture(),
+  const d = fixture(true),
     before = d.engine.getSnapshot().project;
   const input = {
     node: d.body,
@@ -339,7 +349,7 @@ it("restores the pre-axis selection on typed cancellation and ignores foreign po
 });
 
 it("samples release-only position and modifier changes before its single commit", () => {
-  const d = fixture(),
+  const d = fixture(true),
     before = d.engine.getSnapshot().project;
   d.controls.beginTrack(d.event(), d.track(), "move");
   d.send(d.body, "pointermove", 120);
@@ -402,5 +412,136 @@ it("keeps selection identity and notification count for semantic no-ops, indepen
   d.controls.selectKeys([], false);
   expect(d.controls.readSelected()).toBe(cleared);
   expect(d.onSelection).toHaveBeenCalledTimes(4);
+  d.controls.dispose();
+});
+
+it("clamps huge pointer packets at zero and D without extending duration, then undoes once", () => {
+  const d = fixture(true),
+    before = d.engine.getSnapshot().project;
+  const transaction = vi.spyOn(d.engine, "transaction");
+  d.controls.beginTrack(d.event(), d.track(), "move");
+  d.send(d.body, "pointermove", -12000);
+  expect(d.root.dataset.timelineBoundary).toBe("start");
+  expect(d.controls.readPreview()!.delta).toEqual({ value: 0, rate: 1 });
+  d.send(d.body, "pointermove", 12000);
+  expect(d.root.dataset.timelineBoundary).toBe("end");
+  expect(d.controls.readPreview()!.delta).toEqual({ value: 1, rate: 2 });
+  expect(d.row.style.getPropertyValue("--motion-drag-x")).toBe("50px");
+  expect(d.engine.getSnapshot().project).toBe(before);
+  d.send(d.body, "pointerup", 12000);
+  expect(transaction).toHaveBeenCalledOnce();
+  expect(d.track().start).toEqual({ value: 1, rate: 2 });
+  expect(d.track().end).toEqual({ value: 2, rate: 1 });
+  expect(d.page().motion!.duration).toEqual({ value: 2, rate: 1 });
+  expect(d.root).not.toHaveAttribute("data-timeline-boundary");
+  d.engine.undo();
+  expect(d.engine.getSnapshot().project).toBe(before);
+  d.controls.dispose();
+});
+
+function groupFixture() {
+  const d = fixture(true),
+    project = structuredClone(d.engine.getSnapshot().project),
+    page = project.pages[0]!;
+  page.layers[0] = createLayer("group", { ...page.layers[0]!, id: "a", kind: "group" });
+  page.layers[1]!.parentId = "a";
+  const motion = page.motion!,
+    parent = motion.tracks.find((t) => t.layerId === "a")!,
+    child = motion.tracks.find((t) => t.layerId === "b")!;
+  motion.version = 2;
+  motion.duration = { value: 5, rate: 1 };
+  parent.start = { value: 1, rate: 1 };
+  parent.end = { value: 2, rate: 1 };
+  child.start = { value: 1, rate: 2 };
+  child.end = { value: 3, rate: 2 };
+  motion.tracks.push(
+    {
+      id: "other-parent",
+      layerId: "a",
+      start: { value: 4, rate: 1 },
+      end: { value: 5, rate: 1 },
+      properties: [],
+    },
+    {
+      id: "child-late",
+      layerId: "b",
+      start: { value: 3, rate: 1 },
+      end: { value: 4, rate: 1 },
+      properties: [
+        {
+          id: "late-x",
+          target: { kind: "layer", layerId: "b", property: "x" },
+          keyframes: [{ id: "late-key", time: { value: 3, rate: 1 }, value: 4 }],
+        },
+      ],
+    },
+  );
+  d.engine.load(project);
+  const snapshot = d.engine.getSnapshot();
+  d.controls.updateOrigin(snapshot.project.id, snapshot.revision);
+  const wraps = [child.id, "child-late", "other-parent"].map((id) => {
+    const node = document.createElement("div");
+    node.className = "motion-track-wrap";
+    node.dataset.trackId = id;
+    d.root.append(node);
+    return node;
+  });
+  const key = document.createElement("button");
+  key.className = "motion-key";
+  key.dataset.keyId = "late-key";
+  d.root.append(key);
+  return { ...d, wraps, childId: child.id, lateKey: key };
+}
+
+it("previews every grouped child occurrence with common bounds and clears red-boundary ownership on cancel", () => {
+  const d = groupFixture(),
+    before = d.engine.getSnapshot().project;
+  d.controls.beginTrack(d.event(), d.track(), "move");
+  d.send(d.body, "pointermove", -12000);
+  expect(d.root.dataset.timelineBoundary).toBe("start");
+  expect(d.controls.readPreview()!.delta).toEqual({ value: -1, rate: 2 });
+  d.send(d.body, "pointermove", 12000);
+  expect(d.root.dataset.timelineBoundary).toBe("end");
+  expect(d.controls.readPreview()!.trackIds).toEqual(
+    new Set([d.track().id, d.childId, "child-late"]),
+  );
+  for (const node of [d.wrap, d.wraps[0]!, d.wraps[1]!, d.lateKey])
+    expect(node.style.getPropertyValue("--motion-drag-x")).toBe("100px");
+  expect(d.wraps[2]!.style.getPropertyValue("--motion-drag-x")).toBe("");
+  d.send(d.body, "pointermove", 150);
+  expect(d.root).not.toHaveAttribute("data-timeline-boundary");
+  d.controls.cancel();
+  expect(d.controls.readPreview()).toBeNull();
+  expect(d.root).not.toHaveAttribute("data-timeline-boundary");
+  for (const node of [d.wrap, ...d.wraps, d.lateKey])
+    expect(node.style.getPropertyValue("--motion-drag-x")).toBe("");
+  d.send(d.body, "pointerup", 12000);
+  expect(d.engine.getSnapshot().project).toBe(before);
+  d.controls.dispose();
+});
+
+it("commits all grouped child ranges and keys at the shared end bound with one undo", () => {
+  const d = groupFixture(),
+    before = d.engine.getSnapshot().project;
+  const transaction = vi.spyOn(d.engine, "transaction");
+  const other = d.page().motion!.tracks.find((t) => t.id === "other-parent")!;
+  d.controls.beginTrack(d.event(), d.track(), "move");
+  d.send(d.body, "pointermove", 12000);
+  d.send(d.body, "pointerup", 12000);
+  expect(transaction).toHaveBeenCalledOnce();
+  expect(d.track().start).toEqual({ value: 2, rate: 1 });
+  expect(d.page().motion!.tracks.find((t) => t.id === d.childId)!.start).toEqual({
+    value: 3,
+    rate: 2,
+  });
+  const late = d.page().motion!.tracks.find((t) => t.id === "child-late")!;
+  expect(late.start).toEqual({ value: 4, rate: 1 });
+  expect(late.end).toEqual({ value: 5, rate: 1 });
+  expect(late.properties[0]!.keyframes[0]!.time).toEqual({ value: 4, rate: 1 });
+  expect(d.page().motion!.tracks.find((t) => t.id === "other-parent")).toEqual(other);
+  expect(d.page().motion!.duration).toEqual({ value: 5, rate: 1 });
+  expect(d.controls.readPreview()).toBeNull();
+  d.engine.undo();
+  expect(d.engine.getSnapshot().project).toBe(before);
   d.controls.dispose();
 });

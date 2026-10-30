@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
+import { flushSync } from "react-dom";
 import { virtualWindow } from "./virtual-window";
 /** Fixed-height presentation rows keep large command catalogs bounded without owning their data. */
 export function useVirtualList(
@@ -6,12 +7,14 @@ export function useVirtualList(
   rowHeight: number,
   viewportRef: RefObject<HTMLDivElement | null>,
   overscan = 4,
+  options?: { synchronousScroll?: boolean },
 ) {
+  const synchronousScroll = options?.synchronousScroll ?? false;
   const [position, setPosition] = useState({ top: 0, height: 220 });
   const latest = useRef(position);
   const binding = useRef<{ node: HTMLElement; stop(): void } | null>(null);
   const publish = useCallback(
-    (top: number, height: number) => {
+    (top: number, height: number, synchronous = false) => {
       const previous = latest.current;
       const before = virtualWindow(
         latest.current.top,
@@ -21,10 +24,12 @@ export function useVirtualList(
         overscan,
       );
       const after = virtualWindow(top, height, count, rowHeight, overscan);
-      latest.current = { top, height };
+      const next = { top, height };
+      latest.current = next;
       if (previous.height === height && before.first === after.first && before.last === after.last)
         return;
-      setPosition(latest.current);
+      if (synchronous) flushSync(() => setPosition(next));
+      else setPosition(next);
     },
     [count, rowHeight, overscan],
   );
@@ -38,7 +43,8 @@ export function useVirtualList(
         if (binding.current?.node === node) publish(node.scrollTop, node.clientHeight || 220);
       };
       const scroll = () => {
-        if (binding.current?.node === node) publish(node.scrollTop, latest.current.height);
+        if (binding.current?.node === node)
+          publish(node.scrollTop, latest.current.height, synchronousScroll);
       };
       const observer = new ResizeObserver(measure);
       node.addEventListener("scroll", scroll, { passive: true });
@@ -52,7 +58,7 @@ export function useVirtualList(
       };
       measure();
     },
-    [publish],
+    [publish, synchronousScroll],
   );
   useLayoutEffect(() => {
     connect(viewportRef.current);
@@ -81,9 +87,10 @@ export function useVirtualList(
   const onScroll = useCallback(
     (event: { currentTarget: HTMLElement }) => {
       const node = event.currentTarget;
-      publish(node.scrollTop, latest.current.height);
+      if (viewportRef.current !== node) return;
+      publish(node.scrollTop, latest.current.height, synchronousScroll);
     },
-    [publish],
+    [publish, synchronousScroll, viewportRef],
   );
   return {
     first,

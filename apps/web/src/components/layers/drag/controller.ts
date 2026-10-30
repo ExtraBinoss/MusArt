@@ -7,6 +7,7 @@ import {
 } from "@musart/core";
 import { getDropCommand, type LayerDropPosition } from "../drop-target";
 import { validateLayerDrop, type LayerDropRejection } from "./validation";
+import { layerDragDiagnostics } from "./diagnostics";
 
 export interface LayerDragTarget {
   id: string;
@@ -56,18 +57,38 @@ export class LayerDragController {
   owns(owner: symbol) {
     return this.origin?.owner === owner;
   }
-  begin(owner: symbol, page: Composition, id: string, run: (action: () => void) => void): boolean {
+  begin(
+    owner: symbol,
+    page: Composition,
+    id: string,
+    run: (action: () => void) => void,
+    input: "native" | "pointer" = "native",
+  ): boolean {
+    const diagnostics = layerDragDiagnostics(this.engine);
+    diagnostics.begin({ mode: page.motion?.mode ?? "static", input, sourceId: id });
     const snapshot = this.engine.getSnapshot();
-    if (snapshot.project.pages.find((item) => item.id === page.id) !== page) return false;
+    if (snapshot.project.pages.find((item) => item.id === page.id) !== page) {
+      diagnostics.refuse("begin", "staleComposition");
+      return false;
+    }
     const geometry = createLayerGeometryIndex(page);
-    if (!geometry.byId.has(id) || geometry.isLocked(id)) return false;
+    if (!geometry.byId.has(id) || geometry.isLocked(id)) {
+      diagnostics.refuse("begin", geometry.byId.has(id) ? "locked" : "missingSource");
+      return false;
+    }
     this.cancel();
     this.engine.setPage(page.id);
     const origin = { id, page, project: snapshot.project, owner, run };
-    if (!this.canonical(origin)) return false;
+    if (!this.canonical(origin)) {
+      diagnostics.refuse("begin", "originChangedDuringActivation");
+      return false;
+    }
     this.origin = origin;
     this.stopEngine = this.engine.subscribe(() => {
-      if (this.origin === origin && !this.canonical(origin)) this.cancel();
+      if (this.origin === origin && !this.canonical(origin)) {
+        diagnostics.refuse("cancel", "documentOrActiveCompositionChanged");
+        this.cancel();
+      }
     });
     this.publish({
       pageId: page.id,
@@ -85,6 +106,7 @@ export class LayerDragController {
       this.cancel();
       return;
     }
+    if (reason) layerDragDiagnostics(this.engine).refuse("preview", reason.reason, reason.id);
     if (
       !this.state?.target &&
       this.state?.rejected?.id === reason?.id &&
@@ -104,6 +126,7 @@ export class LayerDragController {
     const origin = this.origin;
     if (!origin) return false;
     if (!this.canonical(origin)) {
+      layerDragDiagnostics(this.engine).refuse("preview", "staleOrigin", target.id);
       this.cancel();
       return false;
     }
@@ -133,16 +156,29 @@ export class LayerDragController {
     const origin = this.origin,
       target = this.state?.target;
     if (!origin || !target || id !== origin.id || !this.canonical(origin)) {
+      layerDragDiagnostics(this.engine).refuse(
+        "drop",
+        !origin
+          ? "inactiveDrag"
+          : !target
+            ? "noAcceptedTarget"
+            : id !== origin.id
+              ? "sourceMismatch"
+              : "staleOrigin",
+        target?.id,
+      );
       this.cancel();
       return false;
     }
     const destination = origin.page.layers.find((layer) => layer.id === target.id);
     if (!destination) {
+      layerDragDiagnostics(this.engine).refuse("drop", "missingTarget", target.id);
       this.cancel();
       return false;
     }
     const result = validateLayerDrop(origin.page, id, destination.id, target.position);
     if ("reason" in result) {
+      layerDragDiagnostics(this.engine).refuse("drop", result.reason, target.id);
       this.cancel();
       return false;
     }

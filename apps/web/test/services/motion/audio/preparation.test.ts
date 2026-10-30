@@ -145,3 +145,68 @@ it("deduplicates the sound and its visible envelope into one bounded worker resu
   expect(worker.postMessage).toHaveBeenCalledOnce();
   d.preparation.dispose();
 });
+it("keeps independent interaction leases separate from legacy audition pauses while SFX bypasses both", async () => {
+  const d = setup(),
+    pending = d.preparation.waveform(asset);
+  await d.flush();
+  const first = d.workers[0]!,
+    releaseA = d.preparation.holdWaveforms(),
+    releaseB = d.preparation.holdWaveforms();
+  expect(first.terminate).toHaveBeenCalledOnce();
+  d.preparation.pauseWaveforms();
+  releaseA();
+  releaseA();
+  d.preparation.resumeWaveforms();
+  await d.flush();
+  expect(d.workers).toHaveLength(1);
+  const sound = d.preparation.sfx("soft-plop");
+  await d.flush();
+  const worker = d.workers[1]!,
+    job = worker.postMessage.mock.calls[0]![0];
+  expect(job.type).toBe("sfx");
+  worker.onmessage!({
+    data: { id: job.id, blob: new Blob(["wav"]) },
+  } as MessageEvent<AudioWorkerReply>);
+  await sound;
+  d.preparation.pauseWaveforms();
+  releaseB();
+  await d.flush();
+  expect(worker.postMessage).toHaveBeenCalledOnce();
+  d.preparation.resumeWaveforms();
+  await d.flush();
+  const resumed = worker.postMessage.mock.calls[1]![0];
+  expect(resumed.type).toBe("waveform");
+  worker.onmessage!({
+    data: { id: resumed.id, peaks: new Float32Array([0.5]) },
+  } as MessageEvent<AudioWorkerReply>);
+  expect([...(await pending)]).toEqual([0.5]);
+  d.preparation.dispose();
+});
+it("preserves current leases through resets and prevents an old release from unblocking a newer owner", async () => {
+  const d = setup(),
+    releaseA = d.preparation.holdWaveforms();
+  const retired = d.preparation.waveform(asset).catch((error: unknown) => error);
+  d.preparation.reset();
+  expect(await retired).toMatchObject({ name: "AbortError" });
+  const releaseB = d.preparation.holdWaveforms();
+  const next = d.preparation.waveform(asset);
+  releaseA();
+  releaseA();
+  d.preparation.resumeWaveforms();
+  await d.flush();
+  expect(d.read).not.toHaveBeenCalled();
+  releaseB();
+  await d.flush();
+  expect(d.read).toHaveBeenCalledOnce();
+  const worker = d.workers[0]!,
+    job = worker.postMessage.mock.calls[0]![0];
+  worker.onmessage!({
+    data: { id: job.id, peaks: new Float32Array([1]) },
+  } as MessageEvent<AudioWorkerReply>);
+  expect([...(await next)]).toEqual([1]);
+  const releaseC = d.preparation.holdWaveforms();
+  d.preparation.dispose();
+  releaseC();
+  await d.flush();
+  expect(worker.postMessage).toHaveBeenCalledOnce();
+});

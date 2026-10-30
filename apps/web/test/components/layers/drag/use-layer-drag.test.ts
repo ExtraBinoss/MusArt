@@ -54,7 +54,7 @@ test("projects on hover and only commits one semantic command on drop", () => {
   expect(d.engine.getSnapshot().project.pages[0]!.layers).toEqual(d.page.layers);
 });
 
-test("native drag feedback is owned through restart, Escape, dragend, blur and unmount", () => {
+test("native drag feedback is owned through restart, Escape, dragend, pagehide and unmount", () => {
   const d = fixture();
   const start = () => act(() => d.result.current.start(d.event, d.rectangle));
   start();
@@ -69,6 +69,8 @@ test("native drag feedback is owned through restart, Escape, dragend, blur and u
   expect(document.querySelector(".layer-drag-preview")).toBeNull();
   start();
   fireEvent.blur(window);
+  expect(document.querySelector(".layer-drag-preview")).not.toBeNull();
+  fireEvent(window, new Event("pagehide"));
   expect(document.querySelector(".layer-drag-preview")).toBeNull();
   start();
   d.unmount();
@@ -76,6 +78,7 @@ test("native drag feedback is owned through restart, Escape, dragend, blur and u
 });
 
 test("a subsequently rejected native dragstart clears its own feedback without canceling a replacement drag", async () => {
+  const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
   const d = fixture(),
     before = d.engine.getSnapshot();
   act(() => d.result.current.start(d.event, d.rectangle));
@@ -83,6 +86,15 @@ test("a subsequently rejected native dragstart clears its own feedback without c
   await act(async () => Promise.resolve());
   expect(document.querySelector(".layer-drag-preview")).toBeNull();
   expect(d.result.current.dragging).toBeNull();
+  expect(warn).toHaveBeenCalledWith(
+    "[MusArt DnD]",
+    expect.objectContaining({
+      stage: "nativeDragstart",
+      reason: "cancelledByEventHandler",
+      defaultPrevented: true,
+      sourceIds: [d.rectangle.id],
+    }),
+  );
   expect(d.engine.getSnapshot()).toBe(before);
   const native = () =>
     new Event("dragstart", { cancelable: true }) as DragEvent<HTMLElement>["nativeEvent"];
@@ -97,6 +109,7 @@ test("a subsequently rejected native dragstart clears its own feedback without c
   expect(document.querySelectorAll(".layer-drag-preview")).toHaveLength(1);
   expect(d.result.current.dragging).toBe(d.rectangle.id);
   d.unmount();
+  warn.mockRestore();
 });
 test("dropping a colored rectangle onto a target thumbnail creates one editable alpha mask", () => {
   const d = fixture(),
@@ -342,4 +355,63 @@ test("a rejected native image releases the controller and surfaces the real plat
   );
   expect(d.result.current.dragging).toBeNull();
   expect(document.querySelector(".layer-drag-preview")).toBeNull();
+});
+
+test("an unaccepted MusArt native dragover reports the missing session once without admitting files", () => {
+  const d = fixture(),
+    warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+  const event = {
+    ...d.event,
+    defaultPrevented: false,
+    dataTransfer: Object.assign(d.event.dataTransfer, { types: ["application/x-musart-layer"] }),
+  };
+  act(() => d.result.current.overTree(event));
+  act(() => d.result.current.overTree(event));
+  expect(warn).toHaveBeenCalledExactlyOnceWith(
+    "[MusArt DnD]",
+    expect.objectContaining({
+      stage: "nativeDragover",
+      reason: "inactiveDrag",
+      types: ["application/x-musart-layer"],
+      defaultPrevented: false,
+    }),
+  );
+  expect(d.event.preventDefault).not.toHaveBeenCalled();
+  act(() =>
+    d.result.current.overTree({
+      ...event,
+      dataTransfer: Object.assign(event.dataTransfer, { types: ["Files"] }),
+    }),
+  );
+  expect(warn).toHaveBeenCalledOnce();
+  d.unmount();
+  warn.mockRestore();
+});
+
+test("native source survives React publications, surface rerenders and window focus transfer until drop", () => {
+  const d = fixture(),
+    other = renderHook(() => useLayerDrag(d.page, d.engine, d.run));
+  const original = d.engine.getSnapshot(),
+    execute = vi.spyOn(d.engine, "execute");
+  act(() => d.result.current.start(d.event, d.rectangle));
+  const source = document.querySelector(".layer-drag-preview");
+  // Both mounted adapters observe the start publication; parent renders must not own its lifetime.
+  d.rerender({ current: d.page });
+  other.rerender();
+  fireEvent.blur(window);
+  expect(d.result.current.dragging).toBe(d.rectangle.id);
+  expect(other.result.current.dragging).toBe(d.rectangle.id);
+  expect(document.querySelector(".layer-drag-preview")).toBe(source);
+  act(() => other.result.current.over(d.event, d.text));
+  d.rerender({ current: d.page });
+  fireEvent.blur(window);
+  expect(other.result.current.target).toEqual({ id: d.text.id, position: "before" });
+  act(() => other.result.current.drop(d.event, d.text));
+  expect(execute).toHaveBeenCalledOnce();
+  expect(d.engine.getSnapshot().revision).toBe(original.revision + 1);
+  expect(document.querySelector(".layer-drag-preview")).toBeNull();
+  d.engine.undo();
+  expect(d.engine.getSnapshot().project).toBe(original.project);
+  other.unmount();
+  d.unmount();
 });

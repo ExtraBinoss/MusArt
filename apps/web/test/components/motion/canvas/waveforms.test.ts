@@ -9,10 +9,10 @@ async function settle() {
   await Promise.resolve();
   await Promise.resolve();
 }
-function fixture() {
-  const d = audioFixture(3),
+function fixture(count = 3) {
+  const d = audioFixture(count),
     assets = Object.fromEntries(
-      [0, 1, 2].map((index) => {
+      Array.from({ length: count }, (_, index) => {
         const asset: AudioAsset = {
           ...d.asset,
           id: `sound-${index}`,
@@ -21,12 +21,29 @@ function fixture() {
         return [asset.id, asset];
       }),
     );
+  const original = d.engine.getSnapshot().project;
+  d.engine.load({
+    ...original,
+    assets,
+    pages: original.pages.map((page) => ({
+      ...page,
+      motion: page.motion
+        ? {
+            ...page.motion,
+            audioTracks: page.motion.audioTracks!.map((track, index) => ({
+              ...track,
+              assetId: `sound-${index}`,
+            })),
+          }
+        : undefined,
+    })),
+  });
   let model: TimelineCanvasModel = {
     rows: [],
     audioTracks: d
       .page()
       .motion!.audioTracks!.map((track, index) => ({ ...track, assetId: `sound-${index}` })),
-    assets,
+    assets: d.engine.getSnapshot().project.assets,
     selectedLayerIds: new Set(),
     selectedKeyIds: new Set(),
     scale: 120,
@@ -171,4 +188,60 @@ it("allows one fresh retry if the old cancellation arrives after Pause has alrea
   expect(d.prepare).toHaveBeenCalledTimes(2);
   expect(d.onError).not.toHaveBeenCalled();
   d.controller.dispose();
+});
+it("retains immutable ready peaks across viewport exits and backscroll without another conversion or request", async () => {
+  const d = fixture();
+  d.controller.update(0, 24, 0, 240);
+  d.pending[0]!.resolve(new Float32Array([0, 0.5, 0]));
+  await settle();
+  const first = d.publish.mock.calls.at(-1)![0].get("audio-0");
+  d.controller.update(48, 24, 0, 240);
+  d.pending[1]!.resolve(new Float32Array([0, 0.8, 0]));
+  await settle();
+  d.controller.update(0, 24, 0, 240);
+  expect(d.prepare).toHaveBeenCalledTimes(2);
+  expect(d.publish.mock.calls.at(-1)![0].get("audio-0")).toBe(first);
+  expect(Object.isFrozen(first)).toBe(true);
+  d.controller.setPaused(true);
+  d.controller.update(0, 24, 0, 240);
+  expect(d.publish.mock.calls.at(-1)![0].get("audio-0")).toBe(first);
+  expect(d.prepare).toHaveBeenCalledTimes(2);
+  d.controller.dispose();
+});
+it("enforces the ready-envelope memory budget and never publishes data for a departed original", async () => {
+  const d = fixture();
+  d.controller.update(0, 24, 0, 240);
+  d.pending[0]!.resolve(new Float32Array(131073));
+  await settle();
+  expect(d.onError).toHaveBeenCalledOnce();
+  expect(d.publish).not.toHaveBeenCalled();
+  const project = d.engine.getSnapshot().project;
+  const old = project.assets["sound-0"];
+  if (old?.kind !== "audio") throw Error("Missing audio fixture original");
+  d.engine.load({
+    ...project,
+    assets: { ...project.assets, "sound-0": { ...old, contentRevision: "replaced" } },
+  });
+  d.controller.update(0, 24, 0, 240);
+  expect(d.prepare).toHaveBeenCalledOnce();
+  d.controller.dispose();
+});
+it("bounds retained identities to 64 and reuses recent backscroll references before evicting the oldest", async () => {
+  const d = fixture(65);
+  let recent: readonly number[] | undefined;
+  for (let index = 0; index < 65; index++) {
+    d.controller.update(index * 24, 24, 0, 240);
+    d.pending[index]!.resolve(new Float32Array([0, 0.5, 0]));
+    await settle();
+    if (index === 1) recent = d.publish.mock.calls.at(-1)![0].get("audio-1");
+  }
+  expect(d.prepare).toHaveBeenCalledTimes(65);
+  d.controller.update(24, 24, 0, 240);
+  expect(d.prepare).toHaveBeenCalledTimes(65);
+  expect(d.publish.mock.calls.at(-1)![0].get("audio-1")).toBe(recent);
+  d.controller.update(0, 24, 0, 240);
+  expect(d.prepare).toHaveBeenCalledTimes(66);
+  d.controller.dispose();
+  d.pending[65]!.resolve(new Float32Array([0]));
+  await settle();
 });

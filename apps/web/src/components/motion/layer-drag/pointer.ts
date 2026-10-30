@@ -7,6 +7,7 @@ import {
   type Project,
 } from "@musart/core";
 import { layerDragController } from "../../layers/drag/controller";
+import { layerDragDiagnostics } from "../../layers/drag/diagnostics";
 import { layerDragPresentation, type LayerDragPoint } from "../../layers/drag/presentation";
 import type { TimelineGestures } from "../gestures";
 import type { TimelineTransport } from "../model";
@@ -38,6 +39,7 @@ export function createTimelineLayerPointer(options: {
   const owner = Symbol("pointer-layer-drag");
   const controller = layerDragController(engine);
   const presentation = layerDragPresentation(engine);
+  const diagnostics = layerDragDiagnostics(engine);
   let held: Held | null = null;
   function cleanup() {
     const active = held;
@@ -79,7 +81,14 @@ export function createTimelineLayerPointer(options: {
     }
   }
   function canceled(event: PointerEvent) {
-    if (held?.pointer === event.pointerId) cancel();
+    if (held?.pointer !== event.pointerId) return;
+    diagnostics.refuse(
+      "pointerCancel",
+      event.type === "pointercancel" ? "browserPointerCancelled" : "pointerCaptureLost",
+      held.track.layerId,
+      event,
+    );
+    cancel();
   }
   function move(event: PointerEvent) {
     const active = held;
@@ -114,7 +123,7 @@ export function createTimelineLayerPointer(options: {
         else restoreSelection(active);
         return;
       }
-      if (!controller.begin(owner, active.page, active.track.layerId, options.run)) {
+      if (!controller.begin(owner, active.page, active.track.layerId, options.run, "pointer")) {
         cancel();
         return;
       }
@@ -157,7 +166,13 @@ export function createTimelineLayerPointer(options: {
       gestures.cancel();
       const snapshot = engine.getSnapshot();
       const page = snapshot.project.pages.find((item) => item.id === options.compositionId);
+      diagnostics.begin({
+        mode: page?.motion?.mode ?? "static",
+        input: "pointer",
+        sourceId: track.layerId,
+      });
       if (snapshot.pageId !== options.compositionId || !page || page.motion?.mode !== "motion") {
+        diagnostics.refuse("pointerDown", "inactiveMotionComposition", track.layerId, event);
         options.onError?.("changed");
         return;
       }
@@ -166,11 +181,13 @@ export function createTimelineLayerPointer(options: {
           (item) => item.id === track.id && item.layerId === track.layerId,
         ) !== track
       ) {
+        diagnostics.refuse("pointerDown", "staleTrack", track.layerId, event);
         options.onError?.("changed");
         return;
       }
       const geometry = createLayerGeometryIndex(page);
       if (!geometry.byId.has(track.layerId) || geometry.isLocked(track.layerId)) {
+        diagnostics.refuse("pointerDown", "lockedOrMissingSource", track.layerId, event);
         options.onError?.("locked");
         return;
       }
@@ -211,6 +228,9 @@ export function createTimelineLayerPointer(options: {
       active.node.setPointerCapture(active.pointer);
     },
     cancel,
-    dispose: cancel,
+    dispose() {
+      if (held) diagnostics.refuse("pointerCancel", "adapterDisposed", held.track.layerId);
+      cancel();
+    },
   };
 }

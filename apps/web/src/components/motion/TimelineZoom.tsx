@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { useMemo } from "react";
 import { Slider } from "../ui/slider";
 import { Kbd, KbdGroup } from "../ui/kbd";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
@@ -15,6 +16,19 @@ export function TimelineZoom({
   onCommit: (value: number) => void;
 }) {
   const { t } = useTranslation("motion");
+  // Preserve Popper's mounted observer while only the controlled slider value changes.
+  const help = useMemo(
+    () => (
+      <TooltipContent side="top" className="motion-control-tooltip">
+        <span>{t("zoom")}</span>
+        <KbdGroup>
+          <Kbd>Ctrl / ⌘</Kbd>
+          <Kbd>{t("wheel")}</Kbd>
+        </KbdGroup>
+      </TooltipContent>
+    ),
+    [t],
+  );
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -31,13 +45,7 @@ export function TimelineZoom({
           onValueCommit={(values) => onCommit(values[0] ?? value)}
         />
       </TooltipTrigger>
-      <TooltipContent side="top" className="motion-control-tooltip">
-        <span>{t("zoom")}</span>
-        <KbdGroup>
-          <Kbd>Ctrl / ⌘</Kbd>
-          <Kbd>{t("wheel")}</Kbd>
-        </KbdGroup>
-      </TooltipContent>
+      {help}
     </Tooltip>
   );
 }

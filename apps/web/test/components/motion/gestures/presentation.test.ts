@@ -8,6 +8,25 @@ import { canvasFixture } from "../canvas/support";
 
 type Gesture = Parameters<ReturnType<typeof createTimelineGesturePresentation>["render"]>[0];
 const delta = { value: 1001, rate: 30_000 };
+it("shows the shared boundary even for a clamped zero delta and retires it on clear", () => {
+  const d = fixture("move"),
+    port = createTimelineGesturePresentation();
+  const tracks = new Set(["first", "second"]);
+  port.render(
+    { ...d.gesture, delta: { value: 0, rate: 1 }, trackIds: tracks, boundary: "start" },
+    d.root,
+    100,
+  );
+  expect(d.root.dataset.timelineBoundary).toBe("start");
+  expect(port.read()?.trackIds).toBe(tracks);
+  port.render({ ...d.gesture, trackIds: tracks, boundary: null }, d.root, 100);
+  expect(d.root.dataset.timelineBoundary).toBeUndefined();
+  expect(d.node('[data-track-id="second"]').style.getPropertyValue("--motion-drag-x")).not.toBe("");
+  port.render({ ...d.gesture, trackIds: tracks, boundary: "end" }, d.root, 100);
+  expect(d.root.dataset.timelineBoundary).toBe("end");
+  port.clear();
+  expect(d.root.dataset.timelineBoundary).toBeUndefined();
+});
 function expectPixels(value: string, expected: number) {
   expect(value.endsWith("px")).toBe(true);
   expect(parseFloat(value)).toBeCloseTo(expected, 10);

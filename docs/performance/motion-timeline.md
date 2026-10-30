@@ -107,16 +107,16 @@ It contains 50 wheel events, 91 scroll events and no clicks. The original remain
 unchanged; SHA-256, raw events, call stacks and screenshot offsets are retained in
 `artifacts/motion/perf/user-trace-133413/`.
 
-| Main-thread observation              | Recorded value |
-| ------------------------------------ | -------------: |
+| Main-thread observation               | Recorded value |
+| ------------------------------------- | -------------: |
 | Tasks lasting at least 50 ms          |             27 |
-| Time occupied by those tasks         |   9,906.014 ms |
-| Longest task                         |   1,346.783 ms |
-| Script self occupation               |  10,310.020 ms |
+| Time occupied by those tasks          |   9,906.014 ms |
+| Longest task                          |   1,346.783 ms |
+| Script self occupation                |  10,310.020 ms |
 | Paint/prepaint/commit self occupation |   1,161.873 ms |
-| Style self occupation                |     204.618 ms |
-| Layout self occupation               |      55.720 ms |
-| Garbage collection self occupation   |     147.954 ms |
+| Style self occupation                 |     204.618 ms |
+| Layout self occupation                |      55.720 ms |
+| Garbage collection self occupation    |     147.954 ms |
 
 These categories are disjoint. Renderer-main paint work is not GPU execution time.
 Sample counts identify stacks and are not converted into component milliseconds.
@@ -162,15 +162,15 @@ the gallery: 23 layers, 23 visual occurrences, 70 keys, nine audio tracks and si
 seconds at 30 fps. The template bytes and SHA-256 match. The browser is Chromium
 156.0.8078.4 on the recorded Intel Xe LPG WebGPU adapter, 1440 × 1000, DPR 1.
 
-| Same application workload | DOM reference | Canvas build 5 |
-| --- | ---: | ---: |
-| Twenty visual wheel packets, script time | 411.666 ms | 234.919 ms |
-| Visual long tasks | 8 | 2 |
-| Visual RAF-gap p95 | 66.7 ms | 50.0 ms |
-| Twelve audio wheel packets, script time | 131.168 ms | 34.262 ms |
-| Audio long tasks | 1 | 1 |
-| Audio RAF-gap p95 / maximum | 50.0 / 50.0 ms | 33.4 / 83.3 ms |
-| Audio driver phase wall time | 845.3 ms | 845.7 ms |
+| Same application workload                |  DOM reference | Canvas build 5 |
+| ---------------------------------------- | -------------: | -------------: |
+| Twenty visual wheel packets, script time |     411.666 ms |     234.919 ms |
+| Visual long tasks                        |              8 |              2 |
+| Visual RAF-gap p95                       |        66.7 ms |        50.0 ms |
+| Twelve audio wheel packets, script time  |     131.168 ms |      34.262 ms |
+| Audio long tasks                         |              1 |              1 |
+| Audio RAF-gap p95 / maximum              | 50.0 / 50.0 ms | 33.4 / 83.3 ms |
+| Audio driver phase wall time             |       845.3 ms |       845.7 ms |
 
 Script time falls 42.9% for visual scroll and 73.9% for audio scroll in this single
 pair. The five editor root counters and timeline-panel counter remain unchanged.
@@ -217,15 +217,15 @@ browser, adapter, viewport and requested 50/45/5 CPU allocation as the new scrol
 pair, with all quotas read back, bounded memory, no swap and a 55-second unit.
 Both server quotas are verified restored after the successful command.
 
-| Build 6 interaction | Script time | Long tasks | RAF-gap p95 |
-| --- | ---: | ---: | ---: |
-| Header / label hover | 74.990 ms | 1 | 50.0 ms |
-| Playback menu | 82.187 ms | 1 | 66.7 ms |
-| Eight clip / key hover swaps | 176.042 ms | 2 | 50.0 ms |
-| Eight audio-clip hover points | 33.213 ms | 0 | 16.7 ms |
-| Direct fade button opens editor | 87.423 ms | 2 | 66.6 ms |
-| Fade draft | 3.813 ms | 0 | 16.7 ms |
-| Fade close | 6.335 ms | 0 | 16.7 ms |
+| Build 6 interaction             | Script time | Long tasks | RAF-gap p95 |
+| ------------------------------- | ----------: | ---------: | ----------: |
+| Header / label hover            |   74.990 ms |          1 |     50.0 ms |
+| Playback menu                   |   82.187 ms |          1 |     66.7 ms |
+| Eight clip / key hover swaps    |  176.042 ms |          2 |     50.0 ms |
+| Eight audio-clip hover points   |   33.213 ms |          0 |     16.7 ms |
+| Direct fade button opens editor |   87.423 ms |          2 |     66.6 ms |
+| Fade draft                      |    3.813 ms |          0 |     16.7 ms |
+| Fade close                      |    6.335 ms |          0 |     16.7 ms |
 
 The five editor component counters and the panel counter remain unchanged in
 all phases. Local child React work still commits. Every observed clip/key point
@@ -278,3 +278,49 @@ The successful command, exact driver, compiled JavaScript/maps, hashes, CPU prof
 point observations, native PNG, control and restored limits remain in ignored
 `artifacts/motion/perf/sound-canvas-hover-post/`. The three key/clip/menu and two
 audio/drop native scenarios affected by this change pass in 22.5 s and 18.2 s.
+
+## Zoom and aggressive movement follow-up
+
+A separate matched production capture of Sound Playground found 528 redundant
+retained-label renders during wheel zoom and 288 during slider zoom. Isolating
+the HTML gutter's temporal dependencies removes both. The matched first fix
+records wheel script **482.190 → 95.535 ms** and long tasks **9 → 0**; slider
+script is **362.654 → 298.655 ms**, still with five long tasks. Horizontal script
+is 39.894 → 31.041 ms. Protected editor roots, authored revision and actual
+readback counters are unchanged. These measurements belong to the frozen
+`zoom-scroll-fixed` executable, not every later interaction fix below.
+
+The anchor/playhead clipping box had enlarged native scrollWidth even when the
+composition fitted. Native and painted offsets are now reconciled against the
+real temporal extent; the matching small-scale observations have zero overflow.
+Canvas publication is flushed after the parent applies the native zoom anchor.
+
+The user's additional aggressive capture exercises six wheel extrema, 22
+two-axis packets including ±3,000/±12,000 px, rapid reversal and clamp tails,
+full-range slider motion and 12 genuine ruler scrubs. It exposed two late HTML
+gutter admissions in 19 sampled Canvas paints. The timeline's bounded label leaf
+now opts into synchronous native-scroll admission only when its window changes;
+measurement/ResizeObserver work stays deferred. Overscan is unchanged. The
+strengthened real-browser 1,000-row check verifies actual labels and Canvas in the
+same first-scroll callback, including both axes.
+
+The aggressive slider still sampled Floating UI observer installation from the
+changing static tooltip subtree; that help is now retained across controlled
+value updates. Captured ruler moves also avoid unrelated panel-resize hit testing.
+The aggressive scrub genuinely renders Motion frames, with 393 GPU submissions;
+it is not a static-timeline workload. No pixel readbacks occur. The subsequent
+tooltip/admission/scrub changes have focused functional checks, not a new claimed
+FPS comparison or universal 16 ms guarantee.
+
+Both captures used Chrome 156 / Intel Xe LPG, DPR 1, one browser and effective
+browser/preview/dev quotas 50/45/5%, no swap, nice 19 and a 55-second bound. Controls
+differ: baseline/AFTER/aggressive delivered 33/32/60 of 60 HTML wheel packets and
+RAF p95 66.7/16.7/16.7 ms. Cadence percentages cannot be attributed solely to the
+fix. Raw profiles, source maps, inputs, screenshots, commands and restored limits
+remain under `artifacts/motion/perf/sound-zoom-{baseline,after,abuse}/`.
+
+Final interaction checks use the live 6110 development build and are functional,
+not latency measurements. The 1,000-row first-frame and clip/trim/zero-marker
+cases completed before their three-case batch hit its 55-second process budget
+during the ruler case. That case was rerun alone and passed in 20.5 s. Captures and
+the interrupted batch are retained; the timeout was not hidden or increased.

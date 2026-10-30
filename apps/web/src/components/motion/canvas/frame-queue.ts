@@ -37,6 +37,12 @@ export function createTimelineCanvasFrameQueue(host: TimelineCanvasFrameHost) {
       pending = host.request(flush);
   };
   return {
+    /** Complete a layout-driven zoom before the browser presents its matching ruler. */
+    flush() {
+      if (disposed || flushing || (!reads.size && !writes.size)) return;
+      if (pending !== null) host.cancel(pending);
+      flush();
+    },
     request(phase: "measure" | "paint", callback: () => void) {
       if (disposed) return () => {};
       const queue = phase === "measure" ? reads : writes;

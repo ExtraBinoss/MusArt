@@ -69,3 +69,21 @@ it("defers work requested while painting to exactly one later frame", () => {
   expect(painted).toBe(2);
   expect(d.callbacks.size).toBe(0);
 });
+
+it("flushes a layout publication before presentation and retires its pending RAF", () => {
+  const d = fixture(),
+    order: string[] = [];
+  d.queue.request("paint", () => {
+    order.push("paint");
+    d.queue.flush(); // Nested flush cannot reenter either phase.
+  });
+  d.queue.request("measure", () => order.push("measure"));
+  d.queue.flush();
+  expect(order).toEqual(["measure", "paint"]);
+  expect(d.callbacks.size).toBe(0);
+  d.queue.flush();
+  expect(order).toHaveLength(2);
+  d.queue.dispose();
+  d.queue.flush();
+  expect(d.callbacks.size).toBe(0);
+});

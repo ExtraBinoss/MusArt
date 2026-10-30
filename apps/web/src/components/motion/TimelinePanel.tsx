@@ -35,6 +35,7 @@ import { TimelineControls } from "./TimelineControls";
 import { useOccurrenceProjection } from "./occurrences/use-occurrence-projection";
 import { TimelineVirtualRows } from "./TimelineVirtualRows";
 import { TimelineRuler } from "./TimelineRuler";
+import { TIMELINE_ZOOM_PRESENT } from "./canvas/surface";
 import { useTimelineLayerDrag } from "./layer-drag/use-timeline-layer-drag";
 import type { TimelineTransport, TimelineUnit } from "./model";
 import { createTimelineGestures } from "./gestures";
@@ -96,6 +97,7 @@ export function TimelinePanel({
   } = useTimelinePreferences(engine);
   const committedZoom = useRef(120),
     desiredZoom = useRef(120);
+  const submittedZoom = useRef(120);
   const zoomAnchor = useRef<{ time: number; x: number } | null>(null);
   const { collapsed, setCollapsed, toggle: toggleRow } = useTimelineCollapsedRows();
   const [view, setView] = useState({ left: 0, width: 900 });
@@ -134,16 +136,32 @@ export function TimelinePanel({
   });
   useLayoutEffect(() => {
     committedZoom.current = scale;
-    desiredZoom.current = scale;
-    if (zoomAnchor.current && viewport.current) {
-      horizontalScroll.current = Math.max(
-        0,
-        zoomAnchor.current.time * scale - zoomAnchor.current.x,
-      );
-      viewport.current.scrollLeft = horizontalScroll.current;
+    // A newer wheel packet may arrive before React commits the preceding frame.
+    // Hydration replaces the target; an acknowledgement must not discard newer input.
+    if (scale !== submittedZoom.current) desiredZoom.current = scale;
+    const node = viewport.current;
+    if (node) {
+      const requested = zoomAnchor.current
+        ? zoomAnchor.current.time * scale - zoomAnchor.current.x
+        : node.scrollLeft;
+      const next = Math.min(Math.max(0, width - view.width), Math.max(0, requested));
+      // Remove the old clipping box's contribution before the native extent clamp.
+      if (playheadClip.current) {
+        playheadClip.current.style.left = `${GUTTER + next}px`;
+        playheadClip.current.style.width = `${Math.max(0, Math.min(view.width, width - next))}px`;
+      }
+      node.scrollLeft = next;
+      horizontalScroll.current = node.scrollLeft;
       zoomAnchor.current = null;
+      const left = Math.floor(horizontalScroll.current / 120) * 120;
+      if (left !== publishedLeft.current) {
+        publishedLeft.current = left;
+        setView((value) => ({ ...value, left }));
+      }
+      // Descendant layout effects prepare the model first; present after applying its anchor.
+      node.dispatchEvent(new Event(TIMELINE_ZOOM_PRESENT));
     }
-  }, [scale]);
+  }, [scale, width, view.width]);
   useEffect(() => {
     const node = viewport.current;
     if (!node || !active) return;
@@ -170,6 +188,7 @@ export function TimelinePanel({
       if (frame === null)
         frame = requestAnimationFrame(() => {
           frame = null;
+          submittedZoom.current = desiredZoom.current;
           setZoom(desiredZoom.current);
           saveZoom(desiredZoom.current, 600);
         });
@@ -285,10 +304,11 @@ export function TimelinePanel({
       const node = viewport.current;
       if (playhead.current && playheadClip.current && node) {
         const x = motionTimeToSeconds(state.time) * scale;
-        const left = horizontalScroll.current;
+        const left = Math.min(Math.max(0, width - view.width), horizontalScroll.current);
         const visibleWidth = Math.max(0, view.width);
         playheadClip.current.style.left = `${GUTTER + left}px`;
-        playheadClip.current.style.width = `${visibleWidth}px`;
+        // The overlay must never enlarge the native scroll extent at either edge.
+        playheadClip.current.style.width = `${Math.max(0, Math.min(visibleWidth, width - left))}px`;
         playhead.current.style.transform = `translateX(${x - left}px)`;
         playhead.current.dataset.atEnd = String(
           compareMotionTime(state.time, state.duration) === 0,
@@ -314,8 +334,8 @@ export function TimelinePanel({
         else if (x < left + padding) left = Math.max(0, x - padding);
         const next = Math.max(0, Math.min(Math.max(0, width - view.width), left));
         if (horizontalScroll.current !== next) {
-          horizontalScroll.current = next;
           node.scrollLeft = next;
+          horizontalScroll.current = node.scrollLeft;
         }
       }
       previous = x;
@@ -436,7 +456,7 @@ export function TimelinePanel({
         >
           <span className="panel-divider-grip" aria-hidden />
         </div>
-        <ScrollShadow className="motion-scroll-shadow">
+        <ScrollShadow className="motion-scroll-shadow" axis="both">
           <div
             className="motion-timeline-scroll"
             ref={viewport}
@@ -490,6 +510,7 @@ export function TimelinePanel({
                       protectZoom();
                       zoomAnchor.current = null;
                       desiredZoom.current = value;
+                      submittedZoom.current = value;
                       setZoom(value);
                     }}
                     onCommit={saveZoom}
@@ -541,6 +562,11 @@ export function TimelinePanel({
               <div ref={playheadClip} className="motion-playhead-clip" aria-hidden>
                 <div ref={playhead} className="motion-playhead" />
               </div>
+              <div
+                className="motion-start-boundary"
+                data-timeline-boundary-marker="start"
+                aria-hidden
+              />
             </div>
             {!rows.length && !audioTracks.length && (
               <div className="motion-empty">

@@ -201,6 +201,7 @@ export async function firstScrollFrame(page: Page, dx: number, dy: number) {
       height: number;
       rows: number;
       items: number;
+      labels: number[];
     }>((resolve, reject) => {
       let frame = 0;
       const timer = setTimeout(() => {
@@ -227,6 +228,9 @@ export async function firstScrollFrame(page: Page, dx: number, dy: number) {
             height: Number(data.timelineHeight),
             rows: Number(data.timelineRows),
             items: Number(data.timelineItems),
+            labels: [
+              ...document.querySelectorAll<HTMLElement>(".motion-row[data-labels-only=true]"),
+            ].map((row) => parseFloat(row.style.top) / 24),
           });
         });
       }

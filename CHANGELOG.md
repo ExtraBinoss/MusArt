@@ -6,6 +6,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Added
 
+- Extend the generic themed ScrollShadow to both axes, including timeline side fades that clear the label gutter, ruler and native scrollbars.
+
 - Add 30 deterministic GPU transition operators with exact progress endpoints, source-alpha coverage, bounded sampling and per-style shader reuse shared by preview and export. All operators pass native Chromium pixel checks on WebGPU and WebGL with zero production GPU readbacks.
 - Added independent visual occurrences of one canonical layer: each clip owns its exact interval, video in-point, property channels, keys and easing while sharing the layer's asset, effects, masks and stacking order. Headless add/duplicate/delete commands preserve one-step undo, and lazy Motion v2 promotion retains legacy presence. Static keeps the base design; transitions and keyframe edits can target a specific occurrence. Version 2 retains signed pre-roll keys when trimmed clips move or duplicate earlier, without clamping or baking curves.
 - Added standalone original-backed audio import, virtualized timed audio clips, worker-generated mountain waveforms and a categorized bank of fifteen original TypeScript sound effects. Shared preview/export processing supports editable fades, gain and deterministic finite reverb, with bounded decoding and explicit cleanup.
@@ -26,6 +28,12 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 - Added headless `evaluate` reports with exact decimal or tick/rate times, plus artboard selection for command application. Creation, authoring and evaluation run without a browser; media rendering and encoding remain separate platform adapters.
 
 ### Changed
+
+- Isolate timeline gutter labels from zoom and horizontal-window updates, retain ruler tick identities, and present Canvas zoom after the native anchor is applied. Bound playhead clipping and reconcile native scroll offsets when zooming back from the end.
+- Retain mounted zoom help across value changes to avoid reinstalling floating-position observers, and keep captured ruler scrubs out of unrelated panel-resize hit testing.
+- Keep unpinned timelines open through native layer drags and browser pointer cancellation, and constrain captured playhead movement to the visible ruler. Add deduplicated layer-drop diagnostics with explicit rejection reasons.
+- Clamp simultaneous track/key movement to composition boundaries, show a red start marker, and move grouped descendant clips and keyframes together with one undo entry. Keep native drag ownership across window blur and show insertion guidance only on the actual hovered surface.
+- Draw timeline audio as filled bottom-up mountains, retain bounded ready envelopes across viewport exits, and defer background waveform preparation until active timeline gestures settle. Independent preparation holds preserve audition and foreground SFX ownership.
 
 - Replace the Motion timeline's temporal artwork with one viewport-bounded Canvas2D surface, shared projection/hit testing, temporal indexes and an idle-safe measurement/paint queue. Keep virtualized HTML labels and lazily admitted DOM editing controls, with imperative move/trim/key/marquee previews and the existing engine commands. Canvas hover feedback is immediate; ordinary editing controllers wait for a short dwell, while clicks, context menus and keyboard intentions remain synchronous. The recorded capped Chromium Sound Playground cohort reduces visual-scroll JavaScript by 42.9% and audio-scroll JavaScript by 73.9%, with unchanged editor-root/panel counters and zero instrumented production pixel reads; the remaining frame-cadence limits are documented in `docs/performance/motion-timeline.md`.
 - Give every built-in sound a ready Canvas mountain waveform, native-clock gray/green playback progress and compact grouped virtualized browsing. Reuse bounded prepared WAV/PCM/native-buffer caches and one idle-safe worker instead of reopening a decoder for every audition; move license details behind the bank's Info action.

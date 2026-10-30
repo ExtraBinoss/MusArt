@@ -3,6 +3,7 @@ import {
   createTimelineCanvasSurface,
   timelineCanvasAllocation,
   TIMELINE_CANVAS_BYTES,
+  TIMELINE_ZOOM_PRESENT,
 } from "../../../../src/components/motion/canvas/surface";
 import { canvasContext, canvasFixture } from "./support";
 
@@ -166,6 +167,29 @@ it("uses current native scroll for hit testing before the queued paint and relea
   d.viewport.dispatchEvent(new Event("scroll"));
   expect(d.surface.hitTest(50, 12)).toBeNull();
   expect(d.frames.size).toBe(0);
+});
+
+it("presents a changed zoom and current scroll in the ruler's layout frame", () => {
+  const d = fixture(),
+    data = canvasFixture();
+  d.surface.update(data.model);
+  d.flush();
+  d.resize(744, 104);
+  d.surface.update({ ...data.model, scale: 200 });
+  expect(d.canvas.dataset.scale).toBe("100");
+  // The child publishes its model before the parent applies the new native anchor.
+  d.viewport.scrollLeft = 30;
+  d.viewport.dispatchEvent(new Event(TIMELINE_ZOOM_PRESENT));
+  expect(d.canvas.dataset).toMatchObject({
+    scale: "200",
+    timelineLeft: "30",
+    timelineWidth: "500",
+    timelineHeight: "72",
+    timelinePaints: "2",
+  });
+  expect(d.surface.hitTest(30, 12)).toMatchObject({ kind: "clip", trackId: "first" });
+  expect(d.frames.size).toBe(0);
+  d.surface.dispose();
 });
 
 it("bounds DPR, nonfinite device values and huge viewport backing allocations before assigning canvas size", () => {

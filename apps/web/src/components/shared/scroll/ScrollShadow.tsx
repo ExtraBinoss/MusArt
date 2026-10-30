@@ -8,6 +8,7 @@ export function ScrollShadow({
   style,
   surface,
   viewportSelector,
+  axis = "vertical",
 }: {
   children: ReactElement;
   className?: string;
@@ -16,33 +17,44 @@ export function ScrollShadow({
   surface?: string;
   /** Locate a viewport inside a component that emits sibling metadata (for example Radix Select). */
   viewportSelector?: string;
+  axis?: "vertical" | "horizontal" | "both";
 }) {
   const root = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
-    const wrapper = root.current,
-      viewport = viewportSelector
-        ? wrapper?.querySelector(viewportSelector)
-        : wrapper?.firstElementChild;
-    if (!(viewport instanceof HTMLElement) || !wrapper) return;
+    const wrapper = root.current;
+    if (!wrapper) return;
+    for (const side of ["top", "bottom", "left", "right"])
+      wrapper.removeAttribute(`data-overflow-${side}`);
+    const viewport = viewportSelector
+      ? wrapper.querySelector(viewportSelector)
+      : wrapper.firstElementChild;
+    if (!(viewport instanceof HTMLElement)) return;
     let maximumTop = 0,
+      maximumLeft = 0,
       bottomGutter = -1,
-      rightGutter = -1;
+      rightGutter = -1,
+      active = true;
     function paint() {
-      if (!wrapper || !(viewport instanceof HTMLElement)) return;
-      const top = viewport.scrollTop;
-      wrapper.toggleAttribute("data-overflow-top", top > 1);
-      wrapper.toggleAttribute("data-overflow-bottom", maximumTop - top > 1);
+      if (!active || !wrapper || !(viewport instanceof HTMLElement)) return;
+      const top = viewport.scrollTop,
+        left = viewport.scrollLeft;
+      wrapper.toggleAttribute("data-overflow-top", axis !== "horizontal" && top > 1);
+      wrapper.toggleAttribute(
+        "data-overflow-bottom",
+        axis !== "horizontal" && maximumTop - top > 1,
+      );
+      wrapper.toggleAttribute("data-overflow-left", axis !== "vertical" && left > 1);
+      wrapper.toggleAttribute("data-overflow-right", axis !== "vertical" && maximumLeft - left > 1);
     }
     function measure() {
-      if (!wrapper || !(viewport instanceof HTMLElement)) return;
+      if (!active || !wrapper || !(viewport instanceof HTMLElement)) return;
       const height = viewport.clientHeight,
-        width = viewport.clientWidth;
+        width = viewport.clientWidth,
+        scrollWidth = viewport.scrollWidth;
       maximumTop = Math.max(0, viewport.scrollHeight - height);
+      maximumLeft = Math.max(0, scrollWidth - width);
       // Overlay scrollbars occupy no layout gutter. Keep the shared six-pixel bar clear too.
-      const bottom = Math.max(
-          viewport.offsetHeight - height,
-          viewport.scrollWidth > width + 1 ? 6 : 0,
-        ),
+      const bottom = Math.max(viewport.offsetHeight - height, maximumLeft > 1 ? 6 : 0),
         right = Math.max(viewport.offsetWidth - width, maximumTop > 1 ? 6 : 0);
       if (bottom !== bottomGutter) {
         bottomGutter = bottom;
@@ -56,6 +68,7 @@ export function ScrollShadow({
     }
     const resize = new ResizeObserver(measure);
     function observeChildren() {
+      if (!active) return;
       resize.disconnect();
       resize.observe(viewport as HTMLElement);
       for (const child of viewport!.children) resize.observe(child);
@@ -67,18 +80,22 @@ export function ScrollShadow({
     viewport.addEventListener("scroll", paint, { passive: true });
     observeChildren();
     return () => {
+      active = false;
       viewport.removeEventListener("scroll", paint);
       resize.disconnect();
       childrenObserver.disconnect();
     };
-  }, [children.type, children.key, viewportSelector]);
+  }, [children.type, children.key, viewportSelector, axis]);
   return (
     <div
       className={cn("scroll-shadow", className)}
       ref={root}
+      data-scroll-shadow-axis={axis}
       style={surface ? ({ ...style, "--scroll-shadow-surface": surface } as CSSProperties) : style}
     >
       {children}
+      <span className="scroll-shadow-inline-start" aria-hidden="true" />
+      <span className="scroll-shadow-inline-end" aria-hidden="true" />
     </div>
   );
 }

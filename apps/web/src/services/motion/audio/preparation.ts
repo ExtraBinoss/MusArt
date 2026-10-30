@@ -26,6 +26,7 @@ export class AudioPreparation {
   private sequence = 0;
   private closed = false;
   private waveformsPaused = false;
+  private readonly waveformHolds = new Set<symbol>();
   constructor(
     private readonly resolveOriginal: (
       asset: OriginalMediaAsset,
@@ -86,7 +87,7 @@ export class AudioPreparation {
   private async next() {
     if (this.active || this.closed) return;
     const sound = this.queue.findIndex((request) => request.preset !== undefined);
-    const index = sound >= 0 ? sound : this.waveformsPaused ? -1 : 0;
+    const index = sound >= 0 ? sound : this.waveformsPaused || this.waveformHolds.size > 0 ? -1 : 0;
     const request = index >= 0 ? this.queue.splice(index, 1)[0] : undefined;
     if (!request) return;
     this.active = request;
@@ -135,6 +136,19 @@ export class AudioPreparation {
     this.waveformsPaused = false;
     void this.next();
   }
+  /** Independent UI owners cannot resume preparation while another interaction still holds it. */
+  holdWaveforms(): () => void {
+    if (this.closed) return () => {};
+    const token = Symbol("waveform-hold");
+    const first = this.waveformHolds.size === 0;
+    this.waveformHolds.add(token);
+    if (first) this.yieldWaveform();
+    void this.next();
+    return () => {
+      if (!this.waveformHolds.delete(token)) return;
+      if (!this.waveformHolds.size && !this.waveformsPaused) void this.next();
+    };
+  }
   private retireWorker() {
     if (!this.worker) return;
     this.worker.onmessage = null;
@@ -175,6 +189,7 @@ export class AudioPreparation {
     void this.next();
   }
   reset() {
+    // Interaction leases survive job resets (including Play); old releases remove only their token.
     this.waveformsPaused = false;
     const requests = [...this.queue];
     this.queue = [];
@@ -191,6 +206,7 @@ export class AudioPreparation {
     if (this.closed) return;
     this.closed = true;
     this.reset();
+    this.waveformHolds.clear();
     this.cache.clear();
     this.bytes = 0;
   }

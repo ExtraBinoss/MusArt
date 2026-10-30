@@ -1104,6 +1104,123 @@ zoom, slider zoom and scroll cadence independently of hover; preserve delivered
 input clocks, React commits, Canvas paints and matching source attribution. The
 hover result does not establish that zoom or scrolling meets the frame budget.
 
+## M136 — Both-axis scroll edges, deferred workers and waveform shape
+
+```text
+genre scroll sidewars et scroll haut et bas il stutter sur la fin et le début c pas top, j'ai l'impression que les workers ne sont pas top, en plus ils n'utilisent pas la bonne visualiation et j'ai l'impression c pas defered
+```
+
+The explicit answer to the waveform clarification is: **« Oui, ce rendu dans les
+deux »**. Audio tracks and the sound bank both use a filled, bottom-up mountain.
+Keep decoding/preparation out of active wheel, pan, zoom and drag interactions;
+preserve ready waveforms and inspect the actual worker/foreground overlap.
+
+## M137 — Report findings and reuse the generic right scroll shadow
+
+```text
+tu me dis si dans ton profiling tu trouves des trucs, je veux aussi une scrollshadow dans le right side  quand ca déborde la meme que le scrollshadow genrique hein
+```
+
+Report confirmed findings while investigating. Add horizontal overflow indication
+through the existing generic ScrollShadow, including the right edge, with the
+same theme and scrollbar clearance as its vertical counterpart.
+
+## M138 — Aggressive native benchmark movements
+
+```text
+fais vrm des gros mouvements et tout genre vraiment dans ton benchmark tu dois en abuser
+```
+
+Retain the matched comparison workload, and additionally exercise large two-axis
+movements, rapid direction reversals, repeated end/start clamps and full-range
+zoom/scrub gestures. Record delivered native inputs and outcomes; report the
+additional stress scenario separately rather than inventing a matching baseline.
+Keep the shared workstation resource budget and serial Chrome ownership.
+
+## M139 — Linked movement, bounded gestures and broken layer DnD
+
+```text
+y'a  toujours des big soucis, quand je bouge dans la timeline un item passer le "flag" en mode end of composition, il continue d'avancer et tout
+
+ensuite, quand je bouge, les trucs liés a lui ne bouge pas en temps réel, faurait que tout sois temps réel quoi en mode la "Chime"  a un chime striker, bah il bouge pas quand je bouge le top level thing
+
+le dnd des layers ne marche tjr pas j'ai que un curseur blocké jsp pourquoi.. dans les calques normaux
+
+je ne peuix pas dnd entre les layers dans motion aussi. ni dans le pseudo/name de la layer ni autre chose genre la canvas donc regle sa dans un sous agent
+```
+
+```text
+quand je déplace jusqu'a derière 0 ca me dit invalid, bah enfaite ca devrait juste bloqué quand un element arrive 0, nimporte qu'elle elmeent du groupe quoi
+```
+
+```text
+Oui : le déplacement doit se bloquer dès que le premier élément du groupe atteint zér des QUUN element qui bouge en meme temps en temps réel deborde sur le0, des qu'il touche y'a un truc genre rouge une barre rouge qui s'affiche quoi
+```
+
+Clamp the common gesture as soon as any element moving with it reaches zero or
+the composition end. Show a red zero boundary while blocked, keep linked artwork
+and timeline children in the same real-time draft, and preserve a single undo.
+Investigate actual blocked native and pointer drags in normal Layers, Motion
+names and temporal bars; do not infer success from a mocked transfer alone.
+
+## M140 — Keep the dragged playhead in the visible ruler and prioritize fixes
+
+```text
+quand je prend le plauyhead a la souris direct, je peux  dépasser les rulers, PAS TOP;
+```
+
+```text
+j'aimeraisque t'aille plus vite
+```
+
+Clamp captured playhead scrubbing to the visible ruler and valid composition time.
+Prioritize these interaction defects, delegate independent domains and keep the
+workstation's heavy verification serial.
+
+## M141 — Native drag closes the timeline; expose refusal reasons
+
+```text
+grouille toi gros ta fucking 4 sous agents qui tourne et ca va encore mettre 1 heure a tourner -_-
+```
+
+```text
+alors que je me demande juste de profile, et fix des bug simple pitié
+```
+
+```text
+moi je te dit le dnd il fais curseur rouge banni genrej ep eux pas, que ce soti dans motion timeline ou layer
+```
+
+```text
+la timeline aussi si je clique et je fais un dnd, ca ferme le timeline c relou
+```
+
+```text
+sinon met un console log de pourquoi c banni et je te dirais avec une vrai erreur
+```
+
+Prioritize concrete profiling fixes and interaction regressions over a new preview
+engine. Keep an unpinned dock expanded through the pointercancel/native-drag
+handoff and shared layer drag. Expose deduplicated, structured `[MusArt DnD]`
+refusal reasons so the user can report their actual blocked path; preserve the
+distinction between a passing nominal fixture and the unresolved user case.
+
+## M142 — User console evidence and overlapping insertion guidance
+
+The user supplied repeated native dragover diagnostics with
+`reason: 'inactiveDrag'`, `mode: 'motion'` and a retained source ID. This identifies
+a retired session before target acceptance, rather than evidence of a MIME or
+target-validation failure. A concrete native blur cancellation path was then
+removed, with owner-scoped retirement and a start/rerender/blur/drop regression.
+
+```text
+le dnd dans la timeline à l'air de fonctionner mais le insert below et tout defois y'a plusieurs messages ducoup ils sse superposent c pas top
+```
+
+Keep the shared insertion state synchronized across surfaces, but show its cue
+only at the actual hovered DOM row. The same layer in Layers and Motion must not
+produce overlapping visible messages.
+
 ## Reference handling
 
 The screenshots are user-supplied Figma UI references, not MusArt product assets. They document the requested appearance and interaction target; they do not grant a license to redistribute Figma code, brand assets or an external design system inside the application. Preserve MusArt branding and use the repository's genuine shadcn/Radix controls.

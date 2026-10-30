@@ -12,7 +12,10 @@ interface Wanted {
   readonly identity: string;
 }
 
-/** One shared-worker request at a time; only visible clips retain envelope references. */
+const MAX_ENTRIES = 64,
+  MAX_BYTES = 1024 * 1024;
+
+/** One request at a time; a bounded identity cache retains genuine peaks across viewport exits. */
 export function createTimelineCanvasWaveforms({
   engine,
   prepare,
@@ -31,15 +34,49 @@ export function createTimelineCanvasWaveforms({
     active = false,
     paused = false,
     resumeEpoch = 0,
-    closed = false;
+    closed = false,
+    bytes = 0;
   const ready = new Map<string, readonly number[]>(),
     failed = new Set<string>(),
-    interrupted = new Set<string>();
+    interrupted = new Set<string>(),
+    attempted = new Set<string>();
+  function currentAsset(entry: Wanted) {
+    const canonical = engine.getSnapshot().project.assets[entry.asset.id];
+    const presented = readModel().assets[entry.asset.id];
+    return (
+      !!canonical &&
+      isAudioAsset(canonical) &&
+      assetOriginalIdentity(canonical) === entry.identity &&
+      !!presented &&
+      isAudioAsset(presented) &&
+      assetOriginalIdentity(presented) === entry.identity
+    );
+  }
+  function remember(identity: string, peaks: Float32Array) {
+    const size = peaks.length * 8;
+    if (!peaks.length || size > MAX_BYTES)
+      throw Error("Audio waveform exceeds the timeline preview budget.");
+    const values = Object.freeze(Array.from(peaks));
+    const old = ready.get(identity);
+    if (old) bytes -= old.length * 8;
+    ready.delete(identity);
+    ready.set(identity, values);
+    bytes += size;
+    while (ready.size > MAX_ENTRIES || bytes > MAX_BYTES) {
+      const first = ready.keys().next().value!;
+      bytes -= ready.get(first)!.length * 8;
+      ready.delete(first);
+    }
+  }
   function emit() {
     const next = new Map<string, readonly number[]>();
     for (const [id, entry] of wanted) {
       const peaks = ready.get(entry.identity);
-      if (peaks) next.set(id, peaks);
+      if (peaks && currentAsset(entry)) {
+        ready.delete(entry.identity);
+        ready.set(entry.identity, peaks);
+        next.set(id, peaks);
+      }
     }
     if (
       next.size === published.size &&
@@ -50,14 +87,17 @@ export function createTimelineCanvasWaveforms({
     publish(next);
   }
   function pump() {
-    if (closed || active || paused) return;
+    if (closed || active || paused || attempted.size >= MAX_ENTRIES) return;
     const entry = [...wanted.values()].find(
       (entry) =>
         !ready.has(entry.identity) &&
         !failed.has(entry.identity) &&
-        !interrupted.has(entry.identity),
+        !interrupted.has(entry.identity) &&
+        !attempted.has(entry.identity) &&
+        currentAsset(entry),
     );
     if (!entry) return;
+    attempted.add(entry.identity);
     active = true;
     const origin = engine.getSnapshot(),
       epoch = resumeEpoch;
@@ -65,19 +105,38 @@ export function createTimelineCanvasWaveforms({
       .then(
         (peaks) => {
           const current = engine.getSnapshot();
-          if (closed || current.project !== origin.project || current.pageId !== origin.pageId)
+          if (
+            closed ||
+            current.project !== origin.project ||
+            current.pageId !== origin.pageId ||
+            !currentAsset(entry)
+          ) {
+            attempted.delete(entry.identity);
             return;
-          if ([...wanted.values()].some((value) => value.identity === entry.identity)) {
-            ready.set(entry.identity, Array.from(peaks));
+          }
+          try {
+            remember(entry.identity, peaks);
             emit();
+          } catch (error) {
+            failed.add(entry.identity);
+            if ([...wanted.values()].some((value) => value.identity === entry.identity))
+              onError(error);
           }
         },
         (error: unknown) => {
           const current = engine.getSnapshot();
-          if (closed || current.project !== origin.project || current.pageId !== origin.pageId)
+          if (
+            closed ||
+            current.project !== origin.project ||
+            current.pageId !== origin.pageId ||
+            !currentAsset(entry)
+          ) {
+            attempted.delete(entry.identity);
             return;
+          }
           if (error instanceof DOMException && error.name === "AbortError") {
             // A canceled request gets at most one retry per resume, never an asynchronous retry loop.
+            attempted.delete(entry.identity);
             if (paused || epoch === resumeEpoch) interrupted.add(entry.identity);
             return;
           }
@@ -98,6 +157,7 @@ export function createTimelineCanvasWaveforms({
       if (!value) {
         resumeEpoch++;
         interrupted.clear();
+        attempted.clear();
         pump();
       }
     },
@@ -130,9 +190,12 @@ export function createTimelineCanvasWaveforms({
           continue;
         next.set(track.id, { asset, identity: assetOriginalIdentity(asset) });
       }
+      const changed =
+        next.size !== wanted.size ||
+        [...next].some(([id, entry]) => wanted.get(id)?.identity !== entry.identity);
       wanted = next;
+      if (changed) attempted.clear();
       const identities = new Set([...wanted.values()].map((entry) => entry.identity));
-      for (const id of ready.keys()) if (!identities.has(id)) ready.delete(id);
       for (const id of failed) if (!identities.has(id)) failed.delete(id);
       for (const id of interrupted) if (!identities.has(id)) interrupted.delete(id);
       emit();
@@ -144,7 +207,9 @@ export function createTimelineCanvasWaveforms({
       ready.clear();
       failed.clear();
       interrupted.clear();
+      attempted.clear();
       published.clear();
+      bytes = 0;
     },
   };
 }

@@ -35,19 +35,24 @@
   --scroll-shadow-surface: var(--background);
 }
 .scroll-shadow::before,
-.scroll-shadow::after {
+.scroll-shadow::after,
+.scroll-shadow-inline-start,
+.scroll-shadow-inline-end {
   content: "";
   position: absolute;
-  left: 0;
-  right: var(--scroll-shadow-scrollbar-right, 0px);
-  height: 12px;
   z-index: 8;
   pointer-events: none;
   opacity: 0;
   transition: opacity 160ms ease;
 }
+.scroll-shadow::before,
+.scroll-shadow::after {
+  left: var(--scroll-shadow-inline-start, 0px);
+  right: var(--scroll-shadow-scrollbar-right, 0px);
+  height: 12px;
+}
 .scroll-shadow::before {
-  top: 0;
+  top: var(--scroll-shadow-block-start, 0px);
   background: linear-gradient(
     to bottom,
     var(--scroll-shadow-surface, var(--background)),
@@ -58,13 +63,46 @@
   bottom: var(--scroll-shadow-scrollbar-bottom, 0px);
   background: linear-gradient(to top, var(--scroll-shadow-surface, var(--background)), transparent);
 }
+.scroll-shadow-inline-start,
+.scroll-shadow-inline-end {
+  display: block;
+  top: var(--scroll-shadow-block-start, 0px);
+  bottom: var(--scroll-shadow-scrollbar-bottom, 0px);
+  width: 12px;
+}
+.scroll-shadow-inline-start {
+  left: var(--scroll-shadow-inline-start, 0px);
+  background: linear-gradient(
+    to right,
+    var(--scroll-shadow-surface, var(--background)),
+    transparent
+  );
+}
+.scroll-shadow-inline-end {
+  right: var(--scroll-shadow-scrollbar-right, 0px);
+  background: linear-gradient(
+    to left,
+    var(--scroll-shadow-surface, var(--background)),
+    transparent
+  );
+}
+.scroll-shadow[data-scroll-shadow-axis="vertical"] > .scroll-shadow-inline-start,
+.scroll-shadow[data-scroll-shadow-axis="vertical"] > .scroll-shadow-inline-end,
+.scroll-shadow[data-scroll-shadow-axis="horizontal"]::before,
+.scroll-shadow[data-scroll-shadow-axis="horizontal"]::after {
+  display: none;
+}
 .scroll-shadow[data-overflow-top]::before,
-.scroll-shadow[data-overflow-bottom]::after {
+.scroll-shadow[data-overflow-bottom]::after,
+.scroll-shadow[data-overflow-left] > .scroll-shadow-inline-start,
+.scroll-shadow[data-overflow-right] > .scroll-shadow-inline-end {
   opacity: 1;
 }
 @media (prefers-reduced-motion: reduce) {
   .scroll-shadow::before,
   .scroll-shadow::after,
+  .scroll-shadow-inline-start,
+  .scroll-shadow-inline-end,
   :where(*)::-webkit-scrollbar-thumb {
     transition: none;
   }

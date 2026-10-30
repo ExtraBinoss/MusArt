@@ -142,6 +142,12 @@ export type { MotionPropertyTarget, MotionValue } from "./motion/properties/mode
 export { planMotionInitialization } from "./motion/initialization";
 export { listLayerMotionOccurrences, getMotionOccurrenceAt } from "./motion/occurrences";
 export {
+  planMotionTrackMove,
+  clampMotionTrackMove,
+  acceptsMotionTrackMove,
+} from "./motion/track-move";
+export type { MotionTrackMovePlan } from "./motion/track-move";
+export {
   frameTime,
   compareMotionTime,
   motionTimeToSeconds,

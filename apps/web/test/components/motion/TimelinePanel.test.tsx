@@ -1,6 +1,6 @@
 import { Profiler, useSyncExternalStore } from "react";
 import { act, fireEvent, screen } from "@testing-library/react";
-import { expect, it, vi } from "vitest";
+import { beforeEach, expect, it, vi } from "vitest";
 import { createLayer } from "@musart/core";
 import { setup } from "../../support/ui";
 import { makeTransport, PanelHost, pointer } from "./support";
@@ -8,6 +8,24 @@ import { TimelinePanel } from "../../../src/components/motion/TimelinePanel";
 import { choose } from "../../support/select";
 import { LayerTree } from "../../../src/components/layers/tree/LayerTree";
 import { audioFixture } from "../../support/audio";
+import { canvasContext } from "./canvas/support";
+
+beforeEach(() => {
+  vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(canvasContext() as never);
+  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(900);
+  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(300);
+});
+
+// Exercise the real canvas picker/semantic overlay, rather than the removed DOM track tree.
+function admit(layerId: string, property = false, x = 100) {
+  const label = document.querySelector<HTMLElement>(
+    `[data-labels-only=true][data-layer-id="${layerId}"]${property ? ".is-property" : ":not(.is-property)"}`,
+  )!;
+  const root = document.querySelector<HTMLElement>(".motion-canvas-root")!;
+  vi.spyOn(root, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 656, 268));
+  act(() => pointer(root, "pointerdown", x, parseFloat(label.style.top) + 12));
+  act(() => pointer(root, "pointerup", x, parseFloat(label.style.top) + 12));
+}
 
 it("keeps the panel and header out of native vertical window publications", () => {
   const old = location.href;
@@ -152,19 +170,21 @@ it("wires visible track gestures to the real core and keeps pointer moves out of
       <PanelHost engine={d.engine} transport={runtime.transport} />
     </Profiler>,
   );
+  admit(d.rectangle.id);
   const track = screen.getByRole("button", { name: "Intervalle actif de Rectangle bleu" });
-  act(() => pointer(track, "pointerdown", 100));
+  const y = parseFloat(track.closest<HTMLElement>(".motion-row")!.style.top) + 12;
+  act(() => pointer(track, "pointerdown", 100, y));
   const afterStart = commits.mock.calls.length,
     before = d.engine.getSnapshot();
   act(() => {
-    pointer(track, "pointermove", 120);
-    pointer(track, "pointermove", 140);
-    pointer(track, "pointermove", 160);
+    pointer(track, "pointermove", 120, y);
+    pointer(track, "pointermove", 140, y);
+    pointer(track, "pointermove", 160, y);
   });
   expect(commits.mock.calls.length).toBe(afterStart);
   expect(d.engine.getSnapshot()).toBe(before);
   expect(track.closest(".motion-row")?.getAttribute("style")).toContain("--motion-drag-x: 60px");
-  act(() => pointer(track, "pointerup", 160));
+  act(() => pointer(track, "pointerup", 160, y));
   const moved = d.engine
     .getSnapshot()
     .project.pages[0]!.motion!.tracks.find((item) => item.layerId === d.rectangle.id)!;
@@ -285,6 +305,7 @@ it("keeps portalled easing clicks and select items out of timeline marquee and k
     });
   const runtime = makeTransport(d.engine.getSnapshot().project.pages[0]!);
   d.mount(<PanelHost engine={d.engine} transport={runtime.transport} />);
+  admit(d.rectangle.id, true, 60);
   fireEvent.click(screen.getByRole("button", { name: /Modifier l’interpolation vers/ }));
   const before = d.engine.getSnapshot();
   const blank = screen.getByText("Contrôle la transition vers cette image clé.");
@@ -361,6 +382,7 @@ it("retires an easing portal and pending input drafts when the dock exits", () =
     />
   );
   const view = d.mount(render(true));
+  admit(d.rectangle.id, true, 60);
   fireEvent.click(screen.getByRole("button", { name: /Modifier l’interpolation vers/ }));
   expect(screen.getByRole("dialog", { name: "Interpolation" })).toBeVisible();
   const before = d.engine.getSnapshot();
@@ -423,13 +445,19 @@ it("selects property keys collectively and deletes only those keys in one transa
     name: "Sélectionner toutes les images clés de Position X",
   });
   fireEvent.click(label);
-  expect(document.querySelectorAll(".motion-key.is-key-selected")).toHaveLength(2);
+  const count = () =>
+    d.engine
+      .getSnapshot()
+      .project.pages[0]!.motion!.tracks.flatMap((track) =>
+        track.properties.flatMap((property) => property.keyframes),
+      ).length;
+  expect(count()).toBe(2);
   const before = d.engine.getSnapshot().project.pages[0]!.layers;
   const transactions = vi.spyOn(d.engine, "transaction");
   fireEvent.keyDown(label, { key: "Delete" });
   expect(transactions).toHaveBeenCalledOnce();
   expect(d.engine.getSnapshot().project.pages[0]!.layers).toEqual(before);
-  expect(document.querySelectorAll(".motion-key")).toHaveLength(0);
+  expect(count()).toBe(0);
   const bubble = vi.fn();
   window.addEventListener("keydown", bubble);
   fireEvent.keyDown(label, { key: "Delete" });
@@ -449,10 +477,12 @@ it("cancels an in-progress track gesture immediately when the dock becomes inact
       onClose={vi.fn()}
     />,
   );
+  admit(d.rectangle.id);
   const track = screen.getByRole("button", { name: "Intervalle actif de Rectangle bleu" });
+  const y = parseFloat(track.closest<HTMLElement>(".motion-row")!.style.top) + 12;
   const before = d.engine.getSnapshot().project;
-  act(() => pointer(track, "pointerdown", 100));
-  act(() => pointer(track, "pointermove", 160));
+  act(() => pointer(track, "pointerdown", 100, y));
+  act(() => pointer(track, "pointermove", 160, y));
   expect(track.closest(".motion-row")?.getAttribute("style")).toContain("--motion-drag-x: 60px");
   view.rerender(
     <TimelinePanel
@@ -464,23 +494,55 @@ it("cancels an in-progress track gesture immediately when the dock becomes inact
     />,
   );
   expect(track.closest(".motion-row")?.getAttribute("style")).not.toContain("--motion-drag-x");
-  act(() => pointer(track, "pointerup", 160));
+  act(() => pointer(track, "pointerup", 160, y));
   expect(d.engine.getSnapshot().project).toBe(before);
 });
 
-it("does not read scroll layout from transport frame subscriptions", () => {
+it("reads accepted scroll only when automatic playback navigation changes it", () => {
   const d = setup();
   d.engine.execute({ type: "setCompositionMode", mode: "motion" });
   const runtime = makeTransport(d.engine.getSnapshot().project.pages[0]!);
   d.mount(<PanelHost engine={d.engine} transport={runtime.transport} />);
   const viewport = document.querySelector<HTMLElement>(".motion-timeline-scroll")!;
   const read = vi.fn(() => 72);
-  Object.defineProperty(viewport, "scrollLeft", { configurable: true, get: read, set: vi.fn() });
+  const write = vi.fn();
+  Object.defineProperty(viewport, "scrollLeft", { configurable: true, get: read, set: write });
+  const layout = vi.fn(() => 900);
+  Object.defineProperties(viewport, {
+    scrollWidth: { configurable: true, get: layout },
+    clientWidth: { configurable: true, get: layout },
+  });
   fireEvent.scroll(viewport);
   read.mockClear();
+  layout.mockClear();
   act(() => {
     for (let value = 1; value <= 60; value++)
       runtime.update({ playing: true, time: { value, rate: 60 } });
   });
-  expect(read).not.toHaveBeenCalled();
+  expect(read.mock.calls.length).toBe(write.mock.calls.length);
+  expect(layout).not.toHaveBeenCalled();
+});
+
+it("clamps a wheel anchor to the temporal extent and never enlarges it with the playhead", () => {
+  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(1440);
+  const d = setup();
+  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const runtime = makeTransport(d.engine.getSnapshot().project.pages[0]!);
+  d.mount(<PanelHost engine={d.engine} transport={runtime.transport} />);
+  const viewport = document.querySelector<HTMLElement>(".motion-timeline-scroll")!;
+  const frames: FrameRequestCallback[] = [];
+  vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((callback) => {
+    frames.push(callback);
+    return frames.length;
+  });
+  fireEvent.wheel(viewport, { ctrlKey: true, deltaY: -10, clientX: 1300 });
+  act(() => frames.shift()!(16));
+  expect(viewport.scrollLeft).toBe(0);
+  const clip = document.querySelector<HTMLElement>(".motion-playhead-clip")!;
+  const content = document.querySelector<HTMLElement>(".motion-timeline-content")!;
+  expect(parseFloat(clip.style.left) + parseFloat(clip.style.width)).toBeLessThanOrEqual(
+    parseFloat(content.style.width),
+  );
+  expect(clip.style.left).toBe("244px");
+  expect(d.engine.getSnapshot().revision).toBe(1);
 });

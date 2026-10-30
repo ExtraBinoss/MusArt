@@ -83,3 +83,45 @@ it("previews only the selected occurrence's trim and keeps independent audio sou
     projectCanvasAudio(d.audio, 2, d.model, { left: 400, top: 0, width: 100, height: 80 }),
   ).toBeNull();
 });
+it("moves every captured group descendant occurrence while leaving unrelated clips at their authored time", () => {
+  const d = canvasFixture(),
+    indexed = indexTimelineCanvas(d.rows)[0]!;
+  const moved = projectCanvasClips(
+    indexed,
+    0,
+    {
+      ...d.model,
+      draft: {
+        action: "move",
+        delta: { value: 1, rate: 2 },
+        trackId: "parent",
+        trackIds: new Set(["first", "second"]),
+        layerIds: new Set(["parent", "hero"]),
+        keyIds: new Set(),
+      },
+    },
+    { left: 0, top: 0, width: 400, height: 24 },
+  );
+  expect(moved.clips.map((clip) => clip.bounds.x)).toEqual([50, 250]);
+  expect(d.tracks.map((track) => track.start)).toEqual([
+    { value: 0, rate: 1 },
+    { value: 2, rate: 1 },
+  ]);
+  const onlyOne = projectCanvasClips(
+    indexed,
+    0,
+    {
+      ...d.model,
+      draft: {
+        action: "move",
+        delta: { value: 1, rate: 2 },
+        trackId: "first",
+        trackIds: new Set(["first"]),
+        layerIds: new Set(["hero"]),
+        keyIds: new Set(),
+      },
+    },
+    { left: 0, top: 0, width: 400, height: 24 },
+  );
+  expect(onlyOne.clips.map((clip) => clip.bounds.x)).toEqual([50, 200]);
+});

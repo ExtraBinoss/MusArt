@@ -18,6 +18,14 @@ export function createLayerDragPresentation(engine: EnginePort) {
   let viewport: HTMLElement | null = null;
   let scroll: ReturnType<typeof createDragAutoScroll> | null = null;
   let ghost: HTMLElement | null = null;
+  let cueTarget: HTMLElement | null = null;
+  function cueAt(row: HTMLElement | null) {
+    const target = row?.closest<HTMLElement>("[data-layer-drop-id]") ?? row;
+    if (cueTarget === target) return;
+    cueTarget?.removeAttribute("data-layer-drop-cue-target");
+    cueTarget = target;
+    cueTarget?.setAttribute("data-layer-drop-cue-target", "true");
+  }
   let stopState: (() => void) | null = null;
   let version = 0;
   const rectangles = new WeakMap<HTMLElement, { version: number; bounds: DOMRect }>();
@@ -36,6 +44,7 @@ export function createLayerDragPresentation(engine: EnginePort) {
   function release(lease?: symbol) {
     if (lease !== undefined && owner !== lease) return;
     const previousOwner = owner;
+    cueAt(null);
     owner = null;
     scroll?.stop();
     scroll = null;
@@ -68,6 +77,7 @@ export function createLayerDragPresentation(engine: EnginePort) {
   ): boolean {
     const state = controller.read();
     if (!state) return false;
+    cueAt(row);
     if (
       state.pageId !== page.id ||
       engine.getSnapshot().project.pages.find((item) => item.id === state.pageId) !== page
@@ -124,6 +134,7 @@ export function createLayerDragPresentation(engine: EnginePort) {
       .elementFromPoint?.(point.x, point.y)
       ?.closest<HTMLElement>("[data-layer-drop-id]");
     if (!row) {
+      cueAt(null);
       controller.clear();
       previous = null;
       return;
@@ -134,6 +145,7 @@ export function createLayerDragPresentation(engine: EnginePort) {
       pageId = row.dataset.layerDropPageId;
     if (retainIntent(point, pageId, nextViewport)) return;
     if (row.dataset.layerDropKind === "property") {
+      cueAt(row);
       controller.clear({ id, reason: "property" });
       previous = null;
       return;

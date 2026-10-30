@@ -187,6 +187,8 @@
   }
 }
 .motion-scroll-shadow {
+  --scroll-shadow-inline-start: var(--motion-gutter);
+  --scroll-shadow-block-start: 32px;
   display: flex;
   flex: 1 1 0;
   flex-direction: column;
@@ -512,6 +514,23 @@ button.motion-row-expand:hover {
   overflow: hidden;
   z-index: 3;
   pointer-events: none;
+}
+.motion-start-boundary {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--motion-gutter) - 1px);
+  width: 2px;
+  z-index: 9;
+  pointer-events: none;
+  background: var(--destructive);
+  opacity: 0;
+}
+.motion-timeline[data-timeline-boundary="start"] .motion-start-boundary {
+  opacity: 1;
+}
+.motion-timeline[data-timeline-boundary="end"] .motion-end-marker {
+  color: var(--destructive);
 }
 .motion-playhead,
 .motion-ruler-playhead {

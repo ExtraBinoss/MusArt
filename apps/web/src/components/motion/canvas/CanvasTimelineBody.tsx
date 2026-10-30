@@ -19,6 +19,7 @@ import { getMotionAudioSession } from "../../../services/motion/audio/session";
 import { createTimelineCanvasHost } from "./host-state";
 import { createTimelineCanvasSurface } from "./surface";
 import { createTimelineCanvasWaveforms } from "./waveforms";
+import { createTimelineCanvasActivity } from "./activity";
 import type { TimelineCanvasHost } from "./host";
 import type { TimelineCanvasModel } from "./model";
 import { CanvasTimelineOverlay } from "./overlay";
@@ -105,7 +106,11 @@ export const CanvasTimelineBody = memo(function CanvasTimelineBody(props: Canvas
           onError: onAudioError,
         })
       : null;
-    let frameJob: number | null = null;
+    let frameJob: number | null = null,
+      playing = transport.read().playing,
+      interacting = false,
+      releaseHold: (() => void) | null = null,
+      stopped = false;
     const refresh = () => {
       if (frameJob !== null || !waveforms) return;
       frameJob = requestAnimationFrame(() => {
@@ -118,26 +123,47 @@ export const CanvasTimelineBody = memo(function CanvasTimelineBody(props: Canvas
         );
       });
     };
+    const syncPause = () => {
+      if (stopped) return;
+      const paused = playing || interacting;
+      waveforms?.setPaused(paused);
+      if (paused && !releaseHold && session) releaseHold = session.preparation.holdWaveforms();
+      if (!paused && releaseHold) {
+        const release = releaseHold;
+        releaseHold = null;
+        release();
+      }
+      if (!paused) refresh();
+    };
+    const activity = createTimelineCanvasActivity({
+      viewport: scroll,
+      onChange(value) {
+        interacting = value;
+        syncPause();
+      },
+    });
     const resize = new ResizeObserver(refresh);
-    let playing = transport.read().playing;
-    waveforms?.setPaused(playing);
+    syncPause();
     const stopTransport = transport.subscribe(() => {
       const next = transport.read().playing;
       if (playing === next) return;
       playing = next;
-      waveforms?.setPaused(next);
-      if (!next) refresh();
+      syncPause();
     });
     scroll.addEventListener("scroll", refresh, { passive: true });
     resize.observe(scroll);
     attached.current = {
       refresh,
       stop() {
+        stopped = true;
         scroll.removeEventListener("scroll", refresh);
         resize.disconnect();
         stopTransport();
+        activity.dispose();
         if (frameJob !== null) cancelAnimationFrame(frameJob);
         waveforms?.dispose();
+        releaseHold?.();
+        releaseHold = null;
         binding.detach(surface);
       },
     };

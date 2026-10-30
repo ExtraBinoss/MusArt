@@ -42,7 +42,11 @@ export function projectCanvasKeys(
   const draft = model.draft;
   const layerMoving =
     draft?.action === "move" &&
-    (draft.trackId ? draft.trackId === row.track.id : draft.layerIds.has(row.layer.id));
+    (draft.trackIds
+      ? draft.trackIds.has(row.track.id)
+      : draft.trackId
+        ? draft.trackId === row.track.id
+        : draft.layerIds.has(row.layer.id));
   const keyMoving = draft?.action === "keys";
   const delta = draft ? motionTimeToSeconds(draft.delta) : 0;
   const selection = model.selectionPreview;

@@ -19,7 +19,11 @@ export function canvasTrackRange(
   const draft = model.draft;
   const affected =
     draft &&
-    (draft.trackId ? draft.trackId === track.id : !!layerId && draft.layerIds.has(layerId));
+    (draft.trackIds
+      ? draft.trackIds.has(track.id)
+      : draft.trackId
+        ? draft.trackId === track.id
+        : !!layerId && draft.layerIds.has(layerId));
   if (affected) {
     const delta = motionTimeToSeconds(draft.delta);
     if (draft.action === "move" || draft.action === "trimStart") start += delta;
@@ -43,7 +47,13 @@ export function projectCanvasClips(
   if (draft && draft.action !== "keys") {
     const delta = motionTimeToSeconds(draft.delta);
     for (const track of indexed.queryTracks(start - delta - margin, end - delta + margin)) {
-      if (draft.trackId ? track.id === draft.trackId : draft.layerIds.has(row.layer.id))
+      if (
+        draft.trackIds
+          ? draft.trackIds.has(track.id)
+          : draft.trackId
+            ? track.id === draft.trackId
+            : draft.layerIds.has(row.layer.id)
+      )
         candidates.add(track);
     }
     if (draft.trackId) {

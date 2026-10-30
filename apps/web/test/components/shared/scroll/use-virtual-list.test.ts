@@ -1,7 +1,23 @@
 import { createElement, useRef } from "react";
-import { expect, test, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, expect, test, vi } from "vitest";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { useVirtualList } from "../../../../src/components/shared/scroll/use-virtual-list";
+const commits = vi.hoisted(() => ({ synchronous: vi.fn() }));
+vi.mock("react-dom", async (load) => {
+  const actual = await load<typeof import("react-dom")>();
+  return {
+    ...actual,
+    flushSync<T>(callback: () => T) {
+      commits.synchronous();
+      return actual.flushSync(callback);
+    },
+  };
+});
+afterEach(() => {
+  commits.synchronous.mockClear();
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 test("large fixed-height catalogs mount a bounded range and clamp it after filtering", () => {
   const disconnect = vi.spyOn(ResizeObserver.prototype, "disconnect");
   function List({ count }: { count: number }) {
@@ -79,4 +95,83 @@ test("scroll uses cached dimensions, supports late portal attachment and removes
   fireEvent.scroll(viewport, { target: { scrollTop: 0 } });
   expect(renders).toBe(after);
   dimensions.mockRestore();
+});
+test("explicit synchronous scroll admission commits only the changed window before the native event returns", () => {
+  let resize!: ResizeObserverCallback,
+    renders = 0,
+    stale!: ReturnType<typeof useVirtualList>["onScroll"];
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      constructor(callback: ResizeObserverCallback) {
+        resize = callback;
+      }
+      observe() {}
+      disconnect() {}
+    },
+  );
+  function List() {
+    renders++;
+    const viewport = useRef<HTMLDivElement>(null),
+      { first, last, attachViewport, onScroll } = useVirtualList(500, 24, viewport, 4, {
+        synchronousScroll: true,
+      });
+    stale = onScroll;
+    return createElement(
+      "div",
+      { ref: attachViewport, onScroll, "data-testid": "viewport" },
+      createElement("output", null, `${first}:${last}`),
+    );
+  }
+  const view = render(createElement(List)),
+    viewport = screen.getByTestId("viewport");
+  expect(commits.synchronous).not.toHaveBeenCalled();
+  act(() => {
+    viewport.scrollTop = 2400;
+    viewport.dispatchEvent(new Event("scroll"));
+    expect(screen.getByRole("status")).toHaveTextContent("96:118");
+  });
+  expect(commits.synchronous).toHaveBeenCalledOnce();
+  const committedRenders = renders;
+  act(() => {
+    for (const top of [2401, 2420, 2460]) {
+      viewport.scrollTop = top;
+      viewport.dispatchEvent(new Event("scroll"));
+    }
+  });
+  expect(renders).toBe(committedRenders);
+  expect(commits.synchronous).toHaveBeenCalledOnce();
+  Object.defineProperty(viewport, "clientHeight", { value: 100, configurable: true });
+  act(() => resize([], {} as ResizeObserver));
+  expect(screen.getByRole("status")).toHaveTextContent("96:113");
+  expect(commits.synchronous).toHaveBeenCalledOnce();
+  view.unmount();
+  act(() => {
+    viewport.scrollTop = 0;
+    viewport.dispatchEvent(new Event("scroll"));
+    stale({ currentTarget: viewport });
+  });
+  expect(commits.synchronous).toHaveBeenCalledOnce();
+  expect(renders).toBe(committedRenders + 1);
+});
+test("default catalogs retain deferred native scroll publication and never request flushSync", () => {
+  function List() {
+    const viewport = useRef<HTMLDivElement>(null),
+      { first, last, attachViewport } = useVirtualList(500, 24, viewport);
+    return createElement(
+      "div",
+      { ref: attachViewport, "data-testid": "viewport" },
+      createElement("output", null, `${first}:${last}`),
+    );
+  }
+  const view = render(createElement(List)),
+    viewport = screen.getByTestId("viewport");
+  act(() => {
+    viewport.scrollTop = 2400;
+    viewport.dispatchEvent(new Event("scroll"));
+    expect(screen.getByRole("status")).toHaveTextContent("0:18");
+  });
+  expect(screen.getByRole("status")).toHaveTextContent("96:118");
+  expect(commits.synchronous).not.toHaveBeenCalled();
+  view.unmount();
 });

@@ -3,6 +3,7 @@ import type { DragEvent } from "react";
 import type { Composition, EnginePort } from "@musart/core";
 import { useLayerDrag } from "../../layers/drag/use-layer-drag";
 import { layerDragController } from "../../layers/drag/controller";
+import { layerDragDiagnostics } from "../../layers/drag/diagnostics";
 import { layerDragWindow } from "../../layers/drag/window";
 import { formatUiError } from "../../../state/i18n/errors/format";
 import { createTimelineLayerPointer } from "./pointer";
@@ -93,8 +94,10 @@ export function useTimelineLayerDrag(options: {
       event.stopPropagation();
       event.dataTransfer.dropEffect = "none";
       controller.clear({ id, reason: "property" });
+      if (controller.read())
+        layerDragDiagnostics(engine).refuse("nativeDragover", "property", id, event);
     },
-    [controller],
+    [controller, engine],
   );
   const window = useCallback(
     (first: number, last: number) => {

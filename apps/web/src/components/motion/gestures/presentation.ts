@@ -14,6 +14,8 @@ interface Gesture {
   keyIds: readonly string[];
   layerIds: ReadonlySet<string>;
   track?: MotionLayerTrack;
+  trackIds?: ReadonlySet<string>;
+  boundary?: "start" | "end" | null;
   page: Composition;
   touched: Set<HTMLElement>;
   links?: { shift(delta: TimelineCanvasDraft["delta"]): void };
@@ -26,6 +28,7 @@ export function createTimelineGesturePresentation() {
   let sourceKeys: readonly string[] | null = null;
   let keyIds: ReadonlySet<string> = new Set();
   const listeners = new Set<() => void>();
+  let boundaryRoot: HTMLElement | null = null;
   const notify = () => {
     for (const listener of listeners) listener();
   };
@@ -50,6 +53,8 @@ export function createTimelineGesturePresentation() {
     },
     notify,
     clear() {
+      if (boundaryRoot) delete boundaryRoot.dataset.timelineBoundary;
+      boundaryRoot = null;
       const changed = current !== null;
       current = null;
       sourceKeys = null;
@@ -57,6 +62,9 @@ export function createTimelineGesturePresentation() {
       if (changed) notify();
     },
     render(gesture: Gesture, root: HTMLElement, scale: number) {
+      if (gesture.boundary) root.dataset.timelineBoundary = gesture.boundary;
+      else delete root.dataset.timelineBoundary;
+      boundaryRoot = root;
       if (sourceKeys !== gesture.keyIds) {
         sourceKeys = gesture.keyIds;
         keyIds = new Set(sourceKeys);
@@ -67,12 +75,15 @@ export function createTimelineGesturePresentation() {
         current.delta.value !== gesture.delta.value ||
         current.delta.rate !== gesture.delta.rate ||
         current.trackId !== gesture.track?.id ||
-        current.keyIds !== keyIds
+        current.keyIds !== keyIds ||
+        current.boundary !== gesture.boundary
       ) {
         current = {
           action: gesture.action,
           delta: gesture.delta,
           trackId: gesture.track?.id,
+          trackIds: gesture.trackIds,
+          boundary: gesture.boundary,
           keyIds,
           layerIds: gesture.layerIds,
         };
@@ -89,7 +100,13 @@ export function createTimelineGesturePresentation() {
       } else if (gesture.action === "move") {
         gesture.links?.shift(gesture.delta);
         if (gesture.page.motion?.version === 2) {
-          previewOccurrenceMove(root, gesture.track!.id, gesture.keyIds, px, gesture.touched);
+          previewOccurrenceMove(
+            root,
+            gesture.trackIds ?? gesture.track!.id,
+            keyIds,
+            px,
+            gesture.touched,
+          );
         } else {
           for (const node of root.querySelectorAll<HTMLElement>(".motion-row[data-layer-id]")) {
             if (!gesture.layerIds.has(node.dataset.layerId!)) continue;

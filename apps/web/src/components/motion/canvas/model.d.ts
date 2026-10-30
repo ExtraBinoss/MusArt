@@ -18,6 +18,8 @@ export interface TimelineCanvasDraft {
   readonly action: "keys" | "move" | "trimStart" | "trimEnd";
   readonly delta: MotionTime;
   readonly trackId?: string;
+  readonly trackIds?: ReadonlySet<string>;
+  readonly boundary?: "start" | "end" | null;
   readonly keyIds: ReadonlySet<string>;
   readonly layerIds: ReadonlySet<string>;
 }

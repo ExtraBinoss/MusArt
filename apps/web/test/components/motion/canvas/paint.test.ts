@@ -31,7 +31,7 @@ it("draws neutral clips, selected keys and hold glyphs using only bounded native
   expect(context.lineTo).toHaveBeenCalled();
   expect(context.save).toHaveBeenCalledTimes(context.restore.mock.calls.length);
 });
-it("fills a symmetric two-tone mountain using only the visible waveform contour", () => {
+it("fills a bottom-up two-tone mountain using only the visible waveform contour", () => {
   const d = canvasFixture(),
     context = canvasContext();
   const fills: { color: string; alpha: number }[] = [];
@@ -66,13 +66,13 @@ it("fills a symmetric two-tone mountain using only the visible waveform contour"
   );
   paintTimelineCanvas(context as unknown as CanvasRenderingContext2D, scene, palette);
   expect(context.moveTo).toHaveBeenCalledTimes(2);
-  expect(context.moveTo).toHaveBeenCalledWith(0, 12);
+  expect(context.moveTo).toHaveBeenCalledWith(0, 20.5);
   expect(context.closePath).toHaveBeenCalledTimes(2);
-  expect(context.quadraticCurveTo).toHaveBeenCalledTimes(200);
-  expect(context.lineTo).toHaveBeenCalledWith(0, 8);
-  expect(context.lineTo).toHaveBeenCalledWith(100, 16);
-  expect(context.lineTo).toHaveBeenCalledWith(0, expect.closeTo(9.2));
-  expect(context.lineTo).toHaveBeenCalledWith(100, expect.closeTo(14.8));
+  expect(context.quadraticCurveTo).toHaveBeenCalledTimes(100);
+  expect(context.lineTo).toHaveBeenCalledWith(0, 12.25);
+  expect(context.lineTo).toHaveBeenCalledWith(100, 20.5);
+  expect(context.lineTo).toHaveBeenCalledWith(0, expect.closeTo(14.725));
+  expect(context.lineTo).toHaveBeenCalledWith(100, expect.closeTo(14.725));
   expect(fills).toEqual([
     { color: palette.track, alpha: 1 },
     { color: palette.muted, alpha: 0.38 },
