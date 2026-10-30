@@ -38,6 +38,7 @@ export function ProjectCard({
   onClearHistory: () => void;
 }) {
   const { t } = useTranslation();
+  const previewPage = project.pages.find((page) => page.mode === "motion") ?? project.pages[0];
   const mode =
     project.mode ?? (project.pages.some((page) => page.mode === "motion") ? "motion" : "static");
   const [editing, setEditing] = useState(false),
@@ -118,7 +119,7 @@ export function ProjectCard({
               )}
             </div>
             <span className="project-card-resolution">
-              {project.width} × {project.height} px
+              {previewPage?.width ?? project.width} × {previewPage?.height ?? project.height} px
             </span>
           </div>
           <span className="project-card-mode" data-mode={mode}>

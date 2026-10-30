@@ -29,7 +29,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
-- Matched saved-project captions to template cards with a title and resolution on the left, the actual Static/Motion mode on the right, and theme-aware fading. Lightweight per-artboard mode metadata comes from existing bounded manifest reads; legacy artboards remain Static and listing never hydrates originals or history.
+- Matched saved-project captions to template cards with a title and resolution on the left, the actual Static/Motion mode on the right, and theme-aware fading. Caption resolution follows the first Motion artboard shown by the preview, or the first Static artboard. Lightweight per-artboard mode metadata comes from existing bounded manifest reads; legacy artboards remain Static and listing never hydrates originals or history.
 
 - The canvas logo now opens the shared creation dialog directly over the editor. Cancelling returns to the same canvas without mounting the project library or changing the document. The project-name menu keeps an always-available Projects action on desktop and touch layouts.
 

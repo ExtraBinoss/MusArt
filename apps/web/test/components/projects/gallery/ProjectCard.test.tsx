@@ -137,3 +137,38 @@ test("matches template captions with name, resolution and the actual mode withou
   );
   expect(screen.getByText("Motion")).toBeVisible();
 });
+
+test("caption resolution follows the displayed Motion artboard and falls back to Static page or summary dimensions", () => {
+  const d = setup();
+  const props = {
+    services: d.services,
+    active: false,
+    onOpen: vi.fn(),
+    onRename: vi.fn(),
+    onDuplicate: vi.fn(),
+    onDelete: vi.fn(),
+    onInsights: vi.fn(),
+    onClearHistory: vi.fn(),
+  };
+  const project = projectSummary();
+  const mixed = {
+    ...project,
+    pages: project.pages.map((page, index) =>
+      index === 1
+        ? { ...page, mode: "motion" as const, width: 1920, height: 1080 }
+        : { ...page, mode: "static" as const },
+    ),
+  };
+  const view = d.mount(<ProjectCard {...props} project={mixed} />);
+  expect(screen.getByText("1920 × 1080 px")).toBeVisible();
+  expect(screen.queryByText("320 × 220 px")).toBeNull();
+  view.rerender(
+    <ProjectCard
+      {...props}
+      project={{ ...project, pages: [{ ...project.pages[0]!, width: 600, height: 800 }] }}
+    />,
+  );
+  expect(screen.getByText("600 × 800 px")).toBeVisible();
+  view.rerender(<ProjectCard {...props} project={{ ...project, pages: [] }} />);
+  expect(screen.getByText("320 × 220 px")).toBeVisible();
+});
