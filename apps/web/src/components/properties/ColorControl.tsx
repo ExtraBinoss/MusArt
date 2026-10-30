@@ -252,7 +252,12 @@ export function ColorControl({
         alpha={alpha}
         disabled={disabled}
         onPreview={preview}
-        onCommit={() => commit()}
+        onCommit={() => {
+          pointer.current = null;
+          gesture.current = false;
+          commit();
+        }}
+        onCancel={() => cancel()}
       />
       <div className="color-value">
         <span ref={swatch} className="color-swatch" style={{ background: value }} />
