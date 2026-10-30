@@ -1,10 +1,12 @@
 # Changelog
 
-All notable changes are recorded here in English. MusArt uses a synchronized [Semantic Versioning](https://semver.org/) release number across its workspaces.
+All notable changes are recorded here in English. Melt uses a synchronized [Semantic Versioning](https://semver.org/) release number across its workspaces.
 
 ## [Unreleased]
 
 ### Added
+
+- Introduced the Melt identity with the original Maskot/Bloub SVG engine, a wide-eyed Dahlia mascot, reusable SVG morphing, a shared violet palette and operation-driven loading/preparation marks with on-demand, reduced-motion-aware playback. Existing local projects and `.musart` formats remain compatible.
 
 - Shared the editor's mobile bottom navigation with the project library: Projects, Templates, disabled upcoming Community and Preferences. Cancellable native swipes move the content and indicator imperatively, preserve search drafts and vertical scrolling, handle pointer-capture transfers, and select once on release. Safe areas, keyboard controls and reduced motion remain supported.
 

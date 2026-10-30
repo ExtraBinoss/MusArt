@@ -1,7 +1,8 @@
+import { BrandStatus } from "../../../ui/brand/BrandStatus";
 import { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { useTranslation } from "react-i18next";
-import { FileImage, LoaderCircle } from "lucide-react";
+import { FileImage } from "lucide-react";
 import { TEMPLATE_CATALOG } from "../../../services/projects/templates/catalog";
 import { SocialBrandIcon } from "../../assets/SocialBrandIcon";
 import { Button } from "../../ui/button";
@@ -90,7 +91,7 @@ export function TemplateGallery({
       )}
       {busy && (
         <div className="template-loading" role="status">
-          <LoaderCircle size={14} className="animate-spin motion-reduce:animate-none" aria-hidden />
+          <BrandStatus size={22} state="preparing" />
           <span>{t("templates:opening")}</span>
           {onCancel && (
             <Button size="sm" variant="ghost" onClick={onCancel}>

@@ -146,6 +146,34 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 describe("R3F direct WebGPU scene lifetime", () => {
+  it("keeps preparation tied to this canvas even when a previous canvas presented the same engine", async () => {
+    const input = source();
+    const snapshot = input.engine.getSnapshot();
+    const previous = input.controller.presentation.acquire();
+    const ticket = previous.request(
+      { projectId: snapshot.project.id, revision: snapshot.revision },
+      true,
+    );
+    previous.present(ticket);
+    previous.release();
+    vi.mocked(Canvas).mockImplementation(({ children }) => (
+      <>
+        <canvas
+          ref={(node) => {
+            if (node) (gpu.state.gl as { domElement: HTMLCanvasElement }).domElement = node;
+          }}
+        />
+        {children}
+      </>
+    ));
+    const view = render(<EditorScene controller={input.controller} />);
+    expect(view.container.querySelector(".canvas-loading .melt-mascot")).not.toBeNull();
+    await waitFor(() => expect(gpu.invalidate).toHaveBeenCalled());
+    expect(view.container.querySelector(".canvas-loading .melt-mascot")).not.toBeNull();
+    act(drawn);
+    expect(view.container.querySelector(".canvas-loading .melt-mascot")).toBeNull();
+    expect(view.container.querySelector("canvas")?.dataset.displayInitialized).toBe("true");
+  });
   it("acknowledges the requested logical font only after its matching display draw", async () => {
     const text = createLayer("text", { fontFamily: "Inter", fontWeight: 700 });
     const input = source(createPage({ layers: [text] }));

@@ -1,3 +1,4 @@
+import { brand } from "../../ui/brand/config";
 export function safeName(name: string) {
   return (
     Array.from(name, (character) =>
@@ -5,7 +6,7 @@ export function safeName(name: string) {
     )
       .join("")
       .trim()
-      .slice(0, 120) || "MusArt"
+      .slice(0, 120) || brand.name
   );
 }
 export function downloadBlob(blob: Blob, filename: string) {

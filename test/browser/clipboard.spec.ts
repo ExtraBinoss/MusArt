@@ -14,7 +14,7 @@ async function ready(page: Page) {
 }
 async function search(page: Page, label: string) {
   await page.keyboard.press("Control+k");
-  const dialog = page.getByRole("dialog", { name: "Rechercher dans MusArt", exact: true });
+  const dialog = page.getByRole("dialog", { name: "Rechercher dans Melt", exact: true });
   await dialog.getByRole("combobox").fill(label);
   await dialog.getByRole("option", { name: new RegExp(`^${label}`) }).click();
   await expect(page.locator("[data-magic-search]")).toHaveCount(0);
@@ -341,7 +341,7 @@ test("clipboard shortcuts are editable and persist while native text editing rem
   // portable document selection and remapped command bindings.
   await page.keyboard.press("Control+k");
   const searchInput = page
-    .getByRole("dialog", { name: "Rechercher dans MusArt", exact: true })
+    .getByRole("dialog", { name: "Rechercher dans Melt", exact: true })
     .getByRole("combobox");
   await searchInput.fill("Native text stays editable");
   await page.keyboard.press("Control+a");

@@ -11,6 +11,7 @@
     "coverage/**",
     "artifacts/**",
     "apps/web/public/templates/motion/*.json",
-    "PLAN_UNIVERSEL_EDITEUR_CREATIF.md"
+    "PLAN_UNIVERSEL_EDITEUR_CREATIF.md",
+    "apps/web/src/ui/brand/engine/eye-fit-data.ts"
   ]
 }

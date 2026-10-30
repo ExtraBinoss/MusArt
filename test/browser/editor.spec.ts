@@ -56,7 +56,7 @@ test("workbench: real artwork, trackpad pan, anchored zoom, reset and recenter",
   await expect(artboard).toHaveAttribute("data-pan-x", "0");
   await page.keyboard.press("Control+k");
   await page
-    .getByRole("combobox", { name: "Rechercher dans MusArt", exact: true })
+    .getByRole("combobox", { name: "Rechercher dans Melt", exact: true })
     .fill("ajuster écran");
   await page.getByRole("option", { name: /Ajuster à l’écran/ }).click();
   await page.screenshot({ path: "artifacts/screenshots/editor-light.png" });

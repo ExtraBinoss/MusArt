@@ -1,0 +1,11 @@
+{
+  "generator": "bun scripts/brand-assets.ts",
+  "engine": "Maskot 2825887abd292caa5dd46e8014f65481857fc183",
+  "shape": "fleur8",
+  "expression": "surpris",
+  "time": 0.75,
+  "files": {
+    "melt.svg": "5e700e0e3eae58653fbe8813f406fa9046364aa72ed3e1880756f067b859ee1f",
+    "melt-maskable.svg": "dc61f5b22cb31487af2eb3229223fec2a1fec2b7e20fbffebe9561e4e214514b"
+  }
+}

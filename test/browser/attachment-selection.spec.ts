@@ -56,11 +56,11 @@ test("collapsed attachment cards select real FX/masks and Delete, footer and Cmd
   await page.keyboard.press("Escape");
   await expect(maskCard).toBeFocused();
   await page.keyboard.press("Control+k");
-  const search = page.getByRole("combobox", { name: "Rechercher dans MusArt", exact: true });
+  const search = page.getByRole("combobox", { name: "Rechercher dans Melt", exact: true });
   await expect(search).toBeFocused();
   await search.fill("Supprimer");
   await page
-    .getByRole("dialog", { name: "Rechercher dans MusArt", exact: true })
+    .getByRole("dialog", { name: "Rechercher dans Melt", exact: true })
     .locator('[cmdk-item][data-value="action:delete"]')
     .click();
   await expect.poll(async () => (await state()).project.pages[0]!.layers[0]!.mask).toBeNull();

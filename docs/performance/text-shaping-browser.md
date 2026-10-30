@@ -7,6 +7,11 @@ The separate repeated CPU preparation benchmark has a lower median; it is a
 different boundary from opening or exporting the application. CPU results and
 compatibility fingerprints are recorded in [text shaping](text-shaping.md).
 
+Both methods use the same interface from before the Melt rebranding. The later
+SVG mascot, branding assets and loading marks are outside these frozen builds.
+The payload and application timings therefore describe the isolated text
+migration, rather than the complete branded application's download size.
+
 ## Frozen execution and workload
 
 The baseline is `a40285b8f32f99778219cd9bcc55b8ae694c0edc`, with HarfBuzz.js

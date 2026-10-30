@@ -1,6 +1,8 @@
-import { ArrowUpRight, LoaderCircle, Play } from "lucide-react";
+import { BrandStatus } from "../../../ui/brand/BrandStatus";
+import { brand } from "../../../ui/brand/config";
+import { ArrowUpRight, Play } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { MusArtLogo } from "../../branding/MusArtLogo";
+import { MeltLogo } from "../../../ui/brand/MeltLogo";
 import { Button } from "../../ui/button";
 import { HeroHeadline } from "./HeroHeadline";
 import { ShowcaseCarousel } from "./ShowcaseCarousel";
@@ -25,8 +27,8 @@ export function LandingPage({
     <div className="landing-page">
       <header className="landing-nav">
         <a href="#musart-intro" className="landing-brand">
-          <MusArtLogo size={30} />
-          MusArt
+          <MeltLogo size={30} />
+          {brand.name}
         </a>
         <Button variant="ghost" disabled={busy} onClick={onCreate}>
           {t("try")}
@@ -73,13 +75,13 @@ export function LandingPage({
         </Button>
         <p>{t("local")}</p>
         <span className="landing-footer-brand">
-          <MusArtLogo size={26} />
-          MusArt
+          <MeltLogo size={26} />
+          {brand.name}
         </span>
       </footer>
       {busy && (
         <div className="landing-loading" role="status">
-          <LoaderCircle size={17} className="animate-spin motion-reduce:animate-none" />
+          <BrandStatus size={22} state="preparing" />
           <span>{t("opening")}</span>
           {onCancel && (
             <Button size="sm" variant="ghost" onClick={onCancel}>

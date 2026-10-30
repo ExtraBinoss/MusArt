@@ -1,23 +1,35 @@
 {
   "id": "./",
-  "name": "MusArt",
-  "short_name": "MusArt",
+  "name": "Melt",
+  "short_name": "Melt",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#101114",
-  "theme_color": "#2563eb",
+  "background_color": "#fbfbfc",
+  "theme_color": "#A259FF",
   "icons": [
     {
-      "src": "branding/musart-icon-192.png",
+      "src": "branding/melt-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "branding/musart-icon-512.png",
+      "src": "branding/melt-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "branding/melt.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "branding/melt-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }

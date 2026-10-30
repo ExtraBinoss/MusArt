@@ -43,3 +43,14 @@
 .motion-template-preview-status:empty {
   display: none;
 }
+
+.motion-template-preview-loading-mark {
+  display: none;
+  position: absolute;
+  inset: 0;
+  place-items: center;
+  pointer-events: none;
+}
+.motion-template-preview[data-preview-status="loading"] > .motion-template-preview-loading-mark {
+  display: grid;
+}

@@ -3,7 +3,7 @@ import { installReadbackProbe } from "./support/readback-probe";
 
 async function command(page: Page, query: string, name: string) {
   await page.keyboard.press("Control+k");
-  await page.getByRole("combobox", { name: "Rechercher dans MusArt", exact: true }).fill(query);
+  await page.getByRole("combobox", { name: "Rechercher dans Melt", exact: true }).fill(query);
   await page.getByRole("option", { name, exact: true }).click();
   await expect(page.locator(".magic-search-dialog")).toHaveCount(0);
 }

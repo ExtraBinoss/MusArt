@@ -1,3 +1,4 @@
+import { brand } from "../../ui/brand/config";
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import {
@@ -21,7 +22,7 @@ import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Kbd } from "../ui/kbd";
-import { MusArtLogo } from "../branding/MusArtLogo";
+import { MeltLogo } from "../../ui/brand/MeltLogo";
 import { GradientArtwork } from "./GradientArtwork";
 import { changeLanguage } from "../../state/i18n";
 import { completeOnboarding } from "../../state/onboarding/preferences";
@@ -88,8 +89,8 @@ export function OnboardingDialog({ onComplete }: { onComplete: () => void }) {
           <GradientArtwork palette={palette} paused={paused} />
           <div className="onboarding-art-shade" />
           <div className="onboarding-brand">
-            <MusArtLogo size={30} />
-            <span>MusArt</span>
+            <MeltLogo size={30} />
+            <span>{brand.name}</span>
             <span className="onboarding-edition">{t("edition")}</span>
           </div>
           <div className="onboarding-poster" aria-hidden="true">
