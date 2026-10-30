@@ -6,6 +6,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Added a shared All/Static/Motion filter to Projects and Templates. All is the initial default, the latest choice is remembered as a user preference, and project filtering reuses bounded metadata pages without loading originals or history.
+
 - Unified toolbar, Layers and DOM/canvas timeline reorder drags on a shared deferred session engine. Rows stay in canonical order until drop, with one translated destination/error cue and deduplicated console errors for rejected targets. Cancellation, stale-source protection and single-command undo remain intact.
 
 - Softened Melt accents and the Dahlia mascot to pastel violet, with a deeper action fill, white primary-button labels and white dark-theme switch thumbs. Light, Dark and System color changes crossfade the complete interface, respect reduced motion and supersede stale transitions without React frame updates.
@@ -101,6 +103,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 - Locked artwork remains inspectable on the canvas with a constant-size lock badge and no editing handles. Layer rows expose persistent protection indicators, while the inspector and effect/mask popovers identify blocking parent locks and unlock only that chain in one undoable transaction.
 
 ### Fixed
+
+- Prevented a blank editor when switching between desktop and mobile by waiting for the resizable-panel registry before restoring a layout, preserving desktop proportions and keeping responsive changes out of saved user resizes.
 
 - Removed obsolete HarfBuzz WASM loading and import maps from the text-layout and video-composition browser witnesses so they bundle the installed text-shaper backend directly. Their native WebGPU/WebGL pixel, reuse and cleanup assertions remain unchanged.
 

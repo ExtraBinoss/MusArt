@@ -8,7 +8,8 @@ import { SocialBrandIcon } from "../../assets/SocialBrandIcon";
 import { Button } from "../../ui/button";
 import { SearchInput } from "../../assets/SearchInput";
 import { ModeIcon } from "../../motion/ModeIcon";
-import { SegmentedTabs } from "../../shared/segmented/SegmentedTabs";
+import { LibraryModeFilter } from "../dashboard/LibraryModeFilter";
+import { useLibraryMode, type LibraryMode } from "../dashboard/library-mode";
 import { templatePreview } from "./preview";
 import { MotionTemplatePreview } from "./motion-preview/MotionTemplatePreview";
 import "./messages";
@@ -28,19 +29,21 @@ export function TemplateGallery({
   busy?: boolean;
   onCancel?: () => void;
   query?: string;
-  mode?: "static" | "motion";
+  mode?: LibraryMode;
   hideToolbar?: boolean;
   onQueryChange?: (query: string) => void;
-  onModeChange?: (mode: "static" | "motion") => void;
+  onModeChange?: (mode: LibraryMode) => void;
 }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const [localQuery, setLocalQuery] = useState("");
-  const [localMode, setLocalMode] = useState<"static" | "motion">("static");
+  const [localMode, setLocalMode] = useLibraryMode();
   const query = externalQuery ?? localQuery;
   const mode = externalMode ?? localMode;
   const term = query.trim().toLocaleLowerCase();
-  const modeTemplates = TEMPLATE_CATALOG.filter((template) => template.mode === mode);
+  const modeTemplates = TEMPLATE_CATALOG.filter(
+    (template) => mode === "all" || template.mode === mode,
+  );
   const templates = modeTemplates.filter((template) =>
     `${t(template.nameKey)} ${t(`templates:${template.mode}`)} ${template.brandId ?? ""} ${template.width} ${template.height}`
       .toLocaleLowerCase()
@@ -70,22 +73,13 @@ export function TemplateGallery({
               disabled={busy}
             />
           </div>
-          <SegmentedTabs
-            mode="choice"
-            label={t("templates:filter")}
+          <LibraryModeFilter
             value={mode}
             disabled={busy}
-            onValueChange={(value) => {
-              if (value !== "static" && value !== "motion") return;
+            onChange={(value) => {
               if (externalMode === undefined) setLocalMode(value);
               onModeChange?.(value);
             }}
-            className="template-mode-filter"
-            items={(["static", "motion"] as const).map((value) => ({
-              value,
-              label: t(`templates:${value}`),
-              icon: <ModeIcon mode={value} size={17} />,
-            }))}
           />
         </div>
       )}

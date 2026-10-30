@@ -1,4 +1,5 @@
-import { expect, test, vi } from "vitest";
+import { LIBRARY_MODE_KEY } from "../../../src/components/projects/dashboard/library-mode";
+import { beforeEach, expect, test, vi } from "vitest";
 import { act, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { ProjectDialog } from "../../../src/components/projects/ProjectDialog";
 import { setup } from "../../support/ui";
@@ -446,3 +447,5 @@ test("section changes retain header, creation controls and one search input with
   expect(input).toHaveValue("draft");
   expect(screen.getByRole("button", { name: "Nouveau projet" })).toBe(create);
 });
+
+beforeEach(() => localStorage.removeItem(LIBRARY_MODE_KEY));

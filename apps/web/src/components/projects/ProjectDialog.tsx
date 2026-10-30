@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { AnimatePresence } from "motion/react";
 import { useMobileLayout } from "../workspace/mobile/use-mobile";
 import { ScrollShadow } from "../shared/scroll/ScrollShadow";
+import { useLibraryMode } from "./dashboard/library-mode";
 import { LibraryToolbar } from "./dashboard/LibraryToolbar";
 import { LibraryTransition } from "./dashboard/LibraryTransition";
 import { ProjectCreateActions } from "./dashboard/ProjectCreateActions";
@@ -65,7 +66,7 @@ function ProjectDashboard({
     initialView === "templates" ? "templates" : "projects",
   );
   const [queries, setQueries] = useState({ projects: "", templates: "" });
-  const [templateMode, setTemplateMode] = useState<"static" | "motion">("static");
+  const [libraryMode, setLibraryMode] = useLibraryMode();
   const [projectHints, setProjectHints] = useState<ProjectSummary[]>([]);
   const [creating, setCreating] = useState(initialView === "newProject");
   const [busy, setBusy] = useState(false);
@@ -273,8 +274,8 @@ function ProjectDashboard({
                     onQueryChange={(query) =>
                       setQueries((current) => ({ ...current, [view]: query }))
                     }
-                    mode={templateMode}
-                    onModeChange={setTemplateMode}
+                    mode={libraryMode}
+                    onModeChange={setLibraryMode}
                     projects={projectHints}
                     disabled={busy}
                   />
@@ -294,6 +295,7 @@ function ProjectDashboard({
                             showCreateAction={false}
                             query={queries.projects}
                             hideSearch
+                            mode={libraryMode}
                             onProjectsLoaded={setProjectHints}
                           />
                         ) : (
@@ -304,7 +306,7 @@ function ProjectDashboard({
                               templateLoading ? () => templateRequest.current?.abort() : undefined
                             }
                             query={queries.templates}
-                            mode={templateMode}
+                            mode={libraryMode}
                             hideToolbar
                           />
                         )}

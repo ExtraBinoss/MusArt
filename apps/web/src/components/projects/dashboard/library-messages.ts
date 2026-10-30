@@ -2,6 +2,10 @@ import { registerFeatureTranslations } from "../../../state/i18n/feature-resourc
 
 export const messages = {
   en: {
+    modeFilter: "Content mode",
+    all: "All",
+    static: "Static",
+    motion: "Motion",
     navigation: "Studio navigation",
     projects: "Projects",
     templates: "Templates",
@@ -17,6 +21,10 @@ export const messages = {
     preferences: "Preferences",
   },
   fr: {
+    modeFilter: "Mode du contenu",
+    all: "Tous",
+    static: "Statique",
+    motion: "Motion",
     navigation: "Navigation de l’atelier",
     projects: "Projets",
     templates: "Templates",

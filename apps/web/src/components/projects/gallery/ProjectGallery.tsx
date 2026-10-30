@@ -8,6 +8,8 @@ import { SearchInput } from "../../assets/SearchInput";
 import { MeltLogo } from "../../../ui/brand/MeltLogo";
 import "../dashboard/messages";
 import { Button } from "../../ui/button";
+import { LibraryModeFilter } from "../dashboard/LibraryModeFilter";
+import { useLibraryMode, projectLibraryMode, type LibraryMode } from "../dashboard/library-mode";
 import { ProjectCard } from "./ProjectCard";
 import { ProjectActionDialog } from "../actions/ProjectActionDialog";
 import { ProjectInsightsDialog } from "../insights/ProjectInsightsDialog";
@@ -21,6 +23,7 @@ export function ProjectGallery({
   busy: dashboardBusy = false,
   query: externalQuery,
   hideSearch = false,
+  mode: externalMode,
   onQueryChange,
   onProjectsLoaded,
 }: {
@@ -33,6 +36,7 @@ export function ProjectGallery({
   busy?: boolean;
   query?: string;
   hideSearch?: boolean;
+  mode?: LibraryMode;
   onQueryChange?: (query: string) => void;
   onProjectsLoaded?: (projects: ProjectSummary[]) => void;
 }) {
@@ -41,6 +45,11 @@ export function ProjectGallery({
   const [localQuery, setLocalQuery] = useState("");
   const query = externalQuery ?? localQuery;
   const term = query.trim().toLocaleLowerCase();
+  const [localMode, setMode] = useLibraryMode();
+  const mode = externalMode ?? localMode;
+  const matches = (project: ProjectSummary) =>
+    project.name.toLocaleLowerCase().includes(term) &&
+    (mode === "all" || projectLibraryMode(project) === mode);
   const [loaded, setLoaded] = useState<ProjectLibraryPage | null>(null),
     [failed, setFailed] = useState(false),
     [busy, setBusy] = useState(false),
@@ -123,28 +132,31 @@ export function ProjectGallery({
   return (
     <>
       {!hideSearch && (
-        <div className="project-library-search">
-          <SearchInput
-            aria-label={t("dashboard:searchProjects")}
-            prefix={t("common.search")}
-            hints={
-              loaded?.projects.slice(0, 6).map((project) => ({
-                label: project.name,
-                preview: project.thumbnail ? (
-                  <img src={project.thumbnail} alt="" />
-                ) : (
-                  <MeltLogo size={20} />
-                ),
-              })) ?? [{ label: t("dashboard:projects"), preview: <MeltLogo size={20} /> }]
-            }
-            value={query}
-            disabled={disabled}
-            onChange={(event) => {
-              const next = event.target.value;
-              if (externalQuery === undefined) setLocalQuery(next);
-              onQueryChange?.(next);
-            }}
-          />
+        <div className="library-toolbar">
+          <div className="project-library-search">
+            <SearchInput
+              aria-label={t("dashboard:searchProjects")}
+              prefix={t("common.search")}
+              hints={
+                loaded?.projects.slice(0, 6).map((project) => ({
+                  label: project.name,
+                  preview: project.thumbnail ? (
+                    <img src={project.thumbnail} alt="" />
+                  ) : (
+                    <MeltLogo size={20} />
+                  ),
+                })) ?? [{ label: t("dashboard:projects"), preview: <MeltLogo size={20} /> }]
+              }
+              value={query}
+              disabled={disabled}
+              onChange={(event) => {
+                const next = event.target.value;
+                if (externalQuery === undefined) setLocalQuery(next);
+                onQueryChange?.(next);
+              }}
+            />
+          </div>
+          <LibraryModeFilter value={mode} onChange={setMode} disabled={disabled} />
         </div>
       )}
       {!loaded && !failed ? (
@@ -173,56 +185,55 @@ export function ProjectGallery({
       ) : (
         <>
           <div className="gallery-summary">
-            <span>{t("localProjectCount", { count: loaded?.projects.length ?? 0 })}</span>
+            <span>
+              {t("localProjectCount", { count: loaded?.projects.filter(matches).length ?? 0 })}
+            </span>
             <span>{t("localOnly")}</span>
           </div>
           <div className="project-grid" aria-busy={disabled}>
-            {loaded?.projects
-              .filter((project) => project.name.toLocaleLowerCase().includes(term))
-              .map((project, index) => (
-                <motion.div
+            {loaded?.projects.filter(matches).map((project, index) => (
+              <motion.div
+                key={project.id}
+                className="project-card-entry"
+                initial={reduced ? false : { opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: reduced ? 0 : 0.18,
+                  delay: reduced ? 0 : Math.min(index * 0.025, 0.15),
+                }}
+              >
+                <ProjectCard
                   key={project.id}
-                  className="project-card-entry"
-                  initial={reduced ? false : { opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: reduced ? 0 : 0.18,
-                    delay: reduced ? 0 : Math.min(index * 0.025, 0.15),
+                  project={project}
+                  services={services}
+                  active={project.id === activeProjectId}
+                  disabled={disabled}
+                  onOpen={() => {
+                    void mutate(() => services.openProject(project.id), undefined, false).then(
+                      (ok) => {
+                        if (ok && scope.current.alive) onOpen();
+                      },
+                    );
                   }}
-                >
-                  <ProjectCard
-                    key={project.id}
-                    project={project}
-                    services={services}
-                    active={project.id === activeProjectId}
-                    disabled={disabled}
-                    onOpen={() => {
-                      void mutate(() => services.openProject(project.id), undefined, false).then(
-                        (ok) => {
-                          if (ok && scope.current.alive) onOpen();
-                        },
-                      );
-                    }}
-                    onRename={(name) =>
-                      mutate(() => services.renameProject(project.id, name), t("projectRenamed"))
-                    }
-                    onDuplicate={() => {
-                      void mutate(
-                        () => services.duplicateProject(project.id),
-                        t("projectDuplicated"),
-                      );
-                    }}
-                    onDelete={() => setAction({ kind: "delete", project })}
-                    onInsights={() => setInspecting(project)}
-                    onClearHistory={() => setAction({ kind: "clearHistory", project })}
-                  />
-                </motion.div>
-              ))}
+                  onRename={(name) =>
+                    mutate(() => services.renameProject(project.id, name), t("projectRenamed"))
+                  }
+                  onDuplicate={() => {
+                    void mutate(
+                      () => services.duplicateProject(project.id),
+                      t("projectDuplicated"),
+                    );
+                  }}
+                  onDelete={() => setAction({ kind: "delete", project })}
+                  onInsights={() => setInspecting(project)}
+                  onClearHistory={() => setAction({ kind: "clearHistory", project })}
+                />
+              </motion.div>
+            ))}
           </div>
-          {loaded &&
-            !loaded.projects.some((project) => project.name.toLocaleLowerCase().includes(term)) && (
-              <p className="template-empty">{t("dashboard:noResults")}</p>
-            )}
+          {loaded && !loaded.projects.some(matches) && (
+            <p className="template-empty">{t("dashboard:noResults")}</p>
+          )}
           {loaded?.before && (
             <Button
               variant="outline"

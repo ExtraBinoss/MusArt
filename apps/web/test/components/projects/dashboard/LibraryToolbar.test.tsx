@@ -16,7 +16,8 @@ test("retains the actual search input while changing sections and template modes
   };
   const view = d.mount(<LibraryToolbar {...common} view="projects" query="Study" mode="static" />);
   const input = screen.getByRole("searchbox", { name: "Rechercher un projet" });
-  expect(screen.queryByRole("radiogroup")).toBeNull();
+  expect(screen.getByRole("radio", { name: "Tous" })).toBeVisible();
+  expect(screen.getAllByRole("radio")).toHaveLength(3);
   view.rerender(<LibraryToolbar {...common} view="templates" query="" mode="static" />);
   expect(screen.getByRole("searchbox", { name: "Rechercher un modèle" })).toBe(input);
   expect(input).toHaveValue("");

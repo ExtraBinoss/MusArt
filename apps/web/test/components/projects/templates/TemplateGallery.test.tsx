@@ -1,4 +1,5 @@
-import { expect, test, vi } from "vitest";
+import { LIBRARY_MODE_KEY } from "../../../../src/components/projects/dashboard/library-mode";
+import { beforeEach, expect, test, vi } from "vitest";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { TemplateGallery } from "../../../../src/components/projects/templates/TemplateGallery";
 import { setup } from "../../../support/ui";
@@ -56,7 +57,7 @@ test("shows honest preparation state and keeps explicit download cancellation us
 test("filters real Motion projects independently from blank formats and preserves an editable Static gallery", async () => {
   const onChoose = vi.fn();
   setup().mount(<TemplateGallery onChoose={onChoose} />);
-  expect(screen.getByRole("radio", { name: "Statique" })).toHaveAttribute("aria-checked", "true");
+  expect(screen.getByRole("radio", { name: "Tous" })).toHaveAttribute("aria-checked", "true");
   expect(screen.queryByText("Tous les modèles")).toBeNull();
   fireEvent.click(screen.getByRole("radio", { name: "Motion" }));
   const cards = screen.getAllByRole("button");
@@ -84,7 +85,7 @@ test("wires live previews only for authored Motion cards and disables their inte
   const d = setup(),
     choose = vi.fn();
   const view = d.mount(<TemplateGallery onChoose={choose} />);
-  expect(document.querySelector(".template-grid [data-motion-preview]")).toBeNull();
+  expect(document.querySelectorAll(".template-grid [data-motion-preview]")).toHaveLength(2);
   expect(
     document.querySelector('.template-artwork > img[src="/templates/afterhours.webp"]'),
   ).not.toBeNull();
@@ -122,3 +123,5 @@ test("controlled query and mode filter list-only presentation without a duplicat
   expect(screen.getAllByRole("button")).toHaveLength(1);
   expect(screen.getByRole("button", { name: /AFTERHOURS/ })).toBeInTheDocument();
 });
+
+beforeEach(() => localStorage.removeItem(LIBRARY_MODE_KEY));

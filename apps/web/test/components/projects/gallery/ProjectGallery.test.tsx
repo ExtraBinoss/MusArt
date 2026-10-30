@@ -1,4 +1,5 @@
-import { expect, test, vi } from "vitest";
+import { LIBRARY_MODE_KEY } from "../../../../src/components/projects/dashboard/library-mode";
+import { beforeEach, expect, test, vi } from "vitest";
 import { act, fireEvent, screen, within, waitFor } from "@testing-library/react";
 import { ProjectGallery } from "../../../../src/components/projects/gallery/ProjectGallery";
 import { projectSummary } from "../../../support/projects";
@@ -173,4 +174,38 @@ test("external query filtering reuses bounded metadata and can hide the gallery-
   view.rerender(<ProjectGallery {...props} query="Second" />);
   expect(screen.getByRole("article", { name: "Second" })).toBeInTheDocument();
   expect(d.services.listProjectPage).toHaveBeenCalledOnce();
+});
+
+beforeEach(() => localStorage.removeItem(LIBRARY_MODE_KEY));
+
+test("filters loaded project metadata, remembers the user choice and keeps legacy projects Static", async () => {
+  const d = setup();
+  const still = projectSummary("still", "Static study");
+  const motion = projectSummary("motion", "Motion study");
+  motion.pages[1]!.mode = "motion";
+  vi.mocked(d.services.listProjectPage).mockResolvedValue({
+    projects: [still, motion],
+    before: null,
+  });
+  const props = { services: d.services, onTask: d.onTask, onOpen: vi.fn(), onCreate: vi.fn() };
+  const view = d.mount(<ProjectGallery {...props} />);
+  await screen.findByRole("article", { name: "Static study" });
+  expect(screen.getByRole("radio", { name: "Tous" })).toBeChecked();
+  expect(screen.getAllByRole("article")).toHaveLength(2);
+  fireEvent.click(screen.getByRole("radio", { name: "Motion" }));
+  expect(screen.queryByRole("article", { name: "Static study" })).toBeNull();
+  await waitFor(() => expect(screen.getByRole("article", { name: "Motion study" })).toBeVisible());
+  expect(localStorage.getItem(LIBRARY_MODE_KEY)).toBe("motion");
+  expect(d.services.listProjectPage).toHaveBeenCalledTimes(1);
+  view.unmount();
+  d.mount(<ProjectGallery {...props} />);
+  await screen.findByRole("article", { name: "Motion study" });
+  expect(screen.getByRole("radio", { name: "Motion" })).toBeChecked();
+  expect(screen.queryByRole("article", { name: "Static study" })).toBeNull();
+  fireEvent.click(screen.getByRole("radio", { name: "Statique" }));
+  await waitFor(() => expect(screen.getByRole("article", { name: "Static study" })).toBeVisible());
+  expect(screen.queryByRole("article", { name: "Motion study" })).toBeNull();
+  fireEvent.click(screen.getByRole("radio", { name: "Tous" }));
+  expect(screen.getAllByRole("article")).toHaveLength(2);
+  expect(d.services.listProjectPage).toHaveBeenCalledTimes(2);
 });

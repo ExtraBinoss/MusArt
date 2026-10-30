@@ -62,3 +62,7 @@ separately from coverage using [the shared protocol](../performance/protocol.md)
 | Unpin                | **Unpin** updates the existing dock preference atom and local storage immediately, including for currently unavailable commands.                                            |
 | Reordering and focus | Opening the menu cancels any reorder projection; removing a shortcut preserves the latest pin order and returns keyboard focus to a remaining shortcut or the pinned group. |
 | Built-in tools       | Built-in tools remain separate, and removing a shortcut never executes its document command.                                                                                |
+
+## Library mode
+
+Projects and Templates share an All / Static / Motion filter. All is selected before any preference is saved. The last choice is remembered on this device across library sections and reloads, independently of project documents and undo history. Projects use their saved artboard-mode metadata; older projects without Motion metadata are Static. Filtering keeps pagination lazy and does not open originals or journals.
