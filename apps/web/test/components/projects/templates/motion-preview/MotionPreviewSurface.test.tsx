@@ -3,6 +3,40 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { MotionPreviewSurface } from "../../../../../src/components/projects/templates/motion-preview/MotionPreviewSurface";
 import "../../../../../src/state/i18n";
 
+test("carousel motion releases GPU work and rejects hover until the rail settles", () => {
+  vi.spyOn(window, "matchMedia").mockImplementation(
+    (query) =>
+      ({
+        matches: query.includes("hover"),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      }) as unknown as MediaQueryList,
+  );
+  const release = vi.fn(async () => undefined),
+    start = vi.fn(() => ({ release }));
+  const view = render(
+    <div data-carousel>
+      <button>
+        <MotionPreviewSurface startPreview={start} poster="cached.webp" />
+      </button>
+    </div>,
+  );
+  const button = screen.getByRole("button"),
+    rail = button.parentElement!;
+  fireEvent.pointerEnter(button);
+  expect(start).toHaveBeenCalledOnce();
+  rail.dataset.carouselMoving = "true";
+  fireEvent(rail, new CustomEvent("musart:carousel-motion"));
+  expect(release).toHaveBeenCalledOnce();
+  fireEvent.pointerEnter(button);
+  expect(start).toHaveBeenCalledOnce();
+  delete rail.dataset.carouselMoving;
+  fireEvent.focusIn(button);
+  expect(start).toHaveBeenCalledTimes(2);
+  view.unmount();
+  expect(release).toHaveBeenCalledTimes(2);
+});
+
 test("the generic saved/template surface stops native resources on page hiding and pointer gestures", () => {
   vi.spyOn(window, "matchMedia").mockImplementation(
     (query) =>

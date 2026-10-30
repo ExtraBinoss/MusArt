@@ -120,24 +120,26 @@
   margin-bottom: 0;
 }
 .landing-showcase-scroll {
+  position: relative;
   display: flex;
   gap: 24px;
   width: 100%;
   padding: 0 max(24px, calc((100vw - 1120px) / 2)) 16px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain;
-  scroll-padding-inline: max(24px, calc((100vw - 1120px) / 2));
-  scrollbar-color: color-mix(in srgb, var(--landing-ink) 20%, transparent) transparent;
+  overflow: clip;
+  touch-action: pan-y pinch-zoom;
+  scrollbar-width: none;
   user-select: none;
   cursor: grab;
+}
+.landing-showcase-scroll::-webkit-scrollbar {
+  display: none;
 }
 .landing-showcase-scroll[data-dragging] {
   cursor: grabbing;
 }
 .landing-template-card[data-slot="button"] {
   display: flex;
-  flex: 0 0 clamp(340px, 42vw, 600px);
+  flex: 0 0 max(clamp(340px, 42vw, 600px), calc(100vw / 4));
   align-items: stretch;
   flex-direction: column;
   justify-content: flex-start;
@@ -151,6 +153,7 @@
   text-align: left;
   white-space: normal;
   cursor: inherit;
+  transition: none;
 }
 .landing-template-card[data-slot="button"]:hover {
   background: transparent;
@@ -240,30 +243,6 @@
   color: var(--muted-foreground);
   font-size: 11px;
   font-weight: 450;
-}
-.landing-showcase-controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: min(1120px, calc(100% - 48px));
-  margin: 10px auto 0;
-  gap: 16px;
-}
-.landing-showcase-controls > span {
-  color: var(--muted-foreground);
-  font-size: 11px;
-}
-.landing-showcase-controls > div {
-  display: flex;
-  gap: 6px;
-}
-.landing-showcase-controls button {
-  border-radius: 50%;
-  color: var(--landing-ink);
-  background: var(--field);
-}
-.landing-showcase-controls button:hover {
-  background: var(--muted);
 }
 .landing-creativity {
   max-width: 850px;
@@ -423,7 +402,6 @@
   .landing-showcase-scroll {
     gap: 16px;
     padding: 0 20px 14px;
-    scroll-padding-inline: 20px;
   }
   .landing-template-card[data-slot="button"] {
     flex-basis: min(83vw, 420px);
@@ -437,14 +415,6 @@
   }
   .landing-template-caption > span:first-child {
     font-size: 12px;
-  }
-  .landing-showcase-controls {
-    width: calc(100% - 40px);
-  }
-  .landing-showcase-controls > span {
-    max-width: 210px;
-    font-size: 10px;
-    line-height: 1.5;
   }
   .landing-creativity {
     padding: 100px 24px 65px;

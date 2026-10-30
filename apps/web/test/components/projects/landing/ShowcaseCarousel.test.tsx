@@ -1,7 +1,13 @@
-import { expect, test, vi } from "vitest";
+import { beforeEach, expect, test, vi } from "vitest";
 import { fireEvent, screen } from "@testing-library/react";
 import { ShowcaseCarousel } from "../../../../src/components/projects/landing/ShowcaseCarousel";
 import { setup } from "../../../support/ui";
+import { installCarouselPan } from "../../../../src/components/projects/landing/carousel/controller";
+const pan = vi.hoisted(() => ({ dispose: vi.fn(), position: () => 17 }));
+beforeEach(() => vi.clearAllMocks());
+vi.mock("../../../../src/components/projects/landing/carousel/controller", () => ({
+  installCarouselPan: vi.fn(() => pan),
+}));
 vi.mock(
   "../../../../src/components/projects/templates/motion-preview/MotionTemplatePreview",
   () => ({
@@ -27,50 +33,32 @@ vi.mock(
   }),
 );
 
-function pointer(node: HTMLElement, type: string, x: number) {
-  const event = new Event(type, { bubbles: true, cancelable: true });
-  Object.assign(event, { pointerId: 1, pointerType: "mouse", button: 0, clientX: x });
-  fireEvent(node, event);
-}
-test("opens the corresponding real template and suppresses clicks following a mouse drag", () => {
+test("opens real templates with one accessible card per template and no arrow controls", () => {
   const d = setup(),
     choose = vi.fn();
   d.mount(<ShowcaseCarousel onChoose={choose} />);
-  const card = screen.getByRole("button", { name: "Créer depuis In Bloom — Démo Motion" });
-  fireEvent.click(card);
+  fireEvent.click(screen.getByRole("button", { name: "Créer depuis In Bloom — Démo Motion" }));
   expect(choose).toHaveBeenCalledExactlyOnceWith("in-bloom");
-  const viewport = screen.getByRole("group", { name: "Des idées pour commencer" });
-  pointer(card, "pointerdown", 200);
-  pointer(card, "pointermove", 80);
-  expect(viewport.scrollLeft).toBe(120);
-  pointer(card, "pointerup", 80);
-  fireEvent.click(card);
-  expect(choose).toHaveBeenCalledOnce();
-  pointer(card, "pointerdown", 80);
-  pointer(card, "pointerup", 80);
-  fireEvent.click(card);
-  expect(choose).toHaveBeenCalledTimes(2);
+  expect(screen.getAllByRole("button")).toHaveLength(6);
+  expect(screen.queryByRole("button", { name: /Modèles (précédents|suivants)/ })).toBeNull();
+  expect(screen.getByRole("group")).toHaveAttribute(
+    "aria-description",
+    "Faites glisser pour explorer les modèles.",
+  );
 });
 
-test("supports wheel and keyboard navigation and releases its listeners", () => {
+test("keeps one imperative pan owner through unrelated renders and releases it on unmount", () => {
   const d = setup();
-  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(400);
-  vi.spyOn(HTMLElement.prototype, "scrollWidth", "get").mockReturnValue(1200);
   const view = d.mount(<ShowcaseCarousel onChoose={vi.fn()} />);
-  const viewport = screen.getByRole("group");
-  viewport.scrollBy = vi.fn();
-  fireEvent.keyDown(viewport, { key: "ArrowRight" });
-  expect(viewport.scrollBy).toHaveBeenLastCalledWith({ left: 312, behavior: "smooth" });
-  fireEvent.click(screen.getByRole("button", { name: "Modèles suivants" }));
-  expect(viewport.scrollBy).toHaveBeenCalledTimes(2);
-  fireEvent.wheel(viewport, { deltaY: 100 });
-  expect(viewport.scrollLeft).toBe(100);
-  fireEvent.wheel(viewport, { deltaY: 100, ctrlKey: true });
-  expect(viewport.scrollLeft).toBe(100);
-  const remove = vi.spyOn(viewport, "removeEventListener");
+  expect(installCarouselPan).toHaveBeenCalledOnce();
+  expect(installCarouselPan).toHaveBeenCalledWith(screen.getByRole("group"), {
+    reducedMotion: false,
+    position: 0,
+  });
+  view.rerender(<ShowcaseCarousel onChoose={vi.fn()} busy />);
+  expect(installCarouselPan).toHaveBeenCalledOnce();
   view.unmount();
-  expect(remove).toHaveBeenCalledWith("wheel", expect.any(Function));
-  expect(remove).toHaveBeenCalledWith("scroll", expect.any(Function));
+  expect(pan.dispose).toHaveBeenCalledOnce();
 });
 
 test("shares the authored Motion previews while preserving static posters and centered artwork styling", () => {

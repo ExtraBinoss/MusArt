@@ -29,8 +29,8 @@ test("landing follows the app theme and its draggable showcase opens real templa
   await expect(page.locator(".landing-page")).toHaveCSS("background-color", light);
   const carousel = page.locator(".landing-showcase-scroll");
   await carousel.hover();
-  await page.mouse.wheel(0, 620);
-  await expect.poll(() => carousel.evaluate((el) => el.scrollLeft)).toBeGreaterThan(100);
+  await page.mouse.wheel(620, 0);
+  await expect.poll(() => carousel.getAttribute("data-carousel-position")).not.toBe("0");
   const before = await page.evaluate(() => window.musart!.snapshot().project.id);
   const bounds = await carousel.boundingBox();
   await page.mouse.move(bounds!.x + bounds!.width * 0.6, bounds!.y + bounds!.height / 2);
@@ -40,7 +40,9 @@ test("landing follows the app theme and its draggable showcase opens real templa
   });
   await page.mouse.up();
   expect(await page.evaluate(() => window.musart!.snapshot().project.id)).toBe(before);
-  await page.getByRole("button", { name: "Créer depuis Story Instagram", exact: true }).click();
+  const story = page.getByRole("button", { name: "Créer depuis Story Instagram", exact: true });
+  await story.focus();
+  await story.click();
   await expect(page.getByTestId("editor-canvas")).toBeVisible();
   await expect
     .poll(() =>

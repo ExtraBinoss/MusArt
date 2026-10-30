@@ -9,9 +9,7 @@ export const messages = {
     description:
       "Des images, des effets, du mouvement. Tout ce qu’il faut pour créer quelque chose qui vous ressemble.",
     showcase: "Des idées pour commencer",
-    showcaseHint: "Un point de départ. À vous d’en faire votre création.",
-    previous: "Modèles précédents",
-    next: "Modèles suivants",
+    showcaseHint: "Faites glisser pour explorer les modèles.",
     features: "Créez avec MusArt",
     preview: "Aperçu vidéo à venir",
     canvas: "Un espace pour tout imaginer.",
@@ -39,9 +37,7 @@ export const messages = {
     description:
       "Images, effects, motion. Everything you need to make something that feels like you.",
     showcase: "A few ideas to get started",
-    showcaseHint: "A starting point. Make it your own.",
-    previous: "Previous templates",
-    next: "Next templates",
+    showcaseHint: "Drag or swipe to explore the templates.",
     features: "Create with MusArt",
     preview: "Video preview coming soon",
     canvas: "A space to imagine anything.",

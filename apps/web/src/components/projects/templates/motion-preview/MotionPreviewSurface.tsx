@@ -31,6 +31,7 @@ export function MotionPreviewSurface({
     const host = viewport.current;
     const owner = element?.closest("button");
     if (!element || !host || !owner) return;
+    const carousel = owner.closest("[data-carousel]");
     const hover = matchMedia("(hover: hover) and (pointer: fine)");
     const reduced = matchMedia("(prefers-reduced-motion: reduce)");
     let alive = true;
@@ -65,6 +66,7 @@ export function MotionPreviewSurface({
         reduced.matches ||
         document.hidden ||
         pointerDown ||
+        carousel?.hasAttribute("data-carousel-moving") ||
         owner!.disabled ||
         owner!.matches(":active") ||
         preview ||
@@ -86,6 +88,12 @@ export function MotionPreviewSurface({
     function endPointer() {
       pointerDown = false;
     }
+    function carouselMotion() {
+      if (carousel?.hasAttribute("data-carousel-moving")) stop();
+      else if (owner!.matches(":hover") || owner!.contains(document.activeElement))
+        start(new Event("pointerenter"));
+    }
+    carousel?.addEventListener("musart:carousel-motion", carouselMotion);
     owner.addEventListener("pointerenter", start);
     owner.addEventListener("pointerleave", stop);
     owner.addEventListener("focusin", start);
@@ -116,6 +124,7 @@ export function MotionPreviewSurface({
       window.removeEventListener("scroll", stop, true);
       hover.removeEventListener("change", stop);
       reduced.removeEventListener("change", stop);
+      carousel?.removeEventListener("musart:carousel-motion", carouselMotion);
     };
   }, [startPreview, disabled, t]);
   return (

@@ -29,6 +29,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
+- The landing template rail now loops continuously in both directions through mouse/touch panning with velocity and inertia, without scrollbars, arrow buttons, autoplay or duplicate focusable cards. Vertical touch scrolling, keyboard access and reduced motion remain available; GPU hover previews pause while the rail moves.
+
 - Matched saved-project captions to template cards with a title and resolution on the left, the actual Static/Motion mode on the right, and theme-aware fading. Caption resolution follows the first Motion artboard shown by the preview, or the first Static artboard. Lightweight per-artboard mode metadata comes from existing bounded manifest reads; legacy artboards remain Static and listing never hydrates originals or history.
 
 - The canvas logo now opens the shared creation dialog directly over the editor. Cancelling returns to the same canvas without mounting the project library or changing the document. The project-name menu keeps an always-available Projects action on desktop and touch layouts.
