@@ -1,7 +1,7 @@
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, expect, test, vi } from "vitest";
-import type { Layer } from "@musart/core";
+import { planMotionInitialization, type Layer } from "@musart/core";
 import { FONT_CATALOG, MAX_FONT_FILE_BYTES } from "@musart/assets";
 import type { FontDefinition } from "@musart/assets";
 import type { FontLibraryPort } from "../../../../src/services/fonts/model";
@@ -9,9 +9,10 @@ import { FontLibraryProvider } from "../../../../src/components/properties/fonts
 import { FontPicker } from "../../../../src/components/properties/fonts/FontPicker";
 import { previewAtom, useEngine } from "../../../../src/state/session/editor";
 import { setup } from "../../../support/ui";
+import { createMotionTransport } from "../../../../src/services/motion/transport";
 afterEach(() => localStorage.removeItem("musart.fonts.recent"));
 
-function mount(locked = false, library?: FontLibraryPort) {
+function mount(locked = false, library?: FontLibraryPort, withEngine = false) {
   localStorage.removeItem("musart.fonts.recent");
   const data = setup();
   if (locked) {
@@ -29,6 +30,7 @@ function mount(locked = false, library?: FontLibraryPort) {
       <>
         <button>Outside</button>
         <FontPicker
+          engine={withEngine ? data.engine : undefined}
           layer={layer}
           patch={(patch: Partial<Layer>) => {
             data.store.set(previewAtom, null);
@@ -76,8 +78,16 @@ test("virtualizes fonts, previews hover without parent/document commits and appl
   expect(screen.getAllByRole("option").length).toBeLessThan(FONT_CATALOG.length);
   expect(screen.getAllByRole("option").length).toBeLessThanOrEqual(10);
   fireEvent.pointerOver(screen.getByRole("option", { name: "Tinos" }));
-  expect(data.store.get(previewAtom)).toMatchObject({ patch: { fontFamily: "Tinos" } });
+  await waitFor(() =>
+    expect(data.store.get(previewAtom)).toMatchObject({ patch: { fontFamily: "Tinos" } }),
+  );
   expect(data.layer().fontFamily).toBe("Inter");
+  expect(
+    screen.getByRole("option", { name: "Inter" }).querySelector("[data-font-applied]"),
+  ).not.toBeNull();
+  expect(
+    screen.getByRole("option", { name: "Tinos" }).querySelector("[data-font-applied]"),
+  ).toBeNull();
   expect(data.changed).not.toHaveBeenCalled();
   expect(data.parentRenders).toHaveBeenCalledOnce();
   fireEvent.click(screen.getByRole("option", { name: "Tinos" }));
@@ -119,7 +129,7 @@ test("filters full virtual catalogs by category and installed state without load
   const data = mount(false, library);
   open();
   await screen.findByText("2020");
-  expect(screen.getAllByRole("option")).toHaveLength(10);
+  expect(screen.getAllByRole("option")).toHaveLength(8);
   fireEvent.click(screen.getByRole("button", { name: "Serif" }));
   expect(
     screen.getAllByRole("option").every((option) => option.getAttribute("aria-setsize") === "1004"),
@@ -168,7 +178,9 @@ test("starts system discovery in the opening gesture and commits its canonical i
   search("Desktop Family");
   const option = await screen.findByRole("option", { name: "Desktop Family" });
   fireEvent.pointerOver(option);
-  expect(data.store.get(previewAtom)).toMatchObject({ patch: { fontFamily: local.family } });
+  await waitFor(() =>
+    expect(data.store.get(previewAtom)).toMatchObject({ patch: { fontFamily: local.family } }),
+  );
   fireEvent.click(option);
   await waitFor(() => expect(data.layer().fontFamily).toBe(installed.family));
   expect(screen.getByRole("combobox", { name: "Police" })).toHaveTextContent("Desktop Family");
@@ -297,7 +309,7 @@ test("Escape and outside dismissal restore the original font without recording a
   expect(localStorage.getItem("musart.fonts.recent")).toBeNull();
 });
 
-test("filters localized categories, handles empty search and cancels an unmounted preview", () => {
+test("filters localized categories, handles empty search and cancels an unmounted preview", async () => {
   const data = mount();
   open();
   search("chasse fixe");
@@ -311,7 +323,7 @@ test("filters localized categories, handles empty search and cancels an unmounte
   expect(data.changed).not.toHaveBeenCalled();
   search("lora");
   fireEvent.pointerOver(screen.getByRole("option", { name: "Lora" }));
-  expect(data.store.get(previewAtom)).not.toBeNull();
+  await waitFor(() => expect(data.store.get(previewAtom)).not.toBeNull());
   data.view.unmount();
   expect(data.store.get(previewAtom)).toBeNull();
 });
@@ -319,7 +331,7 @@ test("filters localized categories, handles empty search and cancels an unmounte
 test("scrolls the window without mounting the whole library and reuses explicit recent choices", async () => {
   const data = mount();
   open();
-  fireEvent.scroll(screen.getByRole("listbox"), { target: { scrollTop: 616 } });
+  fireEvent.scroll(screen.getByRole("listbox"), { target: { scrollTop: 1280 } });
   expect(screen.queryByRole("option", { name: "Inter" })).toBeNull();
   fireEvent.click(screen.getByRole("option", { name: "Pacifico" }));
   open();
@@ -402,4 +414,51 @@ test("closed named-font triggers avoid platform metadata and full-catalog work u
   open();
   expect(library.installed).toHaveBeenCalledOnce();
   expect(library.catalog).toHaveBeenCalledOnce();
+});
+
+test("scroll cancels pointer intent without a delayed canvas preview, while keyboard stays immediate", async () => {
+  const data = mount();
+  open();
+  const tinos = screen.getByRole("option", { name: "Tinos" });
+  fireEvent.pointerOver(tinos);
+  fireEvent.wheel(screen.getByRole("listbox"), { deltaY: 80 });
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 180));
+  });
+  expect(data.store.get(previewAtom)).toBeNull();
+  expect(data.changed).not.toHaveBeenCalled();
+  fireEvent.pointerOut(tinos);
+  fireEvent.pointerOver(tinos);
+  await waitFor(() =>
+    expect(data.store.get(previewAtom)).toMatchObject({ patch: { fontFamily: "Tinos" } }),
+  );
+  fireEvent.wheel(screen.getByRole("listbox"), { deltaY: 80 });
+  expect(data.store.get(previewAtom)).toBeNull();
+  search("Lora");
+  fireEvent.keyDown(screen.getByRole("combobox", { name: "Rechercher une police" }), {
+    key: "ArrowDown",
+  });
+  expect(data.store.get(previewAtom)).toMatchObject({ patch: { fontFamily: "Lora" } });
+  expect(data.engine.getSnapshot().canUndo).toBe(false);
+});
+
+test("opening during Motion playback pauses the pose without changing the document or undo", () => {
+  const data = mount(false, undefined, true);
+  act(() => {
+    data.engine.execute({
+      type: "setCompositionMode",
+      mode: "motion",
+      plan: planMotionInitialization(data.engine.getSnapshot()),
+    });
+    data.engine.load(data.engine.getSnapshot().project);
+  });
+  const transport = createMotionTransport(data.engine);
+  act(() => transport.play());
+  expect(transport.read().playing).toBe(true);
+  const before = data.engine.getSnapshot();
+  open();
+  expect(transport.read().playing).toBe(false);
+  expect(data.engine.getSnapshot()).toBe(before);
+  expect(before.canUndo).toBe(false);
+  act(() => transport.dispose());
 });

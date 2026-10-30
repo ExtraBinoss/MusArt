@@ -1,6 +1,37 @@
 import { FONT_CATALOG } from "@musart/assets";
 
 export type FontOption = (typeof FONT_CATALOG)[number];
+/** Keep complete catalog URLs and stable objects when installed metadata is refreshed. */
+export function mergeFontOptions(
+  ...lists: readonly (readonly FontOption[])[]
+): readonly FontOption[] {
+  const fonts = new Map<string, FontOption>();
+  for (const list of lists)
+    for (const font of list) {
+      const previous = fonts.get(font.id);
+      const next =
+        previous?.variants && !font.variants ? { ...font, variants: previous.variants } : font;
+      fonts.set(
+        font.id,
+        previous &&
+          previous.family === next.family &&
+          previous.label === next.label &&
+          previous.category === next.category &&
+          previous.source === next.source &&
+          previous.variants === next.variants &&
+          previous.licenseURL === next.licenseURL
+          ? previous
+          : next,
+      );
+    }
+  const result = [...fonts.values()],
+    first = lists[0];
+  return first &&
+    first.length === result.length &&
+    first.every((font, index) => font === result[index])
+    ? first
+    : result;
+}
 const aliases: Readonly<Record<string, string>> = {
   arial: "arimo",
   georgia: "tinos",

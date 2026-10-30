@@ -2,6 +2,7 @@
 import * as React from "react";
 import { cn } from "./utils";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { DropdownChevron } from "../shared/DropdownChevron";
 import { Select as SelectPrimitive } from "radix-ui";
 import { ScrollShadow } from "../shared/scroll/ScrollShadow";
 import { bindSelectScroll } from "./select/scroll";
@@ -39,10 +40,7 @@ function SelectTrigger({
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDownIcon
-          data-slot="select-chevron"
-          className="size-4 opacity-50 transition-transform duration-150 group-data-[state=open]/select-trigger:rotate-180 motion-reduce:transition-none"
-        />
+        <DropdownChevron className="size-4 opacity-50" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   );

@@ -104,3 +104,18 @@ it("cancels only the observing consumer while shared font work may finish", asyn
     abortable(Promise.reject(new Error("download failed")), new AbortController().signal),
   ).rejects.toThrow("download failed");
 });
+it("enforces a smaller preview byte budget without weakening the installed-font limit", async () => {
+  const controller = new AbortController(),
+    fetcher = vi.fn(
+      async () => new Response(new Uint8Array(20), { headers: { "content-length": "20" } }),
+    );
+  await expect(
+    downloadFont("/fonts/inter/font.ttf", fetcher, controller.signal, 10),
+  ).rejects.toMatchObject({ code: "tooLarge" });
+  expect((await downloadFont("/fonts/inter/font.ttf", fetcher, controller.signal)).byteLength).toBe(
+    20,
+  );
+  await expect(
+    downloadFont("/fonts/inter/font.ttf", fetcher, controller.signal, Infinity),
+  ).rejects.toThrow("byte limit");
+});

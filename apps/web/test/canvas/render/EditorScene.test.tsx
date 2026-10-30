@@ -5,7 +5,13 @@ import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { Canvas } from "@react-three/fiber";
-import { createPage, createProject, EditorEngine, type Composition } from "@musart/core";
+import {
+  createLayer,
+  createPage,
+  createProject,
+  EditorEngine,
+  type Composition,
+} from "@musart/core";
 import {
   DataTexture,
   LinearSRGBColorSpace,
@@ -138,6 +144,42 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 describe("R3F direct WebGPU scene lifetime", () => {
+  it("acknowledges the requested logical font only after its matching display draw", async () => {
+    const text = createLayer("text", { fontFamily: "Inter", fontWeight: 700 });
+    const input = source(createPage({ layers: [text] }));
+    const view = render(<CompositionPlane controller={input.controller} />);
+    await waitFor(() => expect(gpu.invalidate).toHaveBeenCalledOnce());
+    act(drawn);
+    const port = input.controller.fontPresentation;
+    act(() =>
+      input.engine.execute({
+        type: "updateLayers",
+        ids: [text.id],
+        patch: { fontFamily: "Arimo" },
+      }),
+    );
+    const ticket = port.request({
+      fontId: "arimo",
+      layerId: text.id,
+      family: "Arimo",
+      weight: 700,
+    });
+    await waitFor(() => expect(gpu.invalidate).toHaveBeenCalledTimes(2));
+    expect(port.read()).toMatchObject({ ticket, status: "pending" });
+    act(drawn);
+    expect(port.read()).toMatchObject({ ticket, status: "ready" });
+    const next = port.request({ layerId: text.id, family: "Tinos", weight: 700 });
+    act(drawn);
+    expect(port.read()).toMatchObject({ ticket: next, status: "pending" });
+    act(() => input.controller.setGesture([{ layerId: text.id, patch: { fontFamily: "Tinos" } }]));
+    await waitFor(() => expect(gpu.invalidate).toHaveBeenCalledTimes(3));
+    expect(port.read().status).toBe("pending");
+    act(drawn);
+    expect(port.read().status).toBe("ready");
+    view.unmount();
+    expect(port.read()).toMatchObject({ available: false, status: "unavailable" });
+    port.cancel(next);
+  });
   it("awaits WebGPURenderer with an explicit WebGL retry on initialization failure", async () => {
     const target = canvas();
     const renderer = await makeRenderer(target);

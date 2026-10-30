@@ -35,6 +35,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
+- Rebuilt the Typography font picker with restored portal scrolling, memoized catalog filtering, real decoded phrase previews in a bounded eight-face cache, and intent-based canvas previews that pause during scrolling. Categories share the horizontal scroll-shadow control and disclosure chevron. Generation-bound loading completes only after the requested text is actually drawn; cancellation, one-step undo, import/reload and Motion's evaluated weight are preserved. Native production measurements and their limits are recorded in `docs/performance/fonts.md`.
+
 - The landing template rail automatically drifts through an infinite loop and supports mouse/touch panning with velocity and inertia, without scrollbars, arrow buttons or duplicate focusable cards. Automatic motion pauses for interaction, hover, keyboard focus, hidden/offscreen content and reduced motion, then resumes gently. Vertical page scrolling remains available and GPU hover previews pause while the rail moves.
 
 - Matched saved-project captions to template cards with a title and resolution on the left, the actual Static/Motion mode on the right, and theme-aware fading. Caption resolution follows the first Motion artboard shown by the preview, or the first Static artboard. Lightweight per-artboard mode metadata comes from existing bounded manifest reads; legacy artboards remain Static and listing never hydrates originals or history.

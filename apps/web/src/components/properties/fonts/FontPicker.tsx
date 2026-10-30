@@ -1,44 +1,64 @@
-import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, LoaderCircle, Upload } from "lucide-react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { LoaderCircle, Upload } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { FONT_CATALOG, MAX_FONT_FILE_BYTES, createSearchIndex } from "@musart/assets";
-import type { Layer } from "@musart/core";
+import type { EnginePort, Layer } from "@musart/core";
 import type { FontLibraryPort } from "../../../services/fonts/model";
 import type { PropertyActions } from "../TextProperties";
 import { Button } from "../../ui/button";
-import { ButtonGroup } from "../../ui/button-group";
-import { Kbd } from "../../ui/kbd";
 import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
 import { ScrollShadow } from "../../shared/scroll/ScrollShadow";
-import { SearchInput } from "../../assets/SearchInput";
-import { readRecentFonts, rememberFont, findFont, type FontOption } from "./catalog";
+import { HorizontalScroll } from "../../shared/scroll/HorizontalScroll";
+import { DropdownChevron } from "../../shared/DropdownChevron";
+import { FontPickerSearch } from "./FontPickerSearch";
+import {
+  readRecentFonts,
+  rememberFont,
+  findFont,
+  mergeFontOptions as mergeFonts,
+  type FontOption,
+} from "./catalog";
 import { invalidateFontMetadata, loadFontMetadata, peekFontMetadata } from "./metadata";
 import { bundledFontLibrary, useFontLibrary } from "./library-context";
+import { FontSampleCache } from "./sample-cache";
+import { FontOptionRow } from "./FontOptionRow";
+import { FontRenderIndicator, FontRenderStatus } from "./FontRenderStatus";
+import { FontCategoryTabs, type FontCategory } from "./FontCategoryTabs";
+import { useFontCanvasStatus } from "./canvas-status";
+import { createMotionTransport } from "../../../services/motion/transport";
 import styles from "./FontPicker.module.css";
 import "./messages";
 
-const ROW_HEIGHT = 44,
-  VIEW_ROWS = 6,
+const ROW_HEIGHT = 80,
+  VIEW_ROWS = 4,
   OVERSCAN = 2;
-type Category = "all" | "installed" | FontOption["category"];
-const categories = ["all", "sans", "serif", "mono", "display", "handwriting", "installed"] as const;
 const declinedDiscovery = new WeakSet<FontLibraryPort>();
 const discoveries = new WeakMap<FontLibraryPort, Promise<readonly FontOption[]>>();
-const mergeFonts = (...lists: readonly (readonly FontOption[])[]) => [
-  ...new Map(lists.flat().map((font) => [font.id, font])).values(),
-];
 
 /** A bounded list previews through the same imperative path as numeric and color edits. */
-export function FontPicker({ layer, patch, preview, cancel }: PropertyActions & { layer: Layer }) {
+export function FontPicker({
+  layer,
+  engine,
+  patch,
+  preview,
+  cancel,
+}: PropertyActions & { layer: Layer; engine?: EnginePort }) {
   const { t } = useTranslation("fonts"),
     { t: common } = useTranslation();
   const library = useFontLibrary();
+  const samples = useMemo(() => new FontSampleCache(library), [library]);
+  const canvas = useFontCanvasStatus(engine);
+  const { request: requestCanvas, cancel: cancelCanvas } = canvas;
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(-1);
-  const [scrollTop, setScrollTop] = useState(0);
+  const [windowRow, setWindowRow] = useState(0);
+  const scrollPosition = useRef(0),
+    hoverTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined),
+    pointerFont = useRef<string | null>(null),
+    pointerBlockedUntil = useRef(0);
   const [recent, setRecent] = useState<string[]>([]);
-  const [category, setCategory] = useState<Category>("all");
+  const [category, setCategory] = useState<FontCategory>("all");
   const [fonts, setFonts] = useState<readonly FontOption[]>(() =>
     mergeFonts(FONT_CATALOG, peekFontMetadata(library) ?? []),
   );
@@ -77,30 +97,53 @@ export function FontPicker({ layer, patch, preview, cancel }: PropertyActions & 
         : null,
     [fonts, t, open],
   );
-  const filtered =
-    search?.search(query, {
-      limit: fonts.length,
-      filter: (font) =>
-        category === "all" ||
-        (category === "installed" ? installedIds.has(font.id) : font.category === category),
-    }) ?? [];
-  const first = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
+  const filtered = useMemo(
+    () =>
+      search?.search(query, {
+        limit: fonts.length,
+        filter: (font) =>
+          category === "all" ||
+          (category === "installed" ? installedIds.has(font.id) : font.category === category),
+      }) ?? [],
+    [search, query, category, installedIds, fonts.length],
+  );
+  const hints = useMemo(
+    () => fonts.slice(0, 6).map((font) => ({ label: font.label ?? font.family })),
+    [fonts],
+  );
+  const first = Math.min(Math.max(0, windowRow - OVERSCAN), Math.max(0, filtered.length - 1));
   const visible = filtered.slice(first, first + VIEW_ROWS + OVERSCAN * 2);
   useLayoutEffect(() => {
     cancelRef.current = cancel;
     latest.current = layer;
     latestLibrary.current = library;
   }, [cancel, layer, library]);
-  useLayoutEffect(() => {
-    if (open && list.current) list.current.scrollTop = scrollTop;
-  }, [open, scrollTop]);
+  const attachList = useCallback((node: HTMLDivElement | null) => {
+    list.current = node;
+    if (node) {
+      node.scrollTop = scrollPosition.current;
+      scrollPosition.current = node.scrollTop;
+      setWindowRow(Math.floor(node.scrollTop / ROW_HEIGHT));
+    }
+  }, []);
+  const clearIntent = useCallback(() => {
+    clearTimeout(hoverTimer.current);
+    hoverTimer.current = undefined;
+    pointerFont.current = null;
+  }, []);
+  useEffect(() => () => samples.dispose(), [samples]);
+  useEffect(() => {
+    if (open) samples.resume();
+    else samples.pause();
+  }, [samples, open]);
   useEffect(() => {
     alive.current = true;
     return () => {
       alive.current = false;
+      clearIntent();
       if (activePreview.current) cancelRef.current();
     };
-  }, []);
+  }, [clearIntent]);
   const needsMetadata = open || /^(custom|local):/.test(layer.fontFamily);
   useEffect(() => {
     if (!needsMetadata) return;
@@ -152,18 +195,33 @@ export function FontPicker({ layer, patch, preview, cancel }: PropertyActions & 
     };
   }, [library, open, t, needsMetadata, layer.fontFamily]);
 
-  function resetPreview() {
+  const resetPreview = useCallback(() => {
     if (!activePreview.current) return;
     activePreview.current = false;
     previewFamily.current = null;
+    cancelCanvas(true);
     cancel();
+  }, [cancel, cancelCanvas]);
+  function scrollTo(top: number) {
+    scrollPosition.current = top;
+    if (list.current) {
+      list.current.scrollTop = top;
+      scrollPosition.current = list.current.scrollTop;
+    }
+    setWindowRow(Math.floor(scrollPosition.current / ROW_HEIGHT));
   }
   function show(value: boolean) {
     if (value && layer.locked) return;
+    if (value && engine) createMotionTransport(engine).pause();
     request.current++;
+    clearIntent();
     setPending(null);
-    if (!value) resetPreview();
-    else {
+    if (!value) {
+      resetPreview();
+      samples.pause();
+    } else {
+      samples.resume();
+      setMetadataReady(false);
       // Call directly in the trigger gesture, before an await can lose user activation.
       if (!library.supportsLocalFonts || declinedDiscovery.has(library)) setLocalUnavailable(true);
       else {
@@ -193,7 +251,7 @@ export function FontPicker({ layer, patch, preview, cancel }: PropertyActions & 
       setCategory("all");
       setActive(-1);
       const at = fonts.findIndex((font) => font.id === current?.id);
-      setScrollTop(
+      scrollTo(
         Math.min(
           Math.max(0, fonts.length - VIEW_ROWS) * ROW_HEIGHT,
           Math.max(0, at - 2) * ROW_HEIGHT,
@@ -204,17 +262,59 @@ export function FontPicker({ layer, patch, preview, cancel }: PropertyActions & 
     }
     setOpen(value);
   }
-  function previewFont(font: FontOption, index?: number) {
-    if (layer.locked || pending) return;
-    if (index !== undefined) setActive(index);
-    if (previewFamily.current === font.family) return;
-    activePreview.current = true;
-    previewFamily.current = font.family;
-    preview({ fontFamily: font.family });
-  }
+  const previewFont = useCallback(
+    (font: FontOption, index?: number) => {
+      if (layer.locked || pending) return;
+      if (index !== undefined) setActive(index);
+      if (previewFamily.current === font.family) return;
+      activePreview.current = true;
+      previewFamily.current = font.family;
+      requestCanvas(
+        { fontId: font.id, layerId: layer.id, family: font.family, weight: layer.fontWeight },
+        font.label ?? font.family,
+        "preview",
+      );
+      preview({ fontFamily: font.family });
+    },
+    [layer.locked, layer.id, layer.fontWeight, pending, preview, requestCanvas],
+  );
+  const intent = useCallback(
+    (font: FontOption, index: number) => {
+      if (performance.now() < pointerBlockedUntil.current || pointerFont.current === font.id)
+        return;
+      clearIntent();
+      pointerFont.current = font.id;
+      const version = request.current,
+        origin = latest.current;
+      hoverTimer.current = setTimeout(() => {
+        hoverTimer.current = undefined;
+        if (
+          alive.current &&
+          request.current === version &&
+          latestLibrary.current === library &&
+          latest.current.id === origin.id &&
+          latest.current.fontFamily === origin.fontFamily &&
+          latest.current.fontWeight === origin.fontWeight &&
+          !latest.current.locked
+        )
+          previewFont(font, index);
+      }, 120);
+    },
+    [clearIntent, library, previewFont],
+  );
+  const suspendPointer = useCallback(() => {
+    pointerBlockedUntil.current = performance.now() + 150;
+    clearIntent();
+    resetPreview();
+  }, [clearIntent, resetPreview]);
   function apply(font: FontOption) {
     resetPreview();
     if (font.family !== layer.fontFamily) patch({ fontFamily: font.family });
+    requestCanvas(
+      { fontId: font.id, layerId: layer.id, family: font.family, weight: layer.fontWeight },
+      font.label ?? font.family,
+      "commit",
+    );
     const catalog = mergeFonts(fonts, [font]);
     setFonts(catalog);
     setInstalledIds((previous) => new Set([...previous, font.id]));
@@ -291,10 +391,20 @@ export function FontPicker({ layer, patch, preview, cancel }: PropertyActions & 
       const height = list.current.clientHeight || ROW_HEIGHT * VIEW_ROWS;
       if (top < list.current.scrollTop) list.current.scrollTop = top;
       else if (bottom > list.current.scrollTop + height) list.current.scrollTop = bottom - height;
-      setScrollTop(list.current.scrollTop);
+      scrollPosition.current = list.current.scrollTop;
+      setWindowRow(Math.floor(list.current.scrollTop / ROW_HEIGHT));
     }
     previewFont(filtered[next]!, next);
   }
+  const handlers = useRef({ choose, previewFont });
+  useLayoutEffect(() => {
+    handlers.current = { choose, previewFont };
+  });
+  const chooseRow = useCallback((font: FontOption) => handlers.current.choose(font), []);
+  const focusRow = useCallback(
+    (font: FontOption, index: number) => handlers.current.previewFont(font, index),
+    [],
+  );
   return (
     <Popover open={open} onOpenChange={show}>
       <PopoverTrigger asChild>
@@ -303,19 +413,30 @@ export function FontPicker({ layer, patch, preview, cancel }: PropertyActions & 
           role="combobox"
           aria-label={common("fontFamily")}
           aria-expanded={open}
+          aria-busy={canvas.view?.status === "pending"}
+          data-font-render-status={canvas.view?.status ?? "idle"}
+          data-font-render-family={canvas.view?.ticket?.family}
+          data-font-render-generation={canvas.view?.ticket?.sequence}
           aria-haspopup="listbox"
           aria-controls={open ? listId : undefined}
           disabled={layer.locked}
           className={styles.trigger}
         >
           <span>{currentLabel}</span>
-          <ChevronDown size={13} aria-hidden />
+          <FontRenderIndicator state={canvas.view} />
+          <DropdownChevron size={13} />
         </Button>
       </PopoverTrigger>
       <PopoverContent side="left" align="start" className={`floating-panel ${styles.popover}`}>
         <div className={styles.header}>
           <strong>{t("title")}</strong>
-          <span>{fonts.length}</span>
+          <span>
+            {metadataReady ? (
+              fonts.length
+            ) : (
+              <LoaderCircle size={12} className="animate-spin" aria-label={t("loading")} />
+            )}
+          </span>
           <Button
             variant="ghost"
             size="icon-xs"
@@ -338,80 +459,53 @@ export function FontPicker({ layer, patch, preview, cancel }: PropertyActions & 
             event.currentTarget.value = "";
           }}
         />
-        <div className={styles.search}>
-          <SearchInput
-            id={`${id}-font-search`}
-            autoFocus
-            searchButton
-            captureTyping
-            role="combobox"
-            aria-label={t("search")}
-            aria-autocomplete="list"
-            aria-expanded
-            aria-controls={listId}
-            aria-activedescendant={
-              active >= 0 && filtered[active] ? `${id}-font-${filtered[active]!.id}` : undefined
-            }
-            prefix={t("searchPrefix")}
-            hints={fonts.slice(0, 6).map((font) => ({ label: font.label ?? font.family }))}
-            value={query}
-            onChange={(event) => {
-              request.current++;
-              setPending(null);
-              resetPreview();
-              setQuery(event.currentTarget.value);
-              setActive(-1);
-              setScrollTop(0);
-              if (list.current) list.current.scrollTop = 0;
-            }}
-            onKeyDown={(event) => {
-              if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-                event.preventDefault();
-                move(event.key === "ArrowDown" ? 1 : -1);
-              } else if (event.key === "Enter" && !event.nativeEvent.isComposing) {
-                const font = filtered[Math.max(0, active)];
-                if (font) {
-                  event.preventDefault();
-                  choose(font);
-                }
-              }
-            }}
-          />
-        </div>
-        <div className={styles.filters}>
-          <ButtonGroup aria-label={t("categories")}>
-            {categories.map((item) => (
-              <Button
-                key={item}
-                size="xs"
-                variant="outline"
-                aria-pressed={category === item}
-                onClick={() => {
-                  request.current++;
-                  setPending(null);
-                  resetPreview();
-                  setCategory(item);
-                  setActive(-1);
-                  setScrollTop(0);
-                  if (list.current) list.current.scrollTop = 0;
-                }}
-              >
-                {t(item === "all" || item === "installed" ? item : `filter.${item}`)}
-              </Button>
-            ))}
-          </ButtonGroup>
-        </div>
+        <FontPickerSearch
+          id={`${id}-font-search`}
+          listId={listId}
+          activeId={
+            active >= 0 && filtered[active] ? `${id}-font-${filtered[active]!.id}` : undefined
+          }
+          hints={hints}
+          query={query}
+          onMove={move}
+          onQuery={(value) => {
+            request.current++;
+            clearIntent();
+            setPending(null);
+            resetPreview();
+            setQuery(value);
+            setActive(-1);
+            scrollTo(0);
+          }}
+          onChoose={() => {
+            const font = filtered[Math.max(0, active)];
+            if (font) choose(font);
+          }}
+        />
+        <FontCategoryTabs
+          value={category}
+          onChange={(item) => {
+            request.current++;
+            clearIntent();
+            setPending(null);
+            resetPreview();
+            setCategory(item);
+            setActive(-1);
+            scrollTo(0);
+          }}
+        />
         {!query && recent.length > 0 && (
-          <div className={styles.recents} role="group" aria-label={t("recent")}>
+          <div className={styles.recents}>
             <span>{t("recent")}</span>
-            <div>
+            <HorizontalScroll label={t("recent")}>
               {recent.map((item) => {
                 const font = fonts.find((font) => font.id === item);
                 return font ? (
                   <button
                     type="button"
                     key={item}
-                    onPointerEnter={() => previewFont(font)}
+                    onPointerEnter={() => intent(font, -1)}
+                    onPointerLeave={clearIntent}
                     onFocus={() => previewFont(font)}
                     onClick={() => choose(font)}
                   >
@@ -419,18 +513,26 @@ export function FontPicker({ layer, patch, preview, cancel }: PropertyActions & 
                   </button>
                 ) : null;
               })}
-            </div>
+            </HorizontalScroll>
           </div>
         )}
         <ScrollShadow className={styles.listShadow}>
           <div
-            ref={list}
+            ref={attachList}
             id={listId}
             role="listbox"
             aria-label={t("title")}
             className={styles.list}
             style={{ height: ROW_HEIGHT * VIEW_ROWS }}
-            onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
+            onWheelCapture={suspendPointer}
+            onPointerDownCapture={(event) => {
+              if (event.pointerType === "touch" || event.target === event.currentTarget)
+                suspendPointer();
+            }}
+            onScroll={(event) => {
+              scrollPosition.current = event.currentTarget.scrollTop;
+              setWindowRow(Math.floor(event.currentTarget.scrollTop / ROW_HEIGHT));
+            }}
             onKeyDown={(event) => {
               if (event.key === "ArrowDown" || event.key === "ArrowUp") {
                 event.preventDefault();
@@ -444,31 +546,23 @@ export function FontPicker({ layer, patch, preview, cancel }: PropertyActions & 
                 {visible.map((font, offset) => {
                   const index = first + offset;
                   return (
-                    <button
-                      type="button"
-                      role="option"
+                    <FontOptionRow
                       key={font.id}
+                      font={font}
+                      index={index}
                       id={`${id}-font-${font.id}`}
-                      aria-label={font.label ?? font.family}
-                      aria-selected={active >= 0 ? active === index : current?.id === font.id}
-                      aria-setsize={filtered.length}
-                      aria-posinset={index + 1}
-                      tabIndex={-1}
-                      className={styles.row}
-                      data-active={active === index || undefined}
-                      onPointerEnter={() => previewFont(font, index)}
-                      onFocus={() => previewFont(font, index)}
-                      onClick={() => choose(font)}
-                    >
-                      <span className={styles.sample} aria-hidden>
-                        Aa
-                      </span>
-                      <span className={styles.name}>
-                        <span>{font.label ?? font.family}</span>
-                        <small>{t(`category.${font.category}`)}</small>
-                      </span>
-                      {current?.id === font.id && <Check size={14} aria-hidden />}
-                    </button>
+                      selected={active >= 0 ? active === index : current?.id === font.id}
+                      applied={current?.id === font.id}
+                      active={active === index}
+                      count={filtered.length}
+                      installed={installedIds.has(font.id)}
+                      visible={index >= windowRow && index < windowRow + VIEW_ROWS + 1}
+                      cache={samples}
+                      onIntent={intent}
+                      onLeave={clearIntent}
+                      onFocusFont={focusRow}
+                      onChoose={chooseRow}
+                    />
                   );
                 })}
               </div>
@@ -487,16 +581,10 @@ export function FontPicker({ layer, patch, preview, cancel }: PropertyActions & 
             {error}
           </p>
         )}
-        <footer className={styles.footer}>
-          <span>{t("preview")}</span>
-          {localUnavailable && <span>{t("localUnavailable")}</span>}
-          <span>
-            <Kbd>↵</Kbd>
-            {t("choose")}
-            <Kbd>Esc</Kbd>
-            {t("cancel")}
-          </span>
-        </footer>
+        <FontRenderStatus state={canvas.view} />
+        {localUnavailable && library.supportsLocalFonts && (
+          <p className={styles.status}>{t("localUnavailable")}</p>
+        )}
       </PopoverContent>
     </Popover>
   );

@@ -82,16 +82,20 @@ export function CompositionPlane({
   useFrame(() => density.prepare(renderer), -1);
   useEffect(() => {
     const presenter = controller.presentation.acquire();
+    const fontPresenter = controller.fontPresentation.acquire();
     let release: (() => void) | undefined;
     let unsubscribe: (() => void) | undefined;
+    let stopFonts: (() => void) | undefined;
     const cleanup = () => {
       try {
         unsubscribe?.();
+        stopFonts?.();
       } finally {
         try {
           release?.();
         } finally {
           presenter.release();
+          fontPresenter.release();
         }
       }
     };
@@ -107,8 +111,16 @@ export function CompositionPlane({
         (message, details) => onErrorRef.current?.(message, details),
         (scale, width, height) => density.apply(scale, setDpr, width, height),
         presenter,
+        fontPresenter,
       );
       unsubscribe = controller.subscribe(update);
+      let fontTicket = controller.fontPresentation.read().ticket;
+      stopFonts = controller.fontPresentation.subscribe(() => {
+        const state = controller.fontPresentation.read();
+        if (state.status !== "pending" || !state.ticket || state.ticket === fontTicket) return;
+        fontTicket = state.ticket;
+        update();
+      });
       update();
       return cleanup;
     } catch (error) {

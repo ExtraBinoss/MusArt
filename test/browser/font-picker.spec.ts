@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { createLayer, createPage, createProject } from "@musart/core";
+import { writeFile } from "node:fs/promises";
 import { inspectImage } from "./support/image-probe";
 import { installReadbackProbe } from "./support/readback-probe";
 
@@ -11,6 +12,13 @@ async function presented(page: Page) {
       canvas.dataset.renderedRevision === canvas.dataset.sceneRevision
     );
   });
+}
+
+async function fontPresented(page: Page, family: string) {
+  const trigger = page.getByRole("combobox", { name: "Police", exact: true });
+  await expect(trigger).toHaveAttribute("data-font-render-family", family);
+  await expect(trigger).toHaveAttribute("data-font-render-status", "ready");
+  await expect(trigger).toHaveAttribute("aria-busy", "false");
 }
 
 async function editor(page: Page) {
@@ -78,15 +86,23 @@ test("searchable font hover and keyboard previews change GPU text without editor
   await page.evaluate(() => window.musart!.flushThumbnails());
   const probe = await page.context().newPage();
   await page.bringToFront();
+  let capture = 0;
   async function hash() {
+    const image = await page.locator(".canvas-artboard canvas").screenshot({
+      // The portalled picker overlaps the artboard; compare the actual canvas pixels.
+      style: "[data-radix-popper-content-wrapper] { opacity: 0 !important; }",
+    });
+    await writeFile(testInfo.outputPath(`canvas-${capture}.png`), image);
+    await testInfo.attach(`canvas-${capture++}`, { body: image, contentType: "image/png" });
     const result = await inspectImage(
       page,
-      await page.locator(".canvas-artboard canvas").screenshot(),
+      image,
       [{ x: 0.05, y: 0.25, width: 0.9, height: 0.45 }],
       probe,
     );
     return result.regions[0]!.hash;
   }
+  const initialHash = await hash();
   try {
     await page.getByRole("combobox", { name: "Police", exact: true }).click();
     const fonts = page.getByRole("listbox", { name: "Polices", exact: true });
@@ -97,11 +113,16 @@ test("searchable font hover and keyboard previews change GPU text without editor
     await search.fill("Abel");
     await expect(page.getByRole("option", { name: "Abel", exact: true })).toBeVisible();
     await search.fill("");
-    const baseline = await editor(page),
-      initialHash = await hash();
+    const baseline = await editor(page);
     await search.fill("Tinos");
-    await page.getByRole("option", { name: "Tinos", exact: true }).hover();
-    await presented(page);
+    const tinos = page.getByRole("option", { name: "Tinos", exact: true });
+    await expect(tinos.locator("[data-font-preview-state]")).toHaveAttribute(
+      "data-font-preview-state",
+      "ready",
+    );
+    await expect(tinos).toContainText("Les idées prennent forme.");
+    await tinos.hover();
+    await fontPresented(page, "Tinos");
     const hover = await editor(page),
       hoverHash = await hash();
     expect(hover.commits).toEqual(baseline.commits);
@@ -109,8 +130,18 @@ test("searchable font hover and keyboard previews change GPU text without editor
     expect(hover.family).toBe("Inter");
     expect(hover.revision).toBe(baseline.revision);
     expect(hoverHash).not.toBe(initialHash);
+    const previewDraw = await page
+      .locator(".canvas-artboard canvas")
+      .getAttribute("data-render-count");
     await search.press("Escape");
     await expect(fonts).toBeHidden();
+    await page.waitForFunction(
+      (previous) =>
+        Number(
+          document.querySelector<HTMLCanvasElement>(".canvas-artboard canvas")?.dataset.renderCount,
+        ) > Number(previous),
+      previewDraw,
+    );
     await presented(page);
     expect(await hash()).toBe(initialHash);
     expect((await editor(page)).canUndo).toBe(false);
@@ -118,7 +149,7 @@ test("searchable font hover and keyboard previews change GPU text without editor
     await search.fill("Lora");
     const beforeKeyboard = await editor(page);
     await search.press("ArrowDown");
-    await presented(page);
+    await fontPresented(page, "Lora");
     const keyboard = await editor(page),
       keyboardHash = await hash();
     expect(keyboard.commits).toEqual(beforeKeyboard.commits);
@@ -126,9 +157,16 @@ test("searchable font hover and keyboard previews change GPU text without editor
     expect(keyboard.revision).toBe(baseline.revision);
     expect(keyboardHash).not.toBe(initialHash);
     await page.screenshot({ path: "artifacts/screenshots/font-picker-preview.png" });
+    const previewGeneration = await page
+      .getByRole("combobox", { name: "Police", exact: true })
+      .getAttribute("data-font-render-generation");
     await search.press("Enter");
     await expect(fonts).toBeHidden();
-    await presented(page);
+    await fontPresented(page, "Lora");
+    await expect(page.getByRole("combobox", { name: "Police", exact: true })).not.toHaveAttribute(
+      "data-font-render-generation",
+      previewGeneration!,
+    );
     const committed = await editor(page);
     expect(committed.family).toBe("Lora");
     expect(committed.revision).toBe(baseline.revision + 1);
@@ -226,9 +264,10 @@ test("a real imported font stays available after saving and reopening the browse
     await expect(page.getByRole("listbox", { name: "Polices", exact: true })).toBeHidden();
     await presented(page);
     const family = await page.evaluate(
-        () => window.musart!.snapshot().project.pages[0]!.layers[0]!.fontFamily,
-      ),
-      label = await page.getByRole("combobox", { name: "Police", exact: true }).innerText(),
+      () => window.musart!.snapshot().project.pages[0]!.layers[0]!.fontFamily,
+    );
+    await fontPresented(page, family);
+    const label = await page.getByRole("combobox", { name: "Police", exact: true }).innerText(),
       imported = await exportedHash();
     expect(label).toMatch(/Tinos/);
     expect(imported).not.toBe(baseline);
