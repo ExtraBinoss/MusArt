@@ -184,3 +184,60 @@ test("spotlight hands off real file pickers and opens settings/new/export dialog
   ).toBeVisible();
   expect(await page.getByRole("dialog").count()).toBe(1);
 });
+
+test("spotlight immediate typing and Enter open the actual latest-query image picker", async ({
+  page,
+}, info) => {
+  await ready(page);
+  await page.keyboard.press("Control+k");
+  await expect(page.getByRole("combobox", { name: "Rechercher dans MusArt" })).toBeFocused();
+  await page.evaluate(() => {
+    document.addEventListener(
+      "keydown",
+      function capture(event) {
+        if (event.key !== "Enter") return;
+        const input = document.querySelector<HTMLInputElement>("[cmdk-input]");
+        const results = document.querySelector<HTMLElement>("[cmdk-list]");
+        (window as unknown as { __fastSearchEnter: unknown }).__fastSearchEnter = {
+          value: input?.value,
+          displayed: results?.dataset.searchQuery,
+          pending: results?.dataset.searchPending === "true",
+          inert: results?.inert,
+          busy: results?.getAttribute("aria-busy"),
+        };
+        document.removeEventListener("keydown", capture, true);
+      },
+      true,
+    );
+  });
+  await page.keyboard.type("import images", { delay: 0 });
+  const picker = page.waitForEvent("filechooser");
+  await page.keyboard.press("Enter");
+  await (await picker).setFiles("apps/web/public/benchmark/01-forest-1.jpg");
+  await expect
+    .poll(() => page.evaluate(() => window.musart!.snapshot().project.pages[0]!.layers.length))
+    .toBe(2);
+  const captured = await page.evaluate(
+    () =>
+      (
+        window as unknown as {
+          __fastSearchEnter: {
+            value: string;
+            displayed: string;
+            pending: boolean;
+            inert: boolean;
+            busy: string;
+          };
+        }
+      ).__fastSearchEnter,
+  );
+  expect(captured.value).toBe("import images");
+  if (captured.pending) {
+    expect(captured.inert).toBe(true);
+    expect(captured.busy).toBe("true");
+  } else expect(captured.displayed).toBe(captured.value);
+  await info.attach("native-fast-enter-state", {
+    body: JSON.stringify(captured),
+    contentType: "application/json",
+  });
+});

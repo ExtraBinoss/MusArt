@@ -34,6 +34,16 @@ Completed implementation checkpoint: 2026-10-30, branch `feat/mobile-onboarding`
 - Integrated the verified Motion milestone `88675a9`, preserving both histories,
   project layout/zoom preferences and dock Pin/peek behavior. Mobile single-panel
   layouts never overwrite saved desktop split proportions.
+- Mobile Layers now has one heading with its live count and existing actions in
+  the sheet header. Opacity and blend controls stay centered for empty, single
+  and multiple selections; the desktop header remains unchanged.
+- Cmd/Ctrl+K keeps query and selection updates inside a retained palette, retains
+  result rows, and sorts only a bounded best-match set. Its single panel entrance,
+  individual result transitions and translated typewriter avoid editor renders.
+  Input echo has priority over result rendering. Pending results remain visible
+  but inert; immediate Enter resolves the current criteria instead of an old row.
+  Footer instructions are removed. Native profiling, frozen builds, input clocks
+  and qualified before/after results are documented in [Cmd+K profiling](../performance/cmdk.md).
 
 ## Remaining follow-up
 
@@ -72,6 +82,10 @@ Completed implementation checkpoint: 2026-10-30, branch `feat/mobile-onboarding`
   These focused cohorts overlap and are not a repository-wide test count.
 - Independent source audit found no outstanding navigation, readonly persistence,
   stale-result, cancellation or preview-owner cleanup issue.
+- Follow-up mobile checks cover the restored logo/library path, a single Layers
+  heading and centered compositing controls across selection states. Cmd+K checks
+  cover immediate query/Enter, native file pickers, cross-page navigation, effect
+  undo, dialog handoffs, first-frame focus, inert exit and canvas focus return.
 - Ignored evidence/configuration lives under `artifacts/mobile-onboarding/`.
 
 ## Local preview
