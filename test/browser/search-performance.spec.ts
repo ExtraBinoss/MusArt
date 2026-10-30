@@ -13,7 +13,12 @@ async function open(page: Page) {
   await page.waitForFunction(() => {
     const sample = window.__searchProfile!.samples.at(-1);
     const input = document.querySelector('[data-magic-search] [role="combobox"]');
-    return sample?.kind === "open" && Boolean(sample.settledAt) && document.activeElement === input;
+    return (
+      sample?.kind === "open" &&
+      Boolean(sample.settledAt) &&
+      Boolean(sample.resultsSecondRaf) &&
+      document.activeElement === input
+    );
   });
 }
 
@@ -77,6 +82,8 @@ test("CmdK native production profile: immediate input after a committed 150-laye
     JSON.stringify(
       {
         frozenSha: process.env.MUSART_CMDK_SHA,
+        metricSchema: "native-echo-and-committed-results-v2",
+        measurementPatchSha: process.env.MUSART_CMDK_PATCH_SHA ?? null,
         browser: browser.version(),
         edit,
         expectedRevision: before.revision + 1,
@@ -89,6 +96,7 @@ test("CmdK native production profile: immediate input after a committed 150-laye
       2,
     ),
   );
+  await page.evaluate(() => window.__searchProfile!.stop?.());
 });
 async function close(page: Page) {
   await page.keyboard.press("Escape");
@@ -98,14 +106,19 @@ async function typeQuery(page: Page, query: string) {
   await page.keyboard.type(query, { delay: 20 });
   await page.waitForFunction((value) => {
     const sample = window.__searchProfile!.samples.at(-1);
-    return sample?.kind === "input" && sample.value === value;
+    return sample?.kind === "input" && sample.value === value && Boolean(sample.resultsSecondRaf);
   }, query);
   const last = await page.evaluate(() => window.__searchProfile!.samples.at(-1)!);
-  expect(last.observedValue).toBe(query);
+  expect(last.echoStatus).toBe("observed");
+  expect(last.resultsStatus).toBe("observed");
+  expect(last.resultsAt).toBeGreaterThanOrEqual(last.echoAt!);
   if (query === "zzzznone") {
-    expect(last.options).toBe(0);
-    expect(last.resultText).toContain("Aucun résultat.");
-  } else expect(last.options).toBeGreaterThan(0);
+    expect(last.correctResultCount).toBe(0);
+    expect(last.correctResultText).toContain("Aucun résultat.");
+  } else {
+    expect(last.correctResultCount).toBeGreaterThan(0);
+    if (query === "flou") expect(last.correctResultText?.toLocaleLowerCase()).toContain("flou");
+  }
 }
 const digest = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
 
@@ -185,8 +198,21 @@ for (const workload of ["afterhours-150", "images-50-effects-100"] as const) {
       { start, end },
     );
     const after = await searchSurfaceCounters(page);
+    const inputSamples = measured.samples.filter((sample) => sample.kind === "input");
+    expect(inputSamples).toHaveLength(38);
+    for (const sample of inputSamples) {
+      expect(["observed", "superseded"]).toContain(sample.echoStatus);
+      expect(["observed", "superseded"]).toContain(sample.resultsStatus);
+      if (sample.resultPendingAtEcho) {
+        expect(sample.resultInertAtEcho).toBe(true);
+        expect(sample.resultBusyAtEcho).toBe("true");
+      }
+    }
     expect(after.commits).toEqual(before.commits);
     expect(after.instances).toBe(before.instances);
+    expect(after.submissions).toBe(before.submissions);
+    expect(Number.isFinite(before.gpu.frames)).toBe(true);
+    expect(after.gpu.frames).toBe(before.gpu.frames);
     for (const key of ["gpu", "webgl", "canvas", "videoFrame"] as const)
       expect(after.readbacks[key] - before.readbacks[key]).toBe(0);
     const documentAfter = await page.evaluate(() => window.musart!.snapshot());
@@ -207,6 +233,13 @@ for (const workload of ["afterhours-150", "images-50-effects-100"] as const) {
     await typeQuery(page, "flou");
     await close(page);
     const diagnosticEnd = await page.evaluate(() => performance.now());
+    const diagnosticSamples = await page.evaluate(
+      ({ start, end }) =>
+        window.__searchProfile!.samples.filter(
+          (sample) => sample.dispatch >= start && sample.dispatch <= end,
+        ),
+      { start: diagnosticStart, end: diagnosticEnd },
+    );
     const { profile } = await session.send("Profiler.stop");
     const tracingComplete = new Promise<{ stream?: string }>((resolve) =>
       session.once("Tracing.tracingComplete", resolve),
@@ -226,6 +259,8 @@ for (const workload of ["afterhours-150", "images-50-effects-100"] as const) {
     await writeFile(join(directory, `${workload}.cpuprofile`), JSON.stringify(profile));
     const result = {
       frozenSha: process.env.MUSART_CMDK_SHA,
+      metricSchema: "native-echo-and-committed-results-v2",
+      measurementPatchSha: process.env.MUSART_CMDK_PATCH_SHA ?? null,
       url: page.url(),
       workload,
       browser: browser.version(),
@@ -238,7 +273,7 @@ for (const workload of ["afterhours-150", "images-50-effects-100"] as const) {
       start,
       end,
       ...measured,
-      diagnostic: { start: diagnosticStart, end: diagnosticEnd, clock },
+      diagnostic: { start: diagnosticStart, end: diagnosticEnd, clock, samples: diagnosticSamples },
       unchangedDocument: digest(documentBefore.project),
       errors,
     };
@@ -248,6 +283,13 @@ for (const workload of ["afterhours-150", "images-50-effects-100"] as const) {
       body: JSON.stringify(result),
       contentType: "application/json",
     });
+    // Visual review occurs after both unprofiled timing and diagnostic capture.
+    await open(page);
+    await page.screenshot({ path: join(directory, `${workload}-palette-empty.png`) });
+    await typeQuery(page, "flou");
+    await page.screenshot({ path: join(directory, `${workload}-palette-flou.png`) });
+    await close(page);
+    await page.evaluate(() => window.__searchProfile!.stop?.());
     expect(errors).toEqual([]);
   });
 }

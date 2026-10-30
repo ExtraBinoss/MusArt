@@ -1,6 +1,8 @@
 import type { Page } from "@playwright/test";
 
 export interface SearchKeySample {
+  id: number;
+  cycle: number;
   kind: "open" | "input";
   value: string;
   generated: number;
@@ -11,6 +13,21 @@ export interface SearchKeySample {
   observedValue: string;
   options: number;
   resultText: string;
+  echoStatus: "pending" | "observed" | "superseded" | "closed";
+  echoAt?: number;
+  echoSecondRaf?: number;
+  resultsStatus: "pending" | "observed" | "superseded" | "closed";
+  resultsAt?: number;
+  resultsSecondRaf?: number;
+  correctResultCount?: number;
+  correctResultText?: string;
+  resultQueryAtEcho?: string;
+  resultPendingAtEcho?: boolean;
+  resultInertAtEcho?: boolean;
+  resultBusyAtEcho?: string | null;
+  supersededAt?: number;
+  supersededBy?: number;
+  closedAt?: number;
 }
 export interface SearchProfileState {
   samples: SearchKeySample[];
@@ -25,7 +42,7 @@ declare global {
   }
 }
 
-/** Native capture clocks and two presentation opportunities, without document snapshots. */
+/** Independently observe urgent input echo and committed latest-query results at native RAFs. */
 export async function installSearchProfile(page: Page) {
   await page.addInitScript(() => {
     const state: SearchProfileState = {
@@ -68,70 +85,126 @@ export async function installSearchProfile(page: Page) {
       );
     });
     tasks.observe({ type: "longtask", buffered: false });
-    let lastKey: { generated: number; dispatch: number } | undefined;
-    const frames = new Set<number>();
-    function frame(callback: FrameRequestCallback) {
-      const id = requestAnimationFrame((at) => {
-        frames.delete(id);
-        callback(at);
-      });
-      frames.add(id);
+    let lastKey = 0,
+      cycle = 0,
+      frame = 0;
+    const watching = new Set<SearchKeySample>();
+    const previousFrame = new WeakMap<SearchKeySample, { echo: boolean; results: boolean }>();
+    function observe() {
+      frame = 0;
+      const at = performance.now();
+      const dialog = document.querySelector("[data-magic-search]");
+      const input = dialog?.querySelector<HTMLInputElement>('[role="combobox"]');
+      const region = dialog?.querySelector<HTMLElement>("[cmdk-list]");
+      const committed = region?.dataset.searchQuery;
+      const pending = region?.dataset.searchPending === "true";
+      for (const sample of watching) {
+        const previous = previousFrame.get(sample)!;
+        if (!dialog || !input) {
+          if (!sample.firstRaf && sample.kind === "open") continue;
+          sample.closedAt ??= at;
+          if (sample.echoStatus === "pending") sample.echoStatus = "closed";
+          if (sample.resultsStatus === "pending") sample.resultsStatus = "closed";
+          watching.delete(sample);
+          continue;
+        }
+        // Historical second-RAF proxy is retained separately; it does not prove fresh results.
+        if (!sample.firstRaf && (sample.kind !== "open" || document.activeElement === input))
+          sample.firstRaf = at;
+        else if (sample.firstRaf && !sample.secondRaf) {
+          sample.secondRaf = at;
+          sample.observedValue = input.value;
+          sample.options = region?.querySelectorAll('[role="option"]').length ?? 0;
+          sample.resultText = region?.textContent ?? "";
+        }
+        const latest = !sample.supersededAt && input.value === sample.value;
+        if (latest && sample.echoStatus === "pending") {
+          sample.echoStatus = "observed";
+          sample.echoAt = at;
+          sample.resultQueryAtEcho = committed;
+          sample.resultPendingAtEcho = pending;
+          sample.resultInertAtEcho = region?.hasAttribute("inert");
+          sample.resultBusyAtEcho = region?.getAttribute("aria-busy");
+        } else if (latest && previous.echo && sample.echoAt && !sample.echoSecondRaf)
+          sample.echoSecondRaf = at;
+        const correct = latest && committed === sample.value && !pending;
+        if (correct && sample.resultsStatus === "pending") {
+          sample.resultsStatus = "observed";
+          sample.resultsAt = at;
+          sample.correctResultCount = region?.querySelectorAll('[role="option"]').length ?? 0;
+          sample.correctResultText = region?.textContent ?? "";
+        } else if (correct && previous.results && sample.resultsAt && !sample.resultsSecondRaf)
+          sample.resultsSecondRaf = at;
+        previous.echo = latest;
+        previous.results = correct;
+        if (sample.kind === "open" && !sample.settledAt) {
+          const nodes = [dialog, dialog.querySelector(".magic-search-surface")].filter(
+            (node): node is Element => Boolean(node),
+          );
+          if (
+            nodes.every((node) => {
+              const style = getComputedStyle(node);
+              const matrix = new DOMMatrixReadOnly(style.transform);
+              return Number(style.opacity) >= 0.995 && Math.abs(matrix.m42) < 0.1;
+            })
+          )
+            sample.settledAt = at;
+        }
+        const echoDone =
+          sample.echoStatus !== "pending" &&
+          (Boolean(sample.echoSecondRaf) || Boolean(sample.supersededAt));
+        const resultsDone =
+          sample.resultsStatus !== "pending" &&
+          (Boolean(sample.resultsSecondRaf) || Boolean(sample.supersededAt));
+        if (
+          sample.secondRaf &&
+          echoDone &&
+          resultsDone &&
+          (sample.kind !== "open" || sample.settledAt)
+        )
+          watching.delete(sample);
+      }
+      if (watching.size) frame = requestAnimationFrame(observe);
     }
-    function sample(kind: SearchKeySample["kind"], value: string, event: Event) {
+    function record(kind: SearchKeySample["kind"], value: string, event: Event) {
+      const at = performance.now();
+      if (kind === "open") cycle++;
       const sample: SearchKeySample = {
+        id: state.samples.length + 1,
+        cycle,
         kind,
         value,
-        generated: kind === "input" ? (lastKey?.generated ?? event.timeStamp) : event.timeStamp,
-        dispatch: performance.now(),
+        generated: kind === "input" ? lastKey || event.timeStamp : event.timeStamp,
+        dispatch: at,
         firstRaf: 0,
         secondRaf: 0,
         observedValue: "",
         options: 0,
         resultText: "",
+        echoStatus: "pending",
+        resultsStatus: "pending",
       };
-      const check = () => {
-        const input = document.querySelector<HTMLInputElement>(
-          '[data-magic-search] [role="combobox"]',
-        );
-        if (kind === "open" && (!input || document.activeElement !== input)) {
-          frame(check);
-          return;
+      if (kind === "input")
+        for (const previous of watching) {
+          if (previous.cycle !== cycle || previous.supersededAt) continue;
+          previous.supersededAt = at;
+          previous.supersededBy = sample.id;
+          if (previous.echoStatus === "pending") previous.echoStatus = "superseded";
+          if (previous.resultsStatus === "pending") previous.resultsStatus = "superseded";
         }
-        sample.firstRaf = performance.now();
-        frame(() => {
-          const dialog = document.querySelector("[data-magic-search]");
-          sample.secondRaf = performance.now();
-          sample.observedValue = input?.value ?? "";
-          sample.options = dialog?.querySelectorAll('[role="option"]').length ?? 0;
-          sample.resultText = dialog?.querySelector("[cmdk-list]")?.textContent ?? "";
-          state.samples.push(sample);
-          if (kind === "open") {
-            const settled = () => {
-              const nodes = [dialog, dialog?.querySelector(".magic-search-surface")].filter(
-                (node): node is Element => Boolean(node),
-              );
-              const ready = nodes.every((node) => {
-                const style = getComputedStyle(node);
-                const matrix = new DOMMatrixReadOnly(style.transform);
-                return Number(style.opacity) >= 0.995 && Math.abs(matrix.m42) < 0.1;
-              });
-              if (ready) sample.settledAt = performance.now();
-              else frame(settled);
-            };
-            frame(settled);
-          }
-        });
-      };
-      frame(check);
+      state.samples.push(sample);
+      previousFrame.set(sample, { echo: false, results: false });
+      watching.add(sample);
+      if (!frame) frame = requestAnimationFrame(observe);
     }
     function key(event: KeyboardEvent) {
-      lastKey = { generated: event.timeStamp, dispatch: performance.now() };
+      lastKey = event.timeStamp;
       if (
         (event.ctrlKey || event.metaKey) &&
         event.key.toLowerCase() === "k" &&
         !document.querySelector("[data-magic-search]")
       )
-        sample("open", "", event);
+        record("open", "", event);
     }
     function input(event: Event) {
       const target = event.target;
@@ -140,7 +213,7 @@ export async function installSearchProfile(page: Page) {
         target.closest("[data-magic-search]") &&
         target.value
       )
-        sample("input", target.value, event);
+        record("input", target.value, event);
     }
     window.addEventListener("keydown", key, true);
     window.addEventListener("input", input, true);
@@ -148,7 +221,8 @@ export async function installSearchProfile(page: Page) {
       window.removeEventListener("keydown", key, true);
       window.removeEventListener("input", input, true);
       tasks.disconnect();
-      for (const id of frames) cancelAnimationFrame(id);
+      cancelAnimationFrame(frame);
+      watching.clear();
     };
   });
 }

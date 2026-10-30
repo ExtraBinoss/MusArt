@@ -1,5 +1,7 @@
 # Cmd+K production profiling
 
+This report records the synchronous candidates through `24e4c4a`. The later [input-priority report](cmdk-priority.md) measures input echo and correctly committed latest results independently. The historical second-RAF numbers below must not be reinterpreted as fresh-results latency.
+
 Measured on 2026-10-30 using the [reproducible performance protocol](protocol.md). The final implementation passes native interaction and document-isolation checks. The matched production comparison has mixed latency results and does **not** establish a general typing or opening speedup. Earlier favorable measurements are retained as history, not selected as the headline result.
 
 ## Frozen builds and environment

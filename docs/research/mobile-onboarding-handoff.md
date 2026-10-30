@@ -43,7 +43,10 @@ Completed implementation checkpoint: 2026-10-30, branch `feat/mobile-onboarding`
   Input echo has priority over result rendering. Pending results remain visible
   but inert; immediate Enter resolves the current criteria instead of an old row.
   Footer instructions are removed. Native profiling, frozen builds, input clocks
-  and qualified before/after results are documented in [Cmd+K profiling](../performance/cmdk.md).
+  and qualified before/after results are documented in
+  [Cmd+K input-priority profiling](../performance/cmdk-priority.md). The measured
+  input-echo tail improves while final results take longer; no general speedup
+  or guarantee for other devices is claimed.
 
 ## Remaining follow-up
 
@@ -86,6 +89,10 @@ Completed implementation checkpoint: 2026-10-30, branch `feat/mobile-onboarding`
   heading and centered compositing controls across selection states. Cmd+K checks
   cover immediate query/Enter, native file pickers, cross-page navigation, effect
   undo, dialog handoffs, first-frame focus, inert exit and canvas focus return.
+- The final Cmd+K audit corrections passed 60 focused unit cases and two affected
+  native keyboard scenarios. Category/close buttons own Enter/Space, IME Escape
+  keeps composition active, and queued commands reject changed layer targets.
+  Root typecheck, typed lint, ESLint, formatting, version and rules checks passed.
 - Ignored evidence/configuration lives under `artifacts/mobile-onboarding/`.
 
 ## Local preview
