@@ -29,10 +29,10 @@ test("ruler commands update the connected overlay while the outer canvas retains
       view={{ x: 0, y: 0, zoom: 1 }}
     />,
   );
-  expect(container).toBeEmptyDOMElement();
+  expect(container.querySelector(".canvas-rulers")).not.toBeVisible();
   act(() => engine.execute({ type: "updatePage", patch: { rulers: true } }));
   expect(screen.getByLabelText("horizontal")).toBeInTheDocument();
   expect(page.rulers).toBe(false);
   act(() => engine.execute({ type: "updatePage", patch: { rulers: false } }));
-  expect(container).toBeEmptyDOMElement();
+  expect(container.querySelector(".canvas-rulers")).not.toBeVisible();
 });

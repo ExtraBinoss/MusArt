@@ -13,6 +13,7 @@ import {
   type MotionFrameRate,
   type MotionProgram,
 } from "@musart/core";
+import { rulerChange } from "./ruler-change";
 import {
   classifyAudioMixChange,
   rebaseAudioMixFrame,
@@ -83,6 +84,21 @@ export class MotionTransport {
     if (this.disposed) return;
     const snapshot = this.engine.getSnapshot();
     if (this.project === snapshot.project && this.state?.compositionId === snapshot.pageId) return;
+    const rulerPage = this.snapshot && !this.draft && rulerChange(this.snapshot, snapshot);
+    if (rulerPage) {
+      this.project = snapshot.project;
+      this.snapshot = snapshot;
+      this.audioMixPublication = null;
+      if (this.program) {
+        const composition = Object.freeze({
+          ...this.program.composition,
+          rulers: rulerPage.rulers,
+        });
+        this.program = Object.freeze({ ...this.program, composition });
+        if (this.frame) this.frame = Object.freeze({ ...this.frame, rulers: rulerPage.rulers });
+      }
+      return;
+    }
     const mix =
       this.snapshot && this.program && !this.draft
         ? classifyAudioMixChange(this.snapshot, snapshot)

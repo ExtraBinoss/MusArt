@@ -60,7 +60,7 @@ export function useShortcuts(
         pixelSelectionShortcut(event, services.pixelSelection, onTask, command)
       )
         return;
-      if (!command || (event.repeat && !command.startsWith("nudge:"))) return;
+      if (!command) return;
       const target = event.target;
       const capture =
         target instanceof HTMLElement ? target.closest("[data-keybinding-capture]") : null;
@@ -74,6 +74,12 @@ export function useShortcuts(
       if (capture && !documentScope) return;
       if (command !== "action:save" && isEditingShortcutTarget(target, { documentScope })) return;
       if (nativeClipboardShortcut(command, event)) return;
+      // A held app shortcut remains owned even when its action must not repeat.
+      // Letting it fall through here can invoke the browser's Ctrl/Cmd+R reload.
+      if (event.repeat && !command.startsWith("nudge:")) {
+        event.preventDefault();
+        return;
+      }
       const fallback = documentShortcut(command, { engine, save: services.saveProject, setTool });
       if (command === "action:undo" || command === "action:redo" || command === "action:deselect")
         setPreview(null);

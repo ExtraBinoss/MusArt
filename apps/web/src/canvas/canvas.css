@@ -223,7 +223,6 @@
   right: var(--workspace-gap, 18px);
   height: var(--floating-size, 42px);
   padding: var(--floating-padding, 4px);
-  transition: top 180ms ease;
 }
 .editor-canvas .canvas-controls .canvas-zoom {
   width: 61px;

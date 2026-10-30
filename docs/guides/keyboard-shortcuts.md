@@ -53,6 +53,8 @@ For Photoshop users: check the MusArt defaults before relying on muscle memory. 
 | Magic Search       | `Ctrl+K`             | Find and run tools, effects, adjustments, project actions and settings, or jump to an artboard/layer. |
 | Keyboard shortcuts | `?`                  | Open the searchable shortcut editor.                                                                  |
 
+Holding a nonrepeating editor shortcut such as **Ctrl+R** performs its action once and continues to reserve the key until release. Separate presses each toggle the rulers immediately; their SVG ticks remain cached while hidden. Ruler visibility does not pause Motion playback.
+
 The zoom controls also offer **100%**, **Fit** and **Recenter**. Browser- or OS-reserved shortcuts can take priority; use Magic Search or assign another binding when needed.
 
 ## Canvas gestures and pixel selections

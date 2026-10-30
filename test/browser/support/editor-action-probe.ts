@@ -430,7 +430,8 @@ export async function arm(page: Page, request: Request) {
           active === request.pageId &&
           matchesSelection &&
           (request.rulers === undefined ||
-            Boolean(document.querySelector(".canvas-rulers")) === request.rulers) &&
+            (document.querySelector<HTMLElement>(".canvas-rulers")?.hidden === false) ===
+              request.rulers) &&
           (request.menu === undefined || hasMenu === request.menu) &&
           (request.marquee === undefined || hasMarquee === request.marquee);
         if (!firstReadyAt && ready) {

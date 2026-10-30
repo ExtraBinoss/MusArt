@@ -498,18 +498,19 @@
   --workspace-gap: 18px;
   --floating-size: 42px;
   --floating-padding: 4px;
+}
+.workspace > :is(.project-trigger, .toolbar, .tool-settings),
+.workspace .canvas-controls {
   --ruler-inset: 0px;
 }
-.workspace:has(.canvas-rulers) {
+.workspace:has(.canvas-rulers:not([hidden])) > :is(.project-trigger, .toolbar, .tool-settings),
+.workspace:has(.canvas-rulers:not([hidden])) .canvas-controls {
   --ruler-inset: 20px;
 }
 .workspace > .project-trigger {
   top: calc(max(var(--workspace-gap), env(safe-area-inset-top)) + var(--ruler-inset));
   left: calc(var(--workspace-gap) + var(--ruler-inset));
   max-width: calc(100% - 2 * var(--workspace-gap) - var(--ruler-inset) - 154px);
-  transition:
-    top 180ms ease,
-    left 180ms ease;
 }
 .workspace .brand-button,
 .workspace .project-pill,
@@ -537,9 +538,6 @@
   transform: none;
   padding: var(--floating-padding);
   gap: 0;
-  transition:
-    top 180ms ease,
-    left 180ms ease;
 }
 .workspace > .toolbar .toolbar-contents .icon-button {
   width: 32px;
@@ -550,9 +548,6 @@
   left: calc(var(--workspace-gap) + var(--ruler-inset) + var(--floating-size) + 16px);
   max-height: calc(100% - 110px - var(--ruler-inset));
   overflow-y: auto;
-  transition:
-    top 180ms ease,
-    left 180ms ease;
 }
 @media (min-width: 768px) and (max-width: 1100px) {
   .workspace {

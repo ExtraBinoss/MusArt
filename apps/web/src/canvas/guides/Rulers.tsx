@@ -61,6 +61,7 @@ export function Rulers({
   const rulers = useRef<HTMLDivElement>(null);
   const presentations = useRef(new Map<SVGGElement, RulerPresentation>());
   useEffect(() => {
+    if (!page.rulers) return;
     const clear = () => {
       const current = active.current;
       active.current = null;
@@ -90,7 +91,7 @@ export function Rulers({
       window.removeEventListener("keydown", key, true);
       clear();
     };
-  }, [engine, controller]);
+  }, [engine, controller, page.rulers]);
   useEffect(() => {
     const element = viewport.current;
     if (!element) return;
@@ -112,10 +113,7 @@ export function Rulers({
   }, [viewport]);
   useEffect(() => {
     const retained = presentations.current;
-    if (!page.rulers) {
-      retained.clear();
-      return;
-    }
+    if (!page.rulers) return;
     const paint = () => {
       const current = viewSource?.read() ?? view;
       const currentPage = controller?.read().page ?? page;
@@ -147,7 +145,6 @@ export function Rulers({
       stopScene?.();
     };
   }, [page, size.width, size.height, view, viewSource, controller]);
-  if (!page.rulers) return null;
   function move(event: PointerEvent<SVGSVGElement>) {
     if (!active.current || !viewport.current) return;
     if (!isGestureOriginCurrent(engine, active.current.origin)) {
@@ -167,7 +164,7 @@ export function Rulers({
     });
   }
   function begin(event: PointerEvent<SVGSVGElement>, axis: "x" | "y") {
-    if (event.button !== 0 || controller?.read().playback) return;
+    if (!page.rulers || event.button !== 0 || controller?.read().playback) return;
     event.preventDefault();
     event.stopPropagation();
     active.current = {
@@ -209,7 +206,7 @@ export function Rulers({
   const originX = size.width / 2 + view.x - (page.width * view.zoom) / 2;
   const originY = size.height / 2 + view.y - (page.height * view.zoom) / 2;
   return (
-    <div className="canvas-rulers" data-canvas-control ref={rulers}>
+    <div className="canvas-rulers" data-canvas-control hidden={!page.rulers} ref={rulers}>
       <div className="ruler-corner" />
       {(["x", "y"] as const).map((axis) => (
         <div key={axis} className={`canvas-ruler ruler-${axis}`}>

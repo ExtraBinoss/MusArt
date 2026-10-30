@@ -117,7 +117,7 @@ it("cancels interrupted drags and ignores out-of-page drops, disabled rulers and
   fireEvent.pointerUp(horizontal, pointer(20, 100));
   expect(d.commands).not.toHaveBeenCalled();
   rerender(<Rulers {...d} page={{ ...d.page, rulers: false }} view={view} />);
-  expect(container).toBeEmptyDOMElement();
+  expect(container.querySelector(".canvas-rulers")).not.toBeVisible();
   rerender(<Rulers {...d} viewport={{ current: null }} view={view} />);
   const vertical = screen.getByLabelText("vertical");
   fireEvent.pointerDown(vertical, pointer(20, 20));
@@ -215,4 +215,28 @@ it("Escape cancels the captured ruler gesture and playback rejects starting anot
   expect(d.engine.getSnapshot()).toBe(baseline);
   expect(d.commands).not.toHaveBeenCalled();
   unmount();
+});
+
+it("retains mounted ticks through rapid visibility changes and cancels an active drag when hidden", () => {
+  const d = fixture(),
+    { container, rerender } = render(<Rulers {...d} view={view} />),
+    handle = screen.getByLabelText("horizontal"),
+    tick = container.querySelector("g[data-value]")!;
+  const update = vi.spyOn(tick, "setAttribute"),
+    release = vi.spyOn(handle, "releasePointerCapture");
+  vi.spyOn(handle, "hasPointerCapture").mockReturnValue(true);
+  fireEvent.pointerDown(handle, pointer(10, 0));
+  fireEvent.pointerMove(handle, pointer(20, 30));
+  for (let at = 0; at < 20; at++) {
+    rerender(<Rulers {...d} page={{ ...d.page, rulers: false }} view={view} />);
+    expect(container.querySelector(".canvas-rulers")).not.toBeVisible();
+    fireEvent.pointerDown(handle, pointer(10, 0));
+    fireEvent.pointerUp(handle, pointer(20, 30));
+    rerender(<Rulers {...d} view={view} />);
+    expect(container.querySelector("g[data-value]")).toBe(tick);
+  }
+  expect(update).not.toHaveBeenCalled();
+  expect(release).toHaveBeenCalledOnce();
+  expect(d.commands).not.toHaveBeenCalled();
+  expect(container.querySelector(".ruler-guide-preview")).toBeNull();
 });

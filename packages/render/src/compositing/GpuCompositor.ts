@@ -13,6 +13,7 @@ import { ColorPipeline } from "../color/ColorPipeline";
 import { GpuResourceCache } from "../cache/GpuResourceCache";
 import { gpuTextureLimit } from "../cache/texture-limits";
 import { createSourceKeys } from "../cache/keys";
+import { sameCompositionInput } from "../cache/composition-input";
 import { finishLayerSource } from "./finish-layer";
 import { EffectResources } from "./effect-resources";
 import { VectorSources } from "../surface/vector/source";
@@ -105,13 +106,14 @@ export class GpuCompositor {
       !entry?.signature ||
       !entry.output ||
       !input ||
-      input.page.deref() !== page ||
+      !sameCompositionInput(input.page.deref(), page) ||
       input.assets.deref() !== assets ||
       input.motionFrame !== motionFrame ||
       (page.layers.some((layer) => layer.kind === "video") && !motionFrame)
     )
       return null;
     this.retainedRoot = key;
+    input.page = new WeakRef(page);
     this.cacheHits++;
     return entry.output;
   }

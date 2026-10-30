@@ -6,6 +6,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Fixed rapid ruler shortcut toggling: consume held app shortcuts without browser fallthrough, retain hidden SVG ticks, avoid repeated immutable-frame preparation, scope ruler spacing to floating controls and remove interrupted layout transitions. Ruler-only edits also preserve the running Motion clock and compiled channels, while real artwork edits keep their normal invalidation and history behavior.
+
 - Unified the mascot gradient across the interface, favicon and install icons, regenerated SVG/PNG/ICO assets, and versioned the favicon URL so browsers refresh the updated artwork.
 
 - Excluded portable template payloads and generated contour coordinates from Tailwind class discovery, preventing the development server and production CSS build from blocking on large numeric data.

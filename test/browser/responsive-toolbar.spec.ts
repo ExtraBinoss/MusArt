@@ -4,7 +4,7 @@ import { createLayer, createPage, createProject } from "@musart/core";
 test("Motion keeps floating controls clear of the header and rulers, with hover scrolling", async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 900, height: 600 });
+  await page.setViewportSize({ width: 900, height: 500 });
   await page.goto("/?automation=1");
   await page.waitForFunction(() => Boolean(window.musart));
   await page.evaluate(
@@ -64,7 +64,7 @@ test("Motion keeps floating controls clear of the header and rulers, with hover 
   await page.evaluate(() =>
     window.musart!.execute({ type: "updatePage", patch: { rulers: false } }),
   );
-  await expect(page.locator(".canvas-rulers")).toHaveCount(0);
+  await expect(page.locator(".canvas-rulers")).toBeHidden();
   await expect
     .poll(() =>
       page.locator(".toolbar").evaluate((element) => element.getBoundingClientRect().left),
