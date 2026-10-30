@@ -6,6 +6,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Added
 
+- Added reproducible production Cmd+K profiling with real native typing, 150-layer and 50-image/100-effect documents, immediate input after a committed edit, actual React/GPU/readback counters, retained CPU/Blink traces and mapped source attribution. The measured report records typing improvements and the first candidate's remaining cold-opening regression without treating profiled timings as latency guarantees.
+
 - Saved Motion project cards now play their actual authored artboard on hover through the same bounded GPU preview owner as templates. Readonly, abortable snapshots leave project persistence, current selection and document history untouched; video originals stay lazy, while Static pages retain their cached page carousel.
 
 - Replaced the first-visit tour with a theme-aware landing page, an animated headline, a draggable carousel of real editable templates and four video placeholders in `public/videos`. The Projects/Templates library now has a desktop sidebar with five cached recent previews and Preferences, a compact mobile navigation, animated search, Static/Motion filtering and matching preview cards. Project loading remains bounded and asynchronous import/template creation keeps its stale-result guards.
