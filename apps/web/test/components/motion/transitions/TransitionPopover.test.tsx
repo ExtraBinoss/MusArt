@@ -6,6 +6,7 @@ import { setup } from "../../../support/ui";
 import { makeTransport } from "../support";
 import { useSyncExternalStore } from "react";
 import type { TransitionPreviewSource } from "../../../../src/components/motion/transitions/preview-source";
+import { i18n } from "../../../../src/state/i18n";
 
 const metrics = vi.hoisted(() => ({ selectRenders: vi.fn() }));
 vi.mock("../../../../src/components/shared/SelectField", async (load) => {
@@ -132,5 +133,42 @@ it("previews hovered and keyboard-focused choices locally and restores the selec
   expect(screen.getByTestId("transition-preview")).toHaveAttribute("data-style", "fade");
   expect(screen.getByTestId("transition-preview")).toHaveAttribute("data-active", "false");
   expect(metrics.selectRenders).toHaveBeenCalledTimes(beforeHover);
+  expect(d.engine.getSnapshot()).toBe(before);
+});
+
+it("builds no form labels or select options while closed and retains the parent draft on reopening", async () => {
+  const translate = vi.spyOn(i18n, "t");
+  metrics.selectRenders.mockClear();
+  const d = fixture(),
+    before = d.engine.getSnapshot(),
+    user = userEvent.setup();
+  expect(metrics.selectRenders).not.toHaveBeenCalled();
+  expect(
+    translate.mock.calls.some(
+      ([key]) =>
+        key === "categoryLabel" ||
+        key === "operator" ||
+        key === "duration" ||
+        key === "hint" ||
+        String(key).startsWith("category.") ||
+        String(key).startsWith("style."),
+    ),
+  ).toBe(false);
+  await user.click(screen.getByRole("button", { name: "Ajouter une transition" }));
+  await user.click(screen.getByRole("combobox", { name: "Catégorie de transition" }));
+  await user.click(screen.getByRole("option", { name: "Révélations" }));
+  await user.click(screen.getByRole("combobox", { name: "Style de transition" }));
+  await user.click(screen.getByRole("option", { name: "Iris" }));
+  fireEvent.click(screen.getByRole("radio", { name: "Sortie" }));
+  fireEvent.change(screen.getByRole("spinbutton", { name: "Durée" }), { target: { value: "250" } });
+  fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
+  expect(screen.queryByRole("dialog")).toBeNull();
+  await user.click(screen.getByRole("button", { name: "Ajouter une transition" }));
+  expect(screen.getByRole("combobox", { name: "Catégorie de transition" })).toHaveTextContent(
+    "Révélations",
+  );
+  expect(screen.getByRole("combobox", { name: "Style de transition" })).toHaveTextContent("Iris");
+  expect(screen.getByRole("radio", { name: "Sortie" })).toHaveAttribute("data-state", "checked");
+  expect(screen.getByRole("spinbutton", { name: "Durée" })).toHaveValue(500);
   expect(d.engine.getSnapshot()).toBe(before);
 });

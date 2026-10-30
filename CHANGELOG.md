@@ -27,6 +27,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
+- Construct transition-editor controls only while their Radix content is present, retaining selections and exit animations without rebuilding closed forms during timeline updates.
 - Unify layer reordering across Layers, timeline labels and clip bars with one engine-scoped controller. Vertical drags update canonical stacking order; horizontal drags retain deterministic timing. Add owner-safe cancellation, explicit invalid-drop cues, cached geometry, virtualized source retention and shared edge scrolling.
 - Sample final timeline pointer-up coordinates and modifiers before committing, and restore gesture selection only while the gesture still owns it.
 

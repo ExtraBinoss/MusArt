@@ -4,23 +4,16 @@ import { useTranslation } from "react-i18next";
 import {
   createMotionEasingPreset,
   motionTimeToSeconds,
-  TRANSITION_CATALOG,
-  TRANSITION_CATEGORIES,
   type EnginePort,
   type TransitionCategory,
   type TransitionStyle,
 } from "@musart/core";
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "../../ui/popover";
-import { Button } from "../../ui/button";
-import { Input } from "../../ui/input";
-import { Label } from "../../ui/label";
 import { TimelineIconButton } from "../ControlButton";
-import { SelectField } from "../../shared/SelectField";
-import { SegmentedTabs } from "../../shared/segmented/SegmentedTabs";
 import type { TimelineTransport } from "../model";
 import { captureTransitionOrigin, commitTransition, type TransitionOrigin } from "./authoring";
-import { TransitionPreview } from "./TransitionPreview";
 import { createTransitionPreviewSource } from "./preview-source";
+import { TransitionForm } from "./TransitionForm";
 import "./messages";
 import "./transitions.css";
 
@@ -142,103 +135,36 @@ export function TransitionPopover({
         data-canvas-control
         data-keybinding-capture
       >
-        <header>
-          <strong>{t("title")}</strong>
-          <span>{t("count", { count: TRANSITION_CATALOG.length })}</span>
-        </header>
-        <SegmentedTabs
-          mode="choice"
-          size="compact"
-          value={placement}
-          label={t("placement")}
-          items={[
-            { value: "in", label: t("in") },
-            { value: "out", label: t("out") },
-          ]}
-          onValueChange={(value) => {
-            if (value === "in" || value === "out") setPlacement(value);
+        <TransitionForm
+          engine={engine}
+          model={{
+            active: open,
+            origin,
+            category,
+            style,
+            placement,
+            duration,
+            error,
+            previewSource: preview,
           }}
-        />
-        <SelectField
-          label={t("categoryLabel")}
-          value={category}
-          side="bottom"
-          identity={origin}
-          options={TRANSITION_CATEGORIES.map((value) => ({ value, label: t(`category.${value}`) }))}
-          onPreview={(value) =>
-            showPreview(TRANSITION_CATALOG.find((entry) => entry.category === value)?.id ?? null)
-          }
-          onPreviewCancel={() => preview.set(null)}
-          onValueChange={(value) => {
-            const first = TRANSITION_CATALOG.find((entry) => entry.category === value);
-            if (first) {
-              setCategory(first.category);
-              setStyle(first.id);
+          actions={{
+            setPlacement,
+            setDuration,
+            preview: showPreview,
+            clearPreview: () => preview.set(null),
+            cancel: close,
+            apply,
+            selectCategory: (category, firstStyle) => {
+              setCategory(category);
+              setStyle(firstStyle);
               preview.set(null);
-            }
-          }}
-        />
-        <SelectField
-          label={t("operator")}
-          value={style}
-          side="bottom"
-          identity={origin}
-          options={TRANSITION_CATALOG.filter((entry) => entry.category === category).map(
-            (entry) => ({ value: entry.id, label: t(entry.labelKey) }),
-          )}
-          onPreview={(value) =>
-            showPreview(
-              TRANSITION_CATALOG.find((entry) => entry.id === value && entry.category === category)
-                ?.id ?? null,
-            )
-          }
-          onPreviewCancel={() => preview.set(null)}
-          onValueChange={(value) => {
-            const selected = TRANSITION_CATALOG.find(
-              (entry) => entry.id === value && entry.category === category,
-            );
-            if (selected) {
-              setStyle(selected.id);
+            },
+            selectStyle: (value) => {
+              setStyle(value);
               preview.set(null);
-            }
+            },
           }}
         />
-        {open && origin && (
-          <TransitionPreview
-            engine={engine}
-            origin={origin}
-            style={style}
-            previewSource={preview}
-            placement={placement}
-            duration={Number(duration)}
-            optionActive={false}
-          />
-        )}
-        <Label className="motion-transition-duration">
-          {t("duration")}
-          <span>
-            <Input
-              aria-label={t("duration")}
-              value={duration}
-              type="number"
-              min={1}
-              step={1}
-              max={origin ? Math.floor(motionTimeToSeconds(origin.span) * 1000) : undefined}
-              onChange={(event) => setDuration(event.target.value)}
-            />
-            <span>ms</span>
-          </span>
-        </Label>
-        <p>{t("hint")}</p>
-        {error && <p role="alert">{t(error)}</p>}
-        <footer>
-          <Button variant="ghost" size="sm" onClick={close}>
-            {t("cancel")}
-          </Button>
-          <Button size="sm" onClick={apply}>
-            {t("apply")}
-          </Button>
-        </footer>
       </PopoverContent>
     </Popover>
   );
