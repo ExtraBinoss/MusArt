@@ -52,7 +52,8 @@
   display: flex;
   align-items: center;
   min-height: 65px;
-  padding: 25px 20px 10px;
+  padding: 18px 12px 3px 20px;
+  gap: 8px;
 }
 .mobile-sheet-header h2 {
   margin: 0;
@@ -82,10 +83,16 @@
 .mobile-sheet-handle[data-active="true"] > span {
   background: color-mix(in srgb, var(--foreground) 60%, transparent);
 }
+.mobile-sheet-heading-actions {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
+}
 .mobile-sheet-close {
-  position: absolute;
-  right: 10px;
-  bottom: 0;
+  position: static;
+  flex: 0 0 44px;
   width: 44px;
   height: 44px;
 }
@@ -445,4 +452,8 @@ body:has(.layer-attachment-popover [data-mobile-adjusting]) .mobile-sheet {
   .mobile-sheet-handle > span {
     transition: none;
   }
+}
+
+.mobile-sheet .layer-compositing {
+  align-items: center;
 }

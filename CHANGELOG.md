@@ -80,6 +80,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
+- Mobile Layers sheets now use one shared header for the title, live count and existing layer actions, without a duplicate panel heading. Blend selectors stay vertically centered against the opacity slider for empty, single and multiple selections; desktop panels and Motion keyframe controls retain their behavior.
+
 - Rejected colliding keyframe drag candidates before moving their markers, and retired all pending marker/link/tooltip previews when playback or another presentation replaces the timing draft. The last valid preview remains coherent and invalid releases never add history.
 - Allowed the persistent canvas timeline button to dismiss an already pinned panel, returning to the live header without a layout jump or a duplicate expand button.
 

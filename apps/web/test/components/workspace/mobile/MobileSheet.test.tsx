@@ -1,5 +1,9 @@
 import { expect, test, vi } from "vitest";
-import { fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, screen, within } from "@testing-library/react";
+import { createLayer } from "@musart/core";
+import { LayersPanel } from "../../../../src/components/layers/LayersPanel";
+import { useEngine } from "../../../../src/state/session/editor";
+import { MobileControlsContext } from "../../../../src/components/workspace/mobile/use-mobile";
 import { MobileNumberInput } from "../../../../src/components/workspace/mobile/MobileNumberInput";
 import { MobileSheet } from "../../../../src/components/workspace/mobile/MobileSheet";
 import { setup } from "../../../support/ui";
@@ -87,4 +91,56 @@ test("a pending operation blocks dismissal through Escape, handle keys and the c
   fireEvent.click(screen.getByRole("button", { name: "Fermer le panneau" }));
   expect(handle).toBeDisabled();
   expect(close).not.toHaveBeenCalled();
+});
+
+test("the mobile Layers sheet has one title and retains live count and the original action owners in its header", () => {
+  const d = setup();
+  function Live() {
+    const snapshot = useEngine(d.engine);
+    return (
+      <LayersPanel
+        engine={d.engine}
+        page={snapshot.project.pages[0]!}
+        project={snapshot.project}
+        selection={snapshot.selection}
+        run={d.run}
+        services={d.services}
+      />
+    );
+  }
+  const view = d.mount(
+    <MobileControlsContext value>
+      <MobileSheet title="Calques" onClose={vi.fn()}>
+        <Live />
+      </MobileSheet>
+    </MobileControlsContext>,
+  );
+  expect(screen.getAllByRole("heading", { name: "Calques", exact: true })).toHaveLength(1);
+  expect(document.querySelector(".layers-panel > .panel-heading")).toBeNull();
+  const header = document.querySelector(".mobile-sheet-header")!;
+  expect(header.querySelector(".small-count")).toHaveTextContent("3");
+  expect(
+    within(header as HTMLElement).getAllByRole("group", {
+      name: "Actions des calques",
+      exact: true,
+    }),
+  ).toHaveLength(1);
+  const add = within(header as HTMLElement).getByRole("button", {
+    name: "Ajouter un effet, réglage ou masque",
+  });
+  expect(add).toBeDisabled();
+  act(() => d.engine.select([d.rectangle.id]));
+  expect(add).toBeEnabled();
+  act(() => d.engine.execute({ type: "addLayers", layers: [createLayer("rectangle")] }));
+  expect(header.querySelector(".small-count")).toHaveTextContent("4");
+  expect(document.querySelectorAll(".layers-header-actions")).toHaveLength(1);
+  const opacity = screen.getByRole("slider", { name: "Régler Opacité" });
+  expect(opacity).not.toHaveAttribute("aria-disabled", "true");
+  act(() => d.engine.select([d.rectangle.id, d.text.id]));
+  expect(screen.getByRole("combobox", { name: "Fusion" })).not.toBeDisabled();
+  act(() => d.engine.select([]));
+  expect(screen.getByRole("combobox", { name: "Fusion" })).toBeDisabled();
+  expect(screen.getByRole("textbox", { name: "Opacité" })).toBeDisabled();
+  view.unmount();
+  expect(document.querySelector(".layers-header-actions")).toBeNull();
 });
