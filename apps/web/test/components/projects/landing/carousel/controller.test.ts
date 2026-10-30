@@ -8,7 +8,15 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function fixture(options: { reducedMotion?: boolean; origin?: number; position?: number } = {}) {
+function fixture(
+  options: {
+    reducedMotion?: boolean;
+    origin?: number;
+    position?: number;
+    autoScroll?: boolean;
+    visible?: boolean;
+  } = {},
+) {
   vi.useFakeTimers();
   let resize!: ResizeObserverCallback,
     now = 0,
@@ -38,6 +46,43 @@ function fixture(options: { reducedMotion?: boolean; origin?: number; position?:
     vi.fn((id: number) => frames.delete(id)),
   );
   vi.spyOn(performance, "now").mockImplementation(() => now);
+  let intersection: IntersectionObserverCallback | undefined;
+  let reduced = options.reducedMotion ?? false;
+  const mediaListeners = new Map<string, Set<() => void>>();
+  const intersectionDisconnect = vi.fn(),
+    mediaRemove = vi.fn((_: string, listener: () => void) => {
+      for (const listeners of mediaListeners.values()) listeners.delete(listener);
+    });
+  if (options.autoScroll) {
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(callback: IntersectionObserverCallback) {
+          intersection = callback;
+        }
+        observe() {}
+        disconnect = intersectionDisconnect;
+      },
+    );
+    vi.spyOn(window, "matchMedia").mockImplementation(
+      (query) =>
+        ({
+          get matches() {
+            return query.includes("prefers-reduced-motion")
+              ? reduced
+              : query.includes("pointer: fine");
+          },
+          media: query,
+          addEventListener: (_: string, listener: () => void) => {
+            const listeners = mediaListeners.get(query) ?? new Set();
+            listeners.add(listener);
+            mediaListeners.set(query, listeners);
+          },
+          removeEventListener: mediaRemove,
+        }) as unknown as MediaQueryList,
+    );
+  }
+
   const node = document.createElement("div");
   node.style.columnGap = "24px";
   node.tabIndex = 0;
@@ -93,9 +138,17 @@ function fixture(options: { reducedMotion?: boolean; origin?: number; position?:
   const api = installCarouselPan(node, {
     reducedMotion: options.reducedMotion ?? false,
     position: options.position,
+    autoScroll: options.autoScroll ?? false,
   });
   const measure = () => resize([], {} as ResizeObserver);
   measure();
+  function intersect(visible: boolean) {
+    intersection?.(
+      [{ isIntersecting: visible } as IntersectionObserverEntry],
+      {} as IntersectionObserver,
+    );
+  }
+  if (options.autoScroll) intersect(options.visible ?? true);
   function pointer(type: string, x: number, time: number, y = 100, pointerType = "mouse") {
     now = time;
     const event = new Event(type, { bubbles: true, cancelable: true });
@@ -140,6 +193,19 @@ function fixture(options: { reducedMotion?: boolean; origin?: number; position?:
   cleanup.push(dispose);
   return {
     node,
+    intersectionDisconnect,
+    changeReduced: (value: boolean) => {
+      reduced = value;
+      for (const listener of mediaListeners.get("(prefers-reduced-motion: reduce)") ?? [])
+        listener();
+    },
+    mediaRemove,
+    intersect,
+    time: () => now,
+    elapse: (duration: number) => {
+      now += duration;
+      vi.advanceTimersByTime(duration);
+    },
     cards,
     api,
     pointer,
@@ -379,4 +445,141 @@ test("browser focus during pointerdown cannot settle an active held drag or jump
   f.pointer("pointerup", -70, 180);
   expect(f.node).not.toHaveAttribute("data-carousel-moving");
   expect(f.events).toEqual([true, false]);
+});
+
+test("automatic drift advances with a gentle ramp, owns one frame and pauses for fine hover", () => {
+  const f = fixture({ autoScroll: true });
+  const baselineReads = f.reads.mock.calls.length;
+  expect(f.node).toHaveAttribute("data-carousel-auto");
+  expect(f.frames.size).toBe(1);
+  f.frame(16);
+  const first = f.api.position();
+  expect(first).toBeGreaterThan(0);
+  expect(first).toBeLessThan(0.1);
+  for (let time = 32; time <= 1000; time += 16) f.frame(time);
+  expect(f.api.position()).toBeGreaterThan(12);
+  expect(f.api.position()).toBeLessThan(25);
+  expect(f.reads).toHaveBeenCalledTimes(baselineReads);
+  f.node.dispatchEvent(new Event("pointerenter"));
+  expect(f.node).not.toHaveAttribute("data-carousel-auto");
+  expect(f.node).not.toHaveAttribute("data-carousel-moving");
+  expect(f.frames.size).toBe(0);
+  const stopped = f.api.position();
+  f.elapse(5000);
+  expect(f.api.position()).toBe(stopped);
+  f.node.dispatchEvent(new Event("pointerleave"));
+  f.elapse(1199);
+  expect(f.frames.size).toBe(0);
+  f.elapse(1);
+  expect(f.frames.size).toBe(1);
+  f.frame(f.time() + 16);
+  expect(f.api.position() - stopped).toBeGreaterThan(0);
+  expect(f.api.position() - stopped).toBeLessThan(0.1);
+});
+
+test("manual drag and release inertia finish before automatic drift resumes after quiet", () => {
+  const f = fixture({ autoScroll: true });
+  f.frame(16);
+  f.pointer("pointerdown", 400, 20);
+  expect(f.node).not.toHaveAttribute("data-carousel-auto");
+  expect(f.frames.size).toBe(0);
+  f.pointer("pointermove", 250, 40);
+  f.pointer("pointerup", 250, 48);
+  expect(f.frames.size).toBe(1);
+  expect(f.node).toHaveAttribute("data-carousel-moving");
+  expect(f.node).not.toHaveAttribute("data-carousel-auto");
+  for (let time = 64; time <= 1800 && f.frames.size; time += 16) f.frame(time);
+  expect(f.frames.size).toBe(0);
+  expect(f.node).not.toHaveAttribute("data-carousel-moving");
+  const released = f.api.position();
+  f.elapse(1199);
+  expect(f.frames.size).toBe(0);
+  f.elapse(1);
+  expect(f.node).toHaveAttribute("data-carousel-auto");
+  f.frame(f.time() + 16);
+  expect(f.api.position()).toBeGreaterThan(released);
+});
+
+test("keyboard focus-visible pauses auto while stale mouse focus permits gentle resume", () => {
+  const f = fixture({ autoScroll: true });
+  vi.spyOn(f.cards[0]!, "matches").mockReturnValue(true);
+  f.cards[0]!.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+  expect(f.node).not.toHaveAttribute("data-carousel-auto");
+  f.elapse(5000);
+  expect(f.frames.size).toBe(0);
+  f.node.dispatchEvent(new FocusEvent("focusout", { bubbles: true, relatedTarget: document.body }));
+  f.elapse(1200);
+  expect(f.node).toHaveAttribute("data-carousel-auto");
+  f.pointer("pointerdown", 200, f.time() + 10);
+  f.cards[0]!.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+  f.pointer("pointerup", 200, f.time() + 10);
+  f.elapse(1200);
+  expect(f.node).toHaveAttribute("data-carousel-auto");
+});
+
+test("offscreen, hidden, blurred and reduced-motion carousels keep no automatic RAF", () => {
+  const f = fixture({ autoScroll: true, visible: false });
+  expect(f.frames.size).toBe(0);
+  f.intersect(true);
+  expect(f.node).toHaveAttribute("data-carousel-auto");
+  f.intersect(false);
+  expect(f.frames.size).toBe(0);
+  expect(vi.getTimerCount()).toBe(0);
+  f.intersect(true);
+  const hidden = vi.spyOn(document, "hidden", "get").mockReturnValue(true);
+  document.dispatchEvent(new Event("visibilitychange"));
+  expect(f.frames.size).toBe(0);
+  f.elapse(5000);
+  expect(f.frames.size).toBe(0);
+  hidden.mockReturnValue(false);
+  document.dispatchEvent(new Event("visibilitychange"));
+  f.elapse(1200);
+  expect(f.node).toHaveAttribute("data-carousel-auto");
+  window.dispatchEvent(new Event("blur"));
+  expect(f.frames.size).toBe(0);
+  window.dispatchEvent(new Event("focus"));
+  f.elapse(1200);
+  expect(f.node).toHaveAttribute("data-carousel-auto");
+  f.dispose();
+  const reduced = fixture({ autoScroll: true, reducedMotion: true });
+  reduced.elapse(5000);
+  expect(reduced.frames.size).toBe(0);
+  expect(reduced.node).not.toHaveAttribute("data-carousel-auto");
+});
+
+test("automatic ownership releases all observers, media listeners, timers and late intersection entries", () => {
+  const f = fixture({ autoScroll: true });
+  f.node.dispatchEvent(new Event("pointerenter"));
+  f.node.dispatchEvent(new Event("pointerleave"));
+  expect(vi.getTimerCount()).toBe(1);
+  f.dispose();
+  expect(f.frames.size).toBe(0);
+  expect(vi.getTimerCount()).toBe(0);
+  expect(f.intersectionDisconnect).toHaveBeenCalledOnce();
+  expect(f.mediaRemove).toHaveBeenCalledWith("change", expect.any(Function));
+  f.intersect(true);
+  f.elapse(5000);
+  expect(f.frames.size).toBe(0);
+  expect(f.node).toHaveAttribute("data-carousel", "previous");
+  expect(f.node).not.toHaveAttribute("data-carousel-auto");
+});
+
+test("live reduced-motion changes stop automatic and inertial frames then resume when enabled", () => {
+  const f = fixture({ autoScroll: true });
+  expect(f.node).toHaveAttribute("data-carousel-auto");
+  f.changeReduced(true);
+  expect(f.frames.size).toBe(0);
+  expect(f.node).not.toHaveAttribute("data-carousel-moving");
+  f.elapse(5000);
+  expect(f.frames.size).toBe(0);
+  f.changeReduced(false);
+  f.elapse(1200);
+  expect(f.node).toHaveAttribute("data-carousel-auto");
+  f.pointer("pointerdown", 400, f.time() + 1);
+  f.pointer("pointermove", 200, f.time() + 16);
+  f.pointer("pointerup", 200, f.time() + 16);
+  expect(f.frames.size).toBe(1);
+  f.changeReduced(true);
+  expect(f.frames.size).toBe(0);
+  expect(vi.getTimerCount()).toBe(0);
 });

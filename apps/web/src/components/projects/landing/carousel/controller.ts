@@ -21,7 +21,7 @@ const wrap = (value: number, period: number) => ((value % period) + period) % pe
 /** A single retained set of cards forms a ring; only ResizeObserver reads layout. */
 export function installCarouselPan(
   node: HTMLElement,
-  options: { reducedMotion: boolean; position?: number },
+  options: { reducedMotion: boolean; position?: number; autoScroll?: boolean },
 ): { dispose(): void; position(): number } {
   const cards: Card[] = [...node.children]
     .filter((child): child is HTMLElement => child instanceof HTMLElement)
@@ -36,9 +36,13 @@ export function installCarouselPan(
       willChangePriority: child.style.getPropertyPriority("will-change"),
     }));
   const attributes = new Map(
-    ["data-carousel", "data-carousel-position", "data-carousel-moving", "data-dragging"].map(
-      (name) => [name, node.getAttribute(name)],
-    ),
+    [
+      "data-carousel",
+      "data-carousel-position",
+      "data-carousel-moving",
+      "data-carousel-auto",
+      "data-dragging",
+    ].map((name) => [name, node.getAttribute(name)]),
   );
   let position = Number.isFinite(options.position) ? options.position! : 0;
   let period = 0,
@@ -51,6 +55,79 @@ export function installCarouselPan(
   let frame: number | null = null;
   let settleTimer: ReturnType<typeof setTimeout> | undefined;
   let suppressClick = false;
+  const automatic = options.autoScroll !== false;
+  const reducedQuery = matchMedia("(prefers-reduced-motion: reduce)");
+  let effectiveReduced = options.reducedMotion || reducedQuery.matches;
+  const finePointer = matchMedia("(hover: hover) and (pointer: fine)");
+  let hovered = finePointer.matches && node.matches(":hover"),
+    keyboardFocus = false,
+    windowFocused = true;
+  let visible = typeof IntersectionObserver === "undefined",
+    quietUntil = 0;
+  let motionKind: "auto" | "inertia" | null = null;
+  let autoTimer: ReturnType<typeof setTimeout> | undefined;
+  function quiet() {
+    quietUntil = performance.now() + 1200;
+  }
+  function allowed() {
+    return (
+      automatic &&
+      !effectiveReduced &&
+      !disposed &&
+      visible &&
+      windowFocused &&
+      !document.hidden &&
+      !hovered &&
+      !keyboardFocus &&
+      !gesture
+    );
+  }
+  function startAuto() {
+    if (!allowed() || moving || motionKind || !period) return;
+    motionKind = "auto";
+    node.setAttribute("data-carousel-auto", "");
+    setMoving(true);
+    const began = performance.now();
+    let previous = began;
+    function tick(now: number) {
+      frame = null;
+      if (motionKind !== "auto") return;
+      if (!allowed()) {
+        stopFrame();
+        setMoving(false);
+        return;
+      }
+      const dt = Math.max(0, Math.min(64, now - previous));
+      const from = 0.028 * (1 - Math.exp(-(previous - began) / 500));
+      const to = 0.028 * (1 - Math.exp(-(now - began) / 500));
+      previous = now;
+      position += (from + to) * 0.5 * dt;
+      paint();
+      frame = requestAnimationFrame(tick);
+    }
+    frame = requestAnimationFrame(tick);
+  }
+  function queueAuto() {
+    clearTimeout(autoTimer);
+    autoTimer = undefined;
+    if (!allowed() || moving || motionKind || !period) return;
+    const delay = Math.max(0, quietUntil - performance.now());
+    if (!delay) startAuto();
+    else
+      autoTimer = setTimeout(() => {
+        autoTimer = undefined;
+        startAuto();
+      }, delay);
+  }
+  function pauseAuto() {
+    clearTimeout(autoTimer);
+    autoTimer = undefined;
+    if (motionKind === "auto") {
+      stopFrame();
+      setMoving(false);
+    }
+  }
+
   function restoreStyle(card: Card, property: "transform" | "will-change") {
     const value = property === "transform" ? card.transform : card.willChange;
     const priority = property === "transform" ? card.transformPriority : card.willChangePriority;
@@ -83,12 +160,18 @@ export function installCarouselPan(
   function stopFrame() {
     if (frame !== null) cancelAnimationFrame(frame);
     frame = null;
+    motionKind = null;
+    node.removeAttribute("data-carousel-auto");
+    clearTimeout(autoTimer);
+    autoTimer = undefined;
     clearTimeout(settleTimer);
     settleTimer = undefined;
   }
   function settle() {
     stopFrame();
     setMoving(false);
+    quiet();
+    queueAuto();
   }
   function releaseCapture(id: number) {
     if (node.hasPointerCapture(id)) node.releasePointerCapture(id);
@@ -111,7 +194,7 @@ export function installCarouselPan(
     clearTimeout(settleTimer);
     settleTimer = setTimeout(() => {
       settleTimer = undefined;
-      setMoving(false);
+      settle();
     }, 100);
   }
   function measure() {
@@ -134,6 +217,7 @@ export function installCarouselPan(
     period = Math.max(0, last.left + last.width - origin + gap);
     if (before && period !== before) position = (position / before) * period;
     paint();
+    queueAuto();
   }
   function addSample(active: Gesture, x: number, time: number) {
     active.samples.push({ x, time });
@@ -145,6 +229,7 @@ export function installCarouselPan(
     if (active.samples[active.samples.length - 1]?.x !== x) addSample(active, x, time);
   }
   function inertia(velocity: number, began: number) {
+    motionKind = "inertia";
     let previous = began;
     function tick(now: number) {
       frame = null;
@@ -156,7 +241,7 @@ export function installCarouselPan(
       velocity *= decay;
       paint();
       if (Math.abs(velocity) < 0.025 || now - began >= 1600) {
-        setMoving(false);
+        settle();
         return;
       }
       frame = requestAnimationFrame(tick);
@@ -170,6 +255,8 @@ export function installCarouselPan(
       return;
     }
     cancel();
+    keyboardFocus = false;
+    quiet();
     suppressClick = false;
     gesture = {
       id: event.pointerId,
@@ -189,6 +276,8 @@ export function installCarouselPan(
       if (Math.max(Math.abs(dx), Math.abs(dy)) < 6) return;
       if (Math.abs(dy) > Math.abs(dx)) {
         gesture = null;
+        quiet();
+        queueAuto();
         return;
       }
       stopFrame();
@@ -206,7 +295,11 @@ export function installCarouselPan(
     gesture = null;
     delete node.dataset.dragging;
     releaseCapture(active.id);
-    if (!active.dragged) return;
+    if (!active.dragged) {
+      quiet();
+      queueAuto();
+      return;
+    }
     event.preventDefault();
     suppressClick = true;
     const now = performance.now();
@@ -217,11 +310,15 @@ export function installCarouselPan(
       first && last && now - last.time <= 80 && last.time > first.time
         ? Math.max(-3, Math.min(3, (first.x - last.x) / (last.time - first.time)))
         : 0;
-    if (!options.reducedMotion && Math.abs(velocity) >= 0.08) inertia(velocity, now);
+    if (!effectiveReduced && Math.abs(velocity) >= 0.08) inertia(velocity, now);
     else settle();
   }
   function cancelPointer(event: PointerEvent) {
-    if (gesture?.id === event.pointerId) cancel();
+    if (gesture?.id === event.pointerId) {
+      cancel();
+      quiet();
+      queueAuto();
+    }
   }
   function click(event: MouseEvent) {
     if (!suppressClick) return;
@@ -240,6 +337,7 @@ export function installCarouselPan(
           : 0;
     if (!delta) return;
     event.preventDefault();
+    quiet();
     halt();
     setMoving(true);
     position += delta * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? width : 1);
@@ -247,6 +345,11 @@ export function installCarouselPan(
     settleSoon();
   }
   function keyboard(event: KeyboardEvent) {
+    if (!["Shift", "Control", "Alt", "Meta"].includes(event.key)) {
+      keyboardFocus = true;
+      pauseAuto();
+      quiet();
+    }
     if (
       event.target !== node ||
       !period ||
@@ -264,6 +367,9 @@ export function installCarouselPan(
     settleSoon();
   }
   function focus(event: FocusEvent) {
+    keyboardFocus =
+      !gesture && event.target instanceof Element && event.target.matches(":focus-visible");
+    if (keyboardFocus) pauseAuto();
     if (!period || gesture) return;
     const target = event.target;
     const card = cards.find((item) => target instanceof Node && item.node.contains(target));
@@ -281,15 +387,69 @@ export function installCarouselPan(
     paint();
     settleSoon();
   }
+  function focusOut(event: FocusEvent) {
+    if (event.relatedTarget instanceof Node && node.contains(event.relatedTarget)) return;
+    keyboardFocus = false;
+    quiet();
+    queueAuto();
+  }
+  function enter(event: PointerEvent) {
+    if (!finePointer.matches || event.pointerType === "touch") return;
+    hovered = true;
+    pauseAuto();
+  }
+  function leave() {
+    hovered = false;
+    quiet();
+    queueAuto();
+  }
+  function pointerCapability() {
+    hovered = finePointer.matches && node.matches(":hover");
+    pauseAuto();
+    quiet();
+    queueAuto();
+  }
+  function reducedCapability() {
+    effectiveReduced = reducedQuery.matches;
+    cancel();
+    if (!effectiveReduced) {
+      quiet();
+      queueAuto();
+    }
+  }
+  function blur() {
+    windowFocused = false;
+    cancel();
+  }
+  function focusWindow() {
+    windowFocused = true;
+    quiet();
+    queueAuto();
+  }
   function visibility() {
     if (document.hidden) cancel();
+    else {
+      quiet();
+      queueAuto();
+    }
   }
+  const intersection =
+    automatic && typeof IntersectionObserver !== "undefined"
+      ? new IntersectionObserver((entries) => {
+          if (disposed) return;
+          visible = entries.some((entry) => entry.isIntersecting);
+          if (!visible) cancel();
+          else queueAuto();
+        })
+      : null;
+  node.removeAttribute("data-carousel-auto");
   node.removeAttribute("data-carousel-moving");
   node.removeAttribute("data-dragging");
   node.setAttribute("data-carousel", "true");
   node.dataset.carouselPosition = String(position);
   const observer = new ResizeObserver(measure);
   observer.observe(node);
+  intersection?.observe(node);
   for (const card of cards) observer.observe(card.node);
   node.addEventListener("pointerdown", down);
   node.addEventListener("pointermove", move, { passive: false });
@@ -300,7 +460,13 @@ export function installCarouselPan(
   node.addEventListener("wheel", wheel, { passive: false });
   node.addEventListener("keydown", keyboard);
   node.addEventListener("focusin", focus);
-  window.addEventListener("blur", cancel);
+  node.addEventListener("focusout", focusOut);
+  node.addEventListener("pointerenter", enter);
+  node.addEventListener("pointerleave", leave);
+  finePointer.addEventListener("change", pointerCapability);
+  reducedQuery.addEventListener("change", reducedCapability);
+  window.addEventListener("blur", blur);
+  window.addEventListener("focus", focusWindow);
   document.addEventListener("visibilitychange", visibility);
   return {
     position: () => position,
@@ -309,6 +475,7 @@ export function installCarouselPan(
       disposed = true;
       cancel();
       observer.disconnect();
+      intersection?.disconnect();
       node.removeEventListener("pointerdown", down);
       node.removeEventListener("pointermove", move);
       node.removeEventListener("pointerup", up);
@@ -318,7 +485,13 @@ export function installCarouselPan(
       node.removeEventListener("wheel", wheel);
       node.removeEventListener("keydown", keyboard);
       node.removeEventListener("focusin", focus);
-      window.removeEventListener("blur", cancel);
+      node.removeEventListener("focusout", focusOut);
+      node.removeEventListener("pointerenter", enter);
+      node.removeEventListener("pointerleave", leave);
+      finePointer.removeEventListener("change", pointerCapability);
+      reducedQuery.removeEventListener("change", reducedCapability);
+      window.removeEventListener("blur", blur);
+      window.removeEventListener("focus", focusWindow);
       document.removeEventListener("visibilitychange", visibility);
       for (const card of cards) {
         restoreStyle(card, "transform");

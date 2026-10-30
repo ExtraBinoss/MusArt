@@ -2,6 +2,60 @@ import { expect, test, type Locator } from "@playwright/test";
 
 const position = (rail: Locator) => rail.getAttribute("data-carousel-position");
 
+test("automatic drift pauses for hover, keyboard focus and offscreen content, then resumes", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/?automation=1&welcome=1");
+  const rail = page.locator("[data-carousel]");
+  await rail.scrollIntoViewIfNeeded();
+  await expect(rail).toHaveAttribute("data-carousel-auto");
+  const first = await position(rail);
+  const renders = await page.locator(".musart-app").getAttribute("data-react-renders");
+  expect(renders).not.toBeNull();
+  await expect.poll(() => position(rail)).not.toBe(first);
+  expect(await page.locator(".musart-app").getAttribute("data-react-renders")).toBe(renders);
+  const bloom = rail.getByRole("button", {
+    name: "Créer depuis In Bloom — Démo Motion",
+    exact: true,
+  });
+  await rail.hover();
+  await expect(rail).not.toHaveAttribute("data-carousel-auto");
+  await bloom.hover();
+  await expect(bloom.locator("[data-preview-status]")).toHaveAttribute(
+    "data-preview-status",
+    "playing",
+  );
+  const hovered = await position(rail);
+  await page.waitForTimeout(150);
+  expect(await position(rail)).toBe(hovered);
+  await page.mouse.move(10, 20);
+  await expect(rail).toHaveAttribute("data-carousel-auto");
+  await expect(bloom.locator("canvas")).toHaveCount(0);
+  await expect.poll(() => position(rail)).not.toBe(hovered);
+  await rail.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(rail).not.toHaveAttribute("data-carousel-auto");
+  await expect(rail).not.toHaveAttribute("data-carousel-moving");
+  const focused = await position(rail);
+  await page.waitForTimeout(150);
+  expect(await position(rail)).toBe(focused);
+  await rail.evaluate((node: HTMLElement) => node.blur());
+  await expect(rail).toHaveAttribute("data-carousel-auto");
+  await page.locator(".landing-footer").scrollIntoViewIfNeeded();
+  await expect(rail).not.toHaveAttribute("data-carousel-auto");
+  const offscreen = await position(rail);
+  await page.waitForTimeout(150);
+  expect(await position(rail)).toBe(offscreen);
+  await rail.scrollIntoViewIfNeeded();
+  await expect(rail).toHaveAttribute("data-carousel-auto");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(rail).not.toHaveAttribute("data-carousel-auto");
+  const reduced = await position(rail);
+  await page.waitForTimeout(150);
+  expect(await position(rail)).toBe(reduced);
+});
+
 async function coverage(rail: Locator) {
   return rail.evaluate((node) => {
     const viewport = node.getBoundingClientRect();
@@ -44,8 +98,9 @@ test("the single template rail loops both ways and coasts after a real mouse pan
       Number.parseFloat(getComputedStyle(node).columnGap)
     );
   });
-  const original = (await first.boundingBox())!.x;
   await rail.hover();
+  await expect(rail).not.toHaveAttribute("data-carousel-auto");
+  const original = (await first.boundingBox())!.x;
   async function wheel(delta: number) {
     const delivered = rail.evaluate(
       (node) =>

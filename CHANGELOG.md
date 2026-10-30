@@ -29,7 +29,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
-- The landing template rail now loops continuously in both directions through mouse/touch panning with velocity and inertia, without scrollbars, arrow buttons, autoplay or duplicate focusable cards. Vertical touch scrolling, keyboard access and reduced motion remain available; GPU hover previews pause while the rail moves.
+- The landing template rail automatically drifts through an infinite loop and supports mouse/touch panning with velocity and inertia, without scrollbars, arrow buttons or duplicate focusable cards. Automatic motion pauses for interaction, hover, keyboard focus, hidden/offscreen content and reduced motion, then resumes gently. Vertical page scrolling remains available and GPU hover previews pause while the rail moves.
 
 - Matched saved-project captions to template cards with a title and resolution on the left, the actual Static/Motion mode on the right, and theme-aware fading. Caption resolution follows the first Motion artboard shown by the preview, or the first Static artboard. Lightweight per-artboard mode metadata comes from existing bounded manifest reads; legacy artboards remain Static and listing never hydrates originals or history.
 
