@@ -81,6 +81,7 @@ export const AttachmentCards = memo(
                 style={{ "--card-order": index + 1 } as CSSProperties}
                 aria-label={`${t(getEffectDefinition(effect.type).nameKey)} · ${layer.name}`}
                 aria-pressed={active}
+                data-attachment-tooltip={t(getEffectDefinition(effect.type).nameKey)}
                 data-attachment-target="effect"
                 data-attachment-effect-id={effect.id}
                 onContextMenu={select}
@@ -109,6 +110,7 @@ export const AttachmentCards = memo(
               style={{ "--card-order": 3 } as CSSProperties}
               aria-label={`${t("mask")} · ${layer.name}`}
               aria-pressed={target?.kind === "mask"}
+              data-attachment-tooltip={t("mask")}
               data-attachment-target="mask"
               onContextMenu={() => {
                 const current = resolveLayerPage(engine, page);

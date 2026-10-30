@@ -93,7 +93,7 @@ export const LayerAttachments = memo(function LayerAttachments({
           onContextMenu={contextAttachment}
         >
           <MaskPopover engine={engine} page={page} layer={layer} run={run}>
-            <Button variant="ghost" className="attachment-name">
+            <Button variant="ghost" className="attachment-name" data-attachment-tooltip={t("mask")}>
               <span className="mask-avatar">
                 <ScanLine size={12} />
               </span>
@@ -193,7 +193,11 @@ export const LayerAttachments = memo(function LayerAttachments({
       }}
     >
       <EffectPopover engine={engine} page={page} layer={layer} effectId={effect.id} run={run}>
-        <Button variant="ghost" className="attachment-name">
+        <Button
+          variant="ghost"
+          className="attachment-name"
+          data-attachment-tooltip={t(getEffectDefinition(effect.type).nameKey)}
+        >
           <span className="effect-avatar">fx</span>
           {t(getEffectDefinition(effect.type).nameKey)}
         </Button>

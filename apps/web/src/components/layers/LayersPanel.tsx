@@ -1,3 +1,4 @@
+import { AttachmentTooltips } from "./attachments/AttachmentTooltips";
 import { memo, useEffect, useMemo, useRef, type ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import type { Composition, EnginePort, Layer, Project } from "@musart/core";
@@ -71,6 +72,7 @@ export const LayersPanel = memo(function LayersPanel({
   );
   return (
     <section ref={element} className="layers-panel" aria-label={t("layers")}>
+      <AttachmentTooltips host={element} />
       <PanelHeaderActions
         fallback={
           <div className="panel-heading">
