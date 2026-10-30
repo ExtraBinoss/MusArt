@@ -1,3 +1,4 @@
+import { BrandStatus } from "../../ui/brand/BrandStatus";
 import { Component, memo, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
@@ -14,6 +15,7 @@ import { useRenderMetrics } from "../../state/session/render-metrics";
 import { PlaneResources } from "./plane-resources";
 import { FiberTimerClock } from "./fiber-timer";
 import { DrawingDensity } from "./drawing-density";
+import { watchDisplayDensity } from "./display-density";
 import "../../state/i18n/errors/messages";
 import "./loading.css";
 
@@ -82,16 +84,20 @@ export function CompositionPlane({
   useFrame(() => density.prepare(renderer), -1);
   useEffect(() => {
     const presenter = controller.presentation.acquire();
+    const fontPresenter = controller.fontPresentation.acquire();
     let release: (() => void) | undefined;
     let unsubscribe: (() => void) | undefined;
+    let stopFonts: (() => void) | undefined;
     const cleanup = () => {
       try {
         unsubscribe?.();
+        stopFonts?.();
       } finally {
         try {
           release?.();
         } finally {
           presenter.release();
+          fontPresenter.release();
         }
       }
     };
@@ -107,8 +113,16 @@ export function CompositionPlane({
         (message, details) => onErrorRef.current?.(message, details),
         (scale, width, height) => density.apply(scale, setDpr, width, height),
         presenter,
+        fontPresenter,
       );
       unsubscribe = controller.subscribe(update);
+      let fontTicket = controller.fontPresentation.read().ticket;
+      stopFonts = controller.fontPresentation.subscribe(() => {
+        const state = controller.fontPresentation.read();
+        if (state.status !== "pending" || !state.ticket || state.ticket === fontTicket) return;
+        fontTicket = state.ticket;
+        update();
+      });
       update();
       return cleanup;
     } catch (error) {
@@ -117,13 +131,10 @@ export function CompositionPlane({
       throw error;
     }
   }, [resources, scene, camera, invalidate, controller, setDpr, density]);
-  useEffect(() => {
-    const timer = setTimeout(
-      () => resources.setDensity(zoom * (window.devicePixelRatio || 1)),
-      140,
-    );
-    return () => clearTimeout(timer);
-  }, [zoom, resources]);
+  useEffect(
+    () => watchDisplayDensity(zoom, (density) => resources.setDensity(density)),
+    [zoom, resources],
+  );
   return <primitive object={resources.mesh} dispose={null} />;
 }
 class GpuBoundary extends Component<
@@ -163,6 +174,18 @@ export const EditorScene = memo(function EditorScene({
   const density = useMemo(() => new DrawingDensity(), []);
   const { t } = useTranslation();
   const element = useRef<HTMLDivElement>(null);
+  const preparing = useMemo(() => {
+    let initialized = false;
+    return {
+      read: () => {
+        initialized ||= Boolean(
+          element.current?.querySelector('canvas[data-display-initialized="true"]'),
+        );
+        return !initialized;
+      },
+      subscribe: controller.presentation.subscribe,
+    };
+  }, [controller]);
   useRenderMetrics(element);
   return (
     <GpuBoundary
@@ -204,6 +227,7 @@ export const EditorScene = memo(function EditorScene({
         </Canvas>
         <div className="canvas-loading" role="status" aria-label={t("loadingCanvas")}>
           <span className="canvas-loading-glow" aria-hidden="true" />
+          <BrandStatus size={60} state="preparing" activity={preparing} />
         </div>
       </div>
     </GpuBoundary>

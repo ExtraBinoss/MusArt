@@ -63,13 +63,22 @@ export function TextProperties({
           fallback={layer.fontFamily}
         >
           {(family) => (
-            <FontPicker
-              key={layer.id}
-              layer={{ ...layer, fontFamily: String(family) }}
-              patch={patch}
-              preview={preview}
-              cancel={cancel}
-            />
+            <MotionValueField
+              engine={engine}
+              target={{ kind: "layer", layerId: layer.id, property: "fontWeight" }}
+              fallback={layer.fontWeight}
+            >
+              {(weight) => (
+                <FontPicker
+                  key={layer.id}
+                  engine={engine}
+                  layer={{ ...layer, fontFamily: String(family), fontWeight: Number(weight) }}
+                  patch={patch}
+                  preview={preview}
+                  cancel={cancel}
+                />
+              )}
+            </MotionValueField>
           )}
         </MotionValueField>
       </MotionField>

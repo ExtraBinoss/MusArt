@@ -14,13 +14,13 @@ interface CanvasTransfers {
   readonly readPage: () => Composition;
   readonly readWorkspace: () => ArtboardWorkspace;
   readonly readView: () => View;
-  readonly viewport: { readonly current: HTMLElement | null };
+  readonly readViewport: () => HTMLElement | null;
   readonly onActive: (active: boolean) => void;
   readonly onFiles?: (files: File[]) => void;
 }
 /** Native transfer and context targets share the actual world/artboard coordinate conversion. */
 export function createCanvasTransfers(options: CanvasTransfers) {
-  function locate(point: Point, element = options.viewport.current) {
+  function locate(point: Point, element = options.readViewport()) {
     if (!element) return null;
     const world = options.readWorkspace();
     const position = clientToPage(

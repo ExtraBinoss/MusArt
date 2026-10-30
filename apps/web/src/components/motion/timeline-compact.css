@@ -1,0 +1,95 @@
+.motion-scroll-shadow {
+  --scroll-shadow-side-top: 32px;
+  --scroll-shadow-side-start: var(--motion-gutter);
+}
+.motion-timeline[data-compact] {
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: none;
+}
+.motion-compact-toolbar {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 2px 10px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.motion-compact-toolbar .motion-transport {
+  width: 100%;
+  justify-content: space-between;
+  gap: 1px;
+}
+.motion-compact-toolbar .motion-transport > button {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 36px;
+  padding: 0;
+}
+.motion-compact-toolbar .motion-time-field {
+  flex: 0 1 58px;
+  min-width: 0;
+}
+.motion-compact-toolbar .motion-time-field > input[data-slot] {
+  width: 100%;
+  height: 36px;
+  padding: 0 4px;
+  font-size: 16px;
+}
+.motion-timeline[data-compact] .motion-ruler-label {
+  justify-content: space-between;
+  padding: 0 8px;
+}
+.motion-timeline[data-compact] .motion-ruler-label > button {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+.motion-compact-label {
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+.motion-timeline[data-compact] .motion-row-label {
+  gap: 4px;
+  padding-right: 6px;
+}
+.motion-timeline[data-compact] .motion-row-label > svg {
+  display: none;
+}
+.motion-timeline[data-compact] .motion-row-expand {
+  flex-basis: 20px;
+  width: 20px;
+  height: 32px;
+}
+.motion-timeline[data-compact] .motion-row-name {
+  height: 32px;
+  font-size: 10px;
+}
+.motion-timeline[data-compact] .motion-track-wrap {
+  top: 4px;
+  height: 24px;
+}
+.motion-timeline[data-compact] .motion-trim-handle {
+  height: 24px;
+  width: 12px;
+}
+.motion-timeline[data-compact] .motion-key {
+  width: 24px;
+  height: 32px;
+}
+.motion-compact-zoom {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 40px;
+  padding: 3px 16px;
+  border-top: 1px solid var(--border);
+}
+.motion-compact-zoom > span {
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.motion-compact-zoom .motion-zoom[data-slot="slider"] {
+  flex: 1 1 0;
+  width: auto;
+  height: 32px;
+}

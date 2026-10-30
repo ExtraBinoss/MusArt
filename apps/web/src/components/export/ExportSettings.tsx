@@ -1,5 +1,6 @@
+import { BrandStatus } from "../../ui/brand/BrandStatus";
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
-import { Download, LoaderCircle } from "lucide-react";
+import { Download } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { selectionComposition } from "@musart/core";
 import type { ExportOptions } from "../../state/contracts";
@@ -189,7 +190,7 @@ export function ExportSettings({
             void submit();
           }}
         >
-          {busy ? <LoaderCircle size={15} className="animate-spin" /> : <Download size={15} />}
+          {busy ? <BrandStatus size={16} state="preparing" /> : <Download size={15} />}
           {t(busy ? "exporting" : "exportImage")}
         </Button>
       </div>

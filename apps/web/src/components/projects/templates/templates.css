@@ -2,11 +2,22 @@
   display: grid;
   gap: 20px;
 }
+.template-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
 .template-search {
   position: relative;
   max-width: 360px;
   flex: 1;
   min-width: min(100%, 220px);
+}
+.template-mode-filter {
+  margin-left: auto;
+  flex-shrink: 0;
+  width: auto;
 }
 .template-loading {
   display: flex;
@@ -18,44 +29,13 @@
 .template-loading button {
   margin-left: auto;
 }
-.template-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-}
-.template-mode-filter {
-  width: 170px;
-}
-.template-mode {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  width: fit-content;
-  font-size: 10px;
-  line-height: 1.5;
-  color: var(--muted-foreground);
-}
-.template-mode[data-mode="motion"] {
-  color: var(--primary);
-}
-.template-search > svg {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--muted-foreground);
-  pointer-events: none;
-}
-.template-search input {
-  padding-left: 36px;
-}
 .template-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 185px), 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  gap: 20px;
 }
 .template-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -64,23 +44,24 @@
   gap: 0;
   overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 15px;
   text-align: left;
   white-space: normal;
+  box-shadow: 0 2px 8px #00000006;
   transition:
     border-color 150ms,
     box-shadow 150ms;
 }
 .template-card:hover {
-  border-color: color-mix(in oklab, var(--foreground) 30%, var(--border));
-  box-shadow: 0 5px 20px #0000000a;
+  border-color: color-mix(in srgb, var(--foreground) 20%, var(--border));
+  box-shadow: 0 8px 24px #00000012;
 }
 .template-artwork {
   width: 100%;
-  height: 190px;
+  aspect-ratio: 4/3;
   display: grid;
   place-items: center;
-  background: color-mix(in oklab, var(--muted) 80%, var(--background));
+  background: color-mix(in srgb, var(--muted) 80%, var(--background));
   overflow: hidden;
 }
 .template-artwork[data-artwork="true"] {
@@ -119,25 +100,53 @@
 .template-paper > svg {
   filter: drop-shadow(0 1px 1px #ffffff66);
 }
-.template-caption {
+.template-caption.project-card-overlay {
   align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 22px 14px 14px;
+}
+.template-meta {
   display: grid;
   gap: 4px;
-  padding: 14px;
+  min-width: 0;
+  flex: 1;
 }
 .template-title {
-  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  line-height: 18px;
   font-weight: 600;
 }
 .template-size {
   font-size: 11px;
+  line-height: 14px;
   color: var(--muted-foreground);
   font-variant-numeric: tabular-nums;
 }
-.template-description {
-  font-size: 10px;
+.template-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
   color: var(--muted-foreground);
-  font-weight: 400;
+  font-size: 10px;
+  line-height: 14px;
+}
+.template-mode > svg {
+  display: block;
+  flex: 0 0 14px;
+  width: 14px;
+  height: 14px;
+}
+.template-mode > span {
+  display: block;
+  line-height: 14px;
 }
 .template-empty {
   padding: 28px 0;
@@ -147,5 +156,14 @@
 @media (prefers-reduced-motion: reduce) {
   .template-card {
     transition: none;
+  }
+}
+@media (max-width: 480px) {
+  .template-search {
+    max-width: none;
+    flex-basis: 100%;
+  }
+  .template-mode-filter {
+    margin-left: auto;
   }
 }

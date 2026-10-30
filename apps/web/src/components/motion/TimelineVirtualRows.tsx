@@ -17,6 +17,7 @@ type Props = Omit<
   audioTracks: readonly MotionAudioTrack[];
   assets: Record<string, Asset>;
   onAudioError: (error: unknown) => void;
+  gutter?: number;
 };
 type LabelProps = Omit<
   Props,
@@ -33,6 +34,7 @@ export const TimelineVirtualRows = memo(function TimelineVirtualRows({
   audioTracks,
   assets,
   onAudioError,
+  gutter,
   ...props
 }: Props) {
   const { t } = useTranslation("motion");
@@ -52,6 +54,7 @@ export const TimelineVirtualRows = memo(function TimelineVirtualRows({
         key={props.compositionId}
         {...props}
         viewport={viewport}
+        gutter={gutter}
         audioTracks={audioTracks}
         assets={assets}
         onAudioError={onAudioError}

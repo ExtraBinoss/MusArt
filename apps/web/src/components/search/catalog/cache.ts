@@ -57,6 +57,9 @@ export class SearchCatalog {
   private commandRows: SearchItem[] = [];
   private itemRows: SearchItem[] = [];
   private categorySet = new Set<SearchCategory>();
+  get size(): number {
+    return this.itemRows.length;
+  }
   get commands(): readonly SearchItem[] {
     return this.commandRows;
   }

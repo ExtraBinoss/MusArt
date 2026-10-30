@@ -37,6 +37,7 @@ import {
 } from "./interaction/gestures";
 import { clientToPage, type Point } from "./viewport/view";
 import type { Gesture } from "./interaction/gesture-state";
+import { installTouchNavigation } from "./viewport/touch-navigation";
 import { useViewport } from "./viewport/use-viewport";
 import { ViewportControls } from "./viewport/ViewportControls";
 import { createWorkspace, createArtboardView } from "./artboards/workspace";
@@ -70,7 +71,6 @@ import { useTransformSnapping } from "./interaction/snapping/use-transform-snapp
 import { EffectGizmo } from "./effects/EffectGizmo";
 import "./canvas.css";
 export type { Tool } from "./interaction/gestures";
-
 export function EditorCanvas({
   engine,
   tool,
@@ -150,6 +150,13 @@ export function EditorCanvas({
     },
     [motion, controller, cancelWand, snapFeedback, marquee, liveMarquee],
   );
+  useEffect(
+    () =>
+      viewport.current
+        ? installTouchNavigation(viewport.current, motion, cancelGesture)
+        : undefined,
+    [motion, cancelGesture],
+  );
   const beforePaint = useCallback(() => {
     if (controller.read().playback && pixelSelection?.read()) pixelSelection.deselect();
     if (
@@ -163,7 +170,6 @@ export function EditorCanvas({
     [engine, cancelGesture],
   );
   useCanvasPresentation({ controller, workspace, motion, viewport, beforePaint });
-
   function pagePoint(event: { clientX: number; clientY: number }): Point {
     return clientToPage(
       { x: event.clientX, y: event.clientY },
@@ -440,18 +446,23 @@ export function EditorCanvas({
     if (!gesture.current || gesture.current.pointerId === event.pointerId) cancelGesture();
   }
   const gizmoProps = { engine, controller, viewSource: motion, onError };
-  const transfers = createCanvasTransfers({
-    engine,
-    readPage: () => controller.read().page,
-    readWorkspace: workspace.read,
-    readView: motion.read,
-    viewport,
-    onActive: setDragOver,
-    onFiles: onDropFiles,
-  });
+  const transfers = () =>
+    createCanvasTransfers({
+      engine,
+      readPage: () => controller.read().page,
+      readWorkspace: workspace.read,
+      readView: motion.read,
+      readViewport: () => viewport.current,
+      onActive: setDragOver,
+      onFiles: onDropFiles,
+    });
   const cursor = tool === "hand" || space ? "grab" : tool === "pointer" ? "default" : "crosshair";
   return (
-    <CanvasContextMenu engine={engine} resolveTarget={transfers.target} onError={onError}>
+    <CanvasContextMenu
+      engine={engine}
+      resolveTarget={(point) => transfers().target(point)}
+      onError={onError}
+    >
       <div
         className="editor-canvas"
         data-testid="editor-canvas"
@@ -490,7 +501,9 @@ export function EditorCanvas({
           if (event.code === "Space") setSpace(false);
         }}
         onBlur={() => setSpace(false)}
-        {...transfers.files}
+        onDragOver={(event) => transfers().files.onDragOver(event)}
+        onDragLeave={(event) => transfers().files.onDragLeave(event)}
+        onDrop={(event) => transfers().files.onDrop(event)}
       >
         <div className="canvas-stage">
           <InactiveArtboards

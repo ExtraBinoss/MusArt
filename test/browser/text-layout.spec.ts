@@ -4,7 +4,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { installReadbackProbe } from "./support/readback-probe";
 const output = resolve("artifacts/text-layout-native");
-let bundle: string, wasm: Buffer;
+let bundle: string;
 test.beforeAll(async () => {
   await mkdir(output, { recursive: true });
   execFileSync(
@@ -13,14 +13,12 @@ test.beforeAll(async () => {
       "build",
       "test/browser/support/text-layout-witness.ts",
       "--target=browser",
-      "--external=harfbuzzjs/hb.wasm?url",
       "--outfile",
       resolve(output, "witness.js"),
     ],
     { stdio: "pipe" },
   );
   bundle = await readFile(resolve(output, "witness.js"), "utf8");
-  wasm = await readFile(resolve("node_modules/harfbuzzjs/hb.wasm"));
 });
 for (const forceWebGL of [false, true])
   test(`animated analytical text equals fresh layout (${forceWebGL ? "WebGL" : "WebGPU"})`, async ({
@@ -32,17 +30,8 @@ for (const forceWebGL of [false, true])
     await page.route("**/text-layout-witness.html", (r) =>
       r.fulfill({
         contentType: "text/html",
-        body: '<!doctype html><title>Text layout witness</title><script type="importmap">{"imports":{"harfbuzzjs/hb.wasm?url":"/text-layout-font-url.js"}}</script>',
+        body: "<!doctype html><title>Text layout witness</title>",
       }),
-    );
-    await page.route("**/text-layout-font-url.js", (r) =>
-      r.fulfill({
-        contentType: "text/javascript",
-        body: 'export default "/text-layout-font.wasm";',
-      }),
-    );
-    await page.route("**/text-layout-font.wasm", (r) =>
-      r.fulfill({ contentType: "application/wasm", body: wasm }),
     );
     await page.route("**/text-layout-witness.js", (r) =>
       r.fulfill({ contentType: "text/javascript", body: bundle }),

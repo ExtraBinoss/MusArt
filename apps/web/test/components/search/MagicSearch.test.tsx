@@ -150,12 +150,14 @@ test("typing in search does not rebuild the independent command surface", async 
       {surface}
     </MagicSearch>,
   );
-  fireEvent.click(screen.getByRole("button", { name: "Rechercher dans MusArt" }));
+  fireEvent.click(screen.getByRole("button", { name: "Rechercher dans Melt" }));
   const input = await screen.findByRole("combobox");
-  const renders = surface.mock.calls.length;
+  const renders = surface.mock.calls.length,
+    shells = shellRender.mock.calls.length;
   fireEvent.change(input, { target: { value: "baguette" } });
   expect(await screen.findByRole("option", { name: /Baguette magique/ })).toBeVisible();
   expect(surface).toHaveBeenCalledTimes(renders);
+  expect(shellRender).toHaveBeenCalledTimes(shells);
 });
 function fixture(strict = false) {
   const d = setup();
@@ -176,8 +178,8 @@ function fixture(strict = false) {
   );
   d.mount(strict ? <StrictMode>{search}</StrictMode> : search);
   const open = async () => {
-    fireEvent.click(screen.getByRole("button", { name: "Rechercher dans MusArt" }));
-    await screen.findByRole("dialog", { name: "Rechercher dans MusArt" });
+    fireEvent.click(screen.getByRole("button", { name: "Rechercher dans Melt" }));
+    await screen.findByRole("dialog", { name: "Rechercher dans Melt" });
     return screen.getByRole("combobox");
   };
   const choose = async (query: string, name: RegExp | string) => {
@@ -212,7 +214,7 @@ test("shared quick actions reject a deferred callback after a project replacemen
 test("opens from the top-left trigger and Cmd/Ctrl K, searches localized tools and executes with Enter", async () => {
   const d = fixture();
   fireEvent.keyDown(document, { key: "k", ctrlKey: true });
-  const dialog = await screen.findByRole("dialog", { name: "Rechercher dans MusArt" });
+  const dialog = await screen.findByRole("dialog", { name: "Rechercher dans Melt" });
   expect(dialog).toHaveAccessibleDescription(
     "Trouvez un outil, un calque, une page ou une action.",
   );
@@ -226,7 +228,7 @@ test("opens from the top-left trigger and Cmd/Ctrl K, searches localized tools a
   fireEvent.keyDown(input, { key: "Enter" });
   await waitFor(() => expect(d.store.get(toolAtom)).toBe("wand"));
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Rechercher dans MusArt" })).toHaveFocus();
+  expect(screen.getByRole("button", { name: "Rechercher dans Melt" })).toHaveFocus();
   fireEvent.keyDown(document, { key: "k", metaKey: true });
   await screen.findByRole("combobox");
   fireEvent.keyDown(screen.getByRole("combobox"), { key: "k", ctrlKey: true });
@@ -235,7 +237,8 @@ test("opens from the top-left trigger and Cmd/Ctrl K, searches localized tools a
 test("browses categories, reports empty searches and disables commands requiring a selection", async () => {
   const d = fixture(),
     input = await d.open();
-  expect(screen.getByText("Choisissez une catégorie pour en voir plus.")).toBeInTheDocument();
+  expect(screen.queryByText("Choisissez une catégorie pour en voir plus.")).not.toBeInTheDocument();
+  expect(document.querySelector(".magic-search-footer")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Édition" }));
   const duplicate = screen.getByRole("option", { name: /Dupliquer/ });
   expect(duplicate).toHaveAttribute("aria-disabled", "true");
@@ -301,7 +304,7 @@ test("keyboard palette focus survives StrictMode cleanup, returns to its origin 
   expect(d.onTask).not.toHaveBeenCalled();
   await waitFor(() => expect(document.querySelector("[data-magic-search]")).toBeNull());
   await waitFor(() => expect(origin).toHaveFocus());
-  expect(screen.getByRole("button", { name: "Rechercher dans MusArt" })).not.toHaveFocus();
+  expect(screen.getByRole("button", { name: "Rechercher dans Melt" })).not.toHaveFocus();
   origin.remove();
 });
 test("hands off image imports and dialogs after closing", async () => {
@@ -311,7 +314,7 @@ test("hands off image imports and dialogs after closing", async () => {
   expect(d.onExport).toHaveBeenCalledOnce();
   await d.choose("new project", /Nouveau projet/);
   expect(d.onProjects).toHaveBeenLastCalledWith("newProject");
-  await d.choose("animate", /Ouvrir Animate/);
+  await d.choose("animate", /Exporter un timelapse de création/);
   expect(d.onPanelMode).toHaveBeenLastCalledWith("animate");
   await d.choose("import images", /Importer des images/);
   expect(d.onImport).toHaveBeenCalledOnce();
@@ -388,4 +391,15 @@ test("closed selection updates never build or normalize the document catalog", a
   await d.open();
   expect(read).toHaveBeenCalled();
   expect(prepare).toHaveBeenCalled();
+});
+
+test("opening focuses the input once without scrolling its surrounding viewport", async () => {
+  const focus = vi.spyOn(HTMLElement.prototype, "focus"),
+    d = fixture();
+  const input = await d.open();
+  const calls = focus.mock.contexts.flatMap((context, index) =>
+    context === input ? [focus.mock.calls[index]] : [],
+  );
+  expect(calls).toEqual([[{ preventScroll: true }]]);
+  expect(input).toHaveFocus();
 });

@@ -11,7 +11,14 @@ export async function downloadFont(
   url: string,
   fetcher: FontFetcher,
   signal: AbortSignal,
+  maximumBytes = MAX_FONT_FILE_BYTES,
 ): Promise<ArrayBuffer> {
+  if (!Number.isSafeInteger(maximumBytes) || maximumBytes < 1 || maximumBytes > MAX_FONT_FILE_BYTES)
+    throw new RangeError("Invalid font download byte limit.");
+  const tooLarge =
+    maximumBytes === MAX_FONT_FILE_BYTES
+      ? "Font exceeds the 32 MiB limit."
+      : "Font exceeds the preview byte limit.";
   if (
     !url.startsWith(`${import.meta.env.BASE_URL}fonts/`) &&
     !/^https:\/\/(raw\.githubusercontent\.com|fonts\.gstatic\.com)\//.test(url)
@@ -23,14 +30,13 @@ export async function downloadFont(
   const response = await fetcher(url, { signal });
   if (!response.ok)
     throw new FontLibraryError("download", `Font download failed (${response.status}).`);
-  if (Number(response.headers.get("content-length")) > MAX_FONT_FILE_BYTES) {
+  if (Number(response.headers.get("content-length")) > maximumBytes) {
     await response.body?.cancel();
-    throw new FontLibraryError("tooLarge", "Font exceeds the 32 MiB limit.");
+    throw new FontLibraryError("tooLarge", tooLarge);
   }
   if (!response.body) {
     const bytes = await response.arrayBuffer();
-    if (bytes.byteLength > MAX_FONT_FILE_BYTES)
-      throw new FontLibraryError("tooLarge", "Font exceeds the 32 MiB limit.");
+    if (bytes.byteLength > maximumBytes) throw new FontLibraryError("tooLarge", tooLarge);
     return bytes;
   }
   const reader = response.body.getReader(),
@@ -42,8 +48,7 @@ export async function downloadFont(
       const { done, value } = await reader.read();
       if (done) break;
       size += value.byteLength;
-      if (size > MAX_FONT_FILE_BYTES)
-        throw new FontLibraryError("tooLarge", "Font exceeds the 32 MiB limit.");
+      if (size > maximumBytes) throw new FontLibraryError("tooLarge", tooLarge);
       chunks.push(value);
     }
   } catch (error) {

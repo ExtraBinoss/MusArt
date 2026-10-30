@@ -1,25 +1,39 @@
 # Changelog
 
-All notable changes are recorded here in English. MusArt uses a synchronized [Semantic Versioning](https://semver.org/) release number across its workspaces.
+All notable changes are recorded here in English. Melt uses a synchronized [Semantic Versioning](https://semver.org/) release number across its workspaces.
 
 ## [Unreleased]
 
+### Changed
+
+- Reduced agent coordination overhead with bounded implementation ownership, fresh contexts for independent tasks, concise handoffs and one integrated validation owner. Tests now protect behavior without requiring an exact mirror for every source file; focused coverage falls back to related tests when mirrors are absent, while full CI coverage thresholds remain unchanged.
+
 ### Added
 
-- Extend the generic themed ScrollShadow to both axes, including timeline side fades that clear the label gutter, ruler and native scrollbars.
+- Introduced the Melt identity with the original Maskot/Bloub SVG engine, a wide-eyed Dahlia mascot, reusable SVG morphing, a shared violet palette and operation-driven loading/preparation marks with on-demand, reduced-motion-aware playback. Existing local projects and `.musart` formats remain compatible.
 
-- Add 30 deterministic GPU transition operators with exact progress endpoints, source-alpha coverage, bounded sampling and per-style shader reuse shared by preview and export. All operators pass native Chromium pixel checks on WebGPU and WebGL with zero production GPU readbacks.
-- Added independent visual occurrences of one canonical layer: each clip owns its exact interval, video in-point, property channels, keys and easing while sharing the layer's asset, effects, masks and stacking order. Headless add/duplicate/delete commands preserve one-step undo, and lazy Motion v2 promotion retains legacy presence. Static keeps the base design; transitions and keyframe edits can target a specific occurrence. Version 2 retains signed pre-roll keys when trimmed clips move or duplicate earlier, without clamping or baking curves.
-- Added standalone original-backed audio import, virtualized timed audio clips, worker-generated mountain waveforms and a categorized bank of fifteen original TypeScript sound effects. Shared preview/export processing supports editable fades, gain and deterministic finite reverb, with bounded decoding and explicit cleanup.
-- Added the shared Volume popover from audio context menus and speaker controls, with the existing glass slider, synchronized 0–100% input, imperative previews and one undoable commit. Gain and mute changes preserve Play and the worker, including initially silent playback; stale menu callbacks cannot edit a replacement document with the same IDs.
-- Added authored composition export to the common Exporter panel and artboard menu: named artboard selection, automatic Static/Motion settings, isolated Motion preview, explicit Mediabunny encoding defaults, cancellation and original-media resolution. Native decoding verifies video frames, rational timestamp boundaries, shortened final samples and processed audio on WebGPU and WebGL. A reproducible pinned Mediabunny patch preserves WebM video sample durations.
-- Added four headless-authored editable templates: Orbit Study, Paper Motion, Colorfield and a thirty-occurrence Transition Atlas. Seven real GPU-rendered covers accompany these designs, Sound Playground and the refreshed In Bloom/Stress Lab sound demonstrations; the gallery retains searchable Static/Motion filters.
-- Added the six-second Sound Playground template with nine original sound cues, grouped animation, transitions, fades and reverb. Sound-bank hover and keyboard focus show genuine worker-prepared waveforms and audition the original WAV through the shared mixer; leaving, closing, hiding the page or changing documents retires the preview.
-- Added one retained GPU transition preview to the transition editor and its category/style choices, with bounded resources and no per-frame React updates. Effect and adjustment catalogs now share searchable, translated category filters, and effect controls align their label, value and keyframe columns.
+- Shared the editor's mobile bottom navigation with the project library: Projects, Templates, disabled upcoming Community and Preferences. Cancellable native swipes move the content and indicator imperatively, preserve search drafts and vertical scrolling, handle pointer-capture transfers, and select once on release. Safe areas, keyboard controls and reduced motion remain supported.
+
+- Added a shared horizontal viewport with themed scroll shadows, mouse-hover edge controls, native touch scrolling, mouse panning and wheel/keyboard navigation. It hides the scrollbar, propagates wheel input at its limits and cleans up every observer, pointer capture and animation frame.
+
+- Added reusable, one-shot `BlurReveal` and `BlurTextAnimation` UI primitives adapted from the supplied example, with inherited styling, optional child ownership, configurable CSS blur/transform/opacity, reduced motion and temporary compositor hints. Command search uses a short top-to-bottom reveal while retaining existing result elements during typing.
+
+- Added reproducible production Cmd+K profiling with real native typing, 150-layer and 50-image/100-effect documents, immediate input after a committed edit, actual React/GPU/readback counters, retained CPU/Blink traces and mapped source attribution. The v2 probe separates input echo from correctly committed latest results, counts superseded prefixes and verifies final-query convergence. Its report documents the measured input responsiveness/result-delay tradeoff without counting old DOM as fresh results or claiming a general speedup; all earlier cohorts remain available.
+
+- Saved Motion project cards now play their actual authored artboard on hover through the same bounded GPU preview owner as templates. Readonly, abortable snapshots leave project persistence, current selection and document history untouched; video originals stay lazy, while Static pages retain their cached page carousel.
+
+- Replaced the first-visit tour with a theme-aware landing page, an animated headline, a draggable carousel of real editable templates and four video placeholders in `public/videos`. The Projects/Templates library now has a desktop sidebar with five cached recent previews and Preferences, a compact mobile navigation, animated search, Static/Motion filtering and matching preview cards. Project loading remains bounded and asynchronous import/template creation keeps its stale-result guards.
+- Simplified project creation into a separate dialog with visual presets, linked dimensions, a live aspect-ratio preview and a split import action. Library page/card transitions respect reduced motion and keep the scroll gutter at the outer edge.
+- Added live Motion template hover previews through the real validated engine/render graph, with silent native video, one GPU owner, coalesced exact-rational frames, cancellation, bounded resources and zero image encoding or GPU readbacks. Previews leave the current document and editor React tree untouched.
+- Added a full-width mobile editor with bottom navigation, draggable non-modal sheets for Properties, Motion, Layers and tools, compact color controls, and genuine Radix property sliders with a single precision input. Active adjustments reveal the canvas through the surrounding interface, preview without rebuilding the editor, commit once per gesture and restore cancelled drafts. Sheets include shared scroll shadows, neutral animated drag feedback, a sliding navigation indicator, compact tools and a primary Motion activation action. Mobile export uses the existing validated export settings inside its own sheet, with dismissal locked during processing.
+- Added real evaluated WebGPU covers for the two Motion gallery templates at 2.4 seconds and a 480-pixel maximum edge, using their original video and the shared render graph with zero GPU readbacks.
+- Added native two-finger canvas zoom/pan with cancellation of the interrupted document gesture, shared Static/Motion artwork from the supplied icons, and safe-area spacing for mobile controls.
+
+- Checkpointed the internal authored-Motion export and audio-mixing modules with focused lifecycle tests; native encoded-output verification and editor wiring remain unfinished.
 
 - Added a per-composition Motion timeline with virtualized layer/property rows, trimming and movement, key selection, property diamonds, automatic subsequent keys and easing editors. Playback, scrubbing and continuous edits use imperative presentation subscriptions; a retained dock keeps the complete transport/ruler header usable when the body is folded.
 - Added headless-built In Bloom and Motion Stress Lab templates with grouped imagery/video, masks, animated text/effects and every easing family. The gallery filters Static/Motion templates, validates original-media hashes and opens each as an independent project.
-- Added a split Export action for editing-history Timelapse, with a dedicated replay dialog and a 1–30-second output duration.
+- Added a split Export action for editing-history Timelapse, with a dedicated replay dialog and a 1–30-second output duration. Authored Motion export remains a separate unfinished milestone.
 - Added pure TypeScript video asset descriptions, source in-points and per-track audio settings to Motion frame plans. Prepared engine transactions validate before persistence, reject stale publication and publish one undoable change only after a successful commit.
 - Added original-backed video layers and deterministic Mediabunny frame providers, with bounded random/exact decoding, retained forward cursors and native Three.js VideoFrameTexture ownership. Preview and exact work have separate admission, stale requests are rejected, and leases remain alive until real GPU consumption acknowledges them.
 - Added atomically published video imports and media projects: original blobs live separately from document/history JSON, durable references survive reopen and undo, and stale or canceled preparation cannot publish a partial project. Imports enforce file/batch/project limits and counted first-time Motion conversion; unsupported portable video JSON exports fail explicitly.
@@ -29,18 +43,20 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
-- Isolate timeline gutter labels from zoom and horizontal-window updates, retain ruler tick identities, and present Canvas zoom after the native anchor is applied. Bound playhead clipping and reconcile native scroll offsets when zooming back from the end.
-- Retain mounted zoom help across value changes to avoid reinstalling floating-position observers, and keep captured ruler scrubs out of unrelated panel-resize hit testing.
-- Keep unpinned timelines open through native layer drags and browser pointer cancellation, and constrain captured playhead movement to the visible ruler. Add deduplicated layer-drop diagnostics with explicit rejection reasons.
-- Clamp simultaneous track/key movement to composition boundaries, show a red start marker, and move grouped descendant clips and keyframes together with one undo entry. Keep native drag ownership across window blur and show insertion guidance only on the actual hovered surface.
-- Draw timeline audio as filled bottom-up mountains, retain bounded ready envelopes across viewport exits, and defer background waveform preparation until active timeline gestures settle. Independent preparation holds preserve audition and foreground SFX ownership.
+- Replaced production HarfBuzz/OpenType text preparation with pinned, MIT-licensed text-shaper while retaining analytical Slug rendering in Three/TSL. The compatibility adapter preserves variable positioning, phantom advances, UTF-16 clusters and token kerning; a declared Bun patch fixes upstream positioning/substitution behavior and bounds variation caches. Font ownership, cancellation, readiness acknowledgments and disposal remain explicit. Independent glyph/layout fingerprints, vector-outline witnesses and reproducible three-run CPU/browser comparisons document correctness, performance gains and cold-path regressions in `docs/performance/text-shaping.md` and `docs/performance/text-shaping-browser.md`.
 
-- Replace the Motion timeline's temporal artwork with one viewport-bounded Canvas2D surface, shared projection/hit testing, temporal indexes and an idle-safe measurement/paint queue. Keep virtualized HTML labels and lazily admitted DOM editing controls, with imperative move/trim/key/marquee previews and the existing engine commands. Canvas hover feedback is immediate; ordinary editing controllers wait for a short dwell, while clicks, context menus and keyboard intentions remain synchronous. The recorded capped Chromium Sound Playground cohort reduces visual-scroll JavaScript by 42.9% and audio-scroll JavaScript by 73.9%, with unchanged editor-root/panel counters and zero instrumented production pixel reads; the remaining frame-cadence limits are documented in `docs/performance/motion-timeline.md`.
-- Give every built-in sound a ready Canvas mountain waveform, native-clock gray/green playback progress and compact grouped virtualized browsing. Reuse bounded prepared WAV/PCM/native-buffer caches and one idle-safe worker instead of reopening a decoder for every audition; move license details behind the bank's Info action.
-- Construct transition-editor controls only while their Radix content is present, retaining selections and exit animations without rebuilding closed forms during timeline updates.
-- Unify layer reordering across Layers, timeline labels and clip bars with one engine-scoped controller. Vertical drags update canonical stacking order; horizontal drags retain deterministic timing. Add owner-safe cancellation, explicit invalid-drop cues, cached geometry, virtualized source retention and shared edge scrolling.
-- Sample final timeline pointer-up coordinates and modifiers before committing, and restore gesture selection only while the gesture still owns it.
+- Rebuilt the Typography font picker with restored portal scrolling, memoized catalog filtering, real decoded phrase previews in a bounded eight-face cache, and intent-based canvas previews that pause during scrolling. Categories share the horizontal scroll-shadow control and disclosure chevron. Generation-bound loading completes only after the requested text is actually drawn; cancellation, one-step undo, import/reload and Motion's evaluated weight are preserved. Native production measurements and their limits are recorded in `docs/performance/fonts.md`.
 
+- The landing template rail automatically drifts through an infinite loop and supports mouse/touch panning with velocity and inertia, without scrollbars, arrow buttons or duplicate focusable cards. Automatic motion pauses for interaction, hover, keyboard focus, hidden/offscreen content and reduced motion, then resumes gently. Vertical page scrolling remains available and GPU hover previews pause while the rail moves.
+
+- Matched saved-project captions to template cards with a title and resolution on the left, the actual Static/Motion mode on the right, and theme-aware fading. Caption resolution follows the first Motion artboard shown by the preview, or the first Static artboard. Lightweight per-artboard mode metadata comes from existing bounded manifest reads; legacy artboards remain Static and listing never hydrates originals or history.
+
+- Restored the canvas logo as navigation to the Projects/Templates library, without implicitly opening project creation. Explicit creation commands still open the shared dialog directly over the editor, and the project-name menu keeps an always-available Projects action on desktop and touch layouts.
+
+- Integrated the verified Motion UI checkpoint (`88675a9`) with the mobile editor, keeping project-scoped layout/zoom preferences, dock Pin and hover behavior, compact mobile controls and horizontal scroll shadows. Mobile single-panel layouts suspend desktop split restoration and never overwrite the saved desktop proportions. Later Motion work-in-progress checkpoints remain outside this integration.
+
+- Reorganized the compact mobile timeline with a smaller label gutter, touch-sized rows, a full-width transport toolbar and a separate zoom control. Shared scroll shadows now cover horizontal overflow while keeping sticky labels and native scrollbar controls clear.
+- Kept the desktop tool dock inside the available canvas height below the project controls, added hover-to-scroll overflow arrows with the shared scroll shadows, and animated floating controls away from visible rulers. Unified floating-control sizes and moved zoom tooltips below their buttons.
 - Restore each project's workspace/sidebar split, Motion panel height and timeline zoom from small, versioned local preferences. Completed resize gestures and debounced wheel zoom persist separately from documents and undo history; stale restores cannot overwrite newer gestures and project deletion removes preferences atomically.
 - Timeline row/property hover highlights evaluated artwork without changing selection or history. Selection and hover decorations remain at 20% opacity during playback, omit absent or hidden layers and disable editing targets; track trim grips appear on hover.
 - Portaled effect submenus and made sibling Effect/Adjustment hover switch reliably. Restored Select up/down controls while retaining predictable menu height, native vertical scrolling and themed scroll shadows.
@@ -82,21 +98,33 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
-- Keep viewport Canvas timeline controls aligned with their painted targets, share real animated label poses with painting and drop hit testing, and retain insertion intent through stationary row motion and small hand jitter. Actual movement, scrolling, modifier changes and stale documents still revalidate the drop.
-- Preserve Canvas audio volume popovers across recognized mix commits and undo, invalidate incompatible waveform peaks before painting a replaced original, keep direct fade-button clicks with their own DOM command, and hand clip-menu transitions to the persistent editor only after the previous focus scope closes.
+- Removed obsolete HarfBuzz WASM loading and import maps from the text-layout and video-composition browser witnesses so they bundle the installed text-shaper backend directly. Their native WebGPU/WebGL pixel, reuse and cleanup assertions remain unchanged.
 
-- Preserve sound-bank Canvas geometry through development StrictMode replay and virtualized remounts. Bound high-DPR fallback surfaces before allocation and prevent a retired asynchronous insertion from closing a newer bank owner.
-- Localize timeline virtual-window updates to the row body, admit bounded row blocks through a generic constant-time planner and cache viewport dimensions outside scroll handlers. Construct sound-bank controls only during Radix's actual content lifetime, preserving popup animations while removing closed-catalog work from scrolling.
-- Keep ordinary clip clicks free of duration-popup mounting; show live duration only after an accepted move or trim begins. Preserve key-selection identity for unchanged sets and restrict key-marker invalidation to property rows.
-- Retain memoized visual and audio row subtrees while the timeline's virtual window changes, and isolate easing/transition hover previews from their authored forms. Focused Chrome traces confirm reduced scroll JavaScript work; complete interaction frame-budget acceptance remains in progress.
-- Scope audio-preview cleanup to its owning cue so virtualized rows and unrelated popovers cannot stop another audition.
-- Resolve audio originals through durable media headers when reconstructing journal frames, preserving sound edits and undo without requiring image data URLs.
-- Keep transition requests in one persistent app-level host, and retain the pointed occurrence when opening a canvas context menu. Artboard export menu handoff preserves focus and the requested artboard instead of reverting to the active design.
-- Render one resting trim pill per clip edge and show live clip duration in the timeline's chosen time unit. Decorative interpolation lines now admit rectangular key selection while clip dragging and the easing icon retain their actions.
+- Restored CI verification by provisioning FFprobe for source-backed Motion templates and aligning integration tests with the complete 33-command registry, retained selection overlays, shared zoom controls, button-based library navigation, timeline state and metadata-stable attachment previews. Assertions still verify real values, identity, stale-input guards and cancellation.
 
-- Ignore internal layer drags at the canvas file-import boundary, avoiding spurious import overlays and two EditorCanvas renders while crossing between layer lists. Empty file drops no longer switch artboards or invoke import.
+- Kept the Inspector immediately ready between consecutive edits to the same selected object and assets. Selection/resource handoffs remain guarded, attachment editing retains secondary panels, and native rapid color gestures preserve exact values, one undo entry per gesture and zero Inspector renders during previews.
 
-- Resolve canvas selection frames and resize starts from the evaluated Motion pose, including animated parent transforms. Clicks during authored playback can select visible artwork without starting edit gestures; historical replay remains protected.
+- Fixed live canvas sharpness after zoom and device-density changes by observing DPR independently and estimating actual batched/clipped GPU targets and fixed effect references. Stable fractional tiers retain the existing preview/device limits, source reservations stay separate from target costs, and infeasible fixed content reports a real failure instead of degrading to one pixel. Native live/PNG comparisons and remaining high-zoom limits are documented in `docs/performance/preview-density.md`.
+
+- Stabilized analytical text at small sizes and low zoom with MVP/viewport glyph dilation, weighted Slug coverage and overlapping sorted bands. Coverage and gradients follow the same dilated point; native WebGPU/WebGL witnesses cover fractional glyphs and original outlines. Pinned MIT-licensed WGSL snapshots and a function-level TSL map record the exact sources and numerical adaptations.
+
+- Flush the final native saturation/value sample before committing, retire delayed picker callbacks, and reject updates after cancellation or unmount so a rapid release saves the intended color in one undo step.
+
+- Compiled independent source, backdrop and mask sampler bindings with distinct owned textures. This fixes incorrect Multiply colors and partial masks on both Three backends, restores external bindings after preparation and disposes temporary inputs on success, failure and cancellation.
+
+- Kept color and gradient gestures stable across callback refreshes and normal Radix capture release. Gradient thumbs preserve their grab offset and final release position; interrupted drags and abandoned previews restore the original value. Native GPU checks verify one undo entry and exact saved/reopened solid and gradient values.
+
+- Command search uses native inertness during its closing animation without hiding a still-focused input through `aria-hidden`. Its opening animation starts on the first available frame after mounting, keeping initial results and the panel entrance coordinated while focus remains immediate.
+
+- Kept native Enter/Space activation on command-search category and close buttons, including while results are pending. Escape preserves IME composition, and queued selection-dependent commands reject changed targets before touching another layer or the clipboard.
+
+- Command search prioritizes controlled input over interruptible result updates. Retained results report their displayed criteria and stay busy/inert while newer criteria are pending; queued stale clicks and navigation cannot execute them, while immediate Enter resolves the latest enabled match and preserves IME composition.
+
+- Search now supplies its enabled selection before mounting and after every query change, so immediate Enter uses the new result. Opening focuses the input only once without scrolling the page, and the opaque fixed palette contains its own layout, style and paint work.
+
+- Cmd/Ctrl+K search now keeps typing, native keyboard selection and result updates inside a retained palette, retains and sorts only the best 80 matches, and preserves existing command guards. The palette uses one panel entrance and lightweight individual result animations, removes footer instructions, and types real translated effect/settings examples without React updates or idle work while hidden.
+
+- Mobile Layers sheets now use one shared header for the title, live count and existing layer actions, without a duplicate panel heading. Blend selectors stay vertically centered against the opacity slider for empty, single and multiple selections; desktop panels and Motion keyframe controls retain their behavior.
 
 - Rejected colliding keyframe drag candidates before moving their markers, and retired all pending marker/link/tooltip previews when playback or another presentation replaces the timing draft. The last valid preview remains coherent and invalid releases never add history.
 - Allowed the persistent canvas timeline button to dismiss an already pinned panel, returning to the live header without a layout jump or a duplicate expand button.
@@ -142,6 +170,13 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 - Closed property selectors avoid constructing their hidden option trees until focus or opening, retaining selected labels and native closed typeahead. Disabling an open selector closes its menu and cancels the draft; effect-color reset buttons also support keyboard activation.
 - Urgent visible thumbnails can preempt canonical thumbnail preparation immediately before GPU admission, including after asynchronous renderer/source setup. Canonical saving resumes after urgent delivery instead of compiling a full artboard ahead of newly scrolled rows.
 - Layer scrolling updates only its bounded virtual tree instead of rerendering the whole panel and its footer/context controls. Decoded thumbnails remain owned by mounted rows across visibility-margin crossings, avoiding repeated preview requests, object URLs and image loads on small scroll reversals; identity changes, cancellation and unmount still reject stale work and release resources.
+
+
+
+### Changed
+
+- Integrated the latest Motion/video branch with main, preserving the mobile editor, Melt branding, text-shaper preparation, bounded preview costs and contribution policy alongside Canvas timelines, linked gestures, audio and composition export. Fullscreen library dialogs override centered-dialog translation so project and template navigation remains inside the viewport.
+
 
 ## [0.2.0] - 2026-10-29
 

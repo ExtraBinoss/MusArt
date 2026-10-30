@@ -137,3 +137,79 @@
 .dock-customizer-pinned-viewport {
   padding-inline: 12px;
 }
+
+.toolbar-scroll-shell {
+  position: relative;
+  display: flex;
+  flex: 0 1 auto;
+  min-height: 0;
+  width: 32px;
+  max-height: inherit;
+}
+.toolbar-scroll-shell .toolbar-scroll {
+  flex: 1 1 auto;
+  width: 32px;
+  min-height: 0;
+  max-height: inherit;
+}
+.toolbar-scroll-shell .toolbar-contents {
+  width: 32px;
+  min-height: 0;
+  max-height: inherit;
+  padding-block: 0;
+  scrollbar-width: none;
+}
+.toolbar-scroll-shell .toolbar-contents::-webkit-scrollbar {
+  display: none;
+}
+.toolbar-scroll-arrow {
+  position: absolute;
+  z-index: 10;
+  left: 0;
+  right: 0;
+  display: grid;
+  place-items: center;
+  height: 17px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: var(--popover);
+  color: var(--muted-foreground);
+  opacity: 0;
+  pointer-events: none;
+}
+.toolbar-scroll-up {
+  top: 0;
+}
+.toolbar-scroll-down {
+  bottom: 0;
+}
+.toolbar-scroll-shell[data-scroll-up] .toolbar-scroll-up,
+.toolbar-scroll-shell[data-scroll-down] .toolbar-scroll-down {
+  opacity: 1;
+  pointer-events: auto;
+}
+.toolbar-scroll-arrow:hover {
+  color: var(--foreground);
+  background: var(--accent);
+}
+.toolbar-scroll-shell[data-scroll-up] .toolbar-contents {
+  scroll-padding-top: 20px;
+}
+.toolbar-scroll-shell[data-scroll-down] .toolbar-contents {
+  scroll-padding-bottom: 20px;
+}
+@media (max-width: 767px) {
+  .mobile-sheet .toolbar-scroll-shell {
+    width: 100%;
+    max-height: none;
+  }
+  .mobile-sheet .toolbar-scroll-shell .toolbar-scroll,
+  .mobile-sheet .toolbar-scroll-shell .toolbar-contents {
+    width: 100%;
+    max-height: none;
+  }
+  .mobile-sheet .toolbar-scroll-arrow {
+    display: none;
+  }
+}

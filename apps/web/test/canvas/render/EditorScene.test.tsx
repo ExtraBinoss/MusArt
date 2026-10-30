@@ -5,7 +5,13 @@ import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { Canvas } from "@react-three/fiber";
-import { createPage, createProject, EditorEngine, type Composition } from "@musart/core";
+import {
+  createLayer,
+  createPage,
+  createProject,
+  EditorEngine,
+  type Composition,
+} from "@musart/core";
 import {
   DataTexture,
   LinearSRGBColorSpace,
@@ -45,7 +51,9 @@ vi.mock("@react-three/fiber", () => ({
     gpu.frame = callback;
   },
 }));
-vi.mock("@musart/render", () => ({
+vi.mock("@musart/render", async (original) => ({
+  ...(await original<typeof import("@musart/render")>()),
+  gpuTextureLimit: () => 8192,
   GpuCompositor: class {
     constructor() {
       gpu.compositorConstruct();
@@ -138,6 +146,70 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 describe("R3F direct WebGPU scene lifetime", () => {
+  it("keeps preparation tied to this canvas even when a previous canvas presented the same engine", async () => {
+    const input = source();
+    const snapshot = input.engine.getSnapshot();
+    const previous = input.controller.presentation.acquire();
+    const ticket = previous.request(
+      { projectId: snapshot.project.id, revision: snapshot.revision },
+      true,
+    );
+    previous.present(ticket);
+    previous.release();
+    vi.mocked(Canvas).mockImplementation(({ children }) => (
+      <>
+        <canvas
+          ref={(node) => {
+            if (node) (gpu.state.gl as { domElement: HTMLCanvasElement }).domElement = node;
+          }}
+        />
+        {children}
+      </>
+    ));
+    const view = render(<EditorScene controller={input.controller} />);
+    expect(view.container.querySelector(".canvas-loading .melt-mascot")).not.toBeNull();
+    await waitFor(() => expect(gpu.invalidate).toHaveBeenCalled());
+    expect(view.container.querySelector(".canvas-loading .melt-mascot")).not.toBeNull();
+    act(drawn);
+    expect(view.container.querySelector(".canvas-loading .melt-mascot")).toBeNull();
+    expect(view.container.querySelector("canvas")?.dataset.displayInitialized).toBe("true");
+  });
+  it("acknowledges the requested logical font only after its matching display draw", async () => {
+    const text = createLayer("text", { fontFamily: "Inter", fontWeight: 700 });
+    const input = source(createPage({ layers: [text] }));
+    const view = render(<CompositionPlane controller={input.controller} />);
+    await waitFor(() => expect(gpu.invalidate).toHaveBeenCalledOnce());
+    act(drawn);
+    const port = input.controller.fontPresentation;
+    act(() =>
+      input.engine.execute({
+        type: "updateLayers",
+        ids: [text.id],
+        patch: { fontFamily: "Arimo" },
+      }),
+    );
+    const ticket = port.request({
+      fontId: "arimo",
+      layerId: text.id,
+      family: "Arimo",
+      weight: 700,
+    });
+    await waitFor(() => expect(gpu.invalidate).toHaveBeenCalledTimes(2));
+    expect(port.read()).toMatchObject({ ticket, status: "pending" });
+    act(drawn);
+    expect(port.read()).toMatchObject({ ticket, status: "ready" });
+    const next = port.request({ layerId: text.id, family: "Tinos", weight: 700 });
+    act(drawn);
+    expect(port.read()).toMatchObject({ ticket: next, status: "pending" });
+    act(() => input.controller.setGesture([{ layerId: text.id, patch: { fontFamily: "Tinos" } }]));
+    await waitFor(() => expect(gpu.invalidate).toHaveBeenCalledTimes(3));
+    expect(port.read().status).toBe("pending");
+    act(drawn);
+    expect(port.read().status).toBe("ready");
+    view.unmount();
+    expect(port.read()).toMatchObject({ available: false, status: "unavailable" });
+    port.cancel(next);
+  });
   it("awaits WebGPURenderer with an explicit WebGL retry on initialization failure", async () => {
     const target = canvas();
     const renderer = await makeRenderer(target);

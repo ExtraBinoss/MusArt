@@ -7,6 +7,7 @@ import {
   type CanonicalOrigin,
 } from "../../state/session/canonical-presentation";
 import { createMotionTransport, type MotionTransport } from "../../services/motion/transport";
+import { getFontPresentation } from "../../state/session/font-presentation";
 
 export interface SceneFrame {
   page: Composition;
@@ -39,6 +40,7 @@ function sameMotionPose(before: MotionFramePlan | null, after: MotionFramePlan |
 /** Stable imperative port shared by the GPU adapter and geometry overlays. */
 export class SceneController {
   readonly presentation: ReturnType<typeof getCanonicalPresentation>;
+  readonly fontPresentation: ReturnType<typeof getFontPresentation>;
   private readonly listeners = new Set<() => void>();
   private stopEngine: (() => void) | null = null;
   private stopPlayback: (() => void) | null = null;
@@ -66,6 +68,7 @@ export class SceneController {
     private readonly preview: PreviewSource,
   ) {
     this.presentation = getCanonicalPresentation(engine);
+    this.fontPresentation = getFontPresentation(engine);
     this.playback = createPlaybackSource(engine);
     this.motion = createMotionTransport(engine);
   }

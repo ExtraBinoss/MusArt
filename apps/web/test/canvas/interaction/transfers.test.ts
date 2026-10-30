@@ -41,7 +41,7 @@ function fixture() {
     readPage: () => presented,
     readWorkspace: () => arrangeArtboards(engine.getSnapshot().project.pages),
     readView: () => ({ x: 0, y: 0, zoom: 1 }),
-    viewport: refs,
+    readViewport: () => refs.current,
     onFiles,
     onActive,
   });

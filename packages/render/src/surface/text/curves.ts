@@ -1,4 +1,4 @@
-import type { PathCommand } from "opentype.js";
+import type { PathCommand } from "./outlines";
 
 export type Point = readonly [number, number];
 export interface Quadratic {

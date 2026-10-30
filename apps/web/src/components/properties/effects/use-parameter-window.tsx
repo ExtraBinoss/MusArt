@@ -1,4 +1,5 @@
 import {
+  useContext,
   useLayoutEffect,
   useRef,
   useState,
@@ -6,6 +7,8 @@ import {
   type KeyboardEvent,
   type RefObject,
 } from "react";
+
+import { MobileControlsContext } from "../../workspace/mobile/use-mobile";
 
 const ROW_HEIGHT = 36;
 const FIRST_ROWS = 14;
@@ -25,11 +28,13 @@ export function useParameterWindow(
   count: number,
   enabled: boolean,
 ) {
+  const mobile = useContext(MobileControlsContext);
   const [window, setWindow] = useState({ owner, first: 0, last: FIRST_ROWS });
   const [active, setActive] = useState({ owner, index: -1 });
   const pending = useRef<{ owner: string; index: number; backwards: boolean } | null>(null);
   if (window.owner !== owner) setWindow({ owner, first: 0, last: FIRST_ROWS });
-  const virtual = enabled && count > FIRST_ROWS;
+  // Mobile numeric sliders have natural, variable row heights; the finite parameter catalog stays in flow.
+  const virtual = enabled && !mobile && count > FIRST_ROWS;
   const first =
     virtual && window.owner === owner ? Math.min(Math.max(0, count - 1), window.first) : 0;
   const last = virtual ? Math.min(count, window.owner === owner ? window.last : FIRST_ROWS) : count;

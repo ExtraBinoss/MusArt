@@ -1,0 +1,30 @@
+Maskot — provenance and licenses
+
+Maskot's React port and original additions by ExtraBinoss are released under
+MIT. See LICENSE.md. Third-party code, fonts and assets retain their own
+copyrights and licenses; the project's MIT license does not replace them.
+
+The mascot workshop was ported from Beam:
+https://github.com/BeamRecorder/Beam
+The SVG engine, measured radial profiles, shapes, expressions and original
+regression tests originate in Bloub by Jérémy Perret (MIT):
+https://github.com/jeremy-prt/bloub
+The original MIT license and notices are preserved in src/mascot/engine/.
+Maskot's React port and additions are MIT, as authorized by ExtraBinoss.
+The original Beam project retains its own license.
+
+Grok bot is the original character idea and visual inspiration.
+Maskot is an independent project, unaffiliated with xAI.
+
+Thinking Orbs geometry and presets by Jakub Antalik retain their MIT license.
+See src/mascot/thinking-orbs/NOTICE.txt and public/licenses/Thinking-Orbs-MIT.txt.
+
+Mediabunny 1.61.6 is an unmodified MPL-2.0 dependency used for video export.
+It retains MPL-2.0; Maskot's MIT license does not relicense this dependency.
+Source: https://github.com/Vanilagy/mediabunny/tree/v1.61.6
+License: public/licenses/Mediabunny-MPL-2.0.txt
+
+Complete application credits and bundled license texts:
+public/licenses/NOTICE.txt
+
+Maskot source: https://github.com/ExtraBinoss/Maskot

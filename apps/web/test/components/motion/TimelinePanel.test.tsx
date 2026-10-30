@@ -163,6 +163,15 @@ it("keeps mounted rows bounded and provides functional hierarchy, zoom and resiz
 it("wires visible track gestures to the real core and keeps pointer moves out of React/history", () => {
   const d = setup();
   d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const trackId = d.engine
+    .getSnapshot()
+    .project.pages[0]!.motion!.tracks.find((track) => track.layerId === d.rectangle.id)!.id;
+  d.engine.execute({
+    type: "setMotionTrackRange",
+    trackId,
+    start: { value: 0, rate: 1 },
+    end: { value: 3, rate: 2 },
+  });
   const runtime = makeTransport(d.engine.getSnapshot().project.pages[0]!),
     commits = vi.fn();
   d.mount(
@@ -468,6 +477,15 @@ it("selects property keys collectively and deletes only those keys in one transa
 it("cancels an in-progress track gesture immediately when the dock becomes inactive", () => {
   const d = setup();
   d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const trackId = d.engine
+    .getSnapshot()
+    .project.pages[0]!.motion!.tracks.find((track) => track.layerId === d.rectangle.id)!.id;
+  d.engine.execute({
+    type: "setMotionTrackRange",
+    trackId,
+    start: { value: 0, rate: 1 },
+    end: { value: 3, rate: 2 },
+  });
   const runtime = makeTransport(d.engine.getSnapshot().project.pages[0]!);
   const view = d.mount(
     <TimelinePanel

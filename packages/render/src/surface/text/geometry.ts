@@ -38,19 +38,13 @@ function glyphAttributes(
     bounds: number[] = [],
     bands: number[] = [],
     ranges: number[] = [];
-  const scale = layer.fontSize / unitsPerEm,
-    padding = (4 * unitsPerEm) / layer.fontSize;
+  const scale = layer.fontSize / unitsPerEm;
   for (const { glyph, x, baseline } of layout) {
     const record = atlas.glyphs.get(glyph.index)!;
     const [gx, gy, width, height] = record.bounds;
     if (width <= 0 || height <= 0) continue;
-    positions.push(
-      x + (gx - padding) * scale,
-      baseline + (gy - padding) * scale,
-      (width + padding * 2) * scale,
-      (height + padding * 2) * scale,
-    );
-    bounds.push(gx - padding, gy - padding, width + padding * 2, height + padding * 2);
+    positions.push(x + gx * scale, baseline + gy * scale, width * scale, height * scale);
+    bounds.push(gx, gy, width, height);
     bands.push(record.header, record.bands);
     ranges.push(gx, gy, width, height);
   }

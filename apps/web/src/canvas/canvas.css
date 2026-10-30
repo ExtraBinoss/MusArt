@@ -148,7 +148,7 @@
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
-  background: #2563eb;
+  background: var(--primary);
   color: white;
   font-size: 10px;
   line-height: 18px;
@@ -157,8 +157,8 @@
 }
 .canvas-marquee {
   position: absolute;
-  background: #2563eb14;
-  border: 1px solid #2563eb;
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  border: 1px solid var(--primary);
   pointer-events: none;
 }
 .canvas-guide {
@@ -216,4 +216,29 @@
 .editor-gpu-scene {
   position: absolute;
   inset: 0;
+}
+
+.editor-canvas .canvas-controls {
+  top: calc(var(--workspace-gap, 18px) + var(--ruler-inset, 0px));
+  right: var(--workspace-gap, 18px);
+  height: var(--floating-size, 42px);
+  padding: var(--floating-padding, 4px);
+  transition: top 180ms ease;
+}
+.editor-canvas .canvas-controls .canvas-zoom {
+  width: 61px;
+  min-width: 61px;
+}
+.editor-canvas .canvas-timeline-toggle {
+  width: var(--floating-size, 42px);
+  height: var(--floating-size, 42px);
+  right: var(--workspace-gap, 18px);
+  bottom: var(--workspace-gap, 18px);
+  padding: var(--floating-padding, 4px);
+}
+@media (max-width: 767px) {
+  .editor-canvas .canvas-controls {
+    top: auto;
+    bottom: 12px;
+  }
 }

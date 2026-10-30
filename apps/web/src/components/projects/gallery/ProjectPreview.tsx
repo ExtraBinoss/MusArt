@@ -7,6 +7,7 @@ import type {
   ProjectSummary,
   ProjectThumbnailLease,
 } from "../../../state/contracts";
+import { ProjectMotionPreview } from "./ProjectMotionPreview";
 import { IconButton } from "../../shared/IconButton";
 import "../dashboard/messages";
 
@@ -48,7 +49,10 @@ export function ProjectPreview({
     key: string;
   } | null>(null);
   const pages = project.pages;
-  const currentIndex = index < pages.length ? index : 0;
+  // A Motion project starts on a real Motion artboard; purely Static projects retain their carousel.
+  const motionIndex = pages.findIndex((item) => item.mode === "motion");
+  const hasMotion = motionIndex >= 0;
+  const currentIndex = hasMotion ? motionIndex : index < pages.length ? index : 0;
   const page = pages[currentIndex];
   const next = pages[(currentIndex + 1) % pages.length];
   const key = `${project.id}:${page?.id ?? ""}:${next?.id ?? ""}:${revision}`;
@@ -113,14 +117,15 @@ export function ProjectPreview({
       !visible ||
       !documentVisible ||
       reduced ||
-      pages.length < 2
+      pages.length < 2 ||
+      hasMotion
     )
       return;
     const timer = setInterval(() => {
       if (ready.current) setPhase((current) => (current === "idle" ? "forward" : current));
     }, HOVER_PREVIEW_INTERVAL);
     return () => clearInterval(timer);
-  }, [disabled, hovered, focused, visible, documentVisible, reduced, pages.length]);
+  }, [disabled, hovered, focused, visible, documentVisible, reduced, pages.length, hasMotion]);
   const items = visible && resource?.projectId === project.id ? resource.lease?.items : undefined;
   const image =
     items?.find((item) => item.pageId === page?.id)?.url ??
@@ -173,19 +178,37 @@ export function ProjectPreview({
           }}
         >
           <div className="project-preview-slide">
-            {image ? (
-              <img src={image} alt={page?.name ?? project.name} draggable={false} />
-            ) : (
-              <span className="preview-pending">
-                <LoaderCircle size={19} className={resource?.failed ? "" : "animate-spin"} />
-                <span>
-                  {t(
-                    resource?.failed && resource.key === key
-                      ? "previewUnavailable"
-                      : "previewPreparing",
-                  )}
+            {page?.mode === "motion" && services.loadProjectPreview ? (
+              <ProjectMotionPreview
+                key={`${project.id}:${page.id}:${project.updatedAt}`}
+                projectId={project.id}
+                pageId={page.id}
+                services={services}
+                poster={image}
+                disabled={disabled || !visible}
+              >
+                <span className="preview-pending">
+                  <LoaderCircle size={19} />
+                  <span>{t("previewPreparing")}</span>
                 </span>
-              </span>
+              </ProjectMotionPreview>
+            ) : (
+              <>
+                {image ? (
+                  <img src={image} alt={page?.name ?? project.name} draggable={false} />
+                ) : (
+                  <span className="preview-pending">
+                    <LoaderCircle size={19} className={resource?.failed ? "" : "animate-spin"} />
+                    <span>
+                      {t(
+                        resource?.failed && resource.key === key
+                          ? "previewUnavailable"
+                          : "previewPreparing",
+                      )}
+                    </span>
+                  </span>
+                )}
+              </>
             )}
           </div>
           <div className="project-preview-slide" aria-hidden>

@@ -27,7 +27,6 @@ import "./body.css";
 
 const EMPTY_KEYS: ReadonlySet<string> = new Set();
 const BODY_TOP = 32;
-const GUTTER = 244;
 export interface CanvasTimelineBodyProps {
   viewport: RefObject<HTMLDivElement | null>;
   rows: readonly TimelineRow[];
@@ -37,6 +36,7 @@ export interface CanvasTimelineBodyProps {
   pixelsPerSecond: number;
   duration: number;
   rowHeight: number;
+  gutter?: number;
   engine: EnginePort;
   compositionId: string;
   transport: TimelineTransport;
@@ -68,7 +68,7 @@ export const CanvasTimelineBody = memo(function CanvasTimelineBody(props: Canvas
       scale: props.pixelsPerSecond,
       duration: props.duration,
       rowHeight: props.rowHeight,
-      gutter: GUTTER,
+      gutter: props.gutter ?? 244,
     }),
     [
       props.rows,
@@ -79,6 +79,7 @@ export const CanvasTimelineBody = memo(function CanvasTimelineBody(props: Canvas
       props.pixelsPerSecond,
       props.duration,
       props.rowHeight,
+      props.gutter,
     ],
   );
   const [binding] = useState(() => createTimelineCanvasHost(viewport, root, model));
@@ -119,7 +120,7 @@ export const CanvasTimelineBody = memo(function CanvasTimelineBody(props: Canvas
           scroll.scrollTop,
           Math.max(0, scroll.clientHeight - BODY_TOP),
           scroll.scrollLeft,
-          Math.max(0, scroll.clientWidth - GUTTER),
+          Math.max(0, scroll.clientWidth - binding.host.readModel().gutter),
         );
       });
     };

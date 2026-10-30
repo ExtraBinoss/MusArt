@@ -71,7 +71,8 @@ test("supports F2, Escape, empty names, blur and a failed rename without losing 
       onClearHistory={() => undefined}
     />,
   );
-  expect(screen.getByText("Ouvert")).toBeVisible();
+  expect(screen.getByRole("article", { name: "Study" })).toHaveAttribute("aria-current", "true");
+  expect(screen.getByText("Statique")).toBeVisible();
   fireEvent.keyDown(screen.getByRole("button", { name: "Study" }), { key: "F2" });
   fireEvent.change(screen.getByLabelText("Renommer le projet"), { target: { value: "Cancelled" } });
   fireEvent.keyDown(screen.getByLabelText("Renommer le projet"), { key: "Escape" });
@@ -86,4 +87,88 @@ test("supports F2, Escape, empty names, blur and a failed rename without losing 
   });
   expect(screen.getByLabelText("Renommer le projet")).not.toBeDisabled();
   expect(rename).toHaveBeenCalledWith("Retry");
+});
+
+test("matches template captions with name, resolution and the actual mode without date or page-count rows", () => {
+  const d = setup();
+  const props = {
+    services: d.services,
+    active: false,
+    onOpen: vi.fn(),
+    onRename: vi.fn(),
+    onDuplicate: vi.fn(),
+    onDelete: vi.fn(),
+    onInsights: vi.fn(),
+    onClearHistory: vi.fn(),
+  };
+  const project = projectSummary();
+  const view = d.mount(<ProjectCard {...props} project={project} />);
+  expect(screen.getByRole("button", { name: "Study" })).toBeVisible();
+  expect(screen.getByText("320 × 220 px")).toBeVisible();
+  expect(screen.getByText("Statique").closest("[data-mode]")).toHaveAttribute(
+    "data-mode",
+    "static",
+  );
+  expect(document.querySelector("time,.project-card-details,.active-project-badge")).toBeNull();
+  view.rerender(
+    <ProjectCard
+      {...props}
+      project={{
+        ...project,
+        mode: "motion",
+        pages: project.pages.map((page) => ({ ...page, mode: "motion" })),
+      }}
+    />,
+  );
+  const mode = screen.getByText("Motion").closest("[data-mode]");
+  expect(mode).toHaveAttribute("data-mode", "motion");
+  expect(mode?.querySelector("svg")).toHaveAttribute("viewBox", "0 0 24 24");
+  view.rerender(
+    <ProjectCard
+      {...props}
+      project={{
+        ...project,
+        pages: project.pages.map((page, index) => ({
+          ...page,
+          mode: index === 1 ? "motion" : "static",
+        })),
+      }}
+    />,
+  );
+  expect(screen.getByText("Motion")).toBeVisible();
+});
+
+test("caption resolution follows the displayed Motion artboard and falls back to Static page or summary dimensions", () => {
+  const d = setup();
+  const props = {
+    services: d.services,
+    active: false,
+    onOpen: vi.fn(),
+    onRename: vi.fn(),
+    onDuplicate: vi.fn(),
+    onDelete: vi.fn(),
+    onInsights: vi.fn(),
+    onClearHistory: vi.fn(),
+  };
+  const project = projectSummary();
+  const mixed = {
+    ...project,
+    pages: project.pages.map((page, index) =>
+      index === 1
+        ? { ...page, mode: "motion" as const, width: 1920, height: 1080 }
+        : { ...page, mode: "static" as const },
+    ),
+  };
+  const view = d.mount(<ProjectCard {...props} project={mixed} />);
+  expect(screen.getByText("1920 × 1080 px")).toBeVisible();
+  expect(screen.queryByText("320 × 220 px")).toBeNull();
+  view.rerender(
+    <ProjectCard
+      {...props}
+      project={{ ...project, pages: [{ ...project.pages[0]!, width: 600, height: 800 }] }}
+    />,
+  );
+  expect(screen.getByText("600 × 800 px")).toBeVisible();
+  view.rerender(<ProjectCard {...props} project={{ ...project, pages: [] }} />);
+  expect(screen.getByText("320 × 220 px")).toBeVisible();
 });

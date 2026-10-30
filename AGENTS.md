@@ -1,4 +1,4 @@
-# MusArt contribution rules
+# Melt contribution rules
 
 Direct user instructions take precedence. Read the relevant architecture contracts and documentation before changing a subsystem.
 
@@ -18,7 +18,7 @@ Direct user instructions take precedence. Read the relevant architecture contrac
 - Render on demand, bound caches and queues, and dispose resources, workers, listeners, timers and object URLs explicitly.
 - Continuous property previews use imperative subscriptions. They must not rerender App, Inspector, CanvasArea, EditorCanvas or EditorScene. Commit once per completed gesture, with one undo entry; cancellation restores the original value.
 - Wheel/trackpad pans both axes. Ctrl/Cmd+wheel zooms around the pointer. Keep 100% reset, fit and recenter controls available.
-- Keep UI text in English/French resources and documentation in English. Use the supplied MusArt brand assets without recoloring them.
+- Keep UI text in English/French resources and documentation in English. Use the shared `apps/web/src/ui/brand` configuration, theme tokens and SVG mascot; preserve upstream notices and legacy portable-format and persistence identifiers.
 
 ## Persistence and concurrency
 
@@ -27,13 +27,22 @@ Direct user instructions take precedence. Read the relevant architecture contrac
 - Keep background GPU work out of active gestures. Use durable IDs at persistence boundaries; a session-local allocator cannot identify unopened records.
 - Validate imported data and report real failures. Never simulate successful saving, rendering or exporting.
 
+## Delegation
+
+- When delegation is requested, assign independent implementation tasks with a concrete result, owned files and relevant regression checks. The coordinator implements remaining work while workers code.
+- Keep one writer per file at a time. Agree shared interfaces once; hand off ownership explicitly before another agent edits the same files.
+- Prefer a fresh, bounded context for independent tasks (`fork_turns: "none"`), with the applicable contribution rules, requirements and paths in the brief. Reuse an agent only for closely related follow-up work; avoid carrying an unrelated conversation history into a small fix.
+- Normally use one assignment and one completion handoff per task. Send intermediate messages only for blockers, interface/ownership changes or new requirements. Do not reactivate agents for acknowledgments, status updates or repeated reviews.
+- Name one validation owner per batch. Workers prepare meaningful regressions and report any checks already run; the owner runs the integrated focused checks once. Do not duplicate shared tests, static checks, builds or browser runs across agents.
+- Route new requirements only to affected owners. Completion handoffs state the result, changed paths, checks actually run and remaining blockers concisely. Finish after relevant checks pass; additional audits require a concrete concern or user request.
+
 ## Verification and iteration
 
 - Default workflow: implement the feature, run its focused code tests, then finish. Add a focused real-browser check when rendering or native interaction changes. Benchmark only performance-sensitive changes or when requested.
 - Run explicit test paths or related tests during development; use watch mode for repeated edits. Do not run repository-wide coverage, every browser scenario, GPU/storage load suites or repeated builds for each feature or small fix.
-- When local coverage helps, use `bun run test:coverage:changed -- <source-paths>` (or omit paths to select Git changes). It runs mirrored feature tests and instruments only selected sources, writing a separate partial report. Use `test:coverage:related` when dependent consumers also need verification; shared barrel imports can broaden that selection. Never present partial coverage as repository-wide coverage.
+- When local coverage helps, use `bun run test:coverage:changed -- <source-paths>` (or omit paths to select Git changes). It runs mirrored tests when all selected sources have them, otherwise related tests, and instruments only selected sources in a separate partial report. Use `test:coverage:related` when dependent consumers also need verification; shared barrel imports can broaden that selection. Never present partial coverage as repository-wide coverage.
 - After a passing check, rerun only checks affected by subsequent changes. Stop an unsuitable test experiment once its failure is understood; do not keep collecting redundant failures. Investigate runner/setup overhead before accepting multi-minute focused tests.
-- No tests or test directories inside `src/`. Every executable source has an exact mirrored test: `src/layers/tree.ts` → `test/layers/tree.test.ts`. Declaration-only files are exempt.
+- Keep tests outside `src/`, organized by behavior in the relevant `test/` tree. Add or update focused regressions for changed behavior; one integration test may cover several source files. Exact per-file mirrors are optional. Do not create mechanical tests for wrappers, re-exports or presentation-only edits; use existing behavior tests and relevant static or visual checks.
 - Maximum 600 lines per code, style, script and test file. Split by responsibility.
 - Full CI/release coverage includes every executable source and requires at least 85% each for statements, branches, functions and lines, with separate core thresholds. Do not hide sources, add coverage ignores or weaken assertions to speed up a run. Coverage is not required for each local iteration.
 - Require zero violations from `bun run check:rules` before committing. Run the coverage-aware rules check whenever full coverage is run.

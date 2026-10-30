@@ -83,6 +83,110 @@ test("search deletion preserves the captured attachment while a dialog/task clos
   expect(d.engine.getSnapshot().project.pages[0]!.layers).toHaveLength(3);
   expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.effects).toHaveLength(0);
 });
+const selectionCases: { name: string; target: SearchItem["target"] }[] = [
+  ...(
+    ["copy", "duplicate", "group", "ungroup", "deselect", "toggleVisibility", "toggleLock"] as const
+  ).map((action) => ({ name: action, target: { kind: "action" as const, action } })),
+  { name: "effect", target: { kind: "effect", effect: "dither" } },
+];
+function selectedContext(target: SearchItem["target"]) {
+  const d = context();
+  d.engine.select([d.rectangle.id, d.text.id]);
+  if (target.kind === "action" && target.action === "ungroup")
+    d.engine.execute({ type: "groupLayers", ids: d.engine.getSnapshot().selection });
+  return d;
+}
+test.each(selectionCases)(
+  "queued $name rejects a different selection without touching it",
+  ({ target }) => {
+    const d = selectedContext(target),
+      controller = createClipboardController(d.engine),
+      copy = vi.spyOn(controller, "copy").mockResolvedValue();
+    try {
+      const queued = captureSearchItem(item(target), d.context);
+      d.engine.select([d.image.id]);
+      const before = d.engine.getSnapshot();
+      expect(() => queued()).toThrow("keybindings:stale");
+      expect(d.engine.getSnapshot()).toBe(before);
+      expect(copy).not.toHaveBeenCalled();
+    } finally {
+      copy.mockRestore();
+    }
+  },
+);
+test.each(selectionCases)(
+  "queued $name still executes for its captured selection",
+  async ({ target, name }) => {
+    const d = selectedContext(target),
+      controller = createClipboardController(d.engine),
+      copy = vi.spyOn(controller, "copy").mockResolvedValue(),
+      before = d.engine.getSnapshot();
+    try {
+      await captureSearchItem(item(target), d.context)();
+      const after = d.engine.getSnapshot(),
+        layers = after.project.pages[0]!.layers;
+      if (name === "copy") {
+        expect(copy).toHaveBeenCalledExactlyOnceWith();
+        expect(after).toBe(before);
+      } else if (name === "deselect") {
+        expect(after.selection).toEqual([]);
+        expect(after.project).toBe(before.project);
+        expect(after.revision).toBe(before.revision);
+      } else {
+        if (name === "duplicate") expect(layers).toHaveLength(5);
+        if (name === "group") expect(layers.some((layer) => layer.kind === "group")).toBe(true);
+        if (name === "ungroup") expect(layers.some((layer) => layer.kind === "group")).toBe(false);
+        if (name === "toggleVisibility")
+          expect(layers.slice(0, 2).every((layer) => !layer.visible)).toBe(true);
+        if (name === "toggleLock")
+          expect(layers.slice(0, 2).every((layer) => layer.locked)).toBe(true);
+        if (name === "effect")
+          expect(layers.slice(0, 2).every((layer) => layer.effects[0]?.type === "dither")).toBe(
+            true,
+          );
+        expect(after.revision).toBe(before.revision + 1);
+        d.engine.undo();
+        expect(d.engine.getSnapshot().project).toEqual(before.project);
+        d.engine.redo();
+        expect(d.engine.getSnapshot().project).toEqual(after.project);
+      }
+    } finally {
+      copy.mockRestore();
+    }
+  },
+);
+test("queued selection commands accept reordered identical targets and leave unrelated commands usable", async () => {
+  const d = context();
+  d.engine.select([d.rectangle.id, d.text.id]);
+  const duplicate = captureSearchItem(item({ kind: "action", action: "duplicate" }), d.context),
+    settings = captureSearchItem(item({ kind: "action", action: "settings" }), d.context);
+  d.engine.select([d.text.id, d.rectangle.id]);
+  await duplicate();
+  expect(d.engine.getSnapshot().project.pages[0]!.layers).toHaveLength(5);
+  d.engine.select([d.image.id]);
+  await settings();
+  expect(d.context.onProjects).toHaveBeenCalledExactlyOnceWith("settings");
+});
+test.each(["document", "page", "project"] as const)(
+  "queued selected commands reject a changed %s origin",
+  (change) => {
+    const d = context(),
+      page = createPage();
+    if (change === "page") {
+      d.engine.execute({ type: "addPage", page });
+      d.engine.setPage(d.page.id);
+    }
+    d.engine.select([d.rectangle.id]);
+    const queued = captureSearchItem(item({ kind: "effect", effect: "dither" }), d.context);
+    if (change === "document")
+      d.engine.execute({ type: "updateLayers", ids: [d.rectangle.id], patch: { name: "Changed" } });
+    else if (change === "page") d.engine.setPage(page.id);
+    else d.engine.load(createProject());
+    const before = d.engine.getSnapshot();
+    expect(() => queued()).toThrow("keybindings:stale");
+    expect(d.engine.getSnapshot()).toBe(before);
+  },
+);
 test("routes tools, dialogs, imports, saving, theme/language and viewport requests through shared ports", async () => {
   const { context: ctx, actions, services, engine } = context();
   for (const name of [

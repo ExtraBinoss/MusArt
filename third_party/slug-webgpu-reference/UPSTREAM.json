@@ -1,0 +1,29 @@
+{
+  "repository": "https://github.com/diffusionstudio/slug-webgpu",
+  "revision": "12d8bdf333263c1340a7ca5de0c36f7f90721be0",
+  "license": "MIT",
+  "originalAlgorithm": {
+    "repository": "https://github.com/EricLengyel/Slug",
+    "revision": "be3c13eb7d63f9e8aa5c583e42d92c374cb91d98"
+  },
+  "files": [
+    {
+      "path": "SlugVertexShader.wgsl",
+      "upstreamPath": "src/SlugVertexShader.wgsl",
+      "sha256": "5836e953553cb54ee91b358e4b050ec238f45b4426cd979f4a9e36d48cc99312",
+      "gitBlob": "d5802230a8c4dce3447411900428770d3f6eb41f"
+    },
+    {
+      "path": "SlugPixelShader.wgsl",
+      "upstreamPath": "src/SlugPixelShader.wgsl",
+      "sha256": "87d9b24832d7f46cfd014aeddb8a2a9fea4f774673a9a167448faa244bfd2ac5",
+      "gitBlob": "07802640266ac18e956fa8124555a7dc82a80a60"
+    },
+    {
+      "path": "LICENSE",
+      "upstreamPath": "LICENSE",
+      "sha256": "652899d514a8396b0f758776710e4cd0e16f0e9800b51c1fbf96f71b25273dec",
+      "gitBlob": "fdda0b451f453abb16460c48f78e4a95c8a1aa15"
+    }
+  ]
+}

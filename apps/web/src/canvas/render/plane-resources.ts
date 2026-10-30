@@ -1,5 +1,6 @@
 import {
   GpuCompositor,
+  gpuTextureLimit,
   type FontResolver,
   type MediaSourceResolver,
   type FrameTexture,
@@ -27,6 +28,10 @@ import type {
   PresentationPublisher,
   PresentationTicket,
 } from "../../state/session/canonical-presentation";
+import type {
+  FontPresentationPublisher,
+  FontRenderTicket,
+} from "../../state/session/font-presentation";
 
 interface PresentationInput {
   origin: CanonicalOrigin;
@@ -43,6 +48,7 @@ interface PreviewRequest {
   origin?: CanonicalOrigin;
   mediaResolver?: MediaSourceResolver;
   playback: boolean;
+  fontTicket?: FontRenderTicket;
 }
 const canvasOwners = new WeakMap<HTMLCanvasElement, PlaneResources>();
 /** Owns one display plane and a latest-only queue. GPU allocation begins at activation. */
@@ -83,6 +89,7 @@ export class PlaneResources {
   private onError?: (message: string, details?: string) => void;
   private onScale?: (scale: number, width: number, height: number) => void;
   private density = 1;
+  private readonly maxTextureDimension: number;
   private presentationId: string | null = null;
   private presentationProjectId: string | undefined;
   private current: {
@@ -95,6 +102,7 @@ export class PlaneResources {
   private deviceLost = false;
   private stopDeviceEvents: (() => void) | null = null;
   private presenter: PresentationPublisher | undefined;
+  private fontPresenter: FontPresentationPublisher | undefined;
   private preparedTicket: PresentationTicket | undefined;
   private presentationScene: Scene | null = null;
   private stopSceneEvents: (() => void) | null = null;
@@ -105,6 +113,8 @@ export class PlaneResources {
     private readonly mediaResolver?: MediaSourceResolver,
     private readonly mediaResolverFor?: (projectId: string) => MediaSourceResolver,
   ) {
+    this.maxTextureDimension = gpuTextureLimit(renderer);
+    renderer.domElement.dataset.gpuTextureLimit = String(this.maxTextureDimension);
     this.placeholder.needsUpdate = true;
     this.sample = texture(this.placeholder, uv().flipY());
     this.material.fragmentNode = this.sample;
@@ -117,6 +127,7 @@ export class PlaneResources {
     onError?: (message: string, details?: string) => void,
     onScale?: (scale: number, width: number, height: number) => void,
     presenter?: PresentationPublisher,
+    fontPresenter?: FontPresentationPublisher,
   ): () => void {
     if (this.disposed) throw new Error("Aperçu GPU déjà libéré");
     this.users++;
@@ -127,6 +138,7 @@ export class PlaneResources {
     this.onError = onError;
     this.onScale = onScale;
     this.presenter = presenter;
+    this.fontPresenter = fontPresenter;
     this.stopDeviceEvents ??= this.observeDevice();
     if (this.presentationScene !== scene) {
       this.stopSceneEvents?.();
@@ -188,12 +200,14 @@ export class PlaneResources {
       playback,
     };
     if (this.latest) this.coalesced++;
+    const fontTicket = presentation && this.fontPresenter?.capture(page, presentation.origin);
     this.latest = {
       page,
       assets,
       revision: ++this.revision,
-      scale: previewScale(page, this.density),
+      scale: previewScale(page, this.density, this.maxTextureDimension, assets),
       playback,
+      ...(fontTicket ? { fontTicket } : {}),
       ...(presentation ? { origin: presentation.origin } : {}),
       mediaResolver:
         presentation && this.mediaResolverFor
@@ -249,9 +263,15 @@ export class PlaneResources {
   setDensity(density: number): void {
     if (this.disposed || !Number.isFinite(density) || density <= 0 || density === this.density)
       return;
-    const before = this.current ? previewScale(this.current.page, this.density) : 1;
+    const before = this.current
+      ? previewScale(this.current.page, this.density, this.maxTextureDimension, this.current.assets)
+      : 1;
     this.density = density;
-    if (this.current && before !== previewScale(this.current.page, density))
+    if (
+      this.current &&
+      before !==
+        previewScale(this.current.page, density, this.maxTextureDimension, this.current.assets)
+    )
       this.submit(
         this.current.page,
         this.current.assets,
@@ -307,7 +327,10 @@ export class PlaneResources {
       if (!this.canPresent(request)) return;
       this.preparedFrame(request, result);
     } catch (error) {
-      if (this.canPresent(request) && !abort.signal.aborted) this.report(error);
+      if (this.canPresent(request) && !abort.signal.aborted) {
+        if (request.fontTicket) this.fontPresenter?.fail(request.fontTicket, error);
+        this.report(error);
+      }
     } finally {
       if (this.activeAbort === abort) this.activeAbort = null;
     }
@@ -379,6 +402,8 @@ export class PlaneResources {
       element.style.visibility = "visible";
       syncArtboardBackdrops(element.closest(".editor-canvas"));
       element.dataset.renderedRevision = String(this.preparedRevision);
+      if (this.preparedRequest.fontTicket)
+        this.fontPresenter?.present(this.preparedRequest.fontTicket);
       if (this.preparedRequest.motionFrame)
         element.dataset.presentedMotionTime = JSON.stringify(this.preparedRequest.motionFrame.time);
       else delete element.dataset.presentedMotionTime;
@@ -428,6 +453,7 @@ export class PlaneResources {
       } finally {
         if (!this.disposed && !this.deviceLost) {
           this.deviceLost = true;
+          this.fontPresenter?.unavailable();
           this.activeAbort?.abort();
           this.latest = null;
           if (this.scheduled) cancelAnimationFrame(this.scheduled);
@@ -455,6 +481,8 @@ export class PlaneResources {
     this.stopSceneEvents?.();
     this.stopSceneEvents = null;
     this.presenter = undefined;
+    this.fontPresenter?.release();
+    this.fontPresenter = undefined;
     this.preparedTicket = undefined;
     this.latest = null;
     this.current = null;

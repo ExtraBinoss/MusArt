@@ -11,17 +11,21 @@ const defaults = {
 /** Imperative hydration never remounts the canvas and never becomes a saved user resize. */
 export function ProjectPanelGroup({
   preference,
+  enabled = true,
   ...props
 }: GroupProps & {
   preference: keyof typeof defaults;
+  /** Mobile has one canvas panel; keep the desktop preference without applying or saving it. */
+  enabled?: boolean;
 }) {
   const controller = useProjectPreferences();
   const layout = useProjectPreference(preference);
   const group = useRef<GroupImperativeHandle>(null);
   useLayoutEffect(() => {
-    group.current?.setLayout(layout ?? defaults[preference]);
-  }, [controller, layout, preference]);
+    group.current?.setLayout(enabled ? (layout ?? defaults[preference]) : { workspace: 100 });
+  }, [controller, layout, preference, enabled]);
   function protect(event: PointerEvent<HTMLDivElement> | KeyboardEvent<HTMLDivElement>) {
+    if (!enabled) return;
     const target = event.target as HTMLElement;
     const handle = target.closest("[data-slot=resizable-handle]");
     if (handle?.closest("[data-slot=resizable-panel-group]") === event.currentTarget)
@@ -31,11 +35,11 @@ export function ProjectPanelGroup({
     <ResizablePanelGroup
       {...props}
       groupRef={group}
-      defaultLayout={defaults[preference]}
+      defaultLayout={enabled ? defaults[preference] : { workspace: 100 }}
       onPointerDownCapture={protect}
       onKeyDownCapture={protect}
       onLayoutChanged={(next, meta) => {
-        if (!meta.isUserInteraction) return;
+        if (!enabled || !meta.isUserInteraction) return;
         const requested = meta.requestedLayout ?? next;
         if (preference === "workspaceLayout")
           controller?.commit(preference, {

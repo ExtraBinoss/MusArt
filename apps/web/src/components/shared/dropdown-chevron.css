@@ -1,0 +1,12 @@
+.dropdown-chevron {
+  flex-shrink: 0;
+  transition: transform 150ms ease;
+}
+[data-state="open"] > .dropdown-chevron {
+  transform: rotate(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-chevron {
+    transition: none;
+  }
+}

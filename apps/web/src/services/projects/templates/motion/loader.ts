@@ -1,4 +1,4 @@
-import { isOriginalMediaAsset, parseProject } from "@musart/core";
+import { isOriginalMediaAsset, parseProject, type Project } from "@musart/core";
 import type { EditorServices } from "../../../../state/contracts";
 import { i18n } from "../../../../state/i18n";
 import type { MediaOriginalInput } from "../../media/model";
@@ -163,13 +163,17 @@ export function parseMotionTemplateManifest(
   }
 }
 
-/** Fully prepare and validate before one durable project+originals installation. No portable fallback. */
-export async function openMotionTemplate(
-  services: Pick<EditorServices, "openMediaProject">,
+export interface PreparedMotionTemplate {
+  readonly project: Project;
+  readonly originals: readonly MediaOriginalInput[];
+}
+
+/** Bounded original-only preparation shared by hover previews and durable installation. */
+export async function prepareMotionTemplate(
   templateId: MotionTemplateId,
-  options: TemplateLoadOptions = {},
+  options: Pick<TemplateLoadOptions, "signal"> = {},
   fetcher: TemplateFetcher = fetch,
-): Promise<void> {
+): Promise<PreparedMotionTemplate> {
   options.signal?.throwIfAborted();
   if (
     templateId !== "in-bloom" &&
@@ -177,7 +181,6 @@ export async function openMotionTemplate(
     templateId !== "sound-playground"
   )
     throw new MotionTemplateError("invalid");
-  if (!services.openMediaProject) throw new MotionTemplateError("unsupported");
   const base = `${import.meta.env.BASE_URL}templates/motion/`;
   const response = await download(`${base}${templateId}.json`, fetcher, options.signal);
   const bytes = await boundedResponse(response, 2 * 1024 * 1024, options.signal);
@@ -205,10 +208,30 @@ export async function openMotionTemplate(
     });
   }
   options.signal?.throwIfAborted();
+  return { project: manifest.project, originals };
+}
+
+/** Install once only after complete validation; previews never call this boundary. */
+export async function openMotionTemplate(
+  services: Pick<EditorServices, "openMediaProject">,
+  templateId: MotionTemplateId,
+  options: TemplateLoadOptions = {},
+  fetcher: TemplateFetcher = fetch,
+): Promise<void> {
+  options.signal?.throwIfAborted();
+  if (
+    templateId !== "in-bloom" &&
+    templateId !== "motion-stress-lab" &&
+    templateId !== "sound-playground"
+  )
+    throw new MotionTemplateError("invalid");
+  if (!services.openMediaProject) throw new MotionTemplateError("unsupported");
+  const prepared = await prepareMotionTemplate(templateId, options, fetcher);
+  options.signal?.throwIfAborted();
   const now = new Date().toISOString();
   await services.openMediaProject(
-    { ...manifest.project, id: crypto.randomUUID(), createdAt: now, updatedAt: now },
-    originals,
+    { ...prepared.project, id: crypto.randomUUID(), createdAt: now, updatedAt: now },
+    prepared.originals,
     options,
   );
 }

@@ -1,0 +1,56 @@
+.motion-template-preview {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+.motion-template-preview > img,
+.motion-template-preview-canvas,
+.motion-template-preview-canvas > canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.motion-template-preview-canvas {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.motion-template-preview[data-preview-status="playing"] .motion-template-preview-canvas {
+  opacity: 1;
+}
+.motion-template-preview-status {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  width: fit-content;
+  max-width: calc(100% - 16px);
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #17151cc9;
+  color: #fff;
+  font-size: 9px;
+  line-height: 1.5;
+  white-space: normal;
+  text-align: left;
+  pointer-events: none;
+}
+.motion-template-preview-status:empty {
+  display: none;
+}
+
+.motion-template-preview-loading-mark {
+  display: none;
+  position: absolute;
+  inset: 0;
+  place-items: center;
+  pointer-events: none;
+}
+.motion-template-preview[data-preview-status="loading"] > .motion-template-preview-loading-mark {
+  display: grid;
+}

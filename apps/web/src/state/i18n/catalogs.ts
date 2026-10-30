@@ -1,3 +1,4 @@
+import { brand } from "../../ui/brand/config";
 import { projectMessages } from "./projects";
 import { interfaceV2 } from "./interface-v2";
 export const translations = {
@@ -22,7 +23,7 @@ export const translations = {
       recenterView: "Recentrer la vue",
       dropImages: "Déposez vos images",
       loadingCanvas: "Préparation du canvas…",
-      app: "MusArt",
+      app: `${brand.name}`,
       projectName: "Nom du projet",
       projectMenu: "Menu du projet",
       untitled: "Sans titre",
@@ -201,7 +202,7 @@ export const translations = {
       recenterView: "Recenter view",
       dropImages: "Drop your images",
       loadingCanvas: "Preparing canvas…",
-      app: "MusArt",
+      app: `${brand.name}`,
       projectName: "Project name",
       projectMenu: "Project menu",
       untitled: "Untitled",

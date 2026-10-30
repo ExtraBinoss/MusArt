@@ -16,8 +16,18 @@ The MIT license at the repository root covers MusArt's original source code. It 
 
 The original SVG demonstration artwork is implemented in `apps/web/src/services/projects/demo.ts`. Other dependency versions and their upstream license metadata are recorded in `package.json` and `bun.lock`.
 
-Analytical text uses [OpenType.js](https://github.com/opentypejs/opentype.js) 2.0.0 and [HarfBuzz.js](https://github.com/harfbuzz/harfbuzzjs) 0.4.15 (MIT; preserved dependency licenses). The local TSL implementation references the owner's [ts-slug](https://github.com/ExtraBinoss/ts-slug); its provenance and algorithm credits are recorded in [the text-rendering notes](docs/rendering/analytical-text.md). The ignored reference clone is not redistributed or imported.
+Analytical text uses [text-shaper](https://github.com/wiedymi/text-shaper) 0.1.28 (MIT; [preserved notice](docs/legal/text-shaper-MIT.txt)), with an explicit [Bun compatibility and cache patch](patches/README.md). The patched dependency retains parsed variation anchors, applies complete pair-position adjustments and bounds exact-coordinate outline caches. [OpenType.js](https://github.com/opentypejs/opentype.js) 2.0.0 remains available for font-library metadata validation and independent test references; the production text renderer no longer imports HarfBuzz.js. The local TSL implementation references the owner's [ts-slug](https://github.com/ExtraBinoss/ts-slug); its provenance and algorithm credits are recorded in [the text-rendering notes](docs/rendering/analytical-text.md). Ignored reference clones and frozen benchmark builds are not runtime dependencies.
 
 Twenty outline font families come from Google Fonts under the SIL Open Font License. Each family retains its OFL notice in `apps/web/public/fonts/`; the [font manifest](apps/web/public/fonts/manifest.json) records exact sources and checksums. Magic Search uses [cmdk](https://github.com/pacocoursey/cmdk) 1.1.1 (MIT) through the official shadcn Command component.
 
 References to Meta and Cerebral Valley describe the hackathon this independent project is being developed for. They do not imply official product status, sponsorship of MusArt, endorsement, or a prize award.
+
+Dynamic glyph dilation, signed ray weights and band traversal adapt Eric Lengyel's [Slug](https://github.com/EricLengyel/Slug/tree/be3c13eb7d63f9e8aa5c583e42d92c374cb91d98) and Konstantin Paulus's [slug-webgpu](https://github.com/diffusionstudio/slug-webgpu/tree/12d8bdf333263c1340a7ca5de0c36f7f90721be0) into Three.js TSL. MIT was selected for the official dual-licensed shader reference; the [Eric Lengyel MIT notice](docs/legal/slug-eric-lengyel-MIT.txt) and [Konstantin Paulus MIT notice](docs/legal/slug-webgpu-MIT.txt) are preserved. No upstream HLSL/WGSL strings or native WebGPU engine are included in the runtime.
+
+## Maskot / Bloub SVG mascot engine
+
+The Melt SVG brand includes the complete MIT engine copied from Maskot by
+ExtraBinoss at `2825887abd292caa5dd46e8014f65481857fc183`, based on Bloub by
+Jérémy Perret via Beam. Complete notices, licenses and original file checksums
+are preserved in [docs/legal/maskot](docs/legal/maskot/). The SVG morph component
+retains Maskot's numeric interpolation with integration-specific lifecycle guards.

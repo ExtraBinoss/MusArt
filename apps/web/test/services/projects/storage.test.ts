@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { openDB } from "idb";
-import { createLayer, createProject, EditorEngine, type Project } from "@musart/core";
+import { createLayer, createProject, EditorEngine } from "@musart/core";
 import { installAutosave, ProjectStore } from "../../../src/services/projects/storage";
 import { projectPreferencesKey } from "../../../src/services/projects/preferences/schema";
 
@@ -47,11 +47,13 @@ describe("local project storage", () => {
       {
         id: project.id,
         name: "Poster",
+        mode: "static",
         pages: project.pages.map((page) => ({
           id: page.id,
           name: page.name,
           width: page.width,
           height: page.height,
+          mode: "static",
           thumbnailRevision: expect.any(String),
         })),
         updatedAt: project.updatedAt,
@@ -103,20 +105,18 @@ describe("local project storage", () => {
     expect(await db.list()).toBeInstanceOf(Array);
   });
 });
-function assetProject(): Project {
-  return createProject({
-    assets: {
-      original: {
-        id: "original",
-        name: "Photo",
-        mime: "image/png",
-        width: 100,
-        height: 50,
-        dataUrl: "data:image/png;base64,original",
-      },
-    },
-  });
+function assetProject() {
+  const original = {
+    id: "original",
+    name: "Photo",
+    mime: "image/png",
+    width: 100,
+    height: 50,
+    dataUrl: "data:image/png;base64,original",
+  };
+  return { ...createProject(), assets: { original } };
 }
+
 function assetWriteCount(spy: { mock: { contexts: unknown[] } }) {
   return spy.mock.contexts.filter(
     (context) => context instanceof IDBObjectStore && context.name === "assets",

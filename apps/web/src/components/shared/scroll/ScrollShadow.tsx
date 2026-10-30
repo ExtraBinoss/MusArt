@@ -91,11 +91,16 @@ export function ScrollShadow({
       className={cn("scroll-shadow", className)}
       ref={root}
       data-scroll-shadow-axis={axis}
+      data-scroll-axis={axis}
       style={surface ? ({ ...style, "--scroll-shadow-surface": surface } as CSSProperties) : style}
     >
       {children}
-      <span className="scroll-shadow-inline-start" aria-hidden="true" />
-      <span className="scroll-shadow-inline-end" aria-hidden="true" />
+      {axis !== "vertical" && (
+        <>
+          <span className="scroll-shadow-inline-start scroll-shadow-side" aria-hidden="true" />
+          <span className="scroll-shadow-inline-end scroll-shadow-side" aria-hidden="true" />
+        </>
+      )}
     </div>
   );
 }

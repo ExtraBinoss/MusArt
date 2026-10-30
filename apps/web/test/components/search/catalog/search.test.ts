@@ -67,3 +67,25 @@ test("canonical preparation normalizes document terms before first spotlight sco
   expect(normalize).toHaveBeenCalledOnce();
   normalize.mockRestore();
 });
+
+test("retains late better-ranked matches and stable early ties without sorting the complete catalog", () => {
+  const rows = Array.from({ length: 5000 }, (_, index) =>
+    item(`weak-${index}`, `Other ${index}`, "needle"),
+  );
+  rows.push(...Array.from({ length: 100 }, (_, index) => item(`strong-${index}`, "Needle")));
+  prepareSearchItems(rows);
+  const sort = vi.spyOn(Array.prototype, "sort");
+  const result = searchItems(rows, "needle", "all");
+  expect(result.total).toBe(5100);
+  expect(result.items.map((row) => row.id)).toEqual(
+    Array.from({ length: 80 }, (_, index) => `strong-${index}`),
+  );
+  expect(
+    sort.mock.contexts.every((context) => Array.isArray(context) && context.length <= 80),
+  ).toBe(true);
+  sort.mockRestore();
+  // Equal scores preserve catalog order even when many later matches exist.
+  expect(searchItems(rows.slice(0, 5000), "needle", "all").items.map((row) => row.id)).toEqual(
+    Array.from({ length: 80 }, (_, index) => `weak-${index}`),
+  );
+});

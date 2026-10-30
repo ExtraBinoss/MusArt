@@ -9,9 +9,9 @@ import {
   NoBlending,
   OrthographicCamera,
   PlaneGeometry,
+  RenderTarget,
   Scene,
   Vector4,
-  type RenderTarget,
   type Texture,
   type WebGPURenderer,
 } from "three/webgpu";
@@ -67,17 +67,41 @@ export class GpuPasses {
     this.shapeMaterial.fragmentNode = shapeNode(this.shape);
   }
   async prepare(target: RenderTarget, canContinue?: () => boolean): Promise<void> {
+    const materials = [
+      this.clearMaterial,
+      this.copyMaterial,
+      this.maskMaterial,
+      this.blendMaterial,
+      this.shapeMaterial,
+    ];
+    if (materials.every((material) => this.compiled.has(material))) return;
     const previous = this.mesh.material;
-    this.copy.source.value = this.mask.source.value = this.mask.mask.value = target.texture;
-    this.blend.source.value = this.blend.backdrop.value = target.texture;
+    const bindings = [
+      this.copy.source,
+      this.mask.source,
+      this.mask.mask,
+      this.blend.source,
+      this.blend.backdrop,
+    ];
+    const textures = bindings.map((binding) => binding.value);
+    // Three deduplicates sampler uniforms by the texture UUID at compilation.
+    // Each logical input must have a distinct, valid texture before the shader
+    // is built; later changing .value cannot separate an already shared binding.
+    const inputs = Array.from({ length: 3 }, () => {
+      const input = new RenderTarget(1, 1, { depthBuffer: false, stencilBuffer: false });
+      input.texture.type = target.texture.type;
+      input.texture.format = target.texture.format;
+      input.texture.colorSpace = target.texture.colorSpace;
+      input.texture.minFilter = target.texture.minFilter;
+      input.texture.magFilter = target.texture.magFilter;
+      input.texture.generateMipmaps = target.texture.generateMipmaps;
+      return input;
+    });
+    this.copy.source.value = this.mask.source.value = this.blend.source.value = inputs[0]!.texture;
+    this.blend.backdrop.value = inputs[1]!.texture;
+    this.mask.mask.value = inputs[2]!.texture;
     try {
-      for (const material of [
-        this.clearMaterial,
-        this.copyMaterial,
-        this.maskMaterial,
-        this.blendMaterial,
-        this.shapeMaterial,
-      ]) {
+      for (const material of materials) {
         if (this.compiled.has(material)) continue;
         this.mesh.material = material;
         await compileGpuScene(this.renderer, this.scene, this.camera, target, canContinue);
@@ -85,6 +109,15 @@ export class GpuPasses {
       }
     } finally {
       this.mesh.material = previous;
+      bindings.forEach((binding, index) => {
+        binding.value = textures[index]!;
+      });
+      for (const input of inputs) {
+        // Compilation can initialize a sampled texture without initializing its
+        // framebuffer. Dispose both explicitly; all three inputs are owned here.
+        input.texture.dispose();
+        input.dispose();
+      }
     }
   }
   private draw(material: MeshBasicNodeMaterial, target: RenderTarget | null): void {

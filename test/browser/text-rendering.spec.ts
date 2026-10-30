@@ -414,6 +414,8 @@ for (const forceWebGL of [false, true]) {
       await load(page, [maskedText, mask]);
       const masked = await render(page, inspector, forceWebGL);
       expect(ink(masked).count).toBeGreaterThan(500);
+      const maskedWitness = opaquePoints(masked)[0]!;
+      expect(rgba(masked, maskedWitness.x, maskedWitness.y)).toEqual([37, 99, 235, 255]);
       let outsideMask = 0;
       for (let y = 0; y < masked.height; y++)
         for (let x = 144; x < masked.width; x++)

@@ -14,7 +14,7 @@ async function choose(page: Page, label: string, option: string) {
 async function openPreferences(page: Page) {
   await page.keyboard.press("Control+k");
   await page
-    .getByRole("combobox", { name: /Rechercher dans MusArt|Search MusArt/ })
+    .getByRole("combobox", { name: /Rechercher dans Melt|Search Melt/ })
     .fill("preferences");
   await page.getByRole("option", { name: /Préférences|Preferences/ }).click();
 }

@@ -15,7 +15,7 @@ test("requires all welcome steps and records completion only on the final action
   const d = setup(),
     done = vi.fn();
   d.mount(<OnboardingDialog onComplete={done} />);
-  const dialog = screen.getByRole("dialog", { name: "Bienvenue dans MusArt" });
+  const dialog = screen.getByRole("dialog", { name: "Bienvenue dans Melt" });
   expect(screen.queryByRole("button", { name: "Fermer" })).toBeNull();
   fireEvent.keyDown(dialog, { key: "Escape" });
   const overlay = document.querySelector('[data-slot="dialog-overlay"]')!;
@@ -56,7 +56,7 @@ test("lets users try palettes, pause the decoration and choose their language", 
   fireEvent.click(screen.getByRole("button", { name: "Animer le dégradé" }));
   expect(screen.getByTestId("gradient")).toHaveAttribute("data-paused", "false");
   fireEvent.click(screen.getByRole("button", { name: "Passer en anglais" }));
-  await screen.findByRole("dialog", { name: "Welcome to MusArt" });
+  await screen.findByRole("dialog", { name: "Welcome to Melt" });
   expect(screen.getByRole("button", { name: "Show me around" })).toBeVisible();
   expect(localStorage.getItem("musart.language")).toBe("en");
   expect(document.documentElement.lang).toBe("en");

@@ -1,6 +1,5 @@
 import { useState } from "react";
-import motionIcon from "../../assets/mode-icons/motion.svg";
-import staticIcon from "../../assets/mode-icons/static.svg";
+import { ModeIcon } from "./ModeIcon";
 import { useTranslation } from "react-i18next";
 import {
   planMotionInitialization,
@@ -8,6 +7,7 @@ import {
   type MotionInitializationPlan,
   type SessionSnapshot,
 } from "@musart/core";
+import { Button } from "../ui/button";
 import { SegmentedTabs } from "../shared/segmented/SegmentedTabs";
 import {
   AlertDialog,
@@ -26,10 +26,14 @@ export function CompositionMode({
   engine,
   snapshot,
   onMotionEnabled,
+  presentation = "segmented",
+  buttonLabel,
 }: {
   engine: EnginePort;
   snapshot: SessionSnapshot;
   onMotionEnabled?: () => void;
+  presentation?: "segmented" | "button";
+  buttonLabel?: string;
 }) {
   const { t } = useTranslation("motion");
   const page = snapshot.project.pages.find((item) => item.id === snapshot.pageId)!;
@@ -78,40 +82,33 @@ export function CompositionMode({
   }
   return (
     <div className="motion-mode" data-canvas-control data-keybinding-capture>
-      <SegmentedTabs
-        tooltips
-        mode="choice"
-        size="compact"
-        value={current}
-        label={t("mode")}
-        onValueChange={choose}
-        items={[
-          {
-            value: "static",
-            label: t("static"),
-            icon: (
-              <span
-                className="motion-mode-symbol"
-                data-mode-icon="static"
-                aria-hidden
-                style={{ maskImage: `url("${staticIcon}")` }}
-              />
-            ),
-          },
-          {
-            value: "motion",
-            label: t("motion"),
-            icon: (
-              <span
-                className="motion-mode-symbol"
-                data-mode-icon="motion"
-                aria-hidden
-                style={{ maskImage: `url("${motionIcon}")` }}
-              />
-            ),
-          },
-        ]}
-      />
+      {presentation === "button" && current === "static" ? (
+        <Button size="lg" className="motion-enable-button" onClick={() => choose("motion")}>
+          <ModeIcon mode="motion" size={22} />
+          {buttonLabel ?? t("motion")}
+        </Button>
+      ) : (
+        <SegmentedTabs
+          tooltips
+          mode="choice"
+          size="compact"
+          value={current}
+          label={t("mode")}
+          onValueChange={choose}
+          items={[
+            {
+              value: "static",
+              label: t("static"),
+              icon: <ModeIcon mode="static" size={18} data-mode-icon="static" />,
+            },
+            {
+              value: "motion",
+              label: t("motion"),
+              icon: <ModeIcon mode="motion" size={18} data-mode-icon="motion" />,
+            },
+          ]}
+        />
+      )}
       {error && (
         <p className="motion-error" role="alert">
           {t(error)}

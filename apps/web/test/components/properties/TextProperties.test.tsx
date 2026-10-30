@@ -1,7 +1,10 @@
 import { expect, test, vi } from "vitest";
-import { screen, fireEvent } from "@testing-library/react";
+import { act, screen, fireEvent } from "@testing-library/react";
+import { planMotionInitialization } from "@musart/core";
 import { TextProperties } from "../../../src/components/properties/TextProperties";
 import { setup } from "../../support/ui";
+import { createMotionTransport } from "../../../src/services/motion/transport";
+import { getFontPresentation } from "../../../src/state/session/font-presentation";
 async function chooseFont(font: string) {
   fireEvent.click(screen.getByRole("combobox", { name: "Police" }));
   fireEvent.change(screen.getByRole("combobox", { name: "Rechercher une police" }), {
@@ -9,6 +12,46 @@ async function chooseFont(font: string) {
   });
   fireEvent.click(await screen.findByRole("option", { name: font }));
 }
+test("font preview readiness targets the paused evaluated Motion weight", async () => {
+  const d = setup(),
+    preview = vi.fn();
+  d.engine.execute({
+    type: "setCompositionMode",
+    mode: "motion",
+    plan: planMotionInitialization(d.engine.getSnapshot()),
+  });
+  const target = { kind: "layer" as const, layerId: d.text.id, property: "fontWeight" as const };
+  d.engine.transaction([
+    { type: "upsertMotionKeyframe", target, time: { value: 0, rate: 1 }, value: 300 },
+    { type: "upsertMotionKeyframe", target, time: { value: 1, rate: 1 }, value: 800 },
+  ]);
+  const transport = createMotionTransport(d.engine);
+  transport.seek({ value: 1, rate: 1 });
+  const before = d.engine.getSnapshot();
+  const view = d.mount(
+    <TextProperties
+      engine={d.engine}
+      layer={d.text}
+      patch={vi.fn()}
+      preview={preview}
+      cancel={vi.fn()}
+    />,
+  );
+  fireEvent.click(screen.getByRole("combobox", { name: "Police" }));
+  const search = await screen.findByRole("combobox", { name: "Rechercher une police" });
+  fireEvent.change(search, { target: { value: "Tinos" } });
+  fireEvent.keyDown(search, { key: "ArrowDown" });
+  expect(preview).toHaveBeenLastCalledWith({ fontFamily: "Tinos" });
+  expect(getFontPresentation(d.engine).read().ticket).toMatchObject({
+    layerId: d.text.id,
+    family: "Tinos",
+    weight: 800,
+  });
+  expect(d.engine.getSnapshot()).toBe(before);
+  view.unmount();
+  expect(getFontPresentation(d.engine).read().ticket).toBeNull();
+  act(() => transport.dispose());
+});
 test("edits text, font, numeric typography and alignment through property actions", async () => {
   const d = setup(),
     patch = vi.fn(),

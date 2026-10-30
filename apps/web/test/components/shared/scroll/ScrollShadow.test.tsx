@@ -408,3 +408,133 @@ test("retired observer deliveries perform no reads, observations or shadow write
   expect(resizeDisconnect).toHaveBeenCalled();
   expect(mutationDisconnect).toHaveBeenCalledOnce();
 });
+
+test("two-axis fades track horizontal boundaries without React/layout reads and clear native scrollbar gutters", () => {
+  let resize!: ResizeObserverCallback;
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      constructor(callback: ResizeObserverCallback) {
+        resize = callback;
+      }
+      observe() {}
+      disconnect() {}
+    },
+  );
+  const renders = vi.fn();
+  const view = render(
+    <Profiler id="axes" onRender={renders}>
+      <ScrollShadow axis="both">
+        <div role="list" />
+      </ScrollShadow>
+    </Profiler>,
+  );
+  const viewport = screen.getByRole("list"),
+    root = viewport.parentElement!;
+  const width = vi.fn(() => 390),
+    scrollWidth = vi.fn(() => 1400);
+  Object.defineProperties(viewport, {
+    clientWidth: { get: width },
+    scrollWidth: { get: scrollWidth },
+    clientHeight: { value: 200 },
+    scrollHeight: { value: 600 },
+    offsetWidth: { value: 398 },
+    offsetHeight: { value: 208 },
+  });
+  act(() => resize([], {} as ResizeObserver));
+  expect(root).toHaveAttribute("data-overflow-right");
+  expect(root).not.toHaveAttribute("data-overflow-left");
+  expect(root).toHaveAttribute("data-overflow-bottom");
+  expect(root.querySelectorAll(".scroll-shadow-side")).toHaveLength(2);
+  expect(root.style.getPropertyValue("--scroll-shadow-scrollbar-right")).toBe("8px");
+  expect(root.style.getPropertyValue("--scroll-shadow-scrollbar-bottom")).toBe("8px");
+  width.mockClear();
+  scrollWidth.mockClear();
+  const baseline = renders.mock.calls.length;
+  fireEvent.scroll(viewport, { target: { scrollLeft: 320, scrollTop: 100 } });
+  expect(root).toHaveAttribute("data-overflow-left");
+  expect(root).toHaveAttribute("data-overflow-right");
+  fireEvent.scroll(viewport, { target: { scrollLeft: 1010 } });
+  expect(root).not.toHaveAttribute("data-overflow-right");
+  expect(width).not.toHaveBeenCalled();
+  expect(scrollWidth).not.toHaveBeenCalled();
+  expect(renders).toHaveBeenCalledTimes(baseline);
+  view.unmount();
+});
+
+test("horizontal-only surfaces preserve the first viewport and suppress vertical fades", () => {
+  let resize!: ResizeObserverCallback;
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      constructor(callback: ResizeObserverCallback) {
+        resize = callback;
+      }
+      observe() {}
+      disconnect() {}
+    },
+  );
+  const view = render(
+    <ScrollShadow axis="horizontal">
+      <div role="list" />
+    </ScrollShadow>,
+  );
+  const viewport = screen.getByRole("list"),
+    root = viewport.parentElement!;
+  Object.defineProperties(viewport, {
+    clientWidth: { value: 100 },
+    scrollWidth: { value: 500 },
+    clientHeight: { value: 100 },
+    scrollHeight: { value: 500 },
+  });
+  act(() => resize([], {} as ResizeObserver));
+  expect(root.firstElementChild).toBe(viewport);
+  expect(root).toHaveAttribute("data-scroll-axis", "horizontal");
+  expect(root).toHaveAttribute("data-overflow-right");
+  expect(root).not.toHaveAttribute("data-overflow-bottom");
+  view.rerender(
+    <ScrollShadow>
+      <div role="list" />
+    </ScrollShadow>,
+  );
+  act(() => resize([], {} as ResizeObserver));
+  expect(root.querySelector(".scroll-shadow-side")).toBeNull();
+  expect(root).toHaveAttribute("data-overflow-bottom");
+  expect(root).not.toHaveAttribute("data-overflow-right");
+});
+
+test("horizontal fades and an explicit nested viewport coexist for Select-style metadata siblings", () => {
+  let resize!: ResizeObserverCallback;
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      constructor(callback: ResizeObserverCallback) {
+        resize = callback;
+      }
+      observe() {}
+      disconnect() {}
+    },
+  );
+  const view = render(
+    <ScrollShadow axis="both" viewportSelector=".nested-viewport">
+      <div>
+        <span>Metadata</span>
+        <section className="nested-viewport" role="list" />
+      </div>
+    </ScrollShadow>,
+  );
+  const viewport = screen.getByRole("list"),
+    wrapper = view.container.querySelector(".scroll-shadow")!;
+  Object.defineProperties(viewport, {
+    clientWidth: { value: 100 },
+    scrollWidth: { value: 500 },
+    clientHeight: { value: 100 },
+    scrollHeight: { value: 500 },
+  });
+  act(() => resize([], {} as ResizeObserver));
+  expect(wrapper).toHaveAttribute("data-overflow-right");
+  expect(wrapper).toHaveAttribute("data-overflow-bottom");
+  fireEvent.scroll(viewport, { target: { scrollLeft: 400 } });
+  expect(wrapper).toHaveAttribute("data-overflow-left");
+  expect(wrapper).not.toHaveAttribute("data-overflow-right");
+});

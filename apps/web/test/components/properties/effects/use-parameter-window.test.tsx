@@ -2,6 +2,7 @@ import { expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { useParameterWindow } from "../../../../src/components/properties/effects/use-parameter-window";
 import { useRef } from "react";
+import { MobileControlsContext } from "../../../../src/components/workspace/mobile/use-mobile";
 
 function Fields({ owner = "receipt", count = 40, enabled = true }) {
   const list = useRef<HTMLDivElement>(null);
@@ -78,4 +79,20 @@ test("Tab crosses window boundaries in order, Shift+Tab returns, and rebinding d
   expect(screen.getAllByRole("textbox")).toHaveLength(40);
   view.rerender(<Fields count={3} />);
   expect(screen.getAllByRole("textbox")).toHaveLength(3);
+});
+
+test("mobile keeps variable-height slider rows in natural flow", () => {
+  render(
+    <MobileControlsContext value>
+      <Fields count={40} />
+    </MobileControlsContext>,
+  );
+  expect(screen.getAllByRole("textbox")).toHaveLength(40);
+  const last = screen.getByRole("button", { name: "Reset 39" });
+  act(() => last.focus());
+  fireEvent.keyDown(last, { key: "Tab" });
+  expect(last).toHaveFocus();
+  expect(
+    screen.getByTestId("list").querySelector('[data-parameter-index="39"]'),
+  ).not.toHaveAttribute("style");
 });

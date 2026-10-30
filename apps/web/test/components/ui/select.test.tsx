@@ -49,10 +49,7 @@ test("renders grouped accessible options, labels and a separator with both conte
   expect(wrapper.style.height).toBe("120px");
   expect(viewport.scrollTop).toBe(80);
   expect(screen.getByRole("combobox", { hidden: true })).toHaveAttribute("data-state", "open");
-  expect(document.querySelector('[data-slot="select-chevron"]')).toHaveClass(
-    "group-data-[state=open]/select-trigger:rotate-180",
-    "motion-reduce:transition-none",
-  );
+  expect(document.querySelector('[data-slot="select-chevron"]')).toHaveClass("dropdown-chevron");
   fireEvent.click(screen.getByRole("option", { name: "Two" }));
   expect(screen.getByRole("combobox")).toHaveTextContent("Two");
   view.unmount();

@@ -1,11 +1,16 @@
-import { expect, test, vi } from "vitest";
+import { canvasContext } from "./components/motion/canvas/support";
+import { beforeEach, expect, test, vi } from "vitest";
 import { screen, fireEvent, waitFor, act, within } from "@testing-library/react";
 import { App } from "../src/App";
 import { setup } from "./support/ui";
+import { projectSummary } from "./support/projects";
 import { toolAtom } from "../src/state/session/editor";
 import { createEffect, createProject } from "@musart/core";
 import { createMotionTransport } from "../src/services/motion/transport";
 import { requestLayerTransition } from "../src/components/motion/transitions/requests";
+beforeEach(() => {
+  vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(canvasContext() as never);
+});
 vi.mock("../src/canvas/EditorCanvas", () => ({
   EditorCanvas: ({
     onError,
@@ -91,7 +96,14 @@ test("assembles the pinned inspector, layers, project menu, export and import ac
   expect(screen.getByRole("dialog")).toHaveAccessibleName("Exporter la composition");
   fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Annuler" }));
   fireEvent.click(screen.getByRole("button", { name: "Menu du projet" }));
+  await screen.findByRole("dialog", { name: "Tableau de bord Melt" });
+  expect(screen.queryByRole("dialog", { name: "Un nouvel espace pour vos idées." })).toBeNull();
+  expect(d.services.createProject).not.toHaveBeenCalled();
+  fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Fermer" }));
+  fireEvent.click(screen.getByRole("button", { name: "Actions du projet" }));
+  fireEvent.click(screen.getByRole("button", { name: "Projets" }));
   await screen.findByText("Aucun projet enregistré.");
+  expect(screen.queryByRole("dialog", { name: "Un nouvel espace pour vos idées." })).toBeNull();
   fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Fermer" }));
   fireEvent.click(screen.getByRole("button", { name: "Actions du projet" }));
   fireEvent.click(screen.getByRole("button", { name: /^Enregistrer/ }));
@@ -207,16 +219,16 @@ test("opens the real project/export dialogs and switches panel modes through com
   await screen.findByTestId("canvas");
   async function search(query: string, label: RegExp) {
     fireEvent.keyDown(document, { key: "k", ctrlKey: true });
-    fireEvent.change(await screen.findByRole("combobox", { name: "Rechercher dans MusArt" }), {
+    fireEvent.change(await screen.findByRole("combobox", { name: "Rechercher dans Melt" }), {
       target: { value: query },
     });
     fireEvent.click(await screen.findByRole("option", { name: label }));
   }
   await search("new project", /Nouveau projet/);
-  expect(
-    await screen.findByRole("heading", { name: "Quel projet voulez-vous créer ?" }),
-  ).toBeVisible();
-  fireEvent.click(screen.getByRole("button", { name: "Fermer" }));
+  const creation = await screen.findByRole("dialog", { name: "Un nouvel espace pour vos idées." });
+  expect(creation).toBeVisible();
+  fireEvent.click(within(creation).getByRole("button", { name: "Fermer" }));
+  expect(screen.queryByRole("dialog", { name: "Tableau de bord Melt" })).toBeNull();
   await search("animate", /Exporter un timelapse/);
   expect(await screen.findByRole("dialog", { name: "Timelapse" })).toBeVisible();
   expect(screen.queryByRole("tab", { name: "Animation" })).toBeNull();
@@ -232,27 +244,45 @@ test("starts with the shared empty dashboard and mounts the editor only after ch
   });
   d.mount(<App engine={d.engine} services={d.services} welcome />);
   expect(screen.queryByTestId("canvas")).not.toBeInTheDocument();
-  expect(screen.getByRole("dialog", { name: "Bienvenue dans MusArt" })).toBeVisible();
-  fireEvent.click(screen.getByRole("button", { name: "Faire un petit tour" }));
-  fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
-  fireEvent.click(screen.getByRole("button", { name: "Ouvrir mon atelier" }));
+  expect(screen.getByRole("heading", { name: "Créez. Animez." })).toBeVisible();
+  fireEvent.click(screen.getAllByRole("button", { name: "Commencer à créer" })[0]!);
   expect(
     await screen.findByRole("heading", { name: "Quel projet voulez-vous créer ?" }),
   ).toBeVisible();
   fireEvent.keyDown(document, { key: "s", ctrlKey: true });
   fireEvent.keyDown(document, { key: "k", ctrlKey: true });
   expect(d.services.saveProject).not.toHaveBeenCalled();
-  expect(screen.queryByRole("combobox", { name: "Rechercher dans MusArt" })).toBeNull();
+  expect(screen.queryByRole("combobox", { name: "Rechercher dans Melt" })).toBeNull();
   fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
   expect(screen.getByRole("dialog")).toBeVisible();
-  fireEvent.mouseDown(screen.getByRole("tab", { name: "Templates" }), {
-    button: 0,
-    ctrlKey: false,
-  });
+  const templates = screen.getByRole("button", { name: "Templates" });
+  fireEvent.click(templates);
+  expect(templates).toHaveAttribute("aria-current", "page");
   fireEvent.click(screen.getByRole("button", { name: "Créer depuis Vidéo TikTok" }));
   await screen.findByTestId("canvas");
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   expect(d.services.createProject).toHaveBeenCalledWith(
     expect.objectContaining({ presetId: "tiktok-video" }),
   );
+});
+
+test("welcome preview can reopen the already restored project without replacing its identity", async () => {
+  const previous = location.href;
+  history.replaceState(null, "", "?welcome=1");
+  try {
+    const d = setup();
+    vi.mocked(d.services.listProjectPage).mockResolvedValue({
+      projects: [projectSummary(d.project.id, d.project.name)],
+      before: null,
+    });
+    d.mount(<App engine={d.engine} services={d.services} />);
+    expect(screen.queryByTestId("canvas")).toBeNull();
+    fireEvent.click(screen.getAllByRole("button", { name: "Commencer à créer" })[0]!);
+    fireEvent.click(await screen.findByRole("button", { name: "Atelier" }));
+    await screen.findByTestId("canvas");
+    expect(d.services.openProject).toHaveBeenCalledExactlyOnceWith(d.project.id);
+    expect(d.engine.getSnapshot().project.id).toBe(d.project.id);
+  } finally {
+    history.replaceState(null, "", previous);
+  }
 });

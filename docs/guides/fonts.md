@@ -2,7 +2,17 @@
 
 The font picker combines twenty bundled outline families, a snapshot of **1,950 Google Fonts families**, imported user fonts and locally installed faces exposed by the browser. Search and category filters operate on metadata; the list is virtualized. Opening the picker does not download the entire Google Fonts library.
 
-Hovering or keyboard-focusing a face previews the selected text through the imperative scene port. Closing the picker restores the original face. A choice produces one validated document edit and one undo entry. The renderer keeps five idle font faces in an LRU cache. Active preparation leases prevent eviction while a face is being used; old faces release native shaping resources explicitly.
+A short pointer hover or immediate keyboard focus previews the selected text through the imperative scene port. Scrolling cancels pointer intent and does not automatically preview whichever row moves under the pointer. Closing the picker restores the original face. Opening pauses Motion playback at its current pose without changing history; font requests use the evaluated weight. A choice produces one validated document edit and one undo entry. The renderer keeps five idle font faces in an LRU cache. Active preparation leases prevent eviction while a face is being used; old faces release owned font metadata and reusable shaping buffers explicitly.
+
+## Picker samples and readiness
+
+Each visible row shows its name, category and a phrase rendered by an actually decoded browser `FontFace`. A loading state remains visible until decoding succeeds; unavailable sources show an explicit failure instead of presenting the UI font as the requested face. Only the four visible rows and one partial row acquire sample leases; virtual overscan does not start downloads.
+
+These samples use a separate ephemeral cache: at most eight retained faces, two concurrent jobs, 24 MiB of retained source bytes and 4 MiB per source. Remote and bundled samples fetch their catalog URLs directly, without installing originals in IndexedDB. Local samples use the native PostScript name; custom samples read only already installed originals. Unused faces are evicted with `document.fonts.delete()`. Closing aborts outstanding jobs; unmounting disposes the cache. A sample that exceeds the preview budget can still be chosen through the normal validated installation path.
+
+Browser decoding and canvas rendering have separate readiness states. The picker owns a renderer ticket containing the project, page, text layer, logical family/weight and request generation. The loading indicator completes only when the projected request is actually drawn and `PlaneResources.present()` acknowledges that ticket. A prior preview, cancelled request, different revision or unmounted picker cannot mark a new request ready. Unavailable renderers and preparation failures remain explicit.
+
+The native baseline, functional pixel checks and measurement limits are recorded in [Typography performance](../performance/fonts.md).
 
 ## Sources and downloads
 

@@ -1,11 +1,7 @@
 import { FONT_CATALOG, MAX_FONT_FILE_BYTES } from "@musart/assets";
-import type { Font, Glyph } from "opentype.js";
-import { createShaper, type ShapedGlyph } from "./shaping";
-
-export interface OutlineFont extends Font {
-  variation?: { getTransform: (glyph: Glyph, coordinates: Record<string, number>) => Glyph };
-  shape?: (text: string, weight: number) => ShapedGlyph[];
-}
+import { createOutlineFont, type OutlineFont, type OutlineGlyph } from "./outlines";
+import { createShaper } from "./shaping";
+export type { OutlineFont } from "./outlines";
 export interface FontLease {
   readonly font: OutlineFont;
   release: () => void;
@@ -135,16 +131,37 @@ export class FontRepository {
     }
     signal.throwIfAborted();
     if (buffer.byteLength > MAX_FONT_BYTES) throw new Error("Font exceeds the 32 MiB limit.");
-    const { parse } = await import("opentype.js");
+    const { Font, Face, getGlyphDelta, getGlyphPath, getGlyphPathWithVariation } =
+      await import("text-shaper");
     signal.throwIfAborted();
-    const font = parse(buffer) as OutlineFont;
-    const shaper = await createShaper(buffer, (index) => font.glyphs.get(index));
+    // Own the lazy reader storage and normalize cross-realm platform ArrayBuffers.
+    const native = Font.load(new Uint8Array(buffer).slice().buffer);
+    const outlines = createOutlineFont(native, {
+      Face,
+      getGlyphDelta,
+      getGlyphPath,
+      getGlyphPathWithVariation,
+    });
+    let shaper: Awaited<ReturnType<typeof createShaper>>;
+    try {
+      shaper = await createShaper(native, (index) => outlines.font.glyphs.get(index));
+    } catch (error) {
+      outlines.dispose();
+      throw error;
+    }
+    const dispose = () => {
+      try {
+        shaper.dispose();
+      } finally {
+        outlines.dispose();
+      }
+    };
     if (signal.aborted) {
-      shaper.dispose();
+      dispose();
       signal.throwIfAborted();
     }
-    font.shape = (text, weight) => shaper.shape(text, weight);
-    return { font, dispose: () => shaper.dispose() };
+    outlines.font.shape = (text, weight) => shaper.shape(text, weight);
+    return { font: outlines.font, dispose };
   }
   private touch(entry: FontEntry): void {
     if (this.entries.get(entry.key) !== entry) return;
@@ -188,6 +205,10 @@ export class FontRepository {
     if (failures.length) throw new AggregateError(failures, "Font cache cleanup failed.");
   }
 }
-export function weightedGlyph(font: OutlineFont, glyph: Glyph, weight: number): Glyph {
+export function weightedGlyph(
+  font: OutlineFont,
+  glyph: OutlineGlyph,
+  weight: number,
+): OutlineGlyph {
   return font.variation?.getTransform(glyph, { wght: weight, opsz: 14 }) ?? glyph;
 }

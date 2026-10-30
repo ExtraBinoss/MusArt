@@ -54,13 +54,19 @@ test("viewport travel stays bounded and measurement badges remain readable at ev
   await page.mouse.wheel(180, 100);
   await expect(artboard).toHaveAttribute("data-pan-x", "-90");
   await expect(artboard).toHaveAttribute("data-pan-y", "-50");
-  const recenter = page.getByRole("button", { name: "Recentrer la vue", exact: true });
+  const recenter = async () => {
+    await page.keyboard.press("Control+k");
+    await page
+      .getByRole("combobox", { name: "Rechercher dans Melt", exact: true })
+      .fill("recentrer");
+    await page.getByRole("option", { name: /Recentrer la vue/ }).click();
+  };
   await expect(artboard).toHaveAttribute("data-view-moving", "false");
-  await expect(recenter).toBeVisible();
+  await expect(page.locator(".brand-button")).toBeVisible();
   const surfaces = await page.evaluate(() => {
     const controls = document.querySelector<HTMLElement>(".canvas-controls")!,
-      recenter = document.querySelector<HTMLElement>(".canvas-recenter")!;
-    return [controls, recenter, controls.querySelector("button")!].map((element) => {
+      brand = document.querySelector<HTMLElement>(".brand-button")!;
+    return [controls, brand, controls.querySelector("button")!].map((element) => {
       const style = getComputedStyle(element),
         rect = element.getBoundingClientRect();
       return {
@@ -71,9 +77,9 @@ test("viewport travel stays bounded and measurement badges remain readable at ev
       };
     });
   });
-  expect(surfaces[0]!.height).toBe(40);
+  expect(surfaces[0]!.height).toBe(42);
   expect(surfaces[1]!.height).toBe(surfaces[0]!.height);
-  expect(surfaces[1]!.height).toBe(40);
+  expect(surfaces[1]!.height).toBe(42);
   expect(surfaces[2]!.height).toBe(32);
   expect(surfaces[1]!.bottom).toBe(surfaces[0]!.bottom);
   expect(surfaces[1]!.background).toBe(surfaces[0]!.background);
@@ -82,7 +88,7 @@ test("viewport travel stays bounded and measurement badges remain readable at ev
   await page.mouse.wheel(10000, -10000);
   await expect(artboard).toHaveAttribute("data-pan-x", "-240");
   await expect(artboard).toHaveAttribute("data-pan-y", "240");
-  await recenter.click();
+  await recenter();
   await expect(artboard).toHaveAttribute("data-pan-x", "0");
   await expect(artboard).toHaveAttribute("data-pan-y", "0");
   for (const theme of ["light", "dark"] as const) {

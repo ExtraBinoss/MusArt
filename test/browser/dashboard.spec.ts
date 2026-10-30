@@ -4,7 +4,7 @@ import type { StoredProject } from "../../apps/web/src/services/projects/databas
 
 async function savedState(page: Page) {
   return page.evaluate(async () => {
-    const request = indexedDB.open("musart-studio", 6);
+    const request = indexedDB.open("musart-studio");
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
@@ -29,7 +29,7 @@ async function savedState(page: Page) {
   });
 }
 
-test("first launch opens an empty shared dashboard; the visible techno template creates a real editable project", async ({
+test("first launch enters the empty library; the visible techno template creates a real editable project", async ({
   page,
 }) => {
   test.setTimeout(90000);
@@ -41,9 +41,21 @@ test("first launch opens an empty shared dashboard; the visible techno template 
     if (/THREE\.Clock|PCFSoftShadowMap/.test(message.text())) deprecated.push(message.text());
   });
   await page.goto("/");
-  const dashboard = page.getByRole("dialog", { name: "Tableau de bord MusArt", exact: true });
+  await expect(page.getByRole("heading", { level: 1, name: "Créez. Animez." })).toBeVisible();
+  await page.getByRole("button", { name: "Try Melt", exact: true }).click();
+  const dashboard = page.getByRole("dialog", { name: "Tableau de bord Melt", exact: true });
   await expect(dashboard).toBeVisible();
-  await expect(dashboard.getByRole("tab")).toHaveCount(2);
+  const navigation = dashboard.getByRole("navigation", {
+    name: "Navigation de l’atelier",
+    exact: true,
+  });
+  await expect(navigation.getByRole("button", { name: "Projets", exact: true })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  await expect(
+    navigation.getByRole("button", { name: "Communauté · Bientôt", exact: true }),
+  ).toBeDisabled();
   await expect(
     dashboard.getByRole("heading", { name: "Quel projet voulez-vous créer ?", exact: true }),
   ).toBeVisible();
@@ -57,7 +69,7 @@ test("first launch opens an empty shared dashboard; the visible techno template 
     journals: [],
     last: undefined,
   });
-  await dashboard.getByRole("tab", { name: "Templates", exact: true }).click();
+  await navigation.getByRole("button", { name: "Templates", exact: true }).click();
   const techno = dashboard.getByRole("button", {
     name: "Créer depuis AFTERHOURS — Techno",
     exact: true,
@@ -123,4 +135,39 @@ test("first launch opens an empty shared dashboard; the visible techno template 
   });
   expect(errors).toEqual([]);
   expect(deprecated).toEqual([]);
+});
+
+test("the split import action preserves a real failure and leaves the empty library available", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Try Melt", exact: true }).click();
+  const dashboard = page.getByRole("dialog", { name: "Tableau de bord Melt", exact: true });
+  await dashboard.getByRole("button", { name: "Options de création", exact: true }).click();
+  const choosing = page.waitForEvent("filechooser");
+  await page.getByRole("menuitem", { name: "Importer .musart", exact: true }).click();
+  await (
+    await choosing
+  ).setFiles({
+    name: "invalid.musart",
+    mimeType: "application/json",
+    buffer: Buffer.from("invalid portable project"),
+  });
+  await expect(page.getByRole("alert")).toBeVisible();
+  await expect(page.getByRole("alert").locator(".notice-content p")).toHaveText(/\S/);
+  await expect(dashboard).toBeVisible();
+  await expect(
+    dashboard.getByRole("button", { name: "Nouveau projet", exact: true }),
+  ).toBeEnabled();
+  expect(await savedState(page)).toEqual({
+    projects: [],
+    assets: 0,
+    journals: [],
+    last: undefined,
+  });
+  await page.getByRole("button", { name: "Fermer la notification", exact: true }).click();
+  await dashboard.getByRole("button", { name: "Nouveau projet", exact: true }).click();
+  await expect(
+    page.getByRole("dialog", { name: "Un nouvel espace pour vos idées.", exact: true }),
+  ).toBeVisible();
 });

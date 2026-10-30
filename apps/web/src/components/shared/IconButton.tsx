@@ -9,12 +9,14 @@ export function IconButton({
   active,
   className = "",
   shortcut,
+  tooltipSide = "left",
   ...props
 }: Omit<ComponentProps<typeof Button>, "children"> & {
   label: string;
   children: ReactNode;
   active?: boolean;
   shortcut?: string;
+  tooltipSide?: ComponentProps<typeof TooltipContent>["side"];
 }) {
   return (
     <Tooltip>
@@ -30,7 +32,7 @@ export function IconButton({
           {children}
         </Button>
       </TooltipTrigger>
-      <TooltipContent side="left" className="floating-panel">
+      <TooltipContent side={tooltipSide} className="floating-panel">
         <span>{label}</span>
         {shortcut && (
           <KbdGroup>

@@ -9,12 +9,47 @@
 - Rendering: **Three.js 0.186.1** and **React Three Fiber 9.8.2**, MIT. WebGPURenderer and MeshBasicNodeMaterial with TSL nodes; no handwritten GLSL/WGSL shaders. [WebGPURenderer documentation](https://threejs.org/manual/pages/webgpurenderer), [R3F on-demand rendering](https://r3f.docs.pmnd.rs/advanced/scaling-performance).
 - Dither: a Bayer threshold inspired by the local **Plinka / React-Beautiful-Gradient** project, expressed as TSL nodes; ASCII uses a local monospace glyph atlas. Plinka attribution and its [MIT license](plinka-gradient-MIT.txt) are preserved alongside this document. Running MusArt requires no imports from outside this repository.
 - Fonts: **Inter** and **Space Grotesk**, variable Latin subsets supplied by Fontsource and served locally. Their [Inter](inter-OFL.txt) and [Space Grotesk](space-grotesk-OFL.txt) OFL licenses are preserved alongside this document.
-- Text outlines: twenty local TrueType families listed in `@musart/assets`' font catalog, pinned to Google Fonts revision `ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b`. Their OFL notices and source/checksum manifest are in `apps/web/public/fonts/`. OpenType.js 2.0.0 parses outlines; HarfBuzz.js 0.4.15 shapes metadata, both MIT. [Analytical TSL port and reference provenance](../rendering/analytical-text.md).
+- Text outlines: twenty local TrueType families listed in `@musart/assets`' font catalog, pinned to Google Fonts revision `ddf386ba1b9fbc6b2c818f1ddcd9148f54ced94b`. Their OFL notices and source/checksum manifest are in `apps/web/public/fonts/`. text-shaper 0.1.28 prepares outline/shaping metadata under MIT with an explicit pinned compatibility patch. OpenType.js 2.0.0 remains for UI import metadata validation and independent references, also MIT. [Analytical TSL port and reference provenance](../rendering/analytical-text.md).
 - Magic Search: official shadcn Command component with **cmdk 1.1.1**, MIT. The existing shadcn MIT notice covers the copied component; cmdk retains its dependency license.
 - Segmentation: **SlimSAM**, ONNX weights from `Xenova/slimsam-77-uniform`, Apache-2.0, pinned to revision `5850ab45f587c112167512ffef949107115e26a0`. [Model and license](https://huggingface.co/Xenova/slimsam-77-uniform). Transformers.js runs in a local worker; only model/runtime resources are downloaded, and no image is uploaded.
-- MusArt logo and favicon: supplied by the project owner as **MusArt-Icones-PNG** on 2026-10-27. Original transparent PNGs are preserved verbatim in `apps/web/public/branding/`; no third-party icon substitutes or generated variants are used.
+- Archived MusArt logo artwork: supplied by the project owner as **MusArt-Icones-PNG** on 2026-10-27. These original transparent PNGs are preserved verbatim in `apps/web/public/branding/`, without generated variants of the supplied artwork. The current Melt identity is documented below.
 - Demonstration artwork: original SVG created in `services/projects/demo.ts`; it uses no remote media. Load-test photographs are local Unsplash files in `apps/web/public/benchmark/`, with a SHA-256 manifest and recorded sources/license; ten photographs supply fifty assets. The supplied Figma screenshot is a reference and is not part of the delivered interface.
 
 Versions were installed after inspecting published React/R3F/Vite metadata. TypeScript 5.9.3 is retained for lint-toolchain compatibility; upgrading to a newer major version is a separate task requiring plugin verification. The complete dependency graph is pinned in `bun.lock`.
 
 The `unbound-method` lint exception is restricted to test files: assertions inspect method/spy references without invoking them outside their owning object. Production callbacks declare `this: void` when necessary. Promise rules remain active in tests.
+
+## Melt SVG mascot and animation engine
+
+The visible application identity is Melt. Its eight-petal Dahlia (`fleur8`) and
+wonder expression (`surpris`) use the complete original SVG engine copied from
+Maskot's local `MascotLab` checkout at commit
+`2825887abd292caa5dd46e8014f65481857fc183`. The engine geometry, measured profiles,
+32 silhouettes, 32 expressions, 32 eye styles, eye-fit solver and its complete
+precomputed table are retained. No substitute deformation or raster logo is used.
+
+Maskot's code and React morph component are MIT by ExtraBinoss; its underlying
+engine is MIT by Jérémy Perret, from Bloub commit
+`b4bb3c1b5f93c7b87a2e8d620f667c4093d97749`, via Beam. The original
+[Maskot notice](maskot/Maskot-NOTICE.txt), [Maskot MIT license](maskot/Maskot-MIT.txt),
+[Bloub MIT license](maskot/Bloub-MIT.txt) and
+[upstream file checksums](maskot/upstream-sha256.json) are preserved.
+
+Integration changes stay in the DOM/presentation adapter: an imperative SVG
+surface, bounded node pools, actual operation status subscriptions and on-demand
+playback. `MorphPath` retains Maskot's numeric SVG interpolation, with added
+hidden-tab/reduced-motion handling and stale-callback cleanup. Upstream engine
+regression tests are retained in the mirrored test tree; workshop preset-parser
+assertions are omitted because the workshop storage/editor are not copied.
+The exhaustive shape/expression/eye-contour witnesses live in
+`skins-catalogue.test.ts`; their sample matrix and assertions are unchanged.
+The two upstream full-table rebuild assertions share one solver result in
+`eyefit.test.ts`, including both complete equality and the separate idle checks.
+The type-only upstream `bot-types.ts` is named `bot-types.d.ts` to declare its
+non-executable role; type-only import paths remain unchanged.
+The generated eye-fit table remains byte-identical and is excluded only from
+formatting; it is still linted, tested and included in coverage.
+
+The earlier owner-supplied MusArt PNG artwork remains archived under
+`apps/web/public/branding/`. Current visible logos and favicons use the new Melt
+SVG source; portable format/storage identifiers are intentionally unchanged.

@@ -1,3 +1,4 @@
+import { openProjectLibrary } from "./support/project-library";
 import { test, expect, type Page, type Locator } from "@playwright/test";
 import { createLayer, createPage, createProject } from "@musart/core";
 import { inspectImage } from "./support/image-probe";
@@ -107,7 +108,7 @@ test("project cards use real overlay thumbnails and cycle only during unfocused 
   test.setTimeout(90000);
   await ready(page);
   await populate(page);
-  await page.getByRole("button", { name: "Menu du projet", exact: true }).click();
+  await openProjectLibrary(page);
   const card = page.getByRole("article", { name: "Library A", exact: true }),
     preview = card.locator(".project-preview");
   const first = card.getByRole("img", { name: "Red page", exact: true });
@@ -176,7 +177,7 @@ test("project cards use real overlay thumbnails and cycle only during unfocused 
   await expect(card.locator(".preview-arrows, .preview-dots button")).toHaveCount(0);
   await expect(card.locator(".project-card-overlay .project-card-meta")).toBeVisible();
   await expect(card.locator(".preview-page-caption")).toContainText(/Red page|Green page/);
-  await expect(page.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Tableau de bord Melt" })).toBeVisible();
   await page.screenshot({ path: "artifacts/screenshots/project-library.png" });
   await testInfo.attach("real-page-previews", {
     body: JSON.stringify(
@@ -194,7 +195,7 @@ test("inactive CRUD, project storage, journal clearing, active clearing and crea
   test.setTimeout(90000);
   await ready(page);
   await populate(page);
-  await page.getByRole("button", { name: "Menu du projet", exact: true }).click();
+  await openProjectLibrary(page);
   const activeBefore = await page.evaluate(() => window.musart!.snapshot());
   let card = page.getByRole("article", { name: "Library A", exact: true });
   await expect(card).toBeVisible();
@@ -243,7 +244,7 @@ test("inactive CRUD, project storage, journal clearing, active clearing and crea
     activeBefore.project.id,
   );
   await card.getByRole("button", { name: "Library A renamed", exact: true }).click();
-  await expect(page.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeHidden();
+  await expect(page.getByRole("dialog", { name: "Tableau de bord Melt" })).toBeHidden();
   let state = await page.evaluate(() => window.musart!.snapshot());
   expect(state.project.id).toBe("library-project-a");
   expect(state.project.pages).toHaveLength(2);
@@ -263,7 +264,7 @@ test("inactive CRUD, project storage, journal clearing, active clearing and crea
     .poll(() => page.evaluate(async () => (await window.musart!.historyInfo()).events))
     .toBe(0);
   expect(await page.evaluate(() => window.musart!.snapshot())).toEqual(canonical);
-  await page.getByRole("button", { name: "Menu du projet", exact: true }).click();
+  await openProjectLibrary(page);
   await page.getByRole("button", { name: "Nouveau projet", exact: true }).first().click();
   await page.getByRole("textbox", { name: "Nom", exact: true }).fill("Created through library");
   for (const [label, value] of [

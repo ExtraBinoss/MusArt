@@ -27,3 +27,6 @@ export { probeAudioOriginal } from "./sources/audio/probe";
 export type { AudioOriginalProbe } from "./sources/audio/probe";
 export { createMotionAudioMixer, openMotionAudioSource } from "./export/motion";
 export type { MotionAudioPlan, MotionAudioSource, MotionPcmChunk } from "./export/motion";
+
+export { estimatePreviewCost } from "./compositing/preview-cost";
+export { gpuTextureLimit } from "./cache/texture-limits";

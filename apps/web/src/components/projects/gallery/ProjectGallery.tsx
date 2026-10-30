@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from "react";
+import { motion, useReducedMotion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { Plus, LoaderCircle, FolderOpen } from "lucide-react";
 import type { EditorServices, ProjectLibraryPage, ProjectSummary } from "../../../state/contracts";
 import type { TaskRunner } from "../ProjectDialog";
+import { SearchInput } from "../../assets/SearchInput";
+import { MeltLogo } from "../../../ui/brand/MeltLogo";
+import "../dashboard/messages";
 import { Button } from "../../ui/button";
 import { ProjectCard } from "./ProjectCard";
 import { ProjectActionDialog } from "../actions/ProjectActionDialog";
@@ -15,6 +19,10 @@ export function ProjectGallery({
   onCreate,
   showCreateAction = true,
   busy: dashboardBusy = false,
+  query: externalQuery,
+  hideSearch = false,
+  onQueryChange,
+  onProjectsLoaded,
 }: {
   services: EditorServices;
   activeProjectId?: string;
@@ -23,8 +31,16 @@ export function ProjectGallery({
   onCreate: () => void;
   showCreateAction?: boolean;
   busy?: boolean;
+  query?: string;
+  hideSearch?: boolean;
+  onQueryChange?: (query: string) => void;
+  onProjectsLoaded?: (projects: ProjectSummary[]) => void;
 }) {
   const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  const [localQuery, setLocalQuery] = useState("");
+  const query = externalQuery ?? localQuery;
+  const term = query.trim().toLocaleLowerCase();
   const [loaded, setLoaded] = useState<ProjectLibraryPage | null>(null),
     [failed, setFailed] = useState(false),
     [busy, setBusy] = useState(false),
@@ -65,6 +81,9 @@ export function ProjectGallery({
       live = false;
     };
   }, [services, onTask, revision]);
+  useEffect(() => {
+    if (loaded) onProjectsLoaded?.(loaded.projects);
+  }, [loaded, onProjectsLoaded]);
   async function mutate(task: () => Promise<void>, success?: string, refresh = true) {
     const current = scope.current;
     if (!current.alive || current.pending || dashboardBusy) return false;
@@ -103,6 +122,31 @@ export function ProjectGallery({
   }
   return (
     <>
+      {!hideSearch && (
+        <div className="project-library-search">
+          <SearchInput
+            aria-label={t("dashboard:searchProjects")}
+            prefix={t("common.search")}
+            hints={
+              loaded?.projects.slice(0, 6).map((project) => ({
+                label: project.name,
+                preview: project.thumbnail ? (
+                  <img src={project.thumbnail} alt="" />
+                ) : (
+                  <MeltLogo size={20} />
+                ),
+              })) ?? [{ label: t("dashboard:projects"), preview: <MeltLogo size={20} /> }]
+            }
+            value={query}
+            disabled={disabled}
+            onChange={(event) => {
+              const next = event.target.value;
+              if (externalQuery === undefined) setLocalQuery(next);
+              onQueryChange?.(next);
+            }}
+          />
+        </div>
+      )}
       {!loaded && !failed ? (
         <p className="gallery-status" role="status">
           <LoaderCircle size={16} className="animate-spin" />
@@ -133,32 +177,52 @@ export function ProjectGallery({
             <span>{t("localOnly")}</span>
           </div>
           <div className="project-grid" aria-busy={disabled}>
-            {loaded?.projects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                services={services}
-                active={project.id === activeProjectId}
-                disabled={disabled}
-                onOpen={() => {
-                  void mutate(() => services.openProject(project.id), undefined, false).then(
-                    (ok) => {
-                      if (ok && scope.current.alive) onOpen();
-                    },
-                  );
-                }}
-                onRename={(name) =>
-                  mutate(() => services.renameProject(project.id, name), t("projectRenamed"))
-                }
-                onDuplicate={() => {
-                  void mutate(() => services.duplicateProject(project.id), t("projectDuplicated"));
-                }}
-                onDelete={() => setAction({ kind: "delete", project })}
-                onInsights={() => setInspecting(project)}
-                onClearHistory={() => setAction({ kind: "clearHistory", project })}
-              />
-            ))}
+            {loaded?.projects
+              .filter((project) => project.name.toLocaleLowerCase().includes(term))
+              .map((project, index) => (
+                <motion.div
+                  key={project.id}
+                  className="project-card-entry"
+                  initial={reduced ? false : { opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: reduced ? 0 : 0.18,
+                    delay: reduced ? 0 : Math.min(index * 0.025, 0.15),
+                  }}
+                >
+                  <ProjectCard
+                    key={project.id}
+                    project={project}
+                    services={services}
+                    active={project.id === activeProjectId}
+                    disabled={disabled}
+                    onOpen={() => {
+                      void mutate(() => services.openProject(project.id), undefined, false).then(
+                        (ok) => {
+                          if (ok && scope.current.alive) onOpen();
+                        },
+                      );
+                    }}
+                    onRename={(name) =>
+                      mutate(() => services.renameProject(project.id, name), t("projectRenamed"))
+                    }
+                    onDuplicate={() => {
+                      void mutate(
+                        () => services.duplicateProject(project.id),
+                        t("projectDuplicated"),
+                      );
+                    }}
+                    onDelete={() => setAction({ kind: "delete", project })}
+                    onInsights={() => setInspecting(project)}
+                    onClearHistory={() => setAction({ kind: "clearHistory", project })}
+                  />
+                </motion.div>
+              ))}
           </div>
+          {loaded &&
+            !loaded.projects.some((project) => project.name.toLocaleLowerCase().includes(term)) && (
+              <p className="template-empty">{t("dashboard:noResults")}</p>
+            )}
           {loaded?.before && (
             <Button
               variant="outline"

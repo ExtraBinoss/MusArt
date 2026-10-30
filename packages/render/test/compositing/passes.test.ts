@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { createLayer } from "@musart/core";
 import {
   Matrix3,
+  HalfFloatType,
   Mesh,
   MeshBasicNodeMaterial,
   RenderTarget,
@@ -108,3 +109,75 @@ it("prepares reusable pass materials asynchronously without drawing or retaining
   passes.dispose();
   target.dispose();
 });
+
+it("compiles independent logical samplers with distinct valid owned textures and restores external bindings", async () => {
+  const { renderer, fake } = makeGpuRenderer(),
+    passes = new GpuPasses(renderer),
+    target = new RenderTarget(32, 24, { type: HalfFloatType }),
+    external = new Texture();
+  passes.copyTo({ texture: external, width: 32, height: 24, premultiplied: false }, target);
+  const seen: Set<Texture>[] = [],
+    owned = new Map<Texture, ReturnType<typeof vi.spyOn>>();
+  fake.compileAsync.mockImplementation(async (...args: unknown[]) => {
+    const mesh = (args[0] as Scene).children[0] as Mesh;
+    const textures = new Set(
+      [...graphNodes((mesh.material as MeshBasicNodeMaterial).fragmentNode!)].flatMap((node) =>
+        "value" in node && node.value instanceof Texture ? [node.value] : [],
+      ),
+    );
+    seen.push(textures);
+    for (const texture of textures) {
+      expect(texture).not.toBe(target.texture);
+      expect(texture.image).toMatchObject({ width: 1, height: 1 });
+      expect(texture.type).toBe(target.texture.type);
+      expect(texture.format).toBe(target.texture.format);
+      if (!owned.has(texture)) owned.set(texture, vi.spyOn(texture, "dispose"));
+    }
+  });
+  const externalDispose = vi.spyOn(external, "dispose"),
+    targetDispose = vi.spyOn(target, "dispose"),
+    targetTextureDispose = vi.spyOn(target.texture, "dispose");
+  await passes.prepare(target);
+  expect(seen.map((textures) => textures.size)).toEqual([0, 1, 2, 2, 0]);
+  expect(owned.size).toBe(3);
+  expect(new Set([...owned.keys()].map((texture) => texture.uuid)).size).toBe(3);
+  for (const dispose of owned.values()) expect(dispose).toHaveBeenCalledOnce();
+  expect(externalDispose).not.toHaveBeenCalled();
+  expect(targetDispose).not.toHaveBeenCalled();
+  expect(targetTextureDispose).not.toHaveBeenCalled();
+  await passes.prepare(target);
+  expect(fake.compileAsync).toHaveBeenCalledTimes(5);
+  expect(owned.size).toBe(3);
+  passes.copyTo({ texture: external, width: 32, height: 24, premultiplied: false }, target);
+  const last = fake.render.mock.calls.at(-1)![0] as Scene,
+    mesh = last.children[0] as Mesh,
+    nodes = graphNodes((mesh.material as MeshBasicNodeMaterial).fragmentNode!);
+  expect([...nodes].some((node) => "value" in node && node.value === external)).toBe(true);
+  passes.dispose();
+  external.dispose();
+  target.dispose();
+});
+
+it.each(["failure", "cancel"])(
+  "disposes compilation inputs on %s and allows a fresh retry",
+  async (reason) => {
+    const { renderer, fake } = makeGpuRenderer(),
+      passes = new GpuPasses(renderer),
+      target = new RenderTarget(1, 1),
+      textureDispose = vi.spyOn(Texture.prototype, "dispose"),
+      targetDispose = vi.spyOn(RenderTarget.prototype, "dispose");
+    if (reason === "failure") fake.compileAsync.mockRejectedValueOnce(new Error("compile failed"));
+    await expect(passes.prepare(target, () => reason !== "cancel")).rejects.toThrow();
+    expect(textureDispose).toHaveBeenCalledTimes(3);
+    expect(targetDispose).toHaveBeenCalledTimes(3);
+    expect(textureDispose.mock.contexts).not.toContain(target.texture);
+    expect(targetDispose.mock.contexts).not.toContain(target);
+    expect(fake.getRenderTarget()).toBeNull();
+    expect(fake.render).not.toHaveBeenCalled();
+    await passes.prepare(target);
+    expect(textureDispose).toHaveBeenCalledTimes(6);
+    expect(targetDispose).toHaveBeenCalledTimes(6);
+    passes.dispose();
+    target.dispose();
+  },
+);

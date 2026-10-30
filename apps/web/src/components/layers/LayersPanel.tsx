@@ -2,6 +2,7 @@ import { memo, useEffect, useMemo, useRef, type ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import type { Composition, EnginePort, Layer, Project } from "@musart/core";
 import type { EditorServices } from "../../state/contracts";
+import { PanelHeaderActions } from "../shared/panels/PanelHeaderActions";
 import { LayerFooter } from "./LayerFooter";
 import { LayerCompositing } from "./controls/LayerCompositing";
 import { flattenLayerTree } from "./tree/projection";
@@ -62,13 +63,24 @@ export const LayersPanel = memo(function LayersPanel({
     () => ({ engine, page, selection, run, attachment }),
     [engine, page, selection, run, attachment],
   );
+  const headerActions = (
+    <>
+      <span className="small-count">{layerCount}</span>
+      <FooterPresentation {...footerProps} />
+    </>
+  );
   return (
     <section ref={element} className="layers-panel" aria-label={t("layers")}>
-      <div className="panel-heading">
-        <h2>{t("layers")}</h2>
-        <span className="small-count">{layerCount}</span>
-        <FooterPresentation {...footerProps} />
-      </div>
+      <PanelHeaderActions
+        fallback={
+          <div className="panel-heading">
+            <h2>{t("layers")}</h2>
+            {headerActions}
+          </div>
+        }
+      >
+        {headerActions}
+      </PanelHeaderActions>
       <LayerCompositing
         key={`${project.id}:${page.id}`}
         engine={engine}

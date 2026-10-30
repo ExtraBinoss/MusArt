@@ -3,6 +3,8 @@ import type { MediaOriginalInput } from "../services/projects/media/model";
 import type { FontLibraryPort } from "../services/fonts/model";
 import type { PixelSelectionPort } from "../services/selection/wand/model";
 
+export type ProjectMode = "static" | "motion";
+
 export interface ProjectSummary {
   id: string;
   name: string;
@@ -10,6 +12,8 @@ export interface ProjectSummary {
   width: number;
   height: number;
   thumbnail?: string;
+  /** Any Motion artboard makes the project Motion; older summaries may omit this. */
+  mode?: ProjectMode;
   pages: ProjectPageSummary[];
 }
 export interface ProjectLibraryOptions {
@@ -21,6 +25,8 @@ export interface ProjectLibraryPage {
   before: [string, string] | null;
 }
 export interface ProjectPageSummary {
+  /** Derived from persisted artboard metadata without loading originals or history. */
+  mode?: ProjectMode;
   id: string;
   name: string;
   width: number;
@@ -118,6 +124,8 @@ export interface EditorServices {
   listProjects(this: void): Promise<ProjectSummary[]>;
   listProjectPage(this: void, options?: ProjectLibraryOptions): Promise<ProjectLibraryPage>;
   openProject(this: void, id: string): Promise<void>;
+  /** Read-only preview load: never publishes into the editor, remembers an active ID or writes storage. */
+  loadProjectPreview?(this: void, id: string, options?: { signal?: AbortSignal }): Promise<Project>;
   createProject(this: void, options: NewProjectOptions): Promise<void>;
   saveProject(this: void): Promise<void>;
   deleteProject(this: void, id: string): Promise<void>;

@@ -13,9 +13,8 @@ const motionNames = [
   "Sound Playground",
 ];
 
-async function filter(page: Page, gallery: Locator, mode: "Motion" | "Statique") {
-  await gallery.getByRole("combobox", { name: "Mode du modèle", exact: true }).click();
-  await page.getByRole("option", { name: mode, exact: true }).click();
+async function filter(_page: Page, gallery: Locator, mode: "Motion" | "Statique") {
+  await gallery.getByRole("radio", { name: mode, exact: true }).click();
 }
 
 async function presented(page: Page, projectId: string, pageId: string) {
@@ -46,8 +45,10 @@ test("real gallery filters templates, creates an independent Motion project and 
   await page.waitForFunction(() => Boolean(window.musart), undefined, { timeout: 20000 });
   const initialId = await page.evaluate(() => window.musart!.snapshot().project.id);
   await page.getByRole("button", { name: "Menu du projet", exact: true }).click();
-  const gallery = page.getByRole("dialog", { name: "Tableau de bord MusArt", exact: true });
-  await gallery.getByRole("tab", { name: "Templates", exact: true }).click();
+  const gallery = page
+    .getByRole("dialog")
+    .filter({ has: page.getByRole("button", { name: "Accueil Melt", exact: true }) });
+  await gallery.getByRole("button", { name: "Templates", exact: true }).click();
   await filter(page, gallery, "Motion");
   await expect(gallery.locator(".template-card")).toHaveCount(6);
   for (const name of motionNames)
@@ -131,4 +132,36 @@ test("real gallery filters templates, creates an independent Motion project and 
       2,
     ),
   );
+});
+
+test("Sound Playground opens from the real gallery with its original audio tracks", async ({
+  page,
+}, info) => {
+  const source = JSON.parse(
+    await readFile("apps/web/public/templates/motion/sound-playground.json", "utf8"),
+  ) as { project: Project };
+  await page.addInitScript(() => {
+    localStorage.setItem("musart.onboarding.v1", JSON.stringify({ version: 1, completed: true }));
+    localStorage.setItem("musart.language", "fr");
+    localStorage.setItem("musart.theme", "dark");
+  });
+  await page.goto("/?automation=1", { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => Boolean(window.musart));
+  await page.getByRole("button", { name: "Menu du projet", exact: true }).click();
+  const gallery = page
+    .getByRole("dialog")
+    .filter({ has: page.getByRole("button", { name: "Accueil Melt", exact: true }) });
+  await gallery.getByRole("button", { name: "Templates", exact: true }).click();
+  await filter(page, gallery, "Motion");
+  await gallery.getByRole("button", { name: "Créer depuis Sound Playground", exact: true }).click();
+  await expect(gallery).toBeHidden();
+  const opened = await page.evaluate(() => window.musart!.snapshot().project);
+  expect(opened.id).not.toBe(source.project.id);
+  expect(opened.pages).toEqual(source.project.pages);
+  expect(opened.pages[0]!.motion!.audioTracks!.length).toBeGreaterThan(0);
+  expect(Object.values(opened.assets).filter((asset) => asset.kind === "audio")).toHaveLength(
+    Object.values(source.project.assets).filter((asset) => asset.kind === "audio").length,
+  );
+  await presented(page, opened.id, opened.pages[0]!.id);
+  await page.screenshot({ path: info.outputPath("sound-playground.png") });
 });

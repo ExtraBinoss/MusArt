@@ -76,9 +76,9 @@ test("opening the common exporter pauses only the editor's presentation and neve
     );
   }
   d.mount(<Harness />);
-  fireEvent.click(screen.getByRole("button", { name: "Exporter", exact: true }));
+  fireEvent.click(screen.getByRole("button", { name: "Exporter" }));
   expect(transport.read()).toMatchObject({ playing: false, time: position });
-  fireEvent.click(screen.getByRole("button", { name: "Annuler", exact: true }));
+  fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
   expect(transport.read()).toMatchObject({ playing: false, time: position });
   expect(d.engine.getSnapshot()).toBe(before);
 });

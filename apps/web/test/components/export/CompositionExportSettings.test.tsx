@@ -26,9 +26,7 @@ test("defaults to the active artboard and routes Static selection through the co
       onOpenChange={vi.fn()}
     />,
   );
-  expect(screen.getByRole("combobox", { name: "Plan de travail", exact: true })).toHaveTextContent(
-    d.page.name,
-  );
+  expect(screen.getByRole("combobox", { name: "Plan de travail" })).toHaveTextContent(d.page.name);
   fireEvent.click(screen.getByRole("button", { name: "Exporter l’image" }));
   await waitFor(() =>
     expect(deliver).toHaveBeenCalledWith(
@@ -68,7 +66,7 @@ test("an artboard menu request targets Motion by ID without changing the editor'
       onOpenChange={vi.fn()}
     />,
   );
-  expect(screen.getByRole("combobox", { name: "Plan de travail", exact: true })).toHaveTextContent(
+  expect(screen.getByRole("combobox", { name: "Plan de travail" })).toHaveTextContent(
     "Motion artwork",
   );
   expect(screen.getByTestId("motion-export")).toHaveTextContent(other.id);

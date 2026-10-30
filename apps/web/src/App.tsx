@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useStore } from "jotai";
 import { useRenderMetrics } from "./state/session/render-metrics";
-import { MusArtLogo } from "./components/branding/MusArtLogo";
+import { MeltLogo } from "./ui/brand/MeltLogo";
 import { useTranslation } from "react-i18next";
 import type { EnginePort } from "@musart/core";
 import type { AppProps } from "./state/contracts";
@@ -22,11 +22,13 @@ import { ProjectPanelGroup } from "./components/workspace/ProjectPanelGroup";
 import { ProjectPreferencesProvider } from "./components/workspace/preferences/context";
 import { Button } from "./components/ui/button";
 import { Toolbar } from "./components/toolbar/Toolbar";
+import { MobileEditor } from "./components/workspace/mobile/MobileEditor";
+import { MobileControlsContext, useMobileLayout } from "./components/workspace/mobile/use-mobile";
 import { EditorSidebar } from "./components/workspace/EditorSidebar";
 import { CanvasArea } from "./components/viewport/CanvasArea";
 import { ProjectDialog, type ProjectDialogProps } from "./components/projects/ProjectDialog";
-import { MotionImportConfirmation } from "./components/motion-import/ConfirmationDialog";
 import { TransitionRequestHost } from "./components/motion/transitions/TransitionRequestHost";
+import { MotionImportConfirmation } from "./components/motion-import/ConfirmationDialog";
 import { EditorNotice, type EditorNoticeValue } from "./components/notifications/EditorNotice";
 import { errorDiagnostics } from "./components/notifications/diagnostics";
 import { ProjectPill } from "./components/projects/ProjectPill";
@@ -42,14 +44,18 @@ import {
 
 export function App({ engine, services, welcome = false }: AppProps) {
   const { t } = useTranslation();
+  const mobile = useMobileLayout();
   const element = useRef<HTMLElement>(null);
   useRenderMetrics(element);
   useTheme();
   const projectId = useEngineValue(engine, (snapshot) => snapshot.project.id);
   const projectName = useEngineValue(engine, (snapshot) => snapshot.project.name);
-  const [welcomeProject] = useState(() => (welcome ? projectId : null));
-  const choosingProject = welcomeProject === projectId;
-  const [projectMenu, setProjectMenu] = useState<ProjectView | null>(welcome ? "projects" : null);
+  const [choosingProject, setChoosingProject] = useState(
+    () => welcome || new URLSearchParams(location.search).get("welcome") === "1",
+  );
+  const [projectMenu, setProjectMenu] = useState<ProjectView | null>(
+    choosingProject ? "projects" : null,
+  );
   const [exportMenu, setExportMenu] = useState(false);
   const [timelapseMenu, setTimelapseMenu] = useState(false);
   const motionTransport = useMemo(() => createMotionTransport(engine), [engine]);
@@ -132,80 +138,102 @@ export function App({ engine, services, welcome = false }: AppProps) {
   useShortcuts(engine, services, onTask, !choosingProject);
   return (
     <FontLibraryProvider library={services.fonts ?? bundledFontLibrary}>
-      <TooltipProvider delayDuration={350}>
-        <ProjectPreferencesProvider
-          projectId={projectId}
-          port={services.projectPreferences}
-          onError={onPreferencesError}
-        >
-          <main className="musart-app" ref={element}>
-            <MotionImportConfirmation engine={engine} />
-            <TransitionRequestHost engine={engine} />
-            {!choosingProject && (
-              <>
-                <ProjectPanelGroup
-                  preference="workspaceLayout"
-                  orientation="horizontal"
-                  className="workspace-panels"
-                >
-                  <ResizablePanel
-                    id="workspace"
-                    minSize="35%"
-                    defaultSize="77%"
-                    className="workspace"
+      <MobileControlsContext value={mobile}>
+        <TooltipProvider delayDuration={350}>
+          <ProjectPreferencesProvider
+            projectId={projectId}
+            port={services.projectPreferences}
+            onError={onPreferencesError}
+          >
+            <main className="musart-app" ref={element}>
+              <MotionImportConfirmation engine={engine} />
+              <TransitionRequestHost engine={engine} />
+              {!choosingProject && (
+                <>
+                  <ProjectPanelGroup
+                    preference="workspaceLayout"
+                    enabled={!mobile}
+                    orientation="horizontal"
+                    className="workspace-panels"
                   >
-                    <CanvasArea
-                      services={services}
-                      engine={engine}
-                      onError={onError}
-                      onDropFiles={onDropFiles}
-                      onImagePoint={onImagePoint}
-                      fontResolver={services.fonts?.resolve}
-                    />
-                    <div className="project-trigger">
-                      <Button
-                        variant="ghost"
-                        className="brand-button floating-panel"
-                        aria-label={t("projectMenu")}
-                        onClick={() => setProjectMenu("projects")}
-                      >
-                        <MusArtLogo />
-                      </Button>
-                      <ProjectPill
-                        key={projectId}
-                        engine={engine}
+                    <ResizablePanel
+                      id="workspace"
+                      minSize="35%"
+                      defaultSize="77%"
+                      className="workspace"
+                    >
+                      <CanvasArea
                         services={services}
-                        name={projectName}
-                        onTask={onTask}
+                        engine={engine}
+                        onError={onError}
+                        onDropFiles={onDropFiles}
+                        onImagePoint={onImagePoint}
+                        fontResolver={services.fonts?.resolve}
                       />
-                    </div>
-                    <Toolbar
-                      engine={engine}
-                      services={services}
-                      onTask={onTask}
-                      onProjects={setProjectMenu}
-                      onExport={() => showExport(true)}
-                      onPanelMode={(mode) => {
-                        if (mode === "animate") showTimelapse(true);
-                      }}
-                      onImport={onImport}
-                    />
-                    <ToolSettings services={services} onTask={onTask} />
-                    {processing && (
-                      <div className="processing-notice floating-panel" role="status">
-                        {t("processing")}
+                      <div className="project-trigger">
+                        <Button
+                          variant="ghost"
+                          className="brand-button floating-panel"
+                          aria-label={t("projectMenu")}
+                          onClick={() => setProjectMenu("projects")}
+                        >
+                          <MeltLogo />
+                        </Button>
+                        <ProjectPill
+                          key={projectId}
+                          engine={engine}
+                          services={services}
+                          name={projectName}
+                          onTask={onTask}
+                          onProjects={() => setProjectMenu("projects")}
+                        />
                       </div>
+                      {!mobile && (
+                        <Toolbar
+                          engine={engine}
+                          services={services}
+                          onTask={onTask}
+                          onProjects={setProjectMenu}
+                          onExport={() => showExport(true)}
+                          onPanelMode={(mode) => {
+                            if (mode === "animate") showTimelapse(true);
+                          }}
+                          onImport={onImport}
+                        />
+                      )}
+                      {!mobile && <ToolSettings services={services} onTask={onTask} />}
+                      {processing && (
+                        <div className="processing-notice floating-panel" role="status">
+                          {t("processing")}
+                        </div>
+                      )}
+                    </ResizablePanel>
+                    {!mobile && (
+                      <>
+                        <ResizableHandle aria-label={t("panelResize")} className="sidebar-resize" />
+                        <ResizablePanel
+                          id="inspector"
+                          minSize="260px"
+                          maxSize="480px"
+                          defaultSize="320px"
+                          className="sidebar"
+                        >
+                          <EditorSidebar
+                            engine={engine}
+                            services={services}
+                            run={run}
+                            onTask={onTask}
+                            exportOpen={exportMenu}
+                            onExportOpenChange={showExport}
+                            timelapseOpen={timelapseMenu}
+                            onTimelapseOpenChange={showTimelapse}
+                          />
+                        </ResizablePanel>
+                      </>
                     )}
-                  </ResizablePanel>
-                  <ResizableHandle aria-label={t("panelResize")} className="sidebar-resize" />
-                  <ResizablePanel
-                    id="inspector"
-                    minSize="260px"
-                    maxSize="480px"
-                    defaultSize="320px"
-                    className="sidebar"
-                  >
-                    <EditorSidebar
+                  </ProjectPanelGroup>
+                  {mobile ? (
+                    <MobileEditor
                       engine={engine}
                       services={services}
                       run={run}
@@ -214,40 +242,58 @@ export function App({ engine, services, welcome = false }: AppProps) {
                       onExportOpenChange={showExport}
                       timelapseOpen={timelapseMenu}
                       onTimelapseOpenChange={showTimelapse}
+                      tools={
+                        <>
+                          <Toolbar
+                            engine={engine}
+                            services={services}
+                            onTask={onTask}
+                            onProjects={setProjectMenu}
+                            onExport={() => showExport(true)}
+                            onPanelMode={(mode) => {
+                              if (mode === "animate") showTimelapse(true);
+                            }}
+                            onImport={onImport}
+                          />
+                          <ToolSettings services={services} onTask={onTask} />
+                        </>
+                      }
                     />
-                  </ResizablePanel>
-                </ProjectPanelGroup>
-                <MotionTimelineDock engine={engine} />
-                <input
-                  ref={input}
-                  type="file"
-                  multiple
-                  accept="image/*,video/*,audio/*,.svg"
-                  className="sr-only"
-                  aria-label={t("import")}
-                  onChange={(event) => {
-                    if (event.target.files?.length) onDropFiles(Array.from(event.target.files));
-                    event.target.value = "";
+                  ) : (
+                    <MotionTimelineDock engine={engine} />
+                  )}
+                  <input
+                    ref={input}
+                    type="file"
+                    multiple
+                    accept="image/*,video/*,audio/*,.svg"
+                    className="sr-only"
+                    aria-label={t("import")}
+                    onChange={(event) => {
+                      if (event.target.files?.length) onDropFiles(Array.from(event.target.files));
+                      event.target.value = "";
+                    }}
+                  />
+                </>
+              )}
+              <EditorNotice notice={notice} onClose={dismissNotice} />
+              {projectMenu && (
+                <ProjectMenu
+                  engine={engine}
+                  services={services}
+                  {...(choosingProject ? { welcome: true } : { projectName, projectId })}
+                  initialView={projectMenu}
+                  onClose={() => {
+                    setChoosingProject(false);
+                    setProjectMenu(null);
                   }}
+                  onTask={onTask}
                 />
-              </>
-            )}
-            <EditorNotice notice={notice} onClose={dismissNotice} />
-            {projectMenu && (
-              <ProjectMenu
-                engine={engine}
-                services={services}
-                {...(choosingProject ? { welcome: true } : { projectName, projectId })}
-                initialView={projectMenu}
-                onClose={() => {
-                  if (engine.getSnapshot().project.id !== welcomeProject) setProjectMenu(null);
-                }}
-                onTask={onTask}
-              />
-            )}
-          </main>
-        </ProjectPreferencesProvider>
-      </TooltipProvider>
+              )}
+            </main>
+          </ProjectPreferencesProvider>
+        </TooltipProvider>
+      </MobileControlsContext>
     </FontLibraryProvider>
   );
 }

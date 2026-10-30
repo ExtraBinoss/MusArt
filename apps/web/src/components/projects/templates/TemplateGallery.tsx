@@ -1,12 +1,16 @@
+import { BrandStatus } from "../../../ui/brand/BrandStatus";
 import { useState } from "react";
+import { motion, useReducedMotion } from "motion/react";
 import { useTranslation } from "react-i18next";
-import { Clapperboard, FileImage, LoaderCircle, Search } from "lucide-react";
+import { FileImage } from "lucide-react";
 import { TEMPLATE_CATALOG } from "../../../services/projects/templates/catalog";
 import { SocialBrandIcon } from "../../assets/SocialBrandIcon";
 import { Button } from "../../ui/button";
-import { Input } from "../../ui/input";
-import { SelectField } from "../../shared/SelectField";
+import { SearchInput } from "../../assets/SearchInput";
+import { ModeIcon } from "../../motion/ModeIcon";
+import { SegmentedTabs } from "../../shared/segmented/SegmentedTabs";
 import { templatePreview } from "./preview";
+import { MotionTemplatePreview } from "./motion-preview/MotionTemplatePreview";
 import "./messages";
 import "./templates.css";
 
@@ -14,52 +18,80 @@ export function TemplateGallery({
   onChoose,
   busy = false,
   onCancel,
+  query: externalQuery,
+  mode: externalMode,
+  hideToolbar = false,
+  onQueryChange,
+  onModeChange,
 }: {
   onChoose: (templateId: string) => void;
   busy?: boolean;
   onCancel?: () => void;
+  query?: string;
+  mode?: "static" | "motion";
+  hideToolbar?: boolean;
+  onQueryChange?: (query: string) => void;
+  onModeChange?: (mode: "static" | "motion") => void;
 }) {
   const { t } = useTranslation();
-  const [query, setQuery] = useState("");
-  const [mode, setMode] = useState("all");
+  const reduced = useReducedMotion();
+  const [localQuery, setLocalQuery] = useState("");
+  const [localMode, setLocalMode] = useState<"static" | "motion">("static");
+  const query = externalQuery ?? localQuery;
+  const mode = externalMode ?? localMode;
   const term = query.trim().toLocaleLowerCase();
-  const templates = TEMPLATE_CATALOG.filter(
-    (template) =>
-      (mode === "all" || template.mode === mode) &&
-      `${t(template.nameKey)} ${t(`templates:${template.mode}`)} ${template.brandId ?? ""} ${template.width} ${template.height}`
-        .toLocaleLowerCase()
-        .includes(term),
+  const modeTemplates = TEMPLATE_CATALOG.filter((template) => template.mode === mode);
+  const templates = modeTemplates.filter((template) =>
+    `${t(template.nameKey)} ${t(`templates:${template.mode}`)} ${template.brandId ?? ""} ${template.width} ${template.height}`
+      .toLocaleLowerCase()
+      .includes(term),
   );
   return (
     <section className="template-gallery" aria-busy={busy}>
-      <div className="template-toolbar">
-        <div className="template-search">
-          <Search size={15} aria-hidden />
-          <Input
-            type="search"
-            aria-label={t("templates:search")}
-            placeholder={t("templates:search")}
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
+      {!hideToolbar && (
+        <div className="template-toolbar">
+          <div className="template-search">
+            <SearchInput
+              aria-label={t("templates:search")}
+              hints={modeTemplates.slice(0, 6).map((item) => ({
+                label: t(item.nameKey),
+                preview: item.preview ? (
+                  <img src={item.preview} alt="" />
+                ) : (
+                  <SocialBrandIcon id={item.brandId ?? ""} size={20} />
+                ),
+              }))}
+              value={query}
+              onChange={(event) => {
+                const next = event.target.value;
+                if (externalQuery === undefined) setLocalQuery(next);
+                onQueryChange?.(next);
+              }}
+              disabled={busy}
+            />
+          </div>
+          <SegmentedTabs
+            mode="choice"
+            label={t("templates:filter")}
+            value={mode}
             disabled={busy}
+            onValueChange={(value) => {
+              if (value !== "static" && value !== "motion") return;
+              if (externalMode === undefined) setLocalMode(value);
+              onModeChange?.(value);
+            }}
+            className="template-mode-filter"
+            items={(["static", "motion"] as const).map((value) => ({
+              value,
+              label: t(`templates:${value}`),
+              icon: <ModeIcon mode={value} size={17} />,
+            }))}
           />
         </div>
-        <SelectField
-          label={t("templates:filter")}
-          value={mode}
-          disabled={busy}
-          onValueChange={setMode}
-          options={[
-            { value: "all", label: t("templates:all") },
-            { value: "static", label: t("templates:static") },
-            { value: "motion", label: t("templates:motion") },
-          ]}
-          className="template-mode-filter"
-        />
-      </div>
+      )}
       {busy && (
         <div className="template-loading" role="status">
-          <LoaderCircle size={14} className="animate-spin motion-reduce:animate-none" aria-hidden />
+          <BrandStatus size={22} state="preparing" />
           <span>{t("templates:opening")}</span>
           {onCancel && (
             <Button size="sm" variant="ghost" onClick={onCancel}>
@@ -69,67 +101,83 @@ export function TemplateGallery({
         </div>
       )}
       <div className="template-grid">
-        {templates.map((template) => {
+        {templates.map((template, index) => {
           const name = t(template.nameKey);
           return (
-            <Button
+            <motion.div
               key={template.id}
-              variant="ghost"
-              className="template-card"
-              disabled={busy}
-              aria-label={t("templates:use", { name })}
-              onClick={() => onChoose(template.id)}
+              className="template-card-entry"
+              initial={reduced ? false : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: reduced ? 0 : 0.18,
+                delay: reduced ? 0 : Math.min(index * 0.025, 0.15),
+              }}
             >
-              <div
-                className="template-artwork"
-                data-artwork={Boolean(template.preview)}
-                style={template.preview ? undefined : { background: templatePreview(template.id) }}
+              <Button
+                key={template.id}
+                variant="ghost"
+                className="template-card"
+                disabled={busy}
+                aria-label={t("templates:use", { name })}
+                onClick={() => onChoose(template.id)}
               >
-                {template.preview ? (
-                  <img
-                    src={template.preview}
-                    alt=""
-                    loading="lazy"
-                    width={template.width}
-                    height={template.height}
-                  />
-                ) : (
-                  <div
-                    className="template-paper"
-                    style={{
-                      aspectRatio: `${template.width} / ${template.height}`,
-                      width: template.width >= template.height ? "76%" : "auto",
-                      height: template.width >= template.height ? "auto" : "76%",
-                    }}
-                  >
-                    {["instagram", "tiktok", "youtube", "linkedin"].includes(
-                      template.brandId ?? "",
-                    ) ? (
-                      <SocialBrandIcon id={template.brandId!} size={28} />
-                    ) : (
-                      <FileImage size={28} strokeWidth={1.1} aria-hidden />
-                    )}
-                  </div>
-                )}
-              </div>
-              <div className="template-caption">
-                <span className="template-mode" data-mode={template.mode}>
-                  {template.mode === "motion" ? (
-                    <Clapperboard size={12} aria-hidden />
+                <div
+                  className="template-artwork"
+                  data-artwork={Boolean(template.preview)}
+                  style={
+                    template.preview ? undefined : { background: templatePreview(template.id) }
+                  }
+                >
+                  {template.preview &&
+                  template.mode === "motion" &&
+                  (template.id === "in-bloom" || template.id === "motion-stress-lab") ? (
+                    <MotionTemplatePreview
+                      templateId={template.id}
+                      poster={template.preview}
+                      disabled={busy}
+                    />
+                  ) : template.preview ? (
+                    <img
+                      src={template.preview}
+                      alt=""
+                      loading="lazy"
+                      width={template.width}
+                      height={template.height}
+                    />
                   ) : (
-                    <FileImage size={12} aria-hidden />
+                    <div
+                      className="template-paper"
+                      style={{
+                        aspectRatio: `${template.width} / ${template.height}`,
+                        width: template.width >= template.height ? "76%" : "auto",
+                        height: template.width >= template.height ? "auto" : "76%",
+                      }}
+                    >
+                      {["instagram", "tiktok", "youtube", "linkedin"].includes(
+                        template.brandId ?? "",
+                      ) ? (
+                        <SocialBrandIcon id={template.brandId!} size={28} />
+                      ) : (
+                        <FileImage size={28} strokeWidth={1.1} aria-hidden />
+                      )}
+                    </div>
                   )}
-                  {t(`templates:${template.mode}`)}
-                </span>
-                <span className="template-title">{name}</span>
-                <span className="template-size">
-                  {template.width} × {template.height} px
-                </span>
-                {template.descriptionKey && (
-                  <span className="template-description">{t(template.descriptionKey)}</span>
-                )}
-              </div>
-            </Button>
+                </div>
+                <div className="template-caption project-card-overlay">
+                  <span className="template-meta">
+                    <span className="template-title">{name}</span>
+                    <span className="template-size">
+                      {template.width} × {template.height} px
+                    </span>
+                  </span>
+                  <span className="template-mode" data-mode={template.mode}>
+                    <ModeIcon mode={template.mode} size={14} />
+                    <span>{t(`templates:${template.mode}`)}</span>
+                  </span>
+                </div>
+              </Button>
+            </motion.div>
           );
         })}
       </div>

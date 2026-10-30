@@ -61,7 +61,8 @@ it("connects after the parent viewport ref attaches and paints gesture previews 
       };
     },
   } as unknown as TimelineGestures;
-  function Owner() {
+  const onAudioError = vi.fn();
+  function Owner({ gutter }: { gutter?: number }) {
     const viewport = useRef<HTMLDivElement>(null);
     return (
       <div ref={viewport}>
@@ -76,11 +77,12 @@ it("connects after the parent viewport ref attaches and paints gesture previews 
           pixelsPerSecond={120}
           duration={3}
           rowHeight={24}
+          gutter={gutter}
           transport={transport}
           gestures={gestures}
           unit="ms"
           onSelect={vi.fn()}
-          onAudioError={vi.fn()}
+          onAudioError={onAudioError}
         >
           {(value) => {
             captured.host = value;
@@ -100,6 +102,11 @@ it("connects after the parent viewport ref attaches and paints gesture previews 
   expect(view.container.querySelector(".motion-canvas-root")).toHaveAccessibleName(
     /sélectionner|select/i,
   );
+  expect(captured.host!.readModel().gutter).toBe(244);
+  view.rerender(<Owner gutter={120} />);
+  expect(captured.host!.readModel().gutter).toBe(120);
+  expect(state.create).toHaveBeenCalledOnce();
+  expect(state.update).toHaveBeenLastCalledWith(expect.objectContaining({ gutter: 120 }));
   const before = renders;
   act(() => {
     keys = new Set(["one"]);

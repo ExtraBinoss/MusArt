@@ -104,3 +104,34 @@ test("a newer separator gesture blocks a late restore, and a project switch rese
   await act(() => Promise.resolve());
   expect(control.setLayout).toHaveBeenLastCalledWith({ properties: 63, layers: 37 });
 });
+
+test("mobile single-panel layout suspends desktop hydration and cannot overwrite its saved split", async () => {
+  control.setLayout.mockClear();
+  const mounted = vi.fn();
+  function Canvas() {
+    useEffect(mounted, []);
+    return <div>Canvas</div>;
+  }
+  const port = {
+    read: vi.fn().mockResolvedValue({ workspaceLayout: { workspace: 70, inspector: 30 } }),
+    update: vi.fn().mockResolvedValue(undefined),
+  };
+  function tree(enabled: boolean) {
+    return (
+      <ProjectPreferencesProvider projectId="mobile" port={port} onError={vi.fn()}>
+        <ProjectPanelGroup preference="workspaceLayout" enabled={enabled}>
+          <Canvas />
+        </ProjectPanelGroup>
+      </ProjectPreferencesProvider>
+    );
+  }
+  const view = render(tree(false));
+  await act(() => Promise.resolve());
+  expect(control.setLayout).toHaveBeenLastCalledWith({ workspace: 100 });
+  act(() => control.props.onLayoutChanged?.({ workspace: 100 }, { isUserInteraction: true }));
+  expect(port.update).not.toHaveBeenCalled();
+  view.rerender(tree(true));
+  await act(() => Promise.resolve());
+  expect(control.setLayout).toHaveBeenLastCalledWith({ workspace: 70, inspector: 30 });
+  expect(mounted).toHaveBeenCalledOnce();
+});

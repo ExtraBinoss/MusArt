@@ -4,8 +4,30 @@ import {
   readRecentFonts,
   rememberFont,
   resolveFont,
+  mergeFontOptions,
 } from "../../../../src/components/properties/fonts/catalog";
 const key = "musart.fonts.recent";
+test("installed metadata retains catalog download variants and unchanged list identity", () => {
+  const font = {
+    id: "remote",
+    family: "Remote",
+    category: "sans" as const,
+    source: "google" as const,
+    variants: [
+      { weight: 400, style: "normal" as const, url: "https://fonts.gstatic.com/font.ttf" },
+    ],
+  };
+  const previous = [font];
+  expect(
+    mergeFontOptions(previous, [
+      { id: "remote", family: "Remote", category: "sans", source: "google" },
+    ]),
+  ).toBe(previous);
+  expect(mergeFontOptions(previous, [{ ...font, label: "New label" }])[0]).toMatchObject({
+    label: "New label",
+    variants: font.variants,
+  });
+});
 afterEach(() => {
   localStorage.removeItem(key);
   vi.restoreAllMocks();

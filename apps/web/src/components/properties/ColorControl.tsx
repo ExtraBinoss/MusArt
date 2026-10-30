@@ -32,7 +32,7 @@ export function ColorControl({
   const [reset, setReset] = useState(0);
   const [override, setOverride] = useState<{ base: string; hex: string } | null>(null);
   const [available] = useState(supportsEyeDropper);
-  const [pending, setPending] = useState<{ value: string; commit: typeof onCommit } | null>(null);
+  const [pending, setPending] = useState<{ value: string; identity?: string } | null>(null);
   const [error, setError] = useState("");
   const field = useRef<HTMLInputElement>(null),
     swatch = useRef<HTMLSpanElement>(null);
@@ -45,7 +45,11 @@ export function ColorControl({
     blockedGesture = useRef(false),
     pointer = useRef<number | null>(null);
   const cancelFromClock = useRef<() => void>(() => {});
-  const busy = !disabled && pending?.value === value && pending.commit === onCommit;
+  const callbacks = useRef({ onPreview, onCommit, onCancel });
+  useLayoutEffect(() => {
+    callbacks.current = { onPreview, onCommit, onCancel };
+  });
+  const busy = !disabled && pending?.value === value && pending.identity === identity;
   const paletteValue = !disabled && override?.base === value ? override.hex : value;
 
   useLayoutEffect(() => {
@@ -58,22 +62,26 @@ export function ColorControl({
     const state = session.current;
     state.mounted = true;
     state.generation++;
-    if (disabled) onCancel();
+    if (disabled) callbacks.current.onCancel();
     return () => {
       state.mounted = false;
       state.generation++;
       state.request?.abort();
       state.request = null;
-      if (gesture.current) {
+      if (gesture.current || draft.current !== committed.current) {
+        blockedGesture.current = gesture.current;
         gesture.current = false;
-        blockedGesture.current = true;
-        onCancel();
+        callbacks.current.onCancel();
       }
     };
-  }, [value, onPreview, onCommit, onCancel, disabled, identity]);
+  }, [value, disabled, identity]);
 
   useEffect(() => {
     const release = (event: Event) => {
+      if (event.type === "blur" && event.target === window && gesture.current) {
+        cancelFromClock.current();
+        return;
+      }
       if (!blockedGesture.current || (event.type === "blur" && event.target !== window)) return;
       if (
         event.type !== "blur" &&
@@ -87,7 +95,7 @@ export function ColorControl({
       draft.current = committed.current;
       if (field.current) field.current.value = committed.current.toUpperCase();
       if (swatch.current) swatch.current.style.background = committed.current;
-      onCancel();
+      callbacks.current.onCancel();
       setReset((current) => current + 1);
     };
     for (const type of ["pointerup", "pointercancel", "blur"])
@@ -96,7 +104,7 @@ export function ColorControl({
       for (const type of ["pointerup", "pointercancel", "blur"])
         window.removeEventListener(type, release, true);
     };
-  }, [onCancel]);
+  }, []);
 
   function invalidateSampling() {
     if (!session.current.request) return;
@@ -116,7 +124,7 @@ export function ColorControl({
     invalidateSampling();
     setError("");
     display(color);
-    onPreview(color);
+    callbacks.current.onPreview(color);
   }
   function cancel(blockUntilRelease = false) {
     invalidateSampling();
@@ -124,7 +132,7 @@ export function ColorControl({
     if (!blockUntilRelease) pointer.current = null;
     gesture.current = false;
     display(committed.current);
-    onCancel();
+    callbacks.current.onCancel();
     setOverride(null);
     setReset((current) => current + 1);
   }
@@ -149,8 +157,8 @@ export function ColorControl({
     display(normalized);
     if (normalized !== committed.current) {
       committed.current = normalized;
-      onCommit(normalized);
-    } else onCancel();
+      callbacks.current.onCommit(normalized);
+    } else callbacks.current.onCancel();
   }
   async function sampleScreen() {
     if (disabled) return;
@@ -158,7 +166,7 @@ export function ColorControl({
     const token = ++session.current.generation,
       controller = new AbortController();
     session.current.request = controller;
-    setPending({ value, commit: onCommit });
+    setPending({ value, identity });
     setError("");
     try {
       const picked = await pickScreenColor(controller.signal);
@@ -215,6 +223,12 @@ export function ColorControl({
         if (blocked) cancel();
         else commit();
       }}
+      onPointerUpCapture={(event) => {
+        // Radix releases capture before this group's bubbling pointerup. That
+        // normal release must not be mistaken for an interrupted color edit.
+        if (pointer.current === null || event.pointerId === pointer.current)
+          gesture.current = false;
+      }}
       onPointerCancel={() => cancel()}
       onLostPointerCapture={() => {
         if (gesture.current || blockedGesture.current) cancel();
@@ -238,7 +252,12 @@ export function ColorControl({
         alpha={alpha}
         disabled={disabled}
         onPreview={preview}
-        onCommit={() => commit()}
+        onCommit={() => {
+          pointer.current = null;
+          gesture.current = false;
+          commit();
+        }}
+        onCancel={() => cancel()}
       />
       <div className="color-value">
         <span ref={swatch} className="color-swatch" style={{ background: value }} />

@@ -8,6 +8,8 @@ bun scripts/templates/generate.ts
 
 The generator verifies the checked-in CC0 media hashes, probes the **video stream** with FFprobe, and uses real public core commands. `TemplateAuthor` only orchestrates those commands; it does not inject timeline documents or simulate rendered results. Fixed IDs, timestamps and effect seeds make repeated generation byte-for-byte reproducible.
 
+Install FFmpeg, including its `ffprobe` executable, before running the generator or its source-backed tests. On Ubuntu, use `sudo apt-get install ffmpeg`; the Quality workflow installs this dependency explicitly before verification.
+
 Generated gallery payloads and command journals use compact JSON and are excluded from formatting. Edit their TypeScript builders, then regenerate; the builders remain formatted, and the generated documents still pass the normal length, import and command validation checks.
 
 | Output               | Purpose                                                                                                                                                                                                                    |

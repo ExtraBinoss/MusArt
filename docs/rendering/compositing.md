@@ -97,7 +97,7 @@ the pixel witness.
 | Renderer topic          | Contract                                                                                                                                                       |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Images                  | Original decoded image textures are uploaded once per original.                                                                                                |
-| Text                    | Text is shaped with HarfBuzz and rendered from cached analytical glyph curves; paint changes update GPU controls.                                              |
+| Text                    | Text is shaped with text-shaper and rendered from cached analytical glyph curves; paint changes update GPU controls.                                           |
 | SVG geometry and paints | SVG paths are parsed with Three's `SVGLoader` and triangulated once per geometry identity; subsequent fill and branded part paint changes update GPU uniforms. |
 | SVG semantics           | SVG viewBox origins, part transforms, even-odd holes and stroke geometry are retained.                                                                         |
 
@@ -157,15 +157,20 @@ the pixel witness.
 
 ### Presentation footprint
 
-| Renderer topic       | Contract                                                                                                                                                                                  |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Minification         | Below 1× physical density, the editor passes the requested minification into the renderer so the shared reference plane is filtered for the real presentation footprint.                  |
-| Density rounding     | Only floating-point gesture noise is rounded to six decimals; density above 1× keeps the existing power-of-two quality and memory bounds.                                                 |
-| Smallest axis        | The smallest drawing-buffer axis stays at least one pixel.                                                                                                                                |
-| Exact backing size   | The adapter retains the exact integer dimensions of the completed `FrameTexture`.                                                                                                         |
-| Fiber backing repair | Before R3F's automatic render, a priority −1 frame callback repairs a floor-rounded backing with Three's public `setDrawingBufferSize(width, height, 1)` only when its dimensions differ. |
-| CSS geometry         | CSS size, viewport coordinates and the authored orthographic camera remain unchanged.                                                                                                     |
-| Per-axis correctness | This works independently on both axes and is reapplied after Fiber resize; presentation never adds an avoidable one-pixel downsample before CSS reconstruction.                           |
+| Renderer topic       | Contract                                                                                                                                                                                                                                                       |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Minification         | Below 1× physical density, the editor passes the requested minification into the renderer so the shared reference plane is filtered for the real presentation footprint.                                                                                       |
+| Density rounding     | Floating-point gesture noise is rounded to six decimals below 1×; above 1×, quarter-density steps keep useful intermediate quality without promoting boundary noise into a higher tier.                                                                        |
+| Smallest axis        | The smallest drawing-buffer axis stays at least one pixel.                                                                                                                                                                                                     |
+| DPR changes          | A rearmed resolution media query and resize observers update density without requiring another canvas zoom. One 140 ms timer is cancelled on replacement/unmount; there is no React frame subscription.                                                        |
+| Target estimate      | Actual instanced primitives, clipped groups, source targets and shared scratch replace per-layer rectangle guesses. Effect/mask reference subtrees retain fixed 1× cost. The soft target estimate remains 192 MiB with reserved headroom.                      |
+| Original resources   | Image originals are deduplicated by asset; independently timed video layers reserve their own source and three upload slots. These costs are separate from the target soft budget and participate in the estimated 384 MiB total.                              |
+| Admission limit      | The 384 MiB native cache still admits all actual retained, pooled and in-flight resources. The quality estimate is not a guarantee of total GPU occupation; infeasible fixed content reports a real renderer failure rather than becoming a one-pixel success. |
+| Device bounds        | Both minified and enlarged requests obey API/pixel bounds and the acquired device's texture limit. Every raster axis stays at least one physical texel.                                                                                                        |
+| Exact backing size   | The adapter retains the exact integer dimensions of the completed `FrameTexture`.                                                                                                                                                                              |
+| Fiber backing repair | Before R3F's automatic render, a priority −1 frame callback repairs a floor-rounded backing with Three's public `setDrawingBufferSize(width, height, 1)` only when its dimensions differ.                                                                      |
+| CSS geometry         | CSS size, viewport coordinates and the authored orthographic camera remain unchanged.                                                                                                                                                                          |
+| Per-axis correctness | This works independently on both axes and is reapplied after Fiber resize; presentation never adds an avoidable one-pixel downsample before CSS reconstruction.                                                                                                |
 
 ## Color and output
 

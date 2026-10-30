@@ -1,3 +1,4 @@
+import { openProjectLibrary } from "./support/project-library";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { createLayer, createPage, createProject } from "@musart/core";
 import { mkdir } from "node:fs/promises";
@@ -177,7 +178,7 @@ test("project B receives defaults and opening saved project A restores its own M
   await expect(zoom).toHaveAttribute("aria-valuenow", "120");
   await expect(page.locator(".motion-resize")).toHaveAttribute("aria-valuenow", String(height));
   expect(await stored(page, other.id)).toBeUndefined();
-  await page.getByRole("button", { name: "Menu du projet", exact: true }).click();
+  await openProjectLibrary(page);
   await page
     .getByRole("article", { name: "Layout project A", exact: true })
     .getByRole("button", { name: "Layout project A", exact: true })

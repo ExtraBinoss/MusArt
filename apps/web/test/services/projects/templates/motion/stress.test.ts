@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import {
   compileMotion,
+  isImageAsset,
   EFFECT_CATALOG,
   evaluateMotion,
   motionTimeToSeconds,
@@ -17,6 +18,7 @@ test("creates the declared 50-photo/100-effect mixed-media workload, with bounde
   expect(page.layers.filter((layer) => layer.kind === "image")).toHaveLength(50);
   for (const layer of page.layers.filter((item) => item.kind === "image")) {
     const asset = result.project.assets[layer.assetId!]!;
+    if (!isImageAsset(asset)) throw new Error("Expected an image template asset");
     expect(layer.width / layer.height).toBeCloseTo(asset.width / asset.height, 8);
   }
   const effects = page.layers.flatMap((layer) => layer.effects);

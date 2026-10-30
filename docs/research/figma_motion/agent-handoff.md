@@ -71,24 +71,24 @@ Do not publish an interface merely because one agent needs it. Write the contrac
 
 | Domain               | Initial tasks | Boundary                                                                                                                                         |
 | -------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Core temporal engine | T01–T03       | Pure TypeScript generic/headless schema/validation/commands/property registry/evaluation/easing and exact mirrors.                               |
+| Core temporal engine | T01–T03       | Pure TypeScript generic/headless schema/validation/commands/property registry/evaluation/easing and focused behavior tests.                               |
 | Media/storage/render | T04, T05, T07 | Bounded original/proxy media, native decoders, frame providers and GPU dependencies; no editor UI ownership.                                     |
 | Runtime/authoring UI | T06, T08–T11  | Transport, virtualized timeline, inspector key controls and direct manipulation; no alternative time model.                                      |
 | Audio/export         | T12, T13      | Exact A/V sample placement, mute/volume/mix, original media and Mediabunny.                                                                      |
 | Platform integration | T14, T15, T18 | Portable media/history/clipboard, simplified Timelapse export and headless adapters; camera is user-deferred until video/timeline stabilization. |
 | Verification/audit   | T16, T17      | Independent native correctness, resource/performance cohorts and domain reviews.                                                                 |
 
-There are four concurrent agent slots including root. Use at most three active subagents, each with a disjoint file/domain assignment. Reuse idle agents for the next dependency wave. Research, reading and edits can be parallel; heavy checks cannot.
+There are four concurrent agent slots including root. Use at most three active subagents, each with a disjoint file/domain assignment. Reuse idle agents only for closely related tasks; give independent work a fresh, bounded context under the current `AGENTS.md` policy. Research, reading and edits can be parallel; heavy checks cannot.
 
 ## Claim and handoff procedure
 
-1. Read the raw brief, mapped requirements, confirmed decisions, architecture/UX contracts and relevant repository docs.
+1. Read the applicable contribution rules and the requirements/contracts relevant to the assigned task. Use a bounded handoff instead of rereading the complete project history.
 2. Claim a T-ID with owned paths and dependency status. Note unresolved contracts before writing code; raise consequential product questions through root.
 3. Implement one coherent milestone without unrelated root files, empty wrappers or duplicated document trees.
-4. Add exact mirrored tests for executable sources. Use real native tests for rendering, video, audio, gestures, storage and decoded export behavior; mocks establish contracts only.
-5. Request a heavy-check slot before starting expensive tests/builds/profiles. Record exact commands, scope and artifacts; stop an unsuitable experiment once understood.
+4. Add or update focused behavior regressions; integration tests may cover several source files and exact mirrors are optional. Follow the current delegation and validation ownership rules in `AGENTS.md`. Use real native tests for rendering, video, audio, gestures, storage and decoded export behavior; mocks establish contracts only.
+5. Agree the focused checks with the batch validation owner. Share checks already run; the owner handles integrated tests/builds/profiles without duplicating worker runs. Record exact commands, scope and artifacts; stop an unsuitable experiment once understood.
 6. Report files/contracts/behavior/errors/cleanup/tests/measurements and unresolved limits. Root reviews the actual diff and cross-domain effects.
-7. A different agent audits the completed domain. Fix findings and rerun affected checks; keep failed raw evidence.
+7. Request an independent domain audit only when the user asks or a concrete unresolved concern warrants it. Give it a bounded scope, fix findings and rerun affected checks; keep failed raw evidence.
 8. Require zero rule violations, a scoped changelog entry and deliberate staging before a milestone commit on the feature branch. No main merge/push is implied.
 
 ## Proof required for a completed task

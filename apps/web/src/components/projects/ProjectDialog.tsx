@@ -1,21 +1,27 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Plus, Upload, ArrowLeft, Settings2 } from "lucide-react";
+import { brand } from "../../ui/brand/config";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import { AnimatePresence } from "motion/react";
+import { useMobileLayout } from "../workspace/mobile/use-mobile";
+import { ScrollShadow } from "../shared/scroll/ScrollShadow";
+import { LibraryToolbar } from "./dashboard/LibraryToolbar";
+import { LibraryTransition } from "./dashboard/LibraryTransition";
+import { ProjectCreateActions } from "./dashboard/ProjectCreateActions";
 import { useTranslation } from "react-i18next";
-import type { EditorServices } from "../../state/contracts";
+import type { EditorServices, ProjectSummary } from "../../state/contracts";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
-import { Tabs, TabsContent } from "../ui/tabs";
 import { Button } from "../ui/button";
-import { IconButton } from "../shared/IconButton";
-import { DashboardTabs } from "./dashboard/DashboardTabs";
-import { MusArtLogo } from "../branding/MusArtLogo";
+import { LibrarySidebar } from "./dashboard/LibrarySidebar";
+import { MobileLibraryNavigation } from "./dashboard/MobileLibraryNavigation";
+import { MeltLogo } from "../../ui/brand/MeltLogo";
 import { NewProjectForm } from "./creation/NewProjectForm";
 import { PreferencesDialog } from "./preferences/PreferencesDialog";
 import { ProjectGallery } from "./gallery/ProjectGallery";
 import { TemplateGallery } from "./templates/TemplateGallery";
 import { createProjectFromTemplate } from "../../services/projects/templates/catalog";
 import type { TemplateLoadOptions } from "../../services/projects/templates/motion/loader";
-import { hasCompletedOnboarding } from "../../state/onboarding/preferences";
-import { OnboardingDialog } from "../onboarding/OnboardingDialog";
+import { LandingPage } from "./landing/LandingPage";
+import "./creation/messages";
 import "./dashboard/messages";
 import "./dashboard/dashboard.css";
 
@@ -32,10 +38,6 @@ export interface ProjectDialogProps {
 }
 /** The same dashboard works before the first document and above an open project. */
 export function ProjectDialog(props: ProjectDialogProps) {
-  const [onboarding, setOnboarding] = useState(() =>
-    Boolean(props.welcome && !hasCompletedOnboarding()),
-  );
-  if (onboarding) return <OnboardingDialog onComplete={() => setOnboarding(false)} />;
   return props.initialView === "settings" || props.initialView === "settingsEditor" ? (
     <PreferencesDialog
       onClose={props.onClose}
@@ -56,12 +58,22 @@ function ProjectDashboard({
   welcome = false,
 }: ProjectDialogProps) {
   const { t } = useTranslation();
-  const [view, setView] = useState(initialView === "projects" ? "projects" : "templates");
+  const mobile = useMobileLayout();
+  const headingId = useId();
+  const [landing, setLanding] = useState(Boolean(welcome && initialView !== "newProject"));
+  const [view, setView] = useState<"projects" | "templates">(
+    initialView === "templates" ? "templates" : "projects",
+  );
+  const [queries, setQueries] = useState({ projects: "", templates: "" });
+  const [templateMode, setTemplateMode] = useState<"static" | "motion">("static");
+  const [projectHints, setProjectHints] = useState<ProjectSummary[]>([]);
   const [creating, setCreating] = useState(initialView === "newProject");
   const [busy, setBusy] = useState(false);
   const [templateLoading, setTemplateLoading] = useState(false);
   const [preferences, setPreferences] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const librarySurface = useRef<HTMLDivElement>(null);
+  const libraryContent = useRef<HTMLDivElement>(null);
   const scope = useRef({ alive: true, pending: false });
   const templateRequest = useRef<AbortController | null>(null);
   useEffect(() => {
@@ -96,8 +108,20 @@ function ProjectDashboard({
     });
   }
   function custom() {
-    setView("templates");
-    setCreating(true);
+    if (!scope.current.pending && scope.current.alive) setCreating(true);
+  }
+  function home() {
+    if (!scope.current.pending && scope.current.alive) setLanding(true);
+  }
+  function changeView(value: string) {
+    if (
+      scope.current.pending ||
+      !scope.current.alive ||
+      (value !== "projects" && value !== "templates")
+    )
+      return;
+    setView(value);
+    setCreating(false);
   }
   function chooseTemplate(id: string) {
     if (scope.current.pending || !scope.current.alive) return;
@@ -119,136 +143,191 @@ function ProjectDashboard({
       }
     });
   }
+  const creationDialog = creating && (
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open && !busy) {
+          if (initialView === "newProject" && !welcome) onClose();
+          else setCreating(false);
+        }
+      }}
+    >
+      <DialogContent
+        className="creation-dialog"
+        showCloseButton={!busy}
+        onEscapeKeyDown={(event) => {
+          if (busy) event.preventDefault();
+        }}
+        onInteractOutside={(event) => {
+          if (busy) event.preventDefault();
+        }}
+      >
+        <DialogHeader>
+          <DialogTitle>{t("creation:title")}</DialogTitle>
+          <DialogDescription>{t("creation:hint")}</DialogDescription>
+        </DialogHeader>
+        <NewProjectForm
+          disabled={busy}
+          onCreate={(options) => complete(() => services.createProject(options))}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+  if (initialView === "newProject" && !welcome) return creationDialog;
+  if (landing)
+    return (
+      <LandingPage
+        onCreate={() => setLanding(false)}
+        onTemplate={chooseTemplate}
+        busy={busy}
+        onCancel={templateLoading ? () => templateRequest.current?.abort() : undefined}
+      />
+    );
   return (
     <Dialog
       open
       onOpenChange={(open) => {
-        if (!open && !welcome && !busy && !preferences) onClose();
+        if (!open && !welcome && !busy && !preferences && !creating) onClose();
       }}
     >
       <DialogContent
         closeLabel={t("close")}
         showCloseButton={!welcome && !busy}
         onEscapeKeyDown={(event) => {
-          if (welcome || busy || preferences) event.preventDefault();
+          if (welcome || busy || preferences || creating) event.preventDefault();
         }}
         onInteractOutside={(event) => {
-          if (welcome || busy || preferences) event.preventDefault();
+          if (welcome || busy || preferences || creating) event.preventDefault();
         }}
         data-welcome={welcome || undefined}
-        className="floating-panel project-dashboard"
+        className="floating-panel project-dashboard translate-x-0 translate-y-0"
       >
-        <DialogHeader className="dashboard-header">
-          <div className="dashboard-header-line">
-            <div className="dashboard-brand">
-              <MusArtLogo size={34} />
-              <span>MusArt</span>
-            </div>
-            <IconButton
-              label={t("settings")}
-              className="dashboard-settings"
-              disabled={busy}
-              onClick={() => setPreferences(true)}
-            >
-              <Settings2 size={16} />
-            </IconButton>
-          </div>
-          <DialogTitle className="sr-only">{t("dashboard:title")}</DialogTitle>
-          <DialogDescription>{t("dashboard:local")}</DialogDescription>
-        </DialogHeader>
-        <Tabs
-          value={view}
-          onValueChange={(value) => {
-            if (!busy) {
-              setView(value);
-              setCreating(false);
-            }
-          }}
-          className="dashboard-body"
-        >
-          <div className="dashboard-navigation">
-            <DashboardTabs value={view} disabled={busy} />
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={busy}
-              onClick={() => fileRef.current?.click()}
-            >
-              <Upload size={14} />
-              {t("dashboard:import")}
-            </Button>
-          </div>
-          <TabsContent value="projects" className="dashboard-pane scrollable-panel">
-            <div className="dashboard-intro">
-              <div>
-                <h2>
-                  {t(projectName && !welcome ? "dashboard:projectHeading" : "dashboard:question")}
-                </h2>
-                <p>{t("dashboard:projectsHint")}</p>
-              </div>
-              <Button size="sm" onClick={custom} disabled={busy}>
-                <Plus size={14} />
-                {t("dashboard:new")}
+        <div className="dashboard-sidebar">
+          <Button
+            variant="ghost"
+            className="dashboard-brand"
+            aria-label={t("dashboard:home")}
+            disabled={busy}
+            onClick={home}
+          >
+            <MeltLogo size={32} />
+            <span>{brand.name}</span>
+          </Button>
+          <LibrarySidebar
+            services={services}
+            onTask={onTask}
+            view={view}
+            busy={busy}
+            onViewChange={changeView}
+            onChooseRecent={(id) => complete(() => services.openProject(id))}
+            onPreferences={() => setPreferences(true)}
+          />
+        </div>
+        <div ref={librarySurface} className="dashboard-main">
+          <DialogHeader className="dashboard-header">
+            <div className="dashboard-header-line">
+              <Button
+                variant="ghost"
+                className="dashboard-home"
+                aria-label={t("dashboard:backHomeLabel")}
+                disabled={busy}
+                onClick={home}
+              >
+                <ArrowLeft size={15} />
+                {t("dashboard:backHome")}
               </Button>
             </div>
-            <ProjectGallery
-              services={services}
-              activeProjectId={projectId}
-              onTask={perform}
-              busy={busy}
-              onOpen={() => {
-                if (scope.current.alive) onClose();
-              }}
-              onCreate={custom}
-              showCreateAction={false}
-            />
-          </TabsContent>
-          <TabsContent value="templates" className="dashboard-pane scrollable-panel">
-            {creating ? (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="dashboard-back"
-                  onClick={() => setCreating(false)}
-                >
-                  <ArrowLeft size={14} />
-                  {t("dashboard:back")}
-                </Button>
-                <div className="dashboard-intro">
-                  <div>
-                    <h2>{t("dashboard:question")}</h2>
-                    <p>{t("dashboard:createHint")}</p>
+            <DialogTitle className="sr-only">{t("dashboard:title")}</DialogTitle>
+            <DialogDescription className="sr-only">{t("dashboard:description")}</DialogDescription>
+          </DialogHeader>
+          <div className="dashboard-body">
+            <ScrollShadow className="dashboard-list-scroll" surface="var(--background)">
+              <section aria-labelledby={headingId} className="dashboard-pane scrollable-panel">
+                <div className="dashboard-pane-content">
+                  <div className="dashboard-intro">
+                    <div>
+                      <h2 id={headingId}>
+                        {t(
+                          view === "projects" && projectName && !welcome
+                            ? "dashboard:projectHeading"
+                            : "dashboard:question",
+                        )}
+                      </h2>
+                      <p>
+                        {t(
+                          view === "projects" ? "dashboard:projectsHint" : "dashboard:description",
+                        )}
+                      </p>
+                    </div>
+                    <ProjectCreateActions
+                      label={t(view === "projects" ? "dashboard:new" : "dashboard:custom")}
+                      disabled={busy}
+                      onCreate={custom}
+                      onImport={() => fileRef.current?.click()}
+                    />
                   </div>
-                </div>
-                <div className="dashboard-creation">
-                  <NewProjectForm
+                  <LibraryToolbar
+                    view={view}
+                    query={queries[view]}
+                    onQueryChange={(query) =>
+                      setQueries((current) => ({ ...current, [view]: query }))
+                    }
+                    mode={templateMode}
+                    onModeChange={setTemplateMode}
+                    projects={projectHints}
                     disabled={busy}
-                    onCreate={(options) => complete(() => services.createProject(options))}
                   />
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="dashboard-intro">
-                  <div>
-                    <h2>{t("dashboard:question")}</h2>
-                    <p>{t("dashboard:description")}</p>
+                  <div ref={libraryContent} className="dashboard-grid-stage">
+                    <AnimatePresence initial={false}>
+                      <LibraryTransition key={view}>
+                        {view === "projects" ? (
+                          <ProjectGallery
+                            services={services}
+                            activeProjectId={projectId}
+                            onTask={perform}
+                            busy={busy}
+                            onOpen={() => {
+                              if (scope.current.alive) onClose();
+                            }}
+                            onCreate={custom}
+                            showCreateAction={false}
+                            query={queries.projects}
+                            hideSearch
+                            onProjectsLoaded={setProjectHints}
+                          />
+                        ) : (
+                          <TemplateGallery
+                            busy={busy}
+                            onChoose={chooseTemplate}
+                            onCancel={
+                              templateLoading ? () => templateRequest.current?.abort() : undefined
+                            }
+                            query={queries.templates}
+                            mode={templateMode}
+                            hideToolbar
+                          />
+                        )}
+                      </LibraryTransition>
+                    </AnimatePresence>
                   </div>
-                  <Button variant="outline" size="sm" disabled={busy} onClick={custom}>
-                    <Plus size={14} />
-                    {t("dashboard:custom")}
-                  </Button>
                 </div>
-                <TemplateGallery
-                  busy={busy}
-                  onChoose={chooseTemplate}
-                  onCancel={templateLoading ? () => templateRequest.current?.abort() : undefined}
-                />
-              </>
-            )}
-          </TabsContent>
-        </Tabs>
+              </section>
+            </ScrollShadow>
+          </div>
+          {mobile && (
+            <MobileLibraryNavigation
+              view={view}
+              busy={busy}
+              preferences={preferences}
+              surface={librarySurface}
+              content={libraryContent}
+              onViewChange={changeView}
+              onPreferences={() => setPreferences(true)}
+            />
+          )}
+        </div>
+        {creationDialog}
         {preferences && <PreferencesDialog onClose={() => setPreferences(false)} />}
         <input
           ref={fileRef}

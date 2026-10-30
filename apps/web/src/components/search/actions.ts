@@ -170,12 +170,40 @@ export function executeSearchItem(item: SearchItem, context: SearchActions): voi
     })),
   );
 }
-/** Preserve a destructive UI target while a dialog closes or a task adapter defers execution. */
+const selectionActions = new Set<SearchAction>([
+  "copy",
+  "duplicate",
+  "group",
+  "ungroup",
+  "deselect",
+  "toggleVisibility",
+  "toggleLock",
+]);
+/** Preserve UI targets while a dialog closes or a task adapter defers execution. */
 export function captureSearchItem(
   item: SearchItem,
   context: SearchActions,
 ): () => void | Promise<void> {
-  return item.target.kind === "action" && item.target.action === "delete"
-    ? capturePresentationDelete(context.engine)
-    : () => executeSearchItem(item, context);
+  const target = item.target;
+  if (target.kind === "action" && target.action === "delete")
+    return capturePresentationDelete(context.engine);
+  const origin =
+    target.kind === "effect" || (target.kind === "action" && selectionActions.has(target.action))
+      ? context.engine.getSnapshot()
+      : null;
+  const ids = new Set(origin?.selection);
+  return () => {
+    if (origin) {
+      const current = context.engine.getSnapshot();
+      if (
+        current.project !== origin.project ||
+        current.pageId !== origin.pageId ||
+        current.revision !== origin.revision ||
+        current.selection.length !== ids.size ||
+        current.selection.some((id) => !ids.has(id))
+      )
+        throw new Error(context.t("keybindings:stale"));
+    }
+    return executeSearchItem(item, context);
+  };
 }

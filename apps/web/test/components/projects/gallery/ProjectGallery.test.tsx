@@ -119,3 +119,58 @@ test("guards two concurrent opens and suppresses completion callbacks after unmo
   await act(async () => finish());
   expect(open).not.toHaveBeenCalled();
 });
+
+test("search filters loaded metadata and still allows bounded pagination for absent results", async () => {
+  const d = setup(),
+    open = vi.fn();
+  vi.mocked(d.services.listProjectPage)
+    .mockResolvedValueOnce({ projects: [projectSummary()], before: ["2026", "a"] })
+    .mockResolvedValueOnce({ projects: [projectSummary("b", "Second")], before: null });
+  d.mount(
+    <ProjectGallery services={d.services} onTask={d.onTask} onOpen={open} onCreate={vi.fn()} />,
+  );
+  await screen.findByRole("article", { name: "Study" });
+  fireEvent.change(screen.getByRole("searchbox", { name: "Rechercher un projet" }), {
+    target: { value: "SECOND" },
+  });
+  expect(screen.queryByRole("article")).toBeNull();
+  expect(screen.getByText(/Aucun projet correspondant parmi les éléments chargés/)).toBeVisible();
+  expect(d.services.listProjectPage).toHaveBeenCalledOnce();
+  fireEvent.click(screen.getByRole("button", { name: "Afficher plus de projets" }));
+  await screen.findByRole("article", { name: "Second" });
+  expect(screen.getAllByRole("article")).toHaveLength(1);
+  expect(d.services.listProjectPage).toHaveBeenLastCalledWith({ limit: 24, before: ["2026", "a"] });
+  fireEvent.click(screen.getByRole("button", { name: "Second" }));
+  await waitFor(() => expect(open).toHaveBeenCalledOnce());
+  expect(d.services.openProject).toHaveBeenCalledWith("b");
+});
+
+test("external query filtering reuses bounded metadata and can hide the gallery-owned search", async () => {
+  const d = setup(),
+    loaded = vi.fn();
+  vi.mocked(d.services.listProjectPage).mockResolvedValue({
+    projects: [projectSummary(), projectSummary("b", "Second")],
+    before: null,
+  });
+  const props = {
+    services: d.services,
+    onTask: d.onTask,
+    onOpen: vi.fn(),
+    onCreate: vi.fn(),
+    hideSearch: true,
+    onProjectsLoaded: loaded,
+  };
+  const view = d.mount(<ProjectGallery {...props} query="Study" />);
+  await screen.findByRole("article", { name: "Study" });
+  expect(screen.queryByRole("searchbox")).toBeNull();
+  expect(screen.queryByRole("article", { name: "Second" })).toBeNull();
+  expect(loaded).toHaveBeenLastCalledWith(
+    expect.arrayContaining([
+      expect.objectContaining({ id: "project-a" }),
+      expect.objectContaining({ id: "b" }),
+    ]),
+  );
+  view.rerender(<ProjectGallery {...props} query="Second" />);
+  expect(screen.getByRole("article", { name: "Second" })).toBeInTheDocument();
+  expect(d.services.listProjectPage).toHaveBeenCalledOnce();
+});

@@ -3,6 +3,8 @@ import { registerFeatureTranslations } from "../../../state/i18n/feature-resourc
 export const messages = {
   en: {
     title: "Customize dock",
+    scrollUp: "Scroll tools up",
+    scrollDown: "Scroll tools down",
     pinned: "Pinned shortcuts",
     available: "Available commands",
     search: "Search commands",
@@ -19,6 +21,8 @@ export const messages = {
   },
   fr: {
     title: "Personnaliser le dock",
+    scrollUp: "Faire défiler les outils vers le haut",
+    scrollDown: "Faire défiler les outils vers le bas",
     pinned: "Raccourcis épinglés",
     available: "Commandes disponibles",
     search: "Rechercher une commande",

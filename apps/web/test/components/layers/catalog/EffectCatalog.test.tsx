@@ -38,7 +38,7 @@ test("localized category headings, text search and family filter share a real bo
   expect(screen.queryByRole("menuitem", { name: "Flou" })).toBeNull();
   const texture = screen.getByRole("group", { name: "Texture et impression" });
   expect(within(texture).getAllByRole("menuitem").length).toBeGreaterThan(1);
-  fireEvent.click(screen.getByRole("menuitem", { name: "Dither", exact: true }));
+  fireEvent.click(screen.getByRole("menuitem", { name: "Dither" }));
   expect(d.add).toHaveBeenCalledExactlyOnceWith("dither");
   expect(screen.queryByRole("menu")).toBeNull();
 });
