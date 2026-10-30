@@ -38,7 +38,7 @@ test("footer availability defers while row selection and attachment highlighting
     });
     const panel = document.querySelector<HTMLElement>(".layers-panel")!,
       footer = document.querySelector<HTMLElement>(".layers-footer")!,
-      duplicate = screen.getByRole("button", { name: "Dupliquer la sélection" }),
+      add = screen.getByRole("button", { name: "Ajouter un effet, réglage ou masque" }),
       row = document.querySelector<HTMLElement>(`[data-layer-id="${d.rectangle.id}"]`)!,
       initial = Number(footer.dataset.reactRenders),
       observed: { renders: number; rowSelected: string | null; disabled: boolean }[] = [],
@@ -48,14 +48,14 @@ test("footer availability defers while row selection and attachment highlighting
         observed.push({
           renders: Number(footer.dataset.reactRenders),
           rowSelected: row.getAttribute("aria-selected"),
-          disabled: (duplicate as HTMLButtonElement).disabled,
+          disabled: (add as HTMLButtonElement).disabled,
         });
       setAttribute(name, value);
     });
-    expect(duplicate).toBeDisabled();
+    expect(add).toBeDisabled();
     act(() => d.engine.select([d.rectangle.id]));
     expect(observed[0]).toEqual({ renders: initial, rowSelected: "true", disabled: true });
-    expect(duplicate).toBeEnabled();
+    expect(add).toBeEnabled();
     expect(Number(footer.dataset.reactRenders)).toBeGreaterThan(initial);
     const enabledRenders = Number(footer.dataset.reactRenders);
     observed.length = 0;
@@ -73,7 +73,7 @@ test("footer availability defers while row selection and attachment highlighting
       "aria-pressed",
       "true",
     );
-    expect(duplicate).toBeDisabled();
+    expect(add).toBeEnabled();
   } finally {
     history.replaceState({}, "", previousURL);
   }
@@ -110,7 +110,7 @@ test("cold attachment acquisition retains already empty compositing controls", (
     expect(within(group).getByRole("textbox", { name: "Opacité" })).toBe(opacity);
     expect(opacity).toBeDisabled();
     act(() => attachmentSelection(d.engine).clear());
-    expect(opacity).toBeEnabled();
+    expect(screen.getByRole("textbox", { name: "Opacité" })).toBeEnabled();
     expect(Number(group.dataset.reactRenders)).toBeGreaterThan(before);
     expect(d.engine.getSnapshot().selection).toEqual([d.rectangle.id]);
   } finally {
@@ -140,24 +140,21 @@ test("virtual scroll retains memoized controls even while an attachment disables
     });
   });
   const tree = screen.getByRole("tree", { name: "Calques" }),
-    compositing = screen.getByRole("group", { name: "Composition des calques" }),
+    chrome = document.querySelector<HTMLElement>(".layers-footer")!,
     menu = screen.getByRole("button", { name: "Actions des calques" }),
-    effects = screen.getByLabelText("Ajouter un effet"),
-    adjustments = screen.getByLabelText("Ajouter un réglage");
-  const before = [compositing, menu, effects, adjustments].map((node) => node.dataset.reactRenders),
+    compositing = screen.getByRole("group", { name: "Composition des calques" }),
+    add = screen.getByRole("button", { name: "Ajouter un effet, réglage ou masque" });
+  const before = [chrome, menu, compositing].map((node) => node.dataset.reactRenders),
     panel = document.querySelector<HTMLElement>(".layers-panel")!,
     panelBefore = Number(panel.dataset.reactRenders);
   for (const top of [360, 720, 1080]) fireEvent.scroll(tree, { target: { scrollTop: top } });
   expect(Number(panel.dataset.reactRenders)).toBe(panelBefore);
-  expect(
-    [compositing, menu, effects, adjustments].map((node) => node.dataset.reactRenders),
-  ).toEqual(before);
+  expect([chrome, menu, compositing].map((node) => node.dataset.reactRenders)).toEqual(before);
   expect(screen.getByRole("textbox", { name: "Opacité" })).toBeDisabled();
   act(() =>
     d.engine.execute({ type: "updateLayers", ids: [d.rectangle.id], patch: { locked: true } }),
   );
-  expect(effects).toBeDisabled();
-  expect(adjustments).toBeDisabled();
+  expect(add).toBeDisabled();
   history.replaceState({}, "", "/");
 });
 test.each(["footer", "context"] as const)(
@@ -186,7 +183,10 @@ test.each(["footer", "context"] as const)(
     if (surface === "context") {
       fireEvent.contextMenu(document.querySelector(`[data-attachment-effect-id="${effect.id}"]`)!);
       fireEvent.click(await screen.findByRole("menuitem", { name: "Retirer l’effet" }));
-    } else fireEvent.click(screen.getByRole("button", { name: "Retirer l’effet" }));
+    } else {
+      openLayerActions();
+      fireEvent.click(screen.getByRole("menuitem", { name: "Retirer l’effet" }));
+    }
     expect(d.engine.getSnapshot().project.pages[0]!.layers).toHaveLength(3);
     expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.effects).toHaveLength(0);
     act(() => d.engine.undo());
@@ -194,22 +194,29 @@ test.each(["footer", "context"] as const)(
     expect(d.engine.getSnapshot().canUndo).toBe(false);
   },
 );
-test("keeps footer creation and selection actions distinct, square-sized and accessibly named", () => {
-  const d = renderLayers(),
-    footer = screen.getByRole("group", { name: "Actions des calques" }),
-    create = within(footer).getByRole("group", { name: "Ajouter des effets et corrections" }),
-    selected = within(footer).getByRole("group", { name: "Actions de la sélection" });
-  expect(within(create).getAllByRole("button")).toHaveLength(2);
-  expect(within(selected).getAllByRole("button")).toHaveLength(2);
-  for (const button of within(footer).getAllByRole("button")) {
+test("keeps one action header, permanent compositing and the existing tree row targets", () => {
+  const d = renderLayers();
+  const panel = document.querySelector<HTMLElement>(".layers-panel")!;
+  const header = panel.querySelector<HTMLElement>(".panel-heading")!;
+  const chrome = within(header).getByRole("group", { name: "Actions des calques" });
+  expect(within(chrome).getAllByRole("button")).toHaveLength(2);
+  expect(panel.lastElementChild?.classList.contains("layers-footer")).toBe(false);
+  expect(screen.getByRole("group", { name: "Composition des calques" })).toBeVisible();
+  const opacity = screen.getByRole("textbox", { name: "Opacité" });
+  const add = screen.getByRole("button", { name: "Ajouter un effet, réglage ou masque" });
+  expect(opacity).toBeDisabled();
+  expect(add).toBeDisabled();
+  for (const button of within(chrome).getAllByRole("button"))
     expect(button).toHaveAttribute("data-size", "icon-sm");
-    expect(button).toBeDisabled();
-  }
   fireEvent.click(screen.getByText(d.rectangle.name));
-  for (const button of within(footer).getAllByRole("button")) expect(button).toBeEnabled();
+  expect(screen.getByRole("textbox", { name: "Opacité" })).toBeEnabled();
+  expect(add).toBeEnabled();
+  fireEvent.pointerDown(add, { button: 0, ctrlKey: false });
+  expect(screen.getByRole("menuitem", { name: "Ajouter un effet" })).toBeVisible();
+  expect(screen.getByRole("menuitem", { name: "Ajouter un réglage" })).toBeVisible();
   expect(
-    within(selected).getByRole("button", { name: "Supprimer la sélection (1)" }),
-  ).toBeEnabled();
+    screen.getByRole("menuitem", { name: "Créer un masque avec la sélection" }),
+  ).toHaveAttribute("data-disabled");
 });
 test("selects rows without eye and lock actions altering selection; renames accessibly", () => {
   const { engine, rectangle, text } = renderLayers();
@@ -264,9 +271,11 @@ test("supports keyboard selection, context grouping, nested collapse, duplicate 
   act(() => engine.select([rectangle.id]));
   expect(screen.queryByLabelText("Monter le calque")).toBeNull();
   expect(screen.queryByLabelText("Descendre le calque")).toBeNull();
-  fireEvent.click(screen.getByLabelText("Dupliquer la sélection"));
+  openLayerActions();
+  fireEvent.click(screen.getByRole("menuitem", { name: "Dupliquer la sélection" }));
   expect(engine.getSnapshot().project.pages[0]!.layers).toHaveLength(4);
-  fireEvent.click(screen.getByLabelText("Supprimer la sélection (1)"));
+  openLayerActions();
+  fireEvent.click(screen.getByRole("menuitem", { name: "Supprimer la sélection (1)" }));
   expect(engine.getSnapshot().project.pages[0]!.layers).toHaveLength(3);
 });
 test("reorders dragged layers and nests drops onto groups using the center drop zone", () => {
@@ -457,3 +466,10 @@ test("page activation and addition preserve the virtual viewport node, native sc
   );
   expect(tree.querySelectorAll("[data-layer-id]").length).toBeLessThan(25);
 });
+
+function openLayerActions() {
+  fireEvent.pointerDown(screen.getByRole("button", { name: "Actions des calques" }), {
+    button: 0,
+    ctrlKey: false,
+  });
+}

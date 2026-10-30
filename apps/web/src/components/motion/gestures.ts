@@ -18,6 +18,8 @@ import { timelineTime } from "./time";
 import type { TimelineRow } from "./tree";
 import { createTimelineMarquee } from "./selection/marquee";
 import { createTimelineAutoScroll } from "./selection/autoscroll";
+import { createTimelineLinkPreview } from "./link-preview";
+import { createKeyframeTooltipPreview } from "./gestures/tooltip";
 
 type TrackAction = "move" | "trimStart" | "trimEnd";
 interface Gesture {
@@ -40,10 +42,13 @@ interface Gesture {
   references: { seconds: number; time: MotionTime }[];
   touched: Set<HTMLElement>;
   dirty: boolean;
+  rejected: boolean;
   stopEngine: () => void;
   scrollLoop: ReturnType<typeof createTimelineAutoScroll> | null;
   point: { x: number; y: number; shift: boolean };
   preview: ReturnType<NonNullable<TimelineTransport["beginKeyframePreview"]>>;
+  tooltip?: ReturnType<typeof createKeyframeTooltipPreview>;
+  links?: ReturnType<typeof createTimelineLinkPreview>;
 }
 
 /** Pointer publication is DOM-only. Commands run once, after ownership is rechecked. */
@@ -62,6 +67,7 @@ export function createTimelineGestures(options: {
     scale: number;
     feedback: HTMLOutputElement;
     gutter?: number;
+    timeWidth?: number;
   } | null = null;
   let selected = new Set<string>();
   let active: Gesture | null = null;
@@ -100,6 +106,8 @@ export function createTimelineGestures(options: {
     gesture.stopEngine();
     gesture.scrollLoop?.stop();
     gesture.preview?.clear();
+    gesture.links?.clear();
+    gesture.tooltip?.dispose();
     gesture.node.removeEventListener("pointermove", move);
     gesture.node.removeEventListener("pointerup", finish);
     gesture.node.removeEventListener("pointercancel", cancelEvent);
@@ -138,7 +146,6 @@ export function createTimelineGestures(options: {
     if (!root) return;
     const px = motionTimeToSeconds(gesture.delta) * (surface?.scale ?? 1);
     if (gesture.action === "keys") {
-      gesture.preview?.update(gesture.delta);
       const ids = new Set(gesture.keyIds);
       for (const node of root.querySelectorAll<HTMLElement>(".motion-key[data-key-id]")) {
         if (!ids.has(node.dataset.keyId!)) continue;
@@ -146,6 +153,7 @@ export function createTimelineGestures(options: {
         gesture.touched.add(node);
       }
     } else if (gesture.action === "move") {
+      gesture.links?.shift(gesture.delta);
       for (const node of root.querySelectorAll<HTMLElement>(".motion-row[data-layer-id]")) {
         if (!gesture.layerIds.has(node.dataset.layerId!)) continue;
         node.style.setProperty("--motion-drag-x", `${px}px`);
@@ -171,6 +179,7 @@ export function createTimelineGestures(options: {
       }
     }
     const feedback = surface?.feedback;
+    gesture.tooltip?.set(addMotionTime(gesture.anchor, gesture.delta));
     if (feedback)
       feedback.textContent = `${motionTimeToSeconds(addMotionTime(gesture.anchor, gesture.delta)).toFixed(3)} s${gesture.snapped ? " ◇" : ""}`;
   }
@@ -217,6 +226,14 @@ export function createTimelineGestures(options: {
       compareMotionTime(addMotionTime(gesture.anchor, delta), gesture.track!.start) <= 0
     )
       return;
+    if (
+      gesture.action === "keys" &&
+      gesture.preview?.update(delta, addMotionTime(gesture.anchor, delta)) === false
+    ) {
+      gesture.rejected = true;
+      return;
+    }
+    gesture.rejected = false;
     gesture.delta = delta;
     preview(gesture);
   }
@@ -239,6 +256,10 @@ export function createTimelineGestures(options: {
       return;
     }
     clear(gesture);
+    if (gesture.rejected) {
+      options.onError("gestureFailed");
+      return;
+    }
     if (!gesture.dirty || gesture.delta.value === 0) return;
     ignorePointerClick = true;
     let command: Command;
@@ -301,9 +322,33 @@ export function createTimelineGestures(options: {
     event.currentTarget.focus();
     transport.pause();
     let keyPreview: Gesture["preview"];
+    let links =
+      data.action === "keys"
+        ? createTimelineLinkPreview(page, data.keyIds ?? [], () =>
+            surface
+              ? {
+                  root: surface.root,
+                  left: surface.viewport.scrollLeft,
+                  width: surface.timeWidth ?? 900,
+                  scale: surface.scale,
+                }
+              : null,
+          )
+        : undefined;
     if (data.action === "keys") {
       try {
-        keyPreview = transport.beginKeyframePreview?.(data.keyIds ?? []);
+        keyPreview = transport.beginKeyframePreview?.(data.keyIds ?? [], {
+          onFrame: (frame) => links?.render(frame),
+          onRetire: () => {
+            if (active?.preview !== keyPreview) return;
+            const next = engine.getSnapshot();
+            cancel(
+              next.project.id !== snapshot.project.id ||
+                next.pageId !== page.id ||
+                next.revision !== snapshot.revision,
+            );
+          },
+        });
       } catch {
         options.onError("gestureFailed");
         return;
@@ -329,6 +374,17 @@ export function createTimelineGestures(options: {
               )
           : []),
     );
+    if (data.action === "move")
+      links = createTimelineLinkPreview(page, [...movingKeys], () =>
+        surface
+          ? {
+              root: surface.root,
+              left: surface.viewport.scrollLeft,
+              width: surface.timeWidth ?? 900,
+              scale: surface.scale,
+            }
+          : null,
+      );
     const references = [
       { seconds: 0, time: { value: 0, rate: 1 } },
       { seconds: motionTimeToSeconds(page.motion.duration), time: page.motion.duration },
@@ -359,10 +415,15 @@ export function createTimelineGestures(options: {
       references,
       touched: new Set(),
       dirty: false,
+      rejected: false,
       stopEngine: () => {},
       scrollLoop: null,
       point: { x: event.clientX, y: event.clientY, shift: event.shiftKey },
       preview: keyPreview,
+      ...(links ? { links } : {}),
+      ...(data.action === "keys"
+        ? { tooltip: createKeyframeTooltipPreview(event.currentTarget) }
+        : {}),
     };
     active = gesture;
     if (surface)
@@ -421,6 +482,7 @@ export function createTimelineGestures(options: {
       scale: number;
       feedback: HTMLOutputElement;
       gutter?: number;
+      timeWidth?: number;
     }) {
       if (surface?.scale !== next.scale) {
         cancel();

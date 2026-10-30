@@ -20,6 +20,26 @@ test("surface colors can be explicit or inherited without overwriting viewport s
   expect(root.style.getPropertyValue("--scroll-shadow-surface")).toBe("");
   expect(root.style.height).toBe("80px");
 });
+test("an explicit selector finds a native viewport after sibling component metadata", () => {
+  const observe = vi.fn();
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe = observe;
+      disconnect() {}
+    },
+  );
+  render(
+    <ScrollShadow viewportSelector="[data-native-viewport]">
+      <>
+        <style>{".metadata {}"}</style>
+        <div data-native-viewport role="list" />
+      </>
+    </ScrollShadow>,
+  );
+  expect(observe).toHaveBeenCalledWith(screen.getByRole("list"));
+  expect(observe).not.toHaveBeenCalledWith(document.querySelector("style"));
+});
 test("scroll boundaries update shadows imperatively, preserve the viewport, and clean observers/listeners", async () => {
   let resize!: ResizeObserverCallback;
   const disconnect = vi.fn(),
@@ -269,4 +289,40 @@ test("horizontal-only surfaces preserve the first viewport and suppress vertical
   expect(root.querySelector(".scroll-shadow-side")).toBeNull();
   expect(root).toHaveAttribute("data-overflow-bottom");
   expect(root).not.toHaveAttribute("data-overflow-right");
+});
+
+test("horizontal fades and an explicit nested viewport coexist for Select-style metadata siblings", () => {
+  let resize!: ResizeObserverCallback;
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      constructor(callback: ResizeObserverCallback) {
+        resize = callback;
+      }
+      observe() {}
+      disconnect() {}
+    },
+  );
+  const view = render(
+    <ScrollShadow axis="both" viewportSelector=".nested-viewport">
+      <div>
+        <span>Metadata</span>
+        <section className="nested-viewport" role="list" />
+      </div>
+    </ScrollShadow>,
+  );
+  const viewport = screen.getByRole("list"),
+    wrapper = view.container.querySelector(".scroll-shadow")!;
+  Object.defineProperties(viewport, {
+    clientWidth: { value: 100 },
+    scrollWidth: { value: 500 },
+    clientHeight: { value: 100 },
+    scrollHeight: { value: 500 },
+  });
+  act(() => resize([], {} as ResizeObserver));
+  expect(wrapper).toHaveAttribute("data-overflow-right");
+  expect(wrapper).toHaveAttribute("data-overflow-bottom");
+  fireEvent.scroll(viewport, { target: { scrollLeft: 400 } });
+  expect(wrapper).toHaveAttribute("data-overflow-left");
+  expect(wrapper).not.toHaveAttribute("data-overflow-right");
 });

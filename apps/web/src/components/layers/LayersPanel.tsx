@@ -2,7 +2,6 @@ import { memo, useEffect, useMemo, useRef, type ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import type { Composition, EnginePort, Layer, Project } from "@musart/core";
 import type { EditorServices } from "../../state/contracts";
-import { LayerMenu } from "./LayerMenu";
 import { LayerFooter } from "./LayerFooter";
 import { LayerCompositing } from "./controls/LayerCompositing";
 import { flattenLayerTree } from "./tree/projection";
@@ -60,17 +59,15 @@ export const LayersPanel = memo(function LayersPanel({
     [project.pages],
   );
   const footerProps = useMemo(
-    () => ({ engine, page, selection, run, attachment, layerCount }),
-    [engine, page, selection, run, attachment, layerCount],
+    () => ({ engine, page, selection, run, attachment }),
+    [engine, page, selection, run, attachment],
   );
   return (
     <section ref={element} className="layers-panel" aria-label={t("layers")}>
       <div className="panel-heading">
         <h2>{t("layers")}</h2>
         <span className="small-count">{layerCount}</span>
-        <div className="heading-actions">
-          <LayerMenu engine={engine} page={page} selection={selection} run={run} />
-        </div>
+        <FooterPresentation {...footerProps} />
       </div>
       <LayerCompositing
         key={`${project.id}:${page.id}`}
@@ -91,7 +88,6 @@ export const LayersPanel = memo(function LayersPanel({
         services={services}
         attachment={attachment}
       />
-      <FooterPresentation {...footerProps} />
     </section>
   );
 });

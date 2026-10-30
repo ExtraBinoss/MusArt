@@ -2,6 +2,7 @@ import { ensure } from "../errors";
 import { freezeValue } from "../document/immutable";
 import { assertEditable, getLayer } from "../layers/access";
 import type { MotionProgram } from "./compile";
+import type { MotionPropertyTrack } from "./model";
 import { compileMotionInterpolator } from "./interpolation";
 import { resolveMotionProperty } from "./properties/registry";
 import { addMotionTime, compareMotionTime, validateMotionTime, type MotionTime } from "./time";
@@ -39,9 +40,37 @@ export function createMotionKeyframePreview(
     }),
   );
   ensure(found === ids.size, "NOT_FOUND", "Selected keyframe not found");
-  return (delta: MotionTime): MotionProgram => {
+  const constraints = [...affected.values()].flat().map(({ property }) => ({
+    moving: property.keyframes.filter((key) => ids.has(key.id)),
+    fixed: property.keyframes.filter((key) => !ids.has(key.id)),
+  }));
+  const accepts = (delta: MotionTime): boolean => {
+    try {
+      validateMotionTime(delta);
+      for (const { moving, fixed } of constraints) {
+        if (addMotionTime(moving[0]!.time, delta).value < 0) return false;
+        if (!fixed.length) continue;
+        for (const key of moving) {
+          const time = addMotionTime(key.time, delta);
+          let low = 0,
+            high = fixed.length;
+          while (low < high) {
+            const middle = (low + high) >>> 1;
+            if (compareMotionTime(fixed[middle]!.time, time) < 0) low = middle + 1;
+            else high = middle;
+          }
+          if (fixed[low] && compareMotionTime(fixed[low]!.time, time) === 0) return false;
+        }
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  const sample = (delta: MotionTime): MotionProgram => {
     validateMotionTime(delta);
     if (delta.value === 0) return program;
+    const authored = new Map<string, MotionPropertyTrack>();
     const layers = program.layers.map((layer, layerIndex) => {
       const entries = affected.get(layerIndex);
       if (!entries) return layer;
@@ -63,9 +92,13 @@ export function createMotionKeyframePreview(
           "Keyframe time is already occupied",
         );
         const previous = layer.properties[propertyIndex]!;
+        const authoredKeys = keys.map(({ key, time }) =>
+          time === key.time ? key : { ...key, time },
+        );
+        authored.set(property.id, { ...property, keyframes: authoredKeys });
         properties[propertyIndex] = freezeValue({
           target: previous.target,
-          keys: keys.map(({ key, time }) => ({ time, value: key.value })),
+          keys: authoredKeys,
           segments: keys.every((key, index) => key.index === index)
             ? previous.segments
             : keys
@@ -82,6 +115,24 @@ export function createMotionKeyframePreview(
       }
       return Object.freeze({ ...layer, properties: Object.freeze(properties) });
     });
-    return Object.freeze({ ...program, layers: Object.freeze(layers) });
+    const motion = program.composition.motion!;
+    const composition = freezeValue({
+      ...program.composition,
+      motion: {
+        ...motion,
+        tracks: motion.tracks.map((track) =>
+          track.properties.some((property) => authored.has(property.id))
+            ? {
+                ...track,
+                properties: track.properties.map(
+                  (property) => authored.get(property.id) ?? property,
+                ),
+              }
+            : track,
+        ),
+      },
+    });
+    return Object.freeze({ ...program, composition, layers: Object.freeze(layers) });
   };
+  return Object.freeze({ accepts, sample });
 }

@@ -8,10 +8,9 @@ async function counters(page: Page) {
   return page.evaluate(() => {
     const selectors = {
       panel: ".layers-panel",
-      menu: ".layers-panel .heading-actions button",
+      menu: ".layers-panel .layer-selection-actions button",
       compositing: ".layer-compositing",
-      effects: '[data-layer-add-category="effect"]',
-      adjustments: '[data-layer-add-category="adjustment"]',
+      actions: ".layers-panel .layers-header-actions",
     };
     return Object.fromEntries(
       Object.entries(selectors).map(([name, selector]) => [
@@ -124,7 +123,7 @@ test("native virtual scrolling skips stable header controls while selection, att
     for (let index = 0; index < 24; index++) await page.mouse.wheel(0, 420);
     const after = await counters(page);
     expect(after.panel).toBe(before.panel);
-    for (const name of ["menu", "compositing", "effects", "adjustments"])
+    for (const name of ["menu", "compositing", "actions"])
       expect(after[name], `${name} rendered during virtual scrolling`).toBe(before[name]);
     expect(await tree.locator("[data-layer-id]").count()).toBeLessThan(40);
     return { before, after };
@@ -133,7 +132,10 @@ test("native virtual scrolling skips stable header controls while selection, att
   await expect(controls.locator("input")).toBeDisabled();
   await page.evaluate((id) => window.musart!.select([id]), owner.id);
   await expect(controls.locator("input")).toBeEnabled();
-  await expect(page.locator('[data-layer-add-category="effect"]')).toBeEnabled();
+  const add = page.locator(
+    '.layers-panel .layer-create-actions [data-slot="dropdown-menu-trigger"]',
+  );
+  await expect(add).toBeEnabled();
   const card = page.locator(`[data-attachment-effect-id="${effect.id}"]`).first();
   await expect(card).toBeVisible();
   await card.click();
@@ -150,8 +152,7 @@ test("native virtual scrolling skips stable header controls while selection, att
     (id) => window.musart!.execute({ type: "updateLayers", ids: [id], patch: { locked: true } }),
     owner.id,
   );
-  await expect(page.locator('[data-layer-add-category="effect"]')).toBeDisabled();
-  await expect(page.locator('[data-layer-add-category="adjustment"]')).toBeDisabled();
+  await expect(add).toBeDisabled();
   expect(await page.evaluate(() => window.__musartVideoReadbacks)).toMatchObject({
     gpu: 0,
     webgl: 0,

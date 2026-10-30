@@ -1,11 +1,19 @@
 import { memo, useCallback, useMemo, useRef } from "react";
-import { Copy, Trash2 } from "lucide-react";
+import { Plus, ScanLine } from "lucide-react";
 import type { Composition, EnginePort } from "@musart/core";
 import { useTranslation } from "react-i18next";
 import { attachmentSelection, type AttachmentTarget } from "../../state/selection/attachments";
 import { useRenderMetrics } from "../../state/session/render-metrics";
 import { IconButton } from "../shared/IconButton";
-import { AddEffect } from "./menu/AddEffect";
+import { EffectMenu } from "./EffectMenu";
+import { LayerMenu } from "./LayerMenu";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "../ui/dropdown-menu";
 import { layerActions } from "./menu/actions";
 import { layerSelection } from "./menu/selection";
 import { sameSelectionAvailability } from "./menu/availability";
@@ -17,14 +25,12 @@ export const LayerFooter = memo(
     selection,
     run,
     attachment,
-    layerCount,
   }: {
     engine: EnginePort;
     page: Composition;
     selection: string[];
     run: (action: () => void) => void;
     attachment: AttachmentTarget | null;
-    layerCount: number;
   }) {
     const { t } = useTranslation();
     const element = useRef<HTMLDivElement>(null);
@@ -47,7 +53,7 @@ export const LayerFooter = memo(
     return (
       <div
         ref={element}
-        className="layers-footer"
+        className="layers-footer layers-header-actions"
         role="group"
         aria-label={t("layerControls:actions")}
       >
@@ -56,53 +62,41 @@ export const LayerFooter = memo(
           role="group"
           aria-label={t("layerControls:createActions")}
         >
-          <AddEffect
-            engine={engine}
-            page={page}
-            selection={selection}
-            run={runCurrent}
-            category="effect"
-          />
-          <AddEffect
-            engine={engine}
-            page={page}
-            selection={selection}
-            run={runCurrent}
-            category="adjustment"
-          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <IconButton label={t("layerControls:add")} disabled={!state.editable}>
+                <Plus size={15} />
+              </IconButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <EffectMenu onAdd={actions.effect} />
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                disabled={!state.editable || selection.length < 2 || Boolean(attachment)}
+                onSelect={() => {
+                  if (
+                    !attachmentSelection(engine).read() &&
+                    engine.getSnapshot().selection.length >= 2
+                  )
+                    actions.mask();
+                }}
+              >
+                <ScanLine size={14} />
+                {t("createMask")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-        <span>{!selection.length && t("layerCount", { count: layerCount })}</span>
         <div
           className="layer-selection-actions"
           role="group"
           aria-label={t("layerControls:selectionActions")}
         >
-          <IconButton
-            label={t("duplicateLayer")}
-            disabled={!state.editable || Boolean(attachment)}
-            onClick={() => {
-              if (!attachmentSelection(engine).read()) actions.duplicate();
-            }}
-          >
-            <Copy size={13} />
-          </IconButton>
-          <IconButton
-            label={
-              attachment
-                ? t(attachment.kind === "effect" ? "removeEffect" : "removeMask")
-                : t("layerControls:deleteSelection", { count: selection.length })
-            }
-            disabled={attachment ? !attachmentSelection(engine).editable() : !state.editable}
-            onClick={actions.remove}
-          >
-            <Trash2 size={13} />
-          </IconButton>
+          <LayerMenu engine={engine} page={page} selection={selection} run={runCurrent} />
         </div>
       </div>
     );
   },
   (before, after) =>
-    before.attachment === after.attachment &&
-    before.layerCount === after.layerCount &&
-    sameSelectionAvailability(before, after),
+    before.attachment === after.attachment && sameSelectionAvailability(before, after),
 );

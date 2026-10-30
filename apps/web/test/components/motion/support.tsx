@@ -18,12 +18,14 @@ export function makeTransport(page: Composition) {
     playbackMode: "once",
   };
   const listeners = new Set<() => void>();
+  let editingTime: MotionTime | null = null;
   const update = (patch: Partial<TimelineTransportState>) => {
     state = { ...state, ...patch };
     for (const listener of listeners) listener();
   };
   const transport: TimelineTransport = {
     read: () => state,
+    readEditingTime: () => editingTime,
     subscribe: (listener) => {
       listeners.add(listener);
       return () => {
@@ -37,7 +39,11 @@ export function makeTransport(page: Composition) {
       update({ playbackMode }),
     ),
   };
-  return { transport, update, listeners };
+  const editTime = (time: MotionTime | null) => {
+    editingTime = time;
+    for (const listener of listeners) listener();
+  };
+  return { transport, update, editTime, listeners };
 }
 
 export function PanelHost({

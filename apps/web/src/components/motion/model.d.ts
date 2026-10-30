@@ -19,9 +19,13 @@ export interface TimelineTransport {
   pause(): void;
   setPlaybackMode(mode: TimelineTransportState["playbackMode"]): void;
   readFrame?(): Composition | null;
-  beginKeyframePreview?(ids: readonly string[]):
+  readEditingTime?(): MotionTime | null;
+  beginKeyframePreview?(
+    ids: readonly string[],
+    options?: { onFrame?: (page: Composition) => void; onRetire?: () => void },
+  ):
     | {
-        update(delta: MotionTime): void;
+        update(delta: MotionTime, editingTime?: MotionTime): boolean;
         clear(): void;
       }
     | undefined;

@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { EditorEngine } from "@musart/core";
+import { createProject, EditorEngine } from "@musart/core";
 import {
   clampTimelineHeight,
   readTimelineHeight,
@@ -25,4 +25,14 @@ it("retains a manual ratio across reopening/resizing without sharing it with ano
   expect(clampTimelineHeight(9999, 720)).toBe(468);
   expect(clampTimelineHeight(0, 720)).toBe(164);
   expect(Number.isFinite(clampTimelineHeight(NaN, NaN))).toBe(true);
+});
+
+it("keeps each project's fallback ratio separate when the engine opens another project", () => {
+  const engine = new EditorEngine();
+  const original = engine.getSnapshot().project;
+  rememberTimelineHeight(engine, 400, 1000);
+  engine.load(createProject());
+  expect(readTimelineHeight(engine, 1000)).toBe(316);
+  engine.load(original);
+  expect(readTimelineHeight(engine, 1000)).toBe(400);
 });

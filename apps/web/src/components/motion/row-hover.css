@@ -1,0 +1,21 @@
+.motion-trim-handle::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 1px;
+  background: var(--foreground);
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+.motion-row:is(:hover, :focus-within, [data-motion-hovered="true"]) .motion-trim-handle::after,
+.motion-trim-handle:hover::after {
+  opacity: 0.8;
+}
+.motion-trim-handle:focus-visible::after {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-trim-handle::after {
+    transition: none;
+  }
+}

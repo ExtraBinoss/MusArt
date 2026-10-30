@@ -69,3 +69,55 @@ test("separates clipped effects and adjustments and chooses a registered effect"
   fireEvent.click(item);
   expect(add).toHaveBeenCalledWith("dither");
 });
+
+test("vertical category hover bypasses stale diagonal grace and keeps submenus outside the clipped parent", async () => {
+  const d = setup(),
+    add = vi.fn();
+  d.mount(
+    <DropdownMenu defaultOpen modal={false}>
+      <DropdownMenuTrigger>Menu</DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <EffectMenu onAdd={add} />
+      </DropdownMenuContent>
+    </DropdownMenu>,
+  );
+  const effects = screen.getByRole("menuitem", { name: "Ajouter un effet" });
+  const adjustments = screen.getByRole("menuitem", { name: "Ajouter un réglage" });
+  const parent = effects.closest('[role="menu"]')!;
+  fireEvent.keyDown(effects, { key: "ArrowRight" });
+  const item = await screen.findByRole("menuitem", { name: "Dither" });
+  const submenu = item.closest<HTMLElement>('[role="menu"]')!;
+  expect(parent.contains(submenu)).toBe(false);
+  submenu.dataset.side = "right";
+  vi.spyOn(submenu, "getBoundingClientRect").mockReturnValue({
+    left: 200,
+    right: 380,
+    top: 90,
+    bottom: 540,
+    width: 180,
+    height: 450,
+  } as DOMRect);
+  function pointer(node: HTMLElement, type: string, relatedTarget: HTMLElement | null, y: number) {
+    const event = new MouseEvent(type, {
+      bubbles: true,
+      clientX: 110,
+      clientY: y,
+      buttons: 0,
+      relatedTarget,
+    });
+    Object.defineProperty(event, "pointerType", { value: "mouse" });
+    fireEvent(node, event);
+  }
+  pointer(effects, "pointermove", null, 108);
+  pointer(effects, "pointerout", adjustments, 115);
+  pointer(adjustments, "pointerover", effects, 118);
+  pointer(adjustments, "pointermove", effects, 118);
+  expect(adjustments).toHaveAttribute("aria-expanded", "true");
+  expect(adjustments).toHaveAttribute("data-highlighted");
+  expect(effects).toHaveAttribute("aria-expanded", "false");
+  const brightness = await screen.findByRole("menuitem", {
+    name: i18n.t(getEffectDefinition("brightness").nameKey),
+  });
+  fireEvent.click(brightness);
+  expect(add).toHaveBeenCalledExactlyOnceWith("brightness");
+});

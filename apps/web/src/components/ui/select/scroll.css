@@ -1,0 +1,29 @@
+.select-scroll-content[data-slot="select-content"] {
+  --select-scroll-max-height: min(
+    360px,
+    60dvh,
+    var(--radix-select-content-available-height, calc(100dvh - 16px))
+  );
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.select-scroll-shadow {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.select-scroll-content [data-slot="select-viewport"][data-radix-select-viewport] {
+  min-height: 0;
+  max-height: calc(var(--select-scroll-max-height) - 2px);
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+  scroll-behavior: auto;
+  -ms-overflow-style: auto;
+}
+.select-scroll-content
+  [data-slot="select-viewport"][data-radix-select-viewport]::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}

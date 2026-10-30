@@ -1,123 +1,293 @@
-import { Activity, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
-import { useAnimate, useReducedMotion } from "motion/react";
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useAtom, useStore } from "jotai";
+import { animate, useReducedMotion } from "motion/react";
 import type { EnginePort, SessionSnapshot } from "@musart/core";
 import { timelineOpenAtom } from "../../state/motion/timeline-state";
 import { useEngine } from "../../state/session/editor";
 import { createMotionTransport } from "../../services/motion/transport";
 import { TimelinePanel } from "../motion/TimelinePanel";
 import type { TimelineTransport } from "../motion/model";
+import { observeDockInteraction } from "./dock-interaction";
 import "./motion-shell.css";
 
 const RetainedPanel = memo(TimelinePanel);
-const closedStyle = { opacity: 0, transform: "translateY(100%)" };
+const peekTransform = "translateY(calc(100% - 32px))";
+const dockSpring = { type: "spring" as const, mass: 1, stiffness: 385.53, damping: 39.27 };
+function rememberChoice(previous: ReadonlyMap<string, boolean>, key: string, pinned: boolean) {
+  if (previous.get(key) === pinned) return previous;
+  const next = new Map(previous);
+  next.delete(key);
+  next.set(key, pinned);
+  if (next.size > 32) next.delete(next.keys().next().value!);
+  return next;
+}
 
-/** Timeline visibility is local presentation state; App/Canvas/Inspector never subscribe to it. */
+/** Hover and pin are local presentation state; the editor roots never subscribe to them. */
 export const MotionTimelineDock = memo(function MotionTimelineDock({
   engine,
 }: {
   engine: EnginePort;
 }) {
   const snapshot = useEngine(engine);
-  const open = useAtomValue(timelineOpenAtom);
-  const setOpen = useSetAtom(timelineOpenAtom);
-  const reduced = Boolean(useReducedMotion());
   const transport = useMemo(() => createMotionTransport(engine), [engine]);
-  const page = snapshot.project.pages.find((item) => item.id === snapshot.pageId);
-  const motionEnabled = page?.motion?.mode === "motion";
+  const [choices, setChoices] = useState<ReadonlyMap<string, boolean>>(() => new Map());
+  const scope = JSON.stringify([snapshot.project.id, snapshot.pageId]);
+  const mode =
+    snapshot.project.pages.find((page) => page.id === snapshot.pageId)?.motion?.mode ?? "static";
+  const [observed, setObserved] = useState({ scope, mode, pin: 0 });
+  if (observed.scope !== scope) setObserved({ scope, mode, pin: 0 });
+  else if (observed.mode !== mode) {
+    setObserved({ scope, mode, pin: observed.pin + (mode === "motion" ? 1 : 0) });
+    if (mode === "motion") setChoices((current) => rememberChoice(current, scope, true));
+  }
+  const remember = useCallback((key: string, pinned: boolean) => {
+    setChoices((current) => rememberChoice(current, key, pinned));
+  }, []);
   useEffect(() => {
-    if (!motionEnabled) transport.pause();
-  }, [motionEnabled, transport]);
-  const close = useCallback(() => {
-    // The timeline close button disappears. Return keyboard focus to its persistent canvas toggle.
-    document.querySelector<HTMLElement>(".canvas-timeline-toggle")?.focus({ preventScroll: true });
-    setOpen(false);
-  }, [setOpen]);
-  return (
-    <ScopedDock
-      key={JSON.stringify([snapshot.project.id, snapshot.pageId])}
+    if (mode !== "motion") transport.pause();
+  }, [mode, transport]);
+  return mode === "motion" ? (
+    <DockSurface
+      key={scope}
+      scope={scope}
       engine={engine}
       snapshot={snapshot}
       transport={transport}
-      reduced={reduced}
-      visible={open && motionEnabled}
-      onClose={close}
+      initialPinned={choices.get(scope) ?? false}
+      pinRequest={observed.scope === scope ? observed.pin : 0}
+      remember={remember}
     />
-  );
+  ) : null;
 });
 
-interface SurfaceProps {
+function DockSurface({
+  engine,
+  snapshot,
+  transport,
+  scope,
+  initialPinned,
+  pinRequest,
+  remember,
+}: {
   engine: EnginePort;
   snapshot: SessionSnapshot;
   transport: TimelineTransport;
-  reduced: boolean;
-  visible: boolean;
-  onClose: () => void;
-}
-
-/** First use is lazy; a project/artboard key change drops the single retained surface. */
-function ScopedDock(props: SurfaceProps) {
-  const [mounted, setMounted] = useState(props.visible);
-  if (props.visible && !mounted) setMounted(true);
-  return mounted ? <DockSurface {...props} /> : null;
-}
-
-function DockSurface({ engine, snapshot, transport, reduced, visible, onClose }: SurfaceProps) {
-  // Keep the animation scope outside Activity: hidden descendants disconnect their Effects.
-  const [surface, animate] = useAnimate<HTMLDivElement>();
-  const generation = useRef<symbol | null>(null);
-  const [visibility, setVisibility] = useState({ requested: visible, hidden: false });
-  const [lastVisibleSnapshot, retainSnapshot] = useState(snapshot);
-  // Conditional render updates are synchronous: never hide a reopened boundary before its entry.
-  if (visibility.requested !== visible) setVisibility({ requested: visible, hidden: false });
-  if (visible && lastVisibleSnapshot !== snapshot) retainSnapshot(snapshot);
-  // Animate the DOM directly after Activity reconnects refs. No descendant control bus is needed.
+  scope: string;
+  initialPinned: boolean;
+  pinRequest: number;
+  remember: (scope: string, pinned: boolean) => void;
+}) {
+  const [open, setOpen] = useAtom(timelineOpenAtom);
+  const store = useStore();
+  const [pinned, setPinned] = useState(initialPinned || pinRequest > 0);
+  const [initialExpansion] = useState(initialPinned || pinRequest > 0);
+  const expanded = pinned || open;
+  const reduced = Boolean(useReducedMotion());
+  const surface = useRef<HTMLDivElement>(null),
+    slot = useRef<HTMLDivElement>(null);
+  const interaction = useRef<ReturnType<typeof observeDockInteraction> | null>(null);
+  const latest = useRef({ expanded, pinned });
+  const beforeLayout = useRef<{ node: HTMLElement; height: number; pinned: boolean } | null>(null);
+  const idleFrame = useRef<number | null>(null);
+  const transitions = useRef(0),
+    initialized = useRef(false);
+  const beginTransition = useCallback(() => {
+    transitions.current++;
+    slot.current?.setAttribute("data-motion-grip-ready", "false");
+    slot.current?.setAttribute("data-motion-animating", "true");
+    let retired = false;
+    return () => {
+      if (retired) return;
+      retired = true;
+      if (--transitions.current === 0) {
+        slot.current?.removeAttribute("data-motion-animating");
+        slot.current?.setAttribute("data-motion-grip-ready", String(latest.current.expanded));
+      }
+    };
+  }, []);
+  useLayoutEffect(() => {
+    latest.current = { expanded, pinned };
+  }, [expanded, pinned]);
+  // This publishes presentation intent to the external store, without a React state cascade.
+  useLayoutEffect(() => {
+    setOpen(initialExpansion);
+  }, [initialExpansion, setOpen]);
+  const measure = useCallback(() => {
+    if (interaction.current?.dragging()) return;
+    const panel = surface.current?.querySelector<HTMLElement>(".motion-timeline");
+    if (panel && slot.current) {
+      const height = panel.getBoundingClientRect().height;
+      slot.current.style.setProperty("--motion-panel-height", `${height}px`);
+      if (!latest.current.expanded && surface.current)
+        surface.current.style.transform = `translateY(${Math.max(0, height - 32)}px)`;
+    }
+  }, []);
+  useLayoutEffect(() => {
+    const root = slot.current,
+      panel = surface.current?.querySelector<HTMLElement>(".motion-timeline");
+    if (!root || !panel) return;
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(panel);
+    const events = observeDockInteraction(root, {
+      expanded: () => latest.current.expanded,
+      pinned: () => latest.current.pinned,
+      open: () => setOpen(true),
+      close: () => setOpen(false),
+      idle: () => {
+        if (idleFrame.current !== null) cancelAnimationFrame(idleFrame.current);
+        idleFrame.current = requestAnimationFrame(() => {
+          idleFrame.current = null;
+          measure();
+        });
+      },
+    });
+    interaction.current = events;
+    return () => {
+      events.dispose();
+      interaction.current = null;
+      observer.disconnect();
+      if (idleFrame.current !== null) cancelAnimationFrame(idleFrame.current);
+    };
+  }, [measure, setOpen]);
   useEffect(() => {
-    if (!surface.current || reduced) return;
-    const token = Symbol();
-    generation.current = token;
+    interaction.current?.refresh();
+  }, [expanded, pinned]);
+  useLayoutEffect(() => {
+    const node = surface.current,
+      root = slot.current;
+    if (!node || !root) return;
+    const offset = Math.max(0, node.getBoundingClientRect().height - 32);
+    const first = !initialized.current;
+    initialized.current = true;
+    if (first) node.style.transform = `translateY(${offset}px)`;
+    const target = `translateY(${expanded ? 0 : offset}px)`;
+    if (reduced || (first && !expanded)) {
+      node.style.transform = target;
+      node.style.opacity = expanded ? "1" : ".98";
+      root.dataset.motionBodyHidden = String(!expanded);
+      root.dataset.motionGripReady = String(expanded);
+      return;
+    }
+    let cancelled = false;
+    const finishTransition = beginTransition();
+    // Hide the grip before revealing the moving body, including interrupted reentries.
+    root.dataset.motionBodyHidden = "false";
     const animation = animate(
-      surface.current,
-      { opacity: visible ? 1 : 0, transform: visible ? "translateY(0%)" : "translateY(100%)" },
-      { duration: visible ? 0.18 : 0.13, ease: [0.22, 1, 0.36, 1] },
+      node,
+      { transform: target, opacity: expanded ? 1 : 0.98 },
+      dockSpring,
     );
     void animation.then(() => {
-      if (!visible && token === generation.current)
-        setVisibility((current) =>
-          current.requested ? current : { requested: false, hidden: true },
-        );
+      finishTransition();
+      if (!cancelled && !expanded) root.dataset.motionBodyHidden = "true";
     });
     return () => {
-      generation.current = null;
+      cancelled = true;
       animation.stop();
+      finishTransition();
     };
-  }, [animate, surface, visible, reduced]);
-  const scope = JSON.stringify([snapshot.project.id, snapshot.pageId]);
-  const hidden = reduced ? !visible : visibility.hidden;
+  }, [beginTransition, expanded, reduced]);
+  useLayoutEffect(() => {
+    const before = beforeLayout.current;
+    if (before && before.pinned !== pinned) return;
+    beforeLayout.current = null;
+    if (!before || reduced) return;
+    const after = before.node.getBoundingClientRect().height;
+    if (!after || before.height === after) return;
+    const node = before.node,
+      transform = node.style.transform,
+      origin = node.style.transformOrigin;
+    node.style.transformOrigin = "top";
+    const finishTransition = beginTransition();
+    const animation = animate(
+      node,
+      { transform: [`scaleY(${before.height / after})`, "scaleY(1)"] },
+      dockSpring,
+    );
+    let restored = false;
+    const restore = () => {
+      if (restored) return;
+      restored = true;
+      node.style.transform = transform;
+      node.style.transformOrigin = origin;
+      finishTransition();
+    };
+    void animation.then(restore);
+    return () => {
+      animation.stop();
+      restore();
+    };
+  }, [beginTransition, pinned, reduced]);
+  const captureLayout = useCallback(
+    (nextPinned: boolean) => {
+      measure();
+      const node = slot.current?.parentElement?.querySelector<HTMLElement>(".workspace-panels");
+      if (node)
+        beforeLayout.current = {
+          node,
+          height: node.getBoundingClientRect().height,
+          pinned: nextPinned,
+        };
+    },
+    [measure],
+  );
+  const pin = useCallback(() => {
+    const nextPinned = !latest.current.pinned;
+    captureLayout(nextPinned);
+    setPinned(nextPinned);
+    setOpen(true);
+    remember(scope, nextPinned);
+  }, [captureLayout, remember, scope, setOpen]);
+  const close = useCallback(() => {
+    if (!latest.current.expanded) {
+      setOpen(true);
+      return;
+    }
+    if (latest.current.pinned) captureLayout(false);
+    interaction.current?.dismiss();
+    setPinned(false);
+    remember(scope, false);
+    setOpen(false);
+    document.querySelector<HTMLElement>(".canvas-timeline-toggle")?.focus({ preventScroll: true });
+  }, [captureLayout, remember, scope, setOpen]);
+  useLayoutEffect(
+    () =>
+      store.sub(timelineOpenAtom, () => {
+        if (!store.get(timelineOpenAtom) && latest.current.pinned) close();
+      }),
+    [close, store],
+  );
   return (
-    <Activity mode={hidden ? "hidden" : "visible"}>
-      <div
-        ref={surface}
-        className="motion-timeline-dock"
-        data-motion-presence={hidden ? "hidden" : visible ? "present" : "exiting"}
-        data-motion-scope={scope}
-        data-canvas-control
-        inert={!visible || undefined}
-        aria-hidden={!visible || undefined}
-        style={{
-          ...(reduced && visible ? { opacity: 1, transform: "translateY(0%)" } : closedStyle),
-          pointerEvents: visible ? "auto" : "none",
-        }}
-      >
-        <RetainedPanel
-          key={scope}
-          engine={engine}
-          snapshot={visible ? snapshot : lastVisibleSnapshot}
-          transport={transport}
-          onClose={onClose}
-          active={visible}
-        />
+    <div
+      ref={slot}
+      className="motion-timeline-dock"
+      data-motion-presence={expanded ? "present" : "peek"}
+      data-motion-expanded={String(expanded)}
+      data-motion-pinned={String(pinned)}
+      data-motion-body-hidden="true"
+      data-motion-grip-ready="false"
+      data-motion-scope={scope}
+      data-canvas-control
+    >
+      <div className="motion-timeline-viewport">
+        <div
+          ref={surface}
+          className="motion-timeline-surface"
+          style={{ transform: peekTransform, opacity: 0.98 }}
+        >
+          <RetainedPanel
+            engine={engine}
+            snapshot={snapshot}
+            transport={transport}
+            expanded={expanded}
+            pinned={pinned}
+            onPin={pin}
+            onClose={close}
+            active
+          />
+        </div>
       </div>
-    </Activity>
+    </div>
   );
 }

@@ -1,0 +1,49 @@
+.canvas-selection,
+.canvas-timeline-hover {
+  transition: opacity 160ms ease-out;
+}
+.canvas-selection-overlays[data-playback="true"] .canvas-selection {
+  opacity: 0.2;
+}
+.canvas-selection-overlays[data-playback="true"] .canvas-handle {
+  pointer-events: none;
+}
+.canvas-timeline-hover {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  border: 1px solid var(--primary);
+  box-sizing: border-box;
+  pointer-events: none;
+}
+.canvas-timeline-hover-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--primary);
+  background: var(--background);
+  pointer-events: none;
+}
+.canvas-timeline-hover-handle.is-nw {
+  left: -4px;
+  top: -4px;
+}
+.canvas-timeline-hover-handle.is-ne {
+  right: -4px;
+  top: -4px;
+}
+.canvas-timeline-hover-handle.is-sw {
+  left: -4px;
+  bottom: -4px;
+}
+.canvas-timeline-hover-handle.is-se {
+  right: -4px;
+  bottom: -4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .canvas-selection,
+  .canvas-timeline-hover {
+    transition: none;
+  }
+}
