@@ -1,0 +1,80 @@
+.horizontal-scroll {
+  position: relative;
+  min-width: 0;
+}
+.horizontal-scroll-shadow > .scroll-shadow-side {
+  bottom: 0;
+}
+.horizontal-scroll-shadow > .scroll-shadow-side.is-right {
+  right: 0;
+}
+.horizontal-scroll-viewport {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  scroll-padding-inline: 22px;
+}
+.horizontal-scroll-viewport::-webkit-scrollbar {
+  display: none;
+}
+.horizontal-scroll-viewport:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+  border-radius: 5px;
+}
+.horizontal-scroll-content {
+  width: max-content;
+  min-width: 100%;
+}
+.horizontal-scroll[data-panning] {
+  cursor: grabbing;
+  user-select: none;
+}
+.horizontal-scroll[data-panning] * {
+  cursor: grabbing;
+}
+.horizontal-scroll-arrow {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  color: var(--muted-foreground);
+  background: var(--scroll-shadow-surface, var(--popover));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 160ms ease,
+    color 160ms ease;
+}
+.horizontal-scroll-arrow.is-left {
+  left: 0;
+}
+.horizontal-scroll-arrow.is-right {
+  right: 0;
+}
+.horizontal-scroll:hover .horizontal-scroll-arrow:not(:disabled),
+.horizontal-scroll:focus-within .horizontal-scroll-arrow:not(:disabled) {
+  opacity: 1;
+  pointer-events: auto;
+}
+.horizontal-scroll-arrow:hover {
+  color: var(--foreground);
+}
+.horizontal-scroll-arrow:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .horizontal-scroll-arrow {
+    transition: none;
+  }
+}

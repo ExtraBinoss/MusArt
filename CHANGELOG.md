@@ -6,6 +6,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Added
 
+- Added a shared horizontal viewport with themed scroll shadows, mouse-hover edge controls, native touch scrolling, mouse panning and wheel/keyboard navigation. It hides the scrollbar, propagates wheel input at its limits and cleans up every observer, pointer capture and animation frame.
+
 - Added reusable, one-shot `BlurReveal` and `BlurTextAnimation` UI primitives adapted from the supplied example, with inherited styling, optional child ownership, configurable CSS blur/transform/opacity, reduced motion and temporary compositor hints. Command search uses a short top-to-bottom reveal while retaining existing result elements during typing.
 
 - Added reproducible production Cmd+K profiling with real native typing, 150-layer and 50-image/100-effect documents, immediate input after a committed edit, actual React/GPU/readback counters, retained CPU/Blink traces and mapped source attribution. The v2 probe separates input echo from correctly committed latest results, counts superseded prefixes and verifies final-query convergence. Its report documents the measured input responsiveness/result-delay tradeoff without counting old DOM as fresh results or claiming a general speedup; all earlier cohorts remain available.
