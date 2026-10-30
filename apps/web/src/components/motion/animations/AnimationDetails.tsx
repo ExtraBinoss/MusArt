@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { EnginePort, MotionAnimation, MotionAnimationPreset } from "@musart/core";
 import { AnimationChannel } from "./AnimationChannel";
+import { InfoTooltip } from "../../shared/InfoTooltip";
 import { Collapsible, CollapsibleTrigger } from "../../ui/collapsible";
 
 /** Detail edits change the authoritative channels, never a generated duplicate keyframe set. */
@@ -16,7 +17,6 @@ export function AnimationDetails({
   animation: MotionAnimation;
   run: (action: () => void) => void;
 }) {
-  const { t } = useTranslation("animations");
   function edit(change: (preset: MotionAnimationPreset) => void) {
     run(() => {
       const preset = structuredClone(animation.preset);
@@ -30,7 +30,6 @@ export function AnimationDetails({
   }
   return (
     <div className="animation-details">
-      <p className="animation-details-hint">{t("detailsHint")}</p>
       {animation.preset.channels.map((channel, index) => (
         <AnimationChannel
           key={`${channel.target.kind}:${channel.target.kind === "layer" ? "" : channel.target.slot}:${channel.target.property}`}
@@ -62,12 +61,15 @@ export function AnimationDetailsDisclosure({
   return (
     <Collapsible className="animation-details-disclosure" open={open} onOpenChange={setOpen}>
       <div className="animation-instance-footer">
-        <CollapsibleTrigger asChild>
-          <button type="button" className="animation-details-toggle animation-disclosure-trigger">
-            <ChevronRight size={12} />
-            {t("details")}
-          </button>
-        </CollapsibleTrigger>
+        <div className="animation-details-label">
+          <CollapsibleTrigger asChild>
+            <button type="button" className="animation-details-toggle animation-disclosure-trigger">
+              <ChevronRight size={12} />
+              {t("details")}
+            </button>
+          </CollapsibleTrigger>
+          <InfoTooltip label={t("detailsHelp")}>{t("detailsHint")}</InfoTooltip>
+        </div>
         {actions}
       </div>
       <AnimatedCollapsibleContent open={open} className="animation-disclosure">

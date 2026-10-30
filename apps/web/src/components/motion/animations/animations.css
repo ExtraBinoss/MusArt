@@ -451,15 +451,12 @@
   gap: 8px;
   padding-top: 8px;
 }
-.animation-details-hint,
-.animation-channel-hint {
-  color: var(--muted-foreground);
-  font-size: 10px;
-  line-height: 1.5;
-  margin: 0;
-}
-.animation-channel-hint {
-  margin: 1px 0 7px;
+.animation-details-label,
+.animation-channel-title {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
 }
 .animation-channel-heading,
 .animation-point-heading,

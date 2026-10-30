@@ -17,7 +17,7 @@ Relative movement adapts to the target's size. Scale transforms the object aroun
 
 ## Detailed control
 
-Open an animation's **Details** disclosure to edit named properties, their **From**, **To**, and optional numbered steps. Horizontal/vertical scale and opacity use percentages; 100% scale is the original size. Relative movement uses a percentage of the object's width/height, with 0% at the original position. Short descriptions explain how each property combines with the object.
+Open an animation's **Details** disclosure to edit named properties, their **From**, **To**, and optional numbered steps. Horizontal/vertical scale and opacity use percentages; 100% scale is the original size. Relative movement uses a percentage of the object's width/height, with 0% at the original position. Small **ⓘ** controls beside Details and each property reveal explanations on hover, keyboard focus or tap, using a shared contextual-help component. Escape or moving focus away closes the explanation.
 
 **Add point** inserts an intermediate step with a brief blur reveal, honoring reduced-motion preferences. Its trash button removes that step. Start/end times stay at 0%/100%, with explained locks; their values remain editable. Each property's header has a trash button to remove that channel. The final property stays required: remove the whole animation from its footer instead. These changes belong to the applied instance, preserve other channels and support undo/redo. The **…** secondary action menu sits at the far right of the footer.
 

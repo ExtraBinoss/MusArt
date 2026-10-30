@@ -8,6 +8,7 @@ import type {
   MotionAnimationPreset,
 } from "@musart/core";
 import { NumberInput } from "../../shared/NumberInput";
+import { InfoTooltip } from "../../shared/InfoTooltip";
 import { SelectField } from "../../shared/SelectField";
 import { Button } from "../../ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
@@ -54,7 +55,10 @@ export function AnimationChannel({
   return (
     <section className="animation-detail-channel" aria-label={name}>
       <div className="animation-channel-heading">
-        <strong>{name}</strong>
+        <div className="animation-channel-title">
+          <strong>{name}</strong>
+          <InfoTooltip label={t("aboutProperty", { name })}>{hint}</InfoTooltip>
+        </div>
         <Tooltip>
           <TooltipTrigger asChild>
             <span tabIndex={lastChannel ? 0 : undefined}>
@@ -80,7 +84,6 @@ export function AnimationChannel({
           </TooltipContent>
         </Tooltip>
       </div>
-      <p className="animation-channel-hint">{hint}</p>
       <div className="animation-channel-points">
         {points.map((point, pi) => {
           const endpoint = pi === 0 || pi === points.length - 1;

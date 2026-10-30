@@ -27,13 +27,19 @@ function fixture() {
   return { ...d, animation };
 }
 
-it("explains scale in percentages and commits the original unit with one undo entry", () => {
+it("explains scale on demand and commits percentages in the original unit with one undo entry", async () => {
   const d = fixture(),
     before = d.engine.getSnapshot().project;
   const channel = within(screen.getByRole("region", { name: "Échelle horizontale" }));
   expect(
-    channel.getByText("100 % = taille d’origine. Moins pour réduire, plus pour agrandir."),
-  ).toBeVisible();
+    screen.queryByText("100 % = taille d’origine. Moins pour réduire, plus pour agrandir."),
+  ).toBeNull();
+  await userEvent
+    .setup()
+    .hover(channel.getByRole("button", { name: "À propos de Échelle horizontale" }));
+  expect(await screen.findByRole("tooltip")).toHaveTextContent(
+    "100 % = taille d’origine. Moins pour réduire, plus pour agrandir.",
+  );
   expect(channel.getByText("Départ")).toBeVisible();
   expect(channel.getByText("Arrivée")).toBeVisible();
   const value = channel.getAllByRole("textbox", { name: "Valeur" })[0]!;

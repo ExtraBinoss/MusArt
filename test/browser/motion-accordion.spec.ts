@@ -128,9 +128,13 @@ for (const reduced of [false, true])
     await expect(channel.getByRole("textbox", { name: "Value", exact: true }).first()).toHaveValue(
       "5",
     );
-    await expect(
-      channel.getByText("100% = original size. Smaller shrinks; larger grows.", { exact: true }),
-    ).toBeVisible();
+    const explanation = "100% = original size. Smaller shrinks; larger grows.";
+    await expect(page.getByText(explanation, { exact: true })).toHaveCount(0);
+    const info = channel.getByRole("button", { name: "About Horizontal scale", exact: true });
+    await info.focus();
+    await expect(page.getByRole("tooltip", { name: explanation, exact: true })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("tooltip", { name: explanation, exact: true })).toHaveCount(0);
     const reveal = await channel
       .getByRole("button", { name: "Add point", exact: true })
       .evaluate(async (button) => {
