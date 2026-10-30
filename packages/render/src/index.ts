@@ -16,3 +16,6 @@ export { MAX_FONT_BYTES } from "./surface/text/fonts";
 export type { MediaSourceResolver } from "./sources/media/model";
 export { probeVideoOriginal } from "./sources/video/probe";
 export type { VideoOriginalProbe } from "./sources/video/probe";
+
+export { estimatePreviewCost } from "./compositing/preview-cost";
+export { gpuTextureLimit } from "./cache/texture-limits";

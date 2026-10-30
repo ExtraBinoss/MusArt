@@ -14,6 +14,7 @@ import { useRenderMetrics } from "../../state/session/render-metrics";
 import { PlaneResources } from "./plane-resources";
 import { FiberTimerClock } from "./fiber-timer";
 import { DrawingDensity } from "./drawing-density";
+import { watchDisplayDensity } from "./display-density";
 import "../../state/i18n/errors/messages";
 import "./loading.css";
 
@@ -129,13 +130,10 @@ export function CompositionPlane({
       throw error;
     }
   }, [resources, scene, camera, invalidate, controller, setDpr, density]);
-  useEffect(() => {
-    const timer = setTimeout(
-      () => resources.setDensity(zoom * (window.devicePixelRatio || 1)),
-      140,
-    );
-    return () => clearTimeout(timer);
-  }, [zoom, resources]);
+  useEffect(
+    () => watchDisplayDensity(zoom, (density) => resources.setDensity(density)),
+    [zoom, resources],
+  );
   return <primitive object={resources.mesh} dispose={null} />;
 }
 class GpuBoundary extends Component<

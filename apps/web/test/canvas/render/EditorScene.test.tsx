@@ -51,7 +51,9 @@ vi.mock("@react-three/fiber", () => ({
     gpu.frame = callback;
   },
 }));
-vi.mock("@musart/render", () => ({
+vi.mock("@musart/render", async (original) => ({
+  ...(await original<typeof import("@musart/render")>()),
+  gpuTextureLimit: () => 8192,
   GpuCompositor: class {
     constructor() {
       gpu.compositorConstruct();

@@ -13,6 +13,7 @@ const gpu = vi.hoisted(() => ({
 }));
 vi.mock("@musart/render", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@musart/render")>()),
+  gpuTextureLimit: () => 8192,
   GpuCompositor: class {
     constructor(renderer: unknown) {
       gpu.constructors(renderer);

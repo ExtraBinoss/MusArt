@@ -1,5 +1,6 @@
 import {
   GpuCompositor,
+  gpuTextureLimit,
   type FontResolver,
   type MediaSourceResolver,
   type FrameTexture,
@@ -88,6 +89,7 @@ export class PlaneResources {
   private onError?: (message: string, details?: string) => void;
   private onScale?: (scale: number, width: number, height: number) => void;
   private density = 1;
+  private readonly maxTextureDimension: number;
   private presentationId: string | null = null;
   private presentationProjectId: string | undefined;
   private current: {
@@ -111,6 +113,8 @@ export class PlaneResources {
     private readonly mediaResolver?: MediaSourceResolver,
     private readonly mediaResolverFor?: (projectId: string) => MediaSourceResolver,
   ) {
+    this.maxTextureDimension = gpuTextureLimit(renderer);
+    renderer.domElement.dataset.gpuTextureLimit = String(this.maxTextureDimension);
     this.placeholder.needsUpdate = true;
     this.sample = texture(this.placeholder, uv().flipY());
     this.material.fragmentNode = this.sample;
@@ -201,7 +205,7 @@ export class PlaneResources {
       page,
       assets,
       revision: ++this.revision,
-      scale: previewScale(page, this.density),
+      scale: previewScale(page, this.density, this.maxTextureDimension, assets),
       playback,
       ...(fontTicket ? { fontTicket } : {}),
       ...(presentation ? { origin: presentation.origin } : {}),
@@ -259,9 +263,15 @@ export class PlaneResources {
   setDensity(density: number): void {
     if (this.disposed || !Number.isFinite(density) || density <= 0 || density === this.density)
       return;
-    const before = this.current ? previewScale(this.current.page, this.density) : 1;
+    const before = this.current
+      ? previewScale(this.current.page, this.density, this.maxTextureDimension, this.current.assets)
+      : 1;
     this.density = density;
-    if (this.current && before !== previewScale(this.current.page, density))
+    if (
+      this.current &&
+      before !==
+        previewScale(this.current.page, density, this.maxTextureDimension, this.current.assets)
+    )
       this.submit(
         this.current.page,
         this.current.assets,

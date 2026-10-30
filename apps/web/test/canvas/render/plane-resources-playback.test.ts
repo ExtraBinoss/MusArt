@@ -7,6 +7,7 @@ import { PlaneResources } from "../../../src/canvas/render/plane-resources";
 const gpu = vi.hoisted(() => ({ render: vi.fn(), dispose: vi.fn() }));
 vi.mock("@musart/render", async (original) => ({
   ...(await original<typeof import("@musart/render")>()),
+  gpuTextureLimit: () => 8192,
   GpuCompositor: class {
     render = gpu.render;
     dispose = gpu.dispose;

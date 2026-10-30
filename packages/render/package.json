@@ -3,7 +3,10 @@
   "version": "0.2.0",
   "license": "MIT",
   "type": "module",
-  "exports": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./preview-cost": "./src/compositing/preview-cost.ts"
+  },
   "dependencies": {
     "@musart/assets": "workspace:*",
     "@musart/core": "workspace:*",
