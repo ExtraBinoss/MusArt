@@ -25,20 +25,25 @@ import {
   type SessionSnapshot,
 } from "@musart/core";
 import { TimelineIconButton } from "./ControlButton";
-import { Slider } from "../ui/slider";
-import { Kbd, KbdGroup } from "../ui/kbd";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
-import { useVirtualList } from "../shared/scroll/use-virtual-list";
+import { TooltipProvider } from "../ui/tooltip";
+import { TimelineZoom } from "./TimelineZoom";
+import { AudioLibrary } from "./audio/AudioLibrary";
+import { formatUiError } from "../../state/i18n/errors/format";
 import { ScrollShadow } from "../shared/scroll/ScrollShadow";
 import { useRenderMetrics } from "../../state/session/render-metrics";
 import { TimelineControls } from "./TimelineControls";
-import { TimelineRows } from "./TimelineRows";
+import { useOccurrenceProjection } from "./occurrences/use-occurrence-projection";
+import { TimelineVirtualRows } from "./TimelineVirtualRows";
 import { TimelineRuler } from "./TimelineRuler";
 import { useTimelineLayerDrag } from "./layer-drag/use-timeline-layer-drag";
 import type { TimelineTransport, TimelineUnit } from "./model";
 import { createTimelineGestures } from "./gestures";
 import { clampTimelineHeight } from "./height";
-import { useTimelinePreferences } from "./preferences";
+import {
+  useTimelineCollapsedRows,
+  useTimelinePreferences,
+  useTimelineRangeZoom,
+} from "./preferences";
 import "./messages";
 import "./timeline.css";
 
@@ -72,8 +77,8 @@ export function TimelinePanel({
   useRenderMetrics(panel);
   const playheadClip = useRef<HTMLDivElement>(null);
   const paintPlayhead = useRef<() => void>(() => {});
-  const verticalRow = useRef(0);
   const horizontalScroll = useRef(0);
+  const publishedLeft = useRef(0);
   const feedback = useRef<HTMLOutputElement>(null);
   const [, refreshSelection] = useReducer((value: number) => value + 1, 0);
   const [interactionError, setInteractionError] = useState("");
@@ -92,14 +97,41 @@ export function TimelinePanel({
   const committedZoom = useRef(120),
     desiredZoom = useRef(120);
   const zoomAnchor = useRef<{ time: number; x: number } | null>(null);
-  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
+  const { collapsed, setCollapsed, toggle: toggleRow } = useTimelineCollapsedRows();
   const [view, setView] = useState({ left: 0, width: 900 });
   const resize = useRef<{ pointer: number; y: number; height: number } | null>(null);
   const page = snapshot.project.pages.find((item) => item.id === snapshot.pageId)!;
-  const actionWidth = onPin ? 80 : ACTION_WIDTH;
+  const chosenOccurrences = useOccurrenceProjection(engine, page, transport);
+  const actionWidth = ACTION_WIDTH + 32;
   const duration = page.motion ? motionTimeToSeconds(page.motion.duration) : 2;
   const width = Math.max(view.width, Math.min(1_000_000, duration * zoom + actionWidth + 64));
   const scale = zoom;
+  const selectRow = useCallback(
+    (id: string, additive: boolean) => {
+      const current = engine.getSnapshot();
+      if (current.pageId !== page.id || current.project.id !== snapshot.project.id) return;
+      engine.select(
+        additive
+          ? current.selection.includes(id)
+            ? current.selection.filter((item) => item !== id)
+            : [...current.selection, id]
+          : [id],
+      );
+    },
+    [engine, page.id, snapshot.project.id],
+  );
+  const zoomRange = useTimelineRangeZoom({
+    zoom,
+    width: view.width,
+    actionWidth,
+    protectZoom,
+    saveZoom,
+    setZoom,
+    viewport,
+    horizontalScroll,
+    desiredZoom,
+    anchor: zoomAnchor,
+  });
   useLayoutEffect(() => {
     committedZoom.current = scale;
     desiredZoom.current = scale;
@@ -205,6 +237,7 @@ export function TimelinePanel({
   const layerDrag = useTimelineLayerDrag({
     engine,
     page,
+    chosenOccurrences,
     collapsed,
     transport,
     gestures,
@@ -213,7 +246,8 @@ export function TimelinePanel({
   });
   const rows = layerDrag.rows;
   const selected = useMemo(() => new Set(snapshot.selection), [snapshot.selection]);
-  const virtual = useVirtualList(rows.length, ROW_HEIGHT, viewport, 5);
+  const audioTracks = page.motion?.audioTracks ?? [];
+  const audioError = useCallback((error: unknown) => setInteractionError(formatUiError(error)), []);
   const toggleUnit = useCallback(() => setUnit((value) => (value === "s" ? "ms" : "s")), []);
   // Vertical window changes do not rebuild the transport's Radix controls or ruler.
   const collapseControl = useMemo(
@@ -228,7 +262,7 @@ export function TimelinePanel({
         {collapsed.size ? <ChevronsUpDown size={13} /> : <ChevronsDownUp size={13} />}
       </TimelineIconButton>
     ),
-    [active, collapsed, page.layers, t],
+    [active, collapsed, page.layers, t, setCollapsed],
   );
   useEffect(() => {
     const node = viewport.current;
@@ -412,15 +446,13 @@ export function TimelinePanel({
             onDrop={(event) => layerDrag.native.drop(event)}
             onScroll={(event) => {
               const node = event.currentTarget;
-              const row = Math.floor(node.scrollTop / ROW_HEIGHT);
-              if (row !== verticalRow.current) {
-                verticalRow.current = row;
-                virtual.onScroll(event);
-              }
               horizontalScroll.current = node.scrollLeft;
               paintPlayhead.current();
               const left = Math.floor(horizontalScroll.current / 120) * 120;
-              setView((value) => (value.left === left ? value : { ...value, left }));
+              if (left !== publishedLeft.current) {
+                publishedLeft.current = left;
+                setView((value) => ({ ...value, left }));
+              }
             }}
           >
             <div
@@ -450,34 +482,18 @@ export function TimelinePanel({
                   unit={unit}
                 />
                 <div className="motion-timeline-actions" data-has-pin={Boolean(onPin)}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Slider
-                        className="motion-zoom"
-                        tone="primary"
-                        disabled={!active}
-                        min={20}
-                        max={640}
-                        step={10}
-                        value={[zoom]}
-                        aria-label={t("zoom")}
-                        onValueChange={(values) => {
-                          protectZoom();
-                          zoomAnchor.current = null;
-                          desiredZoom.current = values[0] ?? 120;
-                          setZoom(values[0] ?? 120);
-                        }}
-                        onValueCommit={(values) => saveZoom(values[0] ?? desiredZoom.current)}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="motion-control-tooltip">
-                      <span>{t("zoom")}</span>
-                      <KbdGroup>
-                        <Kbd>Ctrl / ⌘</Kbd>
-                        <Kbd>{t("wheel")}</Kbd>
-                      </KbdGroup>
-                    </TooltipContent>
-                  </Tooltip>
+                  <AudioLibrary engine={engine} disabled={!active} onError={audioError} />
+                  <TimelineZoom
+                    value={zoom}
+                    disabled={!active}
+                    onPreview={(value) => {
+                      protectZoom();
+                      zoomAnchor.current = null;
+                      desiredZoom.current = value;
+                      setZoom(value);
+                    }}
+                    onCommit={saveZoom}
+                  />
                   {onPin && (
                     <TimelineIconButton
                       label={t(pinned ? "unpin" : "pin")}
@@ -498,76 +514,35 @@ export function TimelinePanel({
                   )}
                 </div>
               </div>
-              <div
-                className="motion-row-space"
-                style={{ height: Math.max(virtual.height, 140) }}
-                tabIndex={0}
-                role="group"
-                aria-label={t("selectKeysArea")}
-                onPointerDown={(event) => {
-                  if (active) gestures.beginMarquee(event, rows, ROW_HEIGHT);
-                }}
-              >
-                <TimelineRows
-                  rows={rows}
-                  drag={layerDrag}
-                  gestures={gestures}
-                  interactive={active}
-                  engine={engine}
-                  compositionId={page.id}
-                  first={virtual.first}
-                  last={virtual.last}
-                  rowHeight={ROW_HEIGHT}
-                  selected={selected}
-                  pixelsPerSecond={scale}
-                  duration={duration}
-                  left={Math.max(0, view.left - 120)}
-                  width={view.width + 240}
-                  unit={unit}
-                  transport={transport}
-                  onToggle={(id) =>
-                    setCollapsed((current) => {
-                      const next = new Set(current);
-                      if (next.has(id)) next.delete(id);
-                      else next.add(id);
-                      return next;
-                    })
-                  }
-                  onSelect={(id, additive) =>
-                    engine.select(
-                      additive
-                        ? selected.has(id)
-                          ? snapshot.selection.filter((item) => item !== id)
-                          : [...snapshot.selection, id]
-                        : [id],
-                    )
-                  }
-                  onZoomRange={(start, end) => {
-                    const next = Math.min(
-                      640,
-                      Math.max(
-                        zoom * 2,
-                        (view.width - actionWidth - 48) / Math.max(0.001, end - start),
-                      ),
-                    );
-                    protectZoom();
-                    saveZoom(next);
-                    if (next === scale && viewport.current) {
-                      horizontalScroll.current = Math.max(0, start * next - 24);
-                      viewport.current.scrollLeft = horizontalScroll.current;
-                    } else {
-                      zoomAnchor.current = { time: start, x: 24 };
-                      desiredZoom.current = next;
-                      setZoom(next);
-                    }
-                  }}
-                />
-              </div>
+              <TimelineVirtualRows
+                viewport={viewport}
+                audioTracks={audioTracks}
+                assets={snapshot.project.assets}
+                onAudioError={audioError}
+                rows={rows}
+                onError={setInteractionError}
+                drag={layerDrag}
+                gestures={gestures}
+                interactive={active}
+                engine={engine}
+                compositionId={page.id}
+                rowHeight={ROW_HEIGHT}
+                selected={selected}
+                pixelsPerSecond={scale}
+                duration={duration}
+                left={Math.max(0, view.left - 120)}
+                width={view.width + 240}
+                unit={unit}
+                transport={transport}
+                onToggle={toggleRow}
+                onSelect={selectRow}
+                onZoomRange={zoomRange}
+              />
               <div ref={playheadClip} className="motion-playhead-clip" aria-hidden>
                 <div ref={playhead} className="motion-playhead" />
               </div>
             </div>
-            {!rows.length && (
+            {!rows.length && !audioTracks.length && (
               <div className="motion-empty">
                 <PanelBottom size={22} />
                 <p>{t("empty")}</p>

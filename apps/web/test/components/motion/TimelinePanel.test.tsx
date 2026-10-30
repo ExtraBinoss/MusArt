@@ -7,6 +7,71 @@ import { makeTransport, PanelHost, pointer } from "./support";
 import { TimelinePanel } from "../../../src/components/motion/TimelinePanel";
 import { choose } from "../../support/select";
 import { LayerTree } from "../../../src/components/layers/tree/LayerTree";
+import { audioFixture } from "../../support/audio";
+
+it("keeps the panel and header out of native vertical window publications", () => {
+  const old = location.href;
+  history.replaceState(null, "", "?automation=1");
+  const d = audioFixture(40),
+    runtime = makeTransport(d.page());
+  const ui = setup();
+  const view = ui.mount(<PanelHost engine={d.engine} transport={runtime.transport} />);
+  try {
+    const panel = document.querySelector<HTMLElement>(".motion-timeline")!;
+    const viewport = document.querySelector<HTMLElement>(".motion-timeline-scroll")!;
+    const before = panel.dataset.reactRenders;
+    expect(Number(before)).toBeGreaterThan(0);
+    viewport.scrollTop = 480;
+    fireEvent.scroll(viewport);
+    expect(document.querySelector<HTMLElement>(".motion-audio-row")!.dataset.audioTrackId).toBe(
+      "audio-15",
+    );
+    viewport.scrollTop = 0;
+    fireEvent.scroll(viewport);
+    expect(document.querySelector<HTMLElement>(".motion-audio-row")!.dataset.audioTrackId).toBe(
+      "audio-0",
+    );
+    expect(panel.dataset.reactRenders).toBe(before);
+    expect(document.querySelectorAll(".motion-audio-row").length).toBeLessThan(30);
+  } finally {
+    view.unmount();
+    history.replaceState(null, "", old);
+  }
+});
+
+it("publishes horizontal windows once and ignores subsequent vertical scroll packets", () => {
+  const d = setup();
+  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const runtime = makeTransport(d.engine.getSnapshot().project.pages[0]!),
+    commits = vi.fn();
+  d.mount(
+    <Profiler id="timeline" onRender={commits}>
+      <PanelHost engine={d.engine} transport={runtime.transport} />
+    </Profiler>,
+  );
+  const viewport = document.querySelector<HTMLElement>(".motion-timeline-scroll")!;
+  const before = commits.mock.calls.length,
+    snapshot = d.engine.getSnapshot();
+  for (const top of [1, 5, 10]) {
+    viewport.scrollTop = top;
+    fireEvent.scroll(viewport);
+  }
+  expect(commits.mock.calls.length).toBe(before);
+  viewport.scrollLeft = 130;
+  fireEvent.scroll(viewport);
+  expect(commits.mock.calls.length).toBe(before + 1);
+  for (const left of [131, 170, 200]) {
+    viewport.scrollLeft = left;
+    fireEvent.scroll(viewport);
+  }
+  expect(commits.mock.calls.length).toBe(before + 1);
+  viewport.scrollLeft = 0;
+  fireEvent.scroll(viewport);
+  expect(commits.mock.calls.length).toBe(before + 2);
+  fireEvent.scroll(viewport);
+  expect(commits.mock.calls.length).toBe(before + 2);
+  expect(d.engine.getSnapshot()).toBe(snapshot);
+});
 
 it("updates time/playhead imperatively without timeline React commits, then cleans subscriptions", () => {
   const d = setup();
@@ -247,19 +312,19 @@ it("keeps ruler, clipped line and automatic playback scrolling on the same time 
   const viewport = document.querySelector<HTMLElement>(".motion-timeline-scroll")!;
   Object.defineProperties(viewport, { clientWidth: { value: 500 }, scrollWidth: { value: 3000 } });
   act(() => runtime.update({ time: { value: 4, rate: 1 }, playing: true, playbackMode: "loop" }));
-  expect(viewport.scrollLeft).toBe(372);
+  expect(viewport.scrollLeft).toBe(396);
   expect(document.querySelector(".motion-playhead-clip")).toHaveStyle({
-    left: "616px",
+    left: "640px",
     width: "256px",
   });
   expect(document.querySelector(".motion-playhead")).toHaveStyle({
-    transform: "translateX(108px)",
+    transform: "translateX(84px)",
   });
   expect(document.querySelector(".motion-ruler-playhead")).toHaveStyle({
     transform: "translateX(480px)",
   });
   act(() => runtime.update({ time: { value: 9, rate: 1 } }));
-  expect(viewport.scrollLeft).toBe(972);
+  expect(viewport.scrollLeft).toBe(996);
   act(() => runtime.update({ time: { value: 0, rate: 1 } }));
   expect(viewport.scrollLeft).toBe(0);
   expect(document.querySelector(".motion-playhead")).toHaveStyle({ transform: "translateX(0px)" });

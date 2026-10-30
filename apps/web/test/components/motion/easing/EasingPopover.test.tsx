@@ -5,6 +5,18 @@ import { choose } from "../../../support/select";
 import { EasingPopover } from "../../../../src/components/motion/easing/EasingPopover";
 import { i18n } from "../../../../src/state/i18n";
 
+const metrics = vi.hoisted(() => ({ selectRenders: vi.fn() }));
+vi.mock("../../../../src/components/shared/SelectField", async (load) => {
+  const actual = await load<typeof import("../../../../src/components/shared/SelectField")>();
+  return {
+    ...actual,
+    SelectField(props: Parameters<typeof actual.SelectField>[0]) {
+      metrics.selectRenders();
+      return <actual.SelectField {...props} />;
+    },
+  };
+});
+
 function fixture() {
   const d = setup();
   d.engine.execute({ type: "setCompositionMode", mode: "motion" });
@@ -91,13 +103,20 @@ it("previews hovered presets without selecting them or changing history, then re
   const select = screen.getByRole("combobox", { name: "Courbe d’interpolation" });
   fireEvent.pointerDown(select, { button: 0, ctrlKey: false, pointerType: "mouse" });
   const item = await screen.findByRole("option", { name: "Accélération" });
+  const beforeHover = metrics.selectRenders.mock.calls.length;
   fireEvent.pointerMove(item, { pointerType: "mouse" });
   expect(document.querySelector(".motion-easing-curve")!.getAttribute("d")).not.toBe(original);
   expect(select).toHaveTextContent("Linéaire");
   expect(d.engine.getSnapshot()).toBe(before);
-  fireEvent.keyDown(item, { key: "Escape" });
+  expect(metrics.selectRenders).toHaveBeenCalledTimes(beforeHover);
+  const focus = screen.getByRole("option", { name: "Décélération" });
+  fireEvent.focus(focus);
+  expect(metrics.selectRenders).toHaveBeenCalledTimes(beforeHover);
+  expect(d.engine.getSnapshot()).toBe(before);
+  fireEvent.keyDown(focus, { key: "Escape" });
   expect(document.querySelector(".motion-easing-curve")!.getAttribute("d")).toBe(original);
   expect(screen.getByRole("dialog", { name: "Interpolation" })).toBeVisible();
+  expect(metrics.selectRenders).toHaveBeenCalledTimes(beforeHover);
 });
 
 it("does not build translated preset/field content for closed timeline connectors", () => {
@@ -111,4 +130,25 @@ it("does not build translated preset/field content for closed timeline connector
   fireEvent.click(screen.getByRole("button", { name: "Courbe" }));
   expect(translate.mock.calls.some(([key]) => key === "preset")).toBe(true);
   expect(screen.getByRole("dialog", { name: "Interpolation" })).toBeVisible();
+});
+
+it("clears the graph on a stale origin and ignores detached preset hover callbacks", async () => {
+  const d = fixture();
+  fireEvent.click(screen.getByRole("button", { name: "Courbe" }));
+  const base = document.querySelector(".motion-easing-curve")!.getAttribute("d");
+  fireEvent.pointerDown(screen.getByRole("combobox", { name: "Courbe d’interpolation" }), {
+    button: 0,
+    ctrlKey: false,
+    pointerType: "mouse",
+  });
+  const option = await screen.findByRole("option", { name: "Accélération" });
+  fireEvent.pointerMove(option, { pointerType: "mouse" });
+  expect(document.querySelector(".motion-easing-curve")!.getAttribute("d")).not.toBe(base);
+  act(() => d.engine.execute({ type: "renameProject", name: "stale preview" }));
+  const afterChange = d.engine.getSnapshot();
+  expect(document.querySelector(".motion-easing-curve")!.getAttribute("d")).toBe(base);
+  expect(screen.getByRole("button", { name: "Appliquer l’interpolation" })).toBeDisabled();
+  fireEvent.pointerMove(option, { pointerType: "mouse" });
+  expect(document.querySelector(".motion-easing-curve")!.getAttribute("d")).toBe(base);
+  expect(d.engine.getSnapshot()).toBe(afterChange);
 });

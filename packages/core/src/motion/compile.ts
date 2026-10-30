@@ -1,10 +1,11 @@
-import { isVideoAsset } from "../assets/identity";
 import type { Composition, Project } from "../document/model";
 import { cloneValue, freezeValue } from "../document/immutable";
 import { validateProject } from "../document/validation";
 import { ensure } from "../errors";
+import { compileMotionLayers } from "./compile-layers";
 import { compileMotionInterpolator } from "./interpolation";
 import type { MotionPropertyTrack } from "./model";
+import type { MotionAudioProcessing } from "./audio/model";
 import type { MotionPropertyTarget, MotionValue } from "./properties/model";
 import { resolveMotionProperty } from "./properties/registry";
 import { addMotionTime, compareMotionTime, type MotionTime } from "./time";
@@ -18,6 +19,9 @@ export interface CompiledMotionProperty {
 
 export interface CompiledMotionLayer {
   readonly id: string;
+  /** Several disjoint segments may share this canonical id; trackId identifies their occurrence. */
+  readonly trackId?: string;
+  readonly propertyScope?: { readonly start: MotionTime; readonly end: MotionTime | null };
   readonly start: MotionTime;
   readonly end: MotionTime | null;
   readonly properties: readonly CompiledMotionProperty[];
@@ -25,8 +29,10 @@ export interface CompiledMotionLayer {
     readonly assetId: string;
     readonly sourceStart: MotionTime;
     readonly timelineStart: MotionTime;
+    readonly timelineEnd?: MotionTime;
     readonly mute: boolean;
     readonly volume: number;
+    readonly processing?: MotionAudioProcessing;
   };
 }
 
@@ -37,6 +43,14 @@ export interface MotionProgram {
   readonly mode: "static" | "motion";
   readonly duration: MotionTime | null;
   readonly layers: readonly CompiledMotionLayer[];
+  readonly audio: readonly CompiledMotionAudio[];
+}
+
+export interface CompiledMotionAudio {
+  readonly id: string;
+  readonly start: MotionTime;
+  readonly end: MotionTime;
+  readonly media: NonNullable<CompiledMotionLayer["media"]>;
 }
 
 function compileProperty(page: Composition, property: MotionPropertyTrack): CompiledMotionProperty {
@@ -69,51 +83,27 @@ export function compileMotion(
   const page = cloneValue(authored);
   const mode = page.motion?.mode ?? "static";
   const duration = page.motion?.duration ?? null;
-  const byId = new Map(page.layers.map((layer) => [layer.id, layer]));
-  const tracks = new Map(page.motion?.tracks.map((track) => [track.layerId, track]) ?? []);
-  const zero: MotionTime = { value: 0, rate: 1 };
-  const layers = page.layers.map((layer): CompiledMotionLayer => {
-    let start = zero;
-    let end = duration;
-    if (mode === "motion") {
-      let current: typeof layer | undefined = layer;
-      while (current) {
-        const track = tracks.get(current.id);
-        if (track) {
-          if (compareMotionTime(track.start, start) > 0) start = track.start;
-          if (track.end !== null && (end === null || compareMotionTime(track.end, end) < 0))
-            end = track.end;
-        }
-        current = current.parentId === null ? undefined : byId.get(current.parentId);
-      }
-    }
-    const track = tracks.get(layer.id);
-    const asset = layer.assetId ? project.assets[layer.assetId] : undefined;
-    const media =
-      layer.kind === "video" && asset && isVideoAsset(asset)
-        ? {
-            assetId: asset.id,
-            sourceStart:
-              mode === "motion"
-                ? addMotionTime(asset.firstTimestamp, track?.media?.sourceIn ?? zero)
-                : cloneValue(asset.firstTimestamp),
-            timelineStart: mode === "motion" ? (track?.start ?? zero) : zero,
-            mute: mode === "motion" ? (track?.media?.mute ?? false) : true,
-            volume: mode === "motion" ? (track?.media?.volume ?? 1) : 0,
-          }
-        : undefined;
-    return {
-      id: layer.id,
-      ...(media ? { media } : {}),
-      start,
-      end,
-      properties:
-        mode === "motion"
-          ? (tracks.get(layer.id)?.properties ?? [])
-              .filter((property) => property.keyframes.length > 0)
-              .map((property) => compileProperty(page, property))
-          : [],
-    };
-  });
-  return freezeValue({ compositionId: page.id, composition: page, mode, duration, layers });
+  const layers = compileMotionLayers(page, project.assets, compileProperty);
+  const audio: CompiledMotionAudio[] =
+    mode === "motion"
+      ? (page.motion?.audioTracks ?? []).map((track) => {
+          const asset = project.assets[track.assetId]!;
+          ensure(asset.kind === "audio", "INVALID_DOCUMENT", "Audio track has no audio original");
+          return {
+            id: track.id,
+            start: track.start,
+            end: duration && compareMotionTime(track.end, duration) > 0 ? duration : track.end,
+            media: {
+              assetId: asset.id,
+              sourceStart: addMotionTime(asset.firstTimestamp, track.sourceIn),
+              timelineStart: track.start,
+              timelineEnd: track.end,
+              mute: track.mute,
+              volume: track.volume,
+              ...(track.processing ? { processing: track.processing } : {}),
+            },
+          };
+        })
+      : [];
+  return freezeValue({ compositionId: page.id, composition: page, mode, duration, layers, audio });
 }

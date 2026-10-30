@@ -174,6 +174,9 @@ it("mounts a newly selected paused media layer on its evaluated size and parent 
     mount.container.querySelector<HTMLElement>(`.canvas-selection[data-layer-id="${d.movie.id}"]`)!
       .style.transform,
   ).toBe(`matrix(${d.index.worldMatrix(d.movie.id).join(",")})`);
+  expect(
+    mount.container.querySelector(`.canvas-selection[data-layer-id="${d.movie.id}"]`),
+  ).toHaveAttribute("data-layer-kind", "video");
   expect(d.controller.read()).toBe(d.frame);
   expect(changes).not.toHaveBeenCalled();
   stop();

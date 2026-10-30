@@ -91,7 +91,7 @@
   left: 0;
   top: 0;
   transform-origin: 0 0;
-  border: 1px solid #2563eb;
+  border: 1px solid var(--canvas-selection-accent, var(--media-image));
   pointer-events: none;
   box-sizing: border-box;
 }

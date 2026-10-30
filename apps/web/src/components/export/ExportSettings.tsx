@@ -23,6 +23,7 @@ export function ExportSettings({
   onTask,
   onOpenChange,
   pendingRef,
+  onPendingChange,
 }: Omit<ExportPopoverProps, "open"> & { pendingRef: MutableRefObject<boolean> }) {
   const { t } = useTranslation();
   const [options, setOptions] = useState<ExportOptions>({
@@ -36,10 +37,12 @@ export function ExportSettings({
   const [failed, setFailed] = useState(false);
   const [previewEdge, setPreviewEdge] = useState<number | null>(null);
   const alive = useRef(true);
+  const abort = useRef<AbortController | null>(null);
   useEffect(() => {
     alive.current = true;
     return () => {
       alive.current = false;
+      abort.current?.abort();
     };
   }, []);
   const selectionOnly = selection.length > 0 && !whole && !options.allPages;
@@ -51,9 +54,16 @@ export function ExportSettings({
   async function submit() {
     if (pendingRef.current) return;
     pendingRef.current = true;
+    onPendingChange?.(true);
     setBusy(true);
     setFailed(false);
-    const request = { ...options, ...(selectionOnly ? { selectionOnly: true } : {}) };
+    const controller = new AbortController();
+    abort.current = controller;
+    const request = {
+      ...options,
+      signal: controller.signal,
+      ...(selectionOnly ? { selectionOnly: true } : {}),
+    };
     const scope = { page, revision, selection: [...selection] };
     let ok = false;
     try {
@@ -61,18 +71,22 @@ export function ExportSettings({
         try {
           await services.exportImage(request, scope);
         } catch (error) {
+          if (controller.signal.aborted) return;
           if (error instanceof ExportScopeError)
             throw new Error(t("exportPanel:stale"), { cause: error });
           throw error;
         }
       });
     } catch {
-      if (alive.current) setFailed(true);
+      if (alive.current && !controller.signal.aborted) setFailed(true);
     } finally {
       pendingRef.current = false;
+      if (alive.current) onPendingChange?.(false);
+      if (abort.current === controller) abort.current = null;
       if (alive.current) setBusy(false);
     }
-    if (alive.current && ok) onOpenChange(false);
+    if (alive.current && ok && !controller.signal.aborted) onOpenChange(false);
+    else if (alive.current && !controller.signal.aborted) setFailed(true);
   }
   return (
     <div className="export-settings-panel">
@@ -159,7 +173,13 @@ export function ExportSettings({
       )}
       {failed && <p role="alert">{t("exportPanel:exportFailed")}</p>}
       <div className="export-footer">
-        <Button variant="outline" disabled={busy} onClick={() => onOpenChange(false)}>
+        <Button
+          variant="outline"
+          onClick={() => {
+            if (busy) abort.current?.abort();
+            else onOpenChange(false);
+          }}
+        >
           {t("cancel")}
         </Button>
         <Button

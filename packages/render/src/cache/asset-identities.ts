@@ -1,4 +1,10 @@
-import { isVideoAsset, assetOriginalIdentity, type Asset } from "@musart/core";
+import {
+  isVideoAsset,
+  isImageAsset,
+  isAudioAsset,
+  assetOriginalIdentity,
+  type Asset,
+} from "@musart/core";
 import { SourceIdentities } from "./source-identities";
 interface Identity {
   readonly dataUrl: string;
@@ -62,6 +68,7 @@ export class AssetIdentities {
         asset.height,
         asset.orientation,
       ]);
+    if (isAudioAsset(asset)) return assetOriginalIdentity(asset);
     const cached = this.live.get(asset);
     if (cached?.dataUrl === asset.dataUrl) {
       this.remember(asset, cached.id);
@@ -76,7 +83,7 @@ export class AssetIdentities {
       // Verify both current content and its memoized identity: mutable external assets
       // must not donate an old token after changing their dataUrl.
       if (
-        !isVideoAsset(original) &&
+        isImageAsset(original) &&
         previous?.dataUrl === original.dataUrl &&
         original.dataUrl === asset.dataUrl
       ) {

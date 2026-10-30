@@ -2,6 +2,12 @@ import { registerFeatureTranslations } from "../feature-resources";
 
 export const messages = {
   en: {
+    audioOriginalMissing:
+      "The original audio is missing or damaged in local storage. Import its source again before playing or exporting.",
+    audioImportUnavailable:
+      "Audio import is unavailable in this session. Reopen the editor and retry.",
+    audioStorageLimit:
+      "Audio could not be stored locally. Free storage space or import a smaller source.",
     projectPreferencesLoadFailed:
       "Panel sizes and timeline zoom could not be restored for this project. Your document is still available.",
     projectPreferencesSaveFailed:
@@ -42,6 +48,12 @@ export const messages = {
     videoBusy: "The video decoder is still finishing another request. Wait a moment, then retry.",
   },
   fr: {
+    audioOriginalMissing:
+      "Le son original est absent ou endommagé dans le stockage local. Réimportez-le avant la lecture ou l’export.",
+    audioImportUnavailable:
+      "L’import audio est indisponible dans cette session. Rouvrez l’éditeur puis réessayez.",
+    audioStorageLimit:
+      "Le son n’a pas pu être stocké localement. Libérez de l’espace ou importez un fichier plus petit.",
     projectPreferencesLoadFailed:
       "Les tailles des panneaux et le zoom de la timeline n’ont pas pu être restaurés pour ce projet. Votre document reste disponible.",
     projectPreferencesSaveFailed:

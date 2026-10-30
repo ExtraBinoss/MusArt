@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   compareMotionTime,
   createLayerGeometryIndex,
+  getMotionOccurrenceAt,
   resolveMotionProperty,
   type EnginePort,
   type MotionPropertyTarget,
@@ -67,8 +68,14 @@ export function MotionDiamond({
             !page.layers.some((layer) => layer.id === address.layerId) ||
             geometry.isLocked(address.layerId),
         );
-        properties = addresses.map((address) => motionPropertyTrack(page, address));
       }
+      properties = addresses.map((address) =>
+        motionPropertyTrack(page, address, { time: state.time }),
+      );
+      const absent = addresses.some(
+        (address) =>
+          !getMotionOccurrenceAt(page, address.layerId, state.time, { terminalPreview: true }),
+      );
       const current =
         properties.length > 0 && properties.every((property) => hasKeyAtTime(property, state.time));
       const animated = properties.some((property) => property?.keyframes.length);
@@ -78,10 +85,11 @@ export function MotionDiamond({
       const blocked =
         disabled ||
         unavailable ||
+        absent ||
         locked ||
         snapshot.project.id !== owner.project.id ||
         snapshot.pageId !== owner.pageId;
-      const presentation = `${hidden}:${blocked}:${animated}:${current}:${unavailable}`;
+      const presentation = `${hidden}:${blocked}:${animated}:${current}:${unavailable}:${absent}`;
       if (presentation === lastPresentation) return;
       lastPresentation = presentation;
       node.hidden = hidden;
@@ -90,7 +98,11 @@ export function MotionDiamond({
       node.dataset.current = String(current);
       node.setAttribute("aria-label", t(current ? "update" : "add", { property: label }));
       node.setAttribute("aria-pressed", String(current));
-      node.title = unavailable ? t("macro") : t(animated ? "armed" : "add", { property: label });
+      node.title = unavailable
+        ? t("macro")
+        : absent
+          ? t("inactive")
+          : t(animated ? "armed" : "add", { property: label });
     };
     const stop = transport.subscribe(update);
     update();

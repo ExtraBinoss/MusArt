@@ -79,3 +79,50 @@ it("bounds dense keyframe DOM markers while retaining exact times and cluster co
   expect(projectKeyMarkers(keys, 0, 0, 100)).toEqual([]);
   expect(projectKeyMarkers(keys, 0, 100, 0)).toEqual([]);
 });
+
+it("keeps one canonical layer row and shows only the chosen occurrence's properties", () => {
+  const layer = createLayer("rectangle", { id: "hero" });
+  const page = createPage({
+    layers: [layer],
+    motion: {
+      version: 2,
+      initialized: true,
+      mode: "motion",
+      duration: { value: 4, rate: 1 },
+      frameRate: { numerator: 30, denominator: 1 },
+      tracks: [
+        {
+          id: "first",
+          layerId: "hero",
+          start: { value: 0, rate: 1 },
+          end: { value: 1, rate: 1 },
+          properties: [
+            {
+              id: "x-first",
+              target: { kind: "layer", layerId: "hero", property: "x" },
+              keyframes: [],
+            },
+          ],
+        },
+        {
+          id: "second",
+          layerId: "hero",
+          start: { value: 2, rate: 1 },
+          end: null,
+          properties: [
+            {
+              id: "x-second",
+              target: { kind: "layer", layerId: "hero", property: "x" },
+              keyframes: [],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  const rows = projectTimelineRows(page, new Set(), new Map([["hero", "second"]]));
+  expect(rows.map((row) => row.key)).toEqual(["hero", "x-second"]);
+  expect(rows[0]!.occurrences).toHaveLength(2);
+  expect(rows[0]!.track!.id).toBe("second");
+  expect(rows[0]!.layer).toBe(layer);
+});

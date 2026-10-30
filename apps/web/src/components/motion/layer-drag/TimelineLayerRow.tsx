@@ -3,6 +3,7 @@ import type { TimelineRow } from "../tree";
 import { useRowPosition } from "../../layers/rows/use-row-position";
 import { DropCue } from "../../layers/drag/DropCue";
 import type { TimelineLayerDrag } from "./use-timeline-layer-drag";
+import { useRenderMetrics } from "../../../state/session/render-metrics";
 type RowDrag = Pick<
   TimelineLayerDrag,
   "page" | "moving" | "target" | "rejected" | "dragging" | "rejectProperty"
@@ -24,6 +25,7 @@ export function TimelineLayerRow({
   drag?: RowDrag;
 }) {
   const node = useRef<HTMLDivElement>(null);
+  useRenderMetrics(node);
   useRowPosition(node, `${drag?.page.id ?? ""}:${row.key}`, top, !!drag?.moving, reduced);
   const target = row.kind === "layer" && drag?.target?.id === row.layer.id ? drag.target : null;
   const rejected =

@@ -1,10 +1,12 @@
 export { validateAssetDescription } from "./assets/validation";
 export { FORMAT_VERSION } from "./document/model";
 export type { PreparedEngineTransaction } from "./session/reservation";
-export type { ImageAsset, VideoAsset } from "./assets/model";
+export type { ImageAsset, VideoAsset, AudioAsset, OriginalMediaAsset } from "./assets/model";
 export {
   isImageAsset,
   isVideoAsset,
+  isAudioAsset,
+  isOriginalMediaAsset,
   assetOriginalIdentity,
   sameAssetOriginal,
 } from "./assets/identity";
@@ -138,6 +140,7 @@ export type { MotionTime, MotionFrameRate } from "./motion/time";
 export type { MotionEasing } from "./motion/easing";
 export type { MotionPropertyTarget, MotionValue } from "./motion/properties/model";
 export { planMotionInitialization } from "./motion/initialization";
+export { listLayerMotionOccurrences, getMotionOccurrenceAt } from "./motion/occurrences";
 export {
   frameTime,
   compareMotionTime,
@@ -174,20 +177,17 @@ export {
 export { applyMotionValue, applyMotionValues } from "./motion/properties/apply";
 export { compileMotion } from "./motion/compile";
 export { createMotionKeyframePreview } from "./motion/keyframe-preview";
-export type { MotionProgram } from "./motion/compile";
-export { evaluateMotion } from "./motion/evaluate";
+export type { MotionProgram, CompiledMotionAudio } from "./motion/compile";
 export type {
-  MotionFramePlan,
-  MotionFrameMediaRequest,
-  MotionEvaluationOptions,
-} from "./motion/evaluate";
-export { applyMotionFrame } from "./motion/frame";
-export { validateMotionTime } from "./motion/time";
-export { createLayerGeometryIndex, LayerGeometryIndex } from "./layers/geometry-index";
-export { copyContent, parseClipboard, MAX_CLIPBOARD_CHARACTERS } from "./clipboard/content";
-export { pasteContent } from "./clipboard/paste";
-export type { ClipboardContent } from "./clipboard/model";
-
+  MotionAudioTrack,
+  MotionAudioCommand,
+  MotionAudioProcessing,
+} from "./motion/audio/model";
+export {
+  DEFAULT_AUDIO_PROCESSING,
+  resolveMotionAudioProcessing,
+  validateMotionAudioProcessing,
+} from "./motion/audio/processing";
 export {
   TRANSITION_CATALOG,
   TRANSITION_CATEGORIES,
@@ -198,3 +198,16 @@ export type {
   TransitionCategory,
   TransitionDefinition,
 } from "./effects/transition/catalog";
+export type { ApplyMotionTransitionCommand } from "./motion/transitions/model";
+export { evaluateMotion } from "./motion/evaluate";
+export type {
+  MotionFramePlan,
+  MotionFrameMediaRequest,
+  MotionEvaluationOptions,
+} from "./motion/evaluate";
+export { applyMotionFrame } from "./motion/frame";
+export { isMotionTime, validateMotionTime } from "./motion/time";
+export { createLayerGeometryIndex, LayerGeometryIndex } from "./layers/geometry-index";
+export { copyContent, parseClipboard, MAX_CLIPBOARD_CHARACTERS } from "./clipboard/content";
+export { pasteContent } from "./clipboard/paste";
+export type { ClipboardContent } from "./clipboard/model";

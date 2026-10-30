@@ -1,7 +1,12 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { validateProject, type MotionTime } from "../../packages/core/src/index";
+import { validateProject, type MotionTime, type Project } from "../../packages/core/src/index";
+import {
+  isDesignedTemplateId,
+  type DesignedTemplateId,
+} from "../../apps/web/src/services/projects/templates/designed/catalog";
+import { installReadbackProbe } from "../../test/browser/support/readback-probe";
 import type {
   MotionTemplateId,
   MotionTemplateManifest,
@@ -14,7 +19,13 @@ interface CoverOptions {
   readonly edge: number;
   readonly time: MotionTime;
   readonly forceWebGL?: boolean;
-  readonly ids: readonly MotionTemplateId[];
+  readonly ids: readonly (MotionTemplateId | DesignedTemplateId)[];
+}
+interface CoverManifest {
+  readonly version: 1;
+  readonly templateId: string;
+  readonly project: Project;
+  readonly originals?: MotionTemplateManifest["originals"];
 }
 
 export function validateCoverOptions(options: CoverOptions): void {
@@ -33,7 +44,13 @@ export function validateCoverOptions(options: CoverOptions): void {
   if (
     !options.ids.length ||
     new Set(options.ids).size !== options.ids.length ||
-    options.ids.some((id) => id !== "in-bloom" && id !== "motion-stress-lab")
+    options.ids.some(
+      (id) =>
+        id !== "in-bloom" &&
+        id !== "motion-stress-lab" &&
+        id !== "sound-playground" &&
+        !isDesignedTemplateId(id),
+    )
   )
     throw Error("Choose a known Motion template exactly once.");
 }
@@ -45,7 +62,7 @@ export async function renderTemplateCovers(options: CoverOptions) {
     options.ids.map(async (id) => {
       const manifest = JSON.parse(
         await readFile(resolve(options.inputDirectory, `${id}.json`), "utf8"),
-      ) as MotionTemplateManifest;
+      ) as CoverManifest;
       if (manifest.version !== 1 || manifest.templateId !== id)
         throw Error("Invalid generated template manifest.");
       validateProject(manifest.project);
@@ -65,6 +82,7 @@ export async function renderTemplateCovers(options: CoverOptions) {
   const results = [];
   try {
     const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
+    await installReadbackProbe(page);
     const entry = new URL("/__motion-template-renderer", options.url).href;
     await page.route(entry, (route) =>
       route.fulfill({
@@ -84,10 +102,13 @@ export async function renderTemplateCovers(options: CoverOptions) {
             input.renderUrl
           )) as typeof import("../../packages/render/src/index");
           const originals = new Map<string, { revision: string; blob: Blob }>();
-          for (const original of input.manifest.originals) {
+          for (const original of input.manifest.originals ?? []) {
             if (
-              !/^media\/[a-zA-Z0-9][a-zA-Z0-9.-]*\.mp4$/.test(original.file) ||
-              original.file.includes("..")
+              !/^media\/[a-zA-Z0-9][a-zA-Z0-9.-]*\.(mp4|wav)$/.test(original.file) ||
+              original.file.includes("..") ||
+              (original.file.endsWith(".mp4")
+                ? original.mime !== "video/mp4"
+                : original.mime !== "audio/wav")
             )
               throw Error("Unsafe original path.");
             const response = await fetch(
@@ -157,6 +178,7 @@ export async function renderTemplateCovers(options: CoverOptions) {
             return {
               ...result,
               stats: session.stats(),
+              readbacks: window.__musartVideoReadbacks,
               coldRenderMilliseconds: performance.now() - start,
             };
           } finally {
@@ -183,6 +205,7 @@ export async function renderTemplateCovers(options: CoverOptions) {
         height: captured.height,
         time: options.time,
         stats: captured.stats,
+        readbacks: captured.readbacks,
         coldRenderMilliseconds: captured.coldRenderMilliseconds,
       });
     }
@@ -216,8 +239,8 @@ if (import.meta.main) {
         time: parseHeadlessTime(values.time),
         forceWebGL: values.webgl,
         ids: values.template
-          ? [values.template as MotionTemplateId]
-          : ["in-bloom", "motion-stress-lab"],
+          ? [values.template as MotionTemplateId | DesignedTemplateId]
+          : ["in-bloom", "motion-stress-lab", "sound-playground"],
       }),
       null,
       2,

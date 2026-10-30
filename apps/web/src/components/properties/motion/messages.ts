@@ -5,6 +5,7 @@ export const messages = {
     update: "Update keyframe · {{property}}",
     armed: "Animated property · {{property}}",
     macro: "This preset changes several parameters. Animate its individual parameters instead.",
+    inactive: "Move the playhead inside this layer's clip to edit its properties.",
     visibility: "Visibility",
   },
   fr: {
@@ -12,6 +13,7 @@ export const messages = {
     update: "Modifier l’image clé · {{property}}",
     armed: "Propriété animée · {{property}}",
     macro: "Ce préréglage modifie plusieurs paramètres. Animez ses paramètres individuellement.",
+    inactive: "Placez la tête de lecture dans un clip de ce calque pour modifier ses propriétés.",
     visibility: "Visibilité",
   },
 };

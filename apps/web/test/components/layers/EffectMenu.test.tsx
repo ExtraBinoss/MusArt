@@ -11,7 +11,7 @@ import {
 import { setup } from "../../support/ui";
 
 test.each(["effect", "adjustment"] as const)(
-  "%s submenu follows the displayed alphabet in French and after switching to English",
+  "%s submenu groups the catalog and sorts each localized family in French and English",
   async (category) => {
     const d = setup();
     d.mount(
@@ -32,17 +32,21 @@ test.each(["effect", "adjustment"] as const)(
         const item = await screen.findByRole("menuitem", {
           name: i18n.t(getEffectDefinition(category === "effect" ? "blur" : "brightness").nameKey),
         });
-        const labels = within(item.closest('[role="menu"]') as HTMLElement)
-          .getAllByRole("menuitem")
-          .map((node) => node.textContent!.trim());
+        const menu = within(item.closest('[role="menu"]') as HTMLElement);
+        const labels = menu.getAllByRole("menuitem").map((node) => node.textContent!.trim());
         expect(labels).toHaveLength(
           Object.values(EFFECT_CATALOG).filter((e) => e.category === category).length,
         );
-        expect(labels).toEqual(
-          [...labels].sort((a, b) =>
-            a.localeCompare(b, language, { sensitivity: "base", numeric: true }),
-          ),
-        );
+        for (const group of menu.getAllByRole("group")) {
+          const grouped = within(group)
+            .getAllByRole("menuitem")
+            .map((node) => node.textContent!.trim());
+          expect(grouped).toEqual(
+            [...grouped].sort((a, b) =>
+              a.localeCompare(b, language, { sensitivity: "base", numeric: true }),
+            ),
+          );
+        }
       }
     } finally {
       await act(async () => {

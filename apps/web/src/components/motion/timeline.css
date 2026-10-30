@@ -462,18 +462,9 @@ button.motion-row-expand:hover {
   border-radius: 4px;
   background: color-mix(in srgb, var(--muted-foreground) 22%, var(--background));
 }
-.motion-track > i {
-  display: block;
-  height: 9px;
-  width: 1px;
-  background: color-mix(in srgb, var(--foreground) 24%, transparent);
-}
 .motion-row.is-selected .motion-track {
   border-color: var(--motion-track-color);
-  background: color-mix(in srgb, var(--motion-track-color) 72%, var(--background));
-}
-.motion-row.is-selected .motion-track > i {
-  background: color-mix(in srgb, var(--foreground) 65%, transparent);
+  background: var(--motion-track-color);
 }
 .motion-track:hover {
   border-color: color-mix(in srgb, var(--muted-foreground) 45%, transparent);
@@ -481,14 +472,7 @@ button.motion-row-expand:hover {
 }
 .motion-row.is-selected .motion-track:hover {
   border-color: var(--motion-track-color);
-  background: color-mix(in srgb, var(--motion-track-color) 82%, var(--background));
-}
-.motion-trim-handle:hover::after {
-  content: "";
-  position: absolute;
-  inset: 3px 3px;
-  border-radius: 1px;
-  background: var(--foreground);
+  background: var(--motion-track-color);
 }
 .motion-key {
   position: absolute;

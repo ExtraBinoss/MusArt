@@ -88,3 +88,24 @@ it("rejects stale revision, missing targets and malformed curves atomically", ()
   expect(() => captureEasingOrigin(d.engine, d.page.id, "missing", d.key.id)).toThrow();
   expect(() => commitEasing(d.engine, origin, { type: "cubicBezier", x1: -1 } as never)).toThrow();
 });
+
+it("retains the owning occurrence while editing easing on a key outside its trim", () => {
+  const d = fixture(),
+    original = d.page.motion!.tracks[0]!;
+  d.engine.execute({
+    type: "setMotionTrackRange",
+    trackId: original.id,
+    start: { value: 0, rate: 1 },
+    end: { value: 1, rate: 2 },
+  });
+  d.engine.execute({
+    type: "duplicateMotionOccurrence",
+    trackId: original.id,
+    start: { value: 2, rate: 1 },
+  });
+  const origin = captureEasingOrigin(d.engine, d.page.id, d.property.id, d.key.id);
+  expect(commitEasing(d.engine, origin, { type: "hold" })).toBe("committed");
+  const tracks = d.engine.getSnapshot().project.pages[0]!.motion!.tracks;
+  expect(tracks[0]!.properties[0]!.keyframes[1]!.easing).toEqual({ type: "hold" });
+  expect(tracks[1]!.properties[0]!.keyframes[1]!.easing).toBeUndefined();
+});

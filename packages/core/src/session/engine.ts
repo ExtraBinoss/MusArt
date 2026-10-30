@@ -254,6 +254,7 @@ export class EditorEngine implements EnginePort {
     const occupied = new Set<string>([before.project.id, ...Object.keys(before.project.assets)]);
     for (const page of before.project.pages) {
       occupied.add(page.id);
+      for (const track of page.motion?.audioTracks ?? []) occupied.add(track.id);
       for (const track of page.motion?.tracks ?? []) {
         occupied.add(track.id);
         for (const property of track.properties) {

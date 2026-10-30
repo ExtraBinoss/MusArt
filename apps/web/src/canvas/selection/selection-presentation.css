@@ -13,7 +13,7 @@
   left: 0;
   top: 0;
   transform-origin: 0 0;
-  border: 1px solid var(--primary);
+  border: 1px solid var(--canvas-selection-accent, var(--media-image));
   box-sizing: border-box;
   pointer-events: none;
 }
@@ -28,8 +28,12 @@
   box-shadow: 0 0 0 1px #000;
 }
 .canvas-handle:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--canvas-selection-accent, var(--media-image));
   outline-offset: 3px;
+}
+.canvas-selection[data-layer-kind="video"],
+.canvas-timeline-hover[data-layer-kind="video"] {
+  --canvas-selection-accent: var(--media-video);
 }
 .canvas-timeline-hover-handle {
   pointer-events: none;
@@ -39,7 +43,10 @@
 @media (forced-colors: none) {
   @supports ((backdrop-filter: invert(1)) or (-webkit-backdrop-filter: invert(1))) {
     .canvas-selection-overlays[data-selection-count="1"][data-playback="false"] .canvas-handle,
-    .canvas-selection-overlays:is([data-selection-count="0"], [data-selection-count="1"])[data-playback="false"]
+    .canvas-selection-overlays:is(
+        [data-selection-count="0"],
+        [data-selection-count="1"]
+      )[data-playback="false"]
       ~ .canvas-timeline-hover[data-playback="false"]:not([data-selected="true"])
       .canvas-timeline-hover-handle {
       background: transparent;

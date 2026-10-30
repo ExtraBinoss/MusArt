@@ -10,6 +10,8 @@ import {
 import type { MotionTemplateManifest } from "../../../../../src/services/projects/templates/motion/model";
 import type { EditorServices } from "../../../../../src/state/contracts";
 import { templateMedia } from "../../../../support/motion-template-media";
+import { audioFixture } from "../../../../support/audio";
+import { encodeSfxWav, synthesizeSfx } from "../../../../../src/services/motion/audio/sfx";
 import { i18n } from "../../../../../src/state/i18n";
 
 function fixture() {
@@ -172,5 +174,47 @@ test("reports download, malformed JSON, bounded stream overflow and original int
 
 test("localizes actionable template failures in English and French", () => {
   expect(i18n.getResource("en", "motionTemplates", "integrity")).toContain("original source");
-  expect(i18n.getResource("fr", "motionTemplates", "unsupported")).toContain("modèles vidéo");
+  expect(i18n.getResource("fr", "motionTemplates", "unsupported")).toContain("modèles multimédias");
+});
+
+test("atomically installs an audio-only original-backed Motion template with genuine WAV bytes", async () => {
+  const d = audioFixture(),
+    samples = synthesizeSfx("soft-plop"),
+    bytes = encodeSfxWav(samples),
+    revision = `sha256:${createHash("sha256").update(new Uint8Array(bytes)).digest("hex")}`,
+    duration = { value: samples.length, rate: 48000 };
+  const project = structuredClone(d.engine.getSnapshot().project);
+  project.assets.sound = {
+    ...d.asset,
+    byteLength: bytes.byteLength,
+    contentRevision: revision,
+    duration,
+  };
+  project.pages[0]!.motion!.audioTracks![0]!.end = duration;
+  const manifest: MotionTemplateManifest = {
+    version: 1,
+    templateId: "sound-playground",
+    project,
+    originals: [
+      {
+        originalId: d.asset.originalId,
+        contentRevision: revision,
+        byteLength: bytes.byteLength,
+        mime: "audio/wav",
+        file: "media/soft-plop.wav",
+      },
+    ],
+  };
+  const openMediaProject = vi.fn(async () => {}),
+    fetcher: TemplateFetcher = async (url) =>
+      url.endsWith(".json") ? new Response(JSON.stringify(manifest)) : new Response(bytes);
+  await openMotionTemplate({ openMediaProject }, "sound-playground", {}, fetcher);
+  expect(openMediaProject).toHaveBeenCalledOnce();
+  const call = openMediaProject.mock.calls[0] as unknown as Parameters<
+    NonNullable<EditorServices["openMediaProject"]>
+  >;
+  expect(call[1]).toHaveLength(1);
+  expect(call[1][0]!.blob.type).toBe("audio/wav");
+  expect(await call[1][0]!.blob.arrayBuffer()).toEqual(bytes);
+  expect(Object.values(call[0].assets).every((asset) => asset.kind === "audio")).toBe(true);
 });

@@ -35,9 +35,9 @@ import { ProjectPreferencesStore } from "./preferences/store";
 import { projectPreferencesKey } from "./preferences/schema";
 import {
   validateProject,
-  isVideoAsset,
+  isOriginalMediaAsset,
   sameAssetOriginal,
-  type VideoAsset,
+  type OriginalMediaAsset,
   isPublishedProject,
   EditorEngine,
   diffReplayState,
@@ -206,7 +206,7 @@ export class ProjectStore {
   }
   async loadMediaOriginal(
     projectId: string,
-    asset: VideoAsset,
+    asset: OriginalMediaAsset,
     options: { signal?: AbortSignal } = {},
   ): Promise<Blob> {
     const generation = this.generation;
@@ -232,11 +232,16 @@ export class ProjectStore {
       const assets: Record<string, Asset> = {};
       for (const [assetId, metadata] of Object.entries(record.project.assets)) {
         const original =
-          metadata.kind === "video" ? undefined : await tx.objectStore("assets").get([id, assetId]);
-        if (metadata.kind !== "video" && !original)
+          metadata.kind === "video" || metadata.kind === "audio"
+            ? undefined
+            : await tx.objectStore("assets").get([id, assetId]);
+        if (metadata.kind !== "video" && metadata.kind !== "audio" && !original)
           throw new Error(`Ressource locale manquante : ${metadata.name}.`);
         Object.defineProperty(assets, assetId, {
-          value: metadata.kind === "video" ? metadata : { ...metadata, dataUrl: original!.dataUrl },
+          value:
+            metadata.kind === "video" || metadata.kind === "audio"
+              ? metadata
+              : { ...metadata, dataUrl: original!.dataUrl },
           enumerable: true,
           writable: true,
           configurable: true,
@@ -283,7 +288,7 @@ export class ProjectStore {
             revision: record.assetsRevision,
             urls: new Map(
               Object.values(project.assets)
-                .filter((asset) => !isVideoAsset(asset))
+                .filter((asset) => !isOriginalMediaAsset(asset))
                 .map((asset) => [asset.id, asset.dataUrl]),
             ),
           }

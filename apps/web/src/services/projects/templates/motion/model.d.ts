@@ -1,11 +1,12 @@
-import type { Command, ImageAsset, Project, VideoAsset } from "@musart/core";
+import type { Command, ImageAsset, Project, VideoAsset, AudioAsset } from "@musart/core";
 
-export type MotionTemplateId = "in-bloom" | "motion-stress-lab";
+export type MotionTemplateId = "in-bloom" | "motion-stress-lab" | "sound-playground";
 
 /** Source descriptions are portable; binary video originals travel in the bundle sidecar. */
 export interface MotionTemplateMedia {
   readonly photos: readonly ImageAsset[];
   readonly video: VideoAsset;
+  readonly sounds?: readonly AudioAsset[];
 }
 
 export interface BuiltMotionTemplate {

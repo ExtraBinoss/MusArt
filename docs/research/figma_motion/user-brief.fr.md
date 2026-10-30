@@ -784,6 +784,252 @@ et rajoute que les layers dans le motion jouent le role de z-index tout comme le
 allez go fait moi le recap jattend tjr
 ```
 
+## M106 — Explicit implementation resume
+
+```text
+ok continue, gruiklle envoie sous agent tout fini vite vite (commit bien allong the way + push)
+```
+
+## M107 — Transition scope confirmed
+
+Question: “Pour le pack de 30 transitions, où doivent-elles s’appliquer ?”
+
+```text
+euh bah entrée ou sortie tu peux choisir.
+```
+
+Layer entry/exit is confirmed. The UI offers both placements per transition.
+
+## M108 — Parallel usability, templates and repeated clip occurrences
+
+```text
+keyframes joli padidng car la dans les effets il est collé
+hover sur layer doit avoir resize handle comme dans motion
+Dans motion pouvoir rename si double click sur le name
+add transition au right click video image ou autre truc visible
+add audio effects right click sur le "son"
+right click sur une keyframes pour l'enlever (ou suppr)
+plus de templates, faire la landing page
+
+dans la timeline motion on peux rajouter si on hover dans la timeline sur un endroit vide, un duplicata de la layer, genre style pouvoir enfaite aovir une layer image que tu met au début, et cette meme layer image que tu met à la fin de la motion, il ne faut pas que cette duplication soit une layer encore dans le système de calque, enfin si mais pas a proprement parler car ca serait une layer sur la meme ligne enfaite. genre tu peux faire comme un logiciel de montage quoi rajouter la meme piste plusieurs fois dans le temps
+
+aussi au hover faudrait que le hover ai la bonne couleur
+pour la waveform il faut obviously le faire en worker et tout, prorprement avec la webaduio api, si mediabunny t'aide utilise le.
+un truc comme ça https://audiowaveform.org/logo.png genre une montagne quoi (avec une ou deux couleur proche et sympa quoi
+```
+
+The new waveform reference supersedes the earlier Instagram-style bars. Sound
+decoding/peak generation must remain off the UI thread; a bounded smooth envelope
+uses one or two nearby audio colors. The reference is inspected, not redistributed
+as a product asset. Separate temporal clip occurrences must share one canonical
+layer and timeline row; their animation-ownership question remains pending until
+the user's answer. Landing routing and audio-effects meaning were also asked
+explicitly; elapsed time is not an answer.
+
+## M109 — Additional parallel fixes, existing scope retained
+
+```text
+c'est tout ce que j'ai remarqué qu'il faut fix en parralèle quoi
+```
+
+## M110 — Occurrence keyframe ownership
+
+Question: “Quand tu répètes un calque sur la même ligne, chaque occurrence doit-elle rejouer l’animation du calque depuis son début, ou avoir ses propres keyframes modifiables ?”
+
+```text
+Ses propres keyframes (recommandé)
+```
+
+## M111 — Audio effects and editable audio transitions
+
+Question: “Par « audio effects » au clic droit sur le son, tu veux des traitements du son (fondus, égaliseur, réverbération…) ou ouvrir la banque de SFX (whoosh, pop…) ?”
+
+```text
+je veux audio effects et audio transitions, donc fade in fade out du son (avec si je clique dessus un truc pour changer les valeurs du fade in fade out etc.. et oui audio effect ca peut etre pas mal genre en mode reverb, gain etc..
+```
+
+## M112 — Landing page reassigned by the user
+
+```text
+pour la landing oublie j'ai un autre agent qui le fait.
+```
+
+The landing page is canceled in this worktree's task scope. Do not modify the
+application entry point or implement a second landing page. Additional templates
+remain requested.
+
+## M113 — Progress request
+
+```text
+alors ou en est tu ?
+```
+
+## M114 — Shared volume popover
+
+```text
+oublie pas pour le volume le right click ou quoi doit avoir un truc volume avec un slider qu'on aime et tout tu vois, pour changer le volume, ou ptete comme c'est comment, direct l'avoir dans le popover. tu vois? from 0 to 100 etc.
+```
+
+The audio context menu and volume button open the same popover. Its Volume
+control uses the existing shared glass slider, a visible 0–100% value, imperative
+audible preview, one committed command/undo on release and cancellation restoration.
+
+## M115 — Remaining work request
+
+```text
+il manque quoi la?
+```
+
+The response distinguishes already pushed drag/GPU milestones from the integrated
+working tree. Remaining gates are real Chrome interactions, final In Bloom/Stress
+performance, static checks and the integration commit/push. No 16 ms claim is made
+from unit tests, cover captures or shader correctness checks.
+
+## M116 — Finish the remaining gates
+
+```text
+ok bah vasi fini ces 3 derniers trucs svp
+```
+
+## M117 — Requested pace
+
+```text
+et vite
+```
+
+## M118 — Properties, categories, track feedback and media previews
+
+```text
+dans les properties d'un effect faut que toutes les keyframes soit aligné, meme tout les trucs ca serait bien qu'il soit aligné tous.
+
+la liste d'effet doit avoir des catégoires pour genre tout comme ça on peux séparé et tout, pareil pour le adjustements faut des categories i guess
+
+sans hover faut que tout sois gris, au hover ca se colore un peu, au actif ca se met en full color du track
+oublie pas une template pour tester les sons, animation, transitions etc.
+jfaut pouvoir left click dans la canvas pour multi select, pas que dans le vide.
+le delete en click droit dit tout le temps delete "keyframes" au lieu de deelete keyframe (ou "s") avec {number} de kf a suspprimer
+
+dans le truc des transitions faut une preview de la transitions comme ça on sais, pareil pour les son, au hover on entend le son avec sa waveform, de la meme manière que le interploation popover et select etc.. fait ça au propre svp! tout propre, perfromatn etc
+```
+
+The earlier integration gates remain active. Additional UI work is delegated by
+domain: aligned effect-property columns and categorized catalogs; timeline
+feedback/selection and transition preview; sound hover preview and a headless
+combined sound/animation/transition playground. Preview work must remain bounded,
+cancel retired results, stop when inactive and use the actual engines.
+
+## M119 — Selection gesture clarification
+
+Question: “Pour sélectionner plusieurs objets depuis le canvas, tu veux quel geste ? Le glisser simple sur un objet sert actuellement à le déplacer.”
+
+```text
+non je parle dans le motion track, il faut que si je click + drag sa lance le selection box, pas qe dans le vide !! dans la canvas le multi select existe deja
+```
+
+The requested left-drag marquee belongs to the timeline, including its track and
+property surfaces. Canvas multiselection already exists and is not this change.
+
+## M120 — Preserve clip dragging; select across property lines
+
+Question: “Sur une barre de clip pleine, le glisser sert déjà à déplacer le clip et à réordonner les calques. Quelle priorité veux-tu ? Sur les lignes de propriétés, le rectangle pourra démarrer directement.”
+
+```text
+oui tu peux faire genre que le track puisse etre bouger avec un simple click, je parlais plutot sur le trait de keyframes et intepolation ya pas mal de vide mais pas d'action de mouvement donc on peux. evidemment sur une track on peux pas, faudrait passer par le vide oui.
+```
+
+Preserve ordinary clip dragging. Extend marquee initiation only across decorative
+keyframe/interpolation lines and their empty surfaces; keep actual key and easing
+icon interactions. No new modifier is required or requested.
+
+## M121 — Clip interaction freezes, handles and duration feedback
+
+```text
+quand je resiez un clip ou que j'en rajotue un, y'a clairement freeze aussi au hover/actif, les pill de drag sont doublé genre y'en a deux
+aussi la length du clip doit etre un tooltip en temps réel en fonction du nb de ms ou seconde (unité) de la timeline
+
+faut que la pill soit juste la pill en mode inactif en plus gros legermeent
+```
+
+Profile clip insertion/resizing and hover/active feedback on the real workloads.
+Remove duplicate handle decoration, retain one slightly larger resting pill, and
+show live clip duration in the timeline's selected milliseconds/seconds unit.
+Do not infer a performance improvement from CSS changes or a prepared trace.
+
+## M122 — Profile all interactions on Sound Playground
+
+```text
+toutes les intreactions, que ce soit ouvertures popover de interpolation, ouverture popover fade in, fadeout, les effets, tout lag genre absolument TOUT il faut que tu profile bien et continue encore une fois la y'a des gros gros soucis de perf, meme le scroll de la vlist lag, regarde avec react 19 si y'a du rerender, si yaa du js work pour rien , si y'a du profiling chrome que tu peux faire, la c'est sur sound lab hein je précise
+```
+
+Sound Playground/Sound Lab is now the first performance reproduction workload.
+Capture actual React commits and Chrome CPU/timeline evidence for interpolation,
+audio fades, effects, hover/selection, virtual scrolling and clip edits. Earlier
+functional passes and other templates do not establish this workload's latency.
+
+## M123 — Status of confirmed findings and progress
+
+```text
+tu as reperer et avancer ?
+```
+
+Report verified causes and fixes as they are established, while keeping pending
+native comparisons and the remaining performance acceptance failures explicit.
+
+## M124 — User-recorded Chrome timeline trace and virtual-list stutter
+
+```text
+quand je scroll ca stutter clairement c pas smooth, regarde le profiling chrome que j'ai fais en scrollant et cliquant dans la timeline
+
+mais oui c'est deja bien miuex
+
+je veux un moteur de vlist et tout vriament très très instant et performant /home/albi/Téléchargements/Trace-20261030T115129.json analyse tout ça
+```
+
+Analyze the user's actual Chrome recording of timeline scrolling and clicks before
+choosing the next virtual-list correction. Preserve the observed improvement and
+the still-visible stutter as separate findings; earlier synthetic or capped
+cohorts do not replace this evidence.
+
+## M125 — Cinetic provenance question
+
+```text
+ducoup ta utilisé cinectic pour les sound effect?
+```
+
+The current fifteen effects are original TypeScript recipes. Cinetic was consulted,
+but its audio assets were not imported. Keep provenance explicit.
+
+## M126 — Instant sound-bank previews and ready waveforms
+
+```text
+et je trouve que pareil, c'est lent à preview les sons, aussi chacun devrait avoir leur waveform de ready dessus, et avoir tu sais la waveforme grise et quand elle passe elle se devient verte et tout tu vois???, j'aimerais aussi que ca soit beaucoup plus rapide à load et tout, que y'ai pas d'attente de placeholder et tout qui servent à rien, si y'a des crédits tu met juste un I genre dans le titre desound effect quoi, je vexu pas des textes de partout...
+```
+
+Give every bank item its prepared waveform. Use gray for the unplayed shape and
+green for actual playback progress. Remove redundant loading placeholders and
+scattered help text. Put any required credits behind a compact information action
+beside the bank title. Improve actual preparation/playback latency, not merely its
+visual indication.
+
+## M127 — Scope is the sound bank
+
+```text
+je parle dans la sound bank la
+```
+
+Apply this request to the sound bank; it does not request redesigning audio tracks.
+
+## M128 — Canvas mountain waveforms
+
+```text
+j'aimerais que la waveform soit rendu en canvas aufaite pas du dom hein faut que ce soit maxi performant hein. .et par chunk si besoin de perf aussi et j'aimerais que ca ressemble plus a une montage enfin que ca prenne du bas vers le haut, pas une waveforme baton entré svp
+```
+
+Render each bank waveform in canvas, using a filled mountain rising from the bottom
+baseline, without bars or a mirrored centerline. Prepare the shape outside the main
+thread, use bounded chunks when useful, keep playback progress imperative and clean
+up native resources. No production pixel readbacks are permitted.
+
 ## Reference handling
 
 The screenshots are user-supplied Figma UI references, not MusArt product assets. They document the requested appearance and interaction target; they do not grant a license to redistribute Figma code, brand assets or an external design system inside the application. Preserve MusArt branding and use the repository's genuine shadcn/Radix controls.

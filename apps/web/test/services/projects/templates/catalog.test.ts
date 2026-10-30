@@ -15,7 +15,7 @@ const ports = () => ({
   ),
 });
 test("publishes exact canonical canvas formats and the editable artwork template", async () => {
-  expect(new Set(TEMPLATE_CATALOG.map((item) => item.id)).size).toBe(PRESETS.length + 3);
+  expect(new Set(TEMPLATE_CATALOG.map((item) => item.id)).size).toBe(PRESETS.length + 8);
   expect(Object.isFrozen(TEMPLATE_CATALOG)).toBe(true);
   const services = ports();
   for (const preset of PRESETS) {
@@ -44,7 +44,7 @@ test("routes Motion bundles to the binary-capable installation service and keeps
   const open = vi.spyOn(motion, "openMotionTemplate").mockResolvedValue(undefined);
   const signal = new AbortController().signal;
   const expectedOrigin = { projectId: "origin", pageId: "composition", revision: 3 };
-  for (const id of ["in-bloom", "motion-stress-lab"]) {
+  for (const id of ["in-bloom", "motion-stress-lab", "sound-playground"]) {
     const template = TEMPLATE_CATALOG.find((item) => item.id === id)!;
     expect(template.mode).toBe("motion");
     expect(template.descriptionKey).toBeTruthy();

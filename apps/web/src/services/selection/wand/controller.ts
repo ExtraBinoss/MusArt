@@ -1,4 +1,4 @@
-import { createLayerGeometryIndex, type Asset, type EnginePort } from "@musart/core";
+import { createLayerGeometryIndex, isImageAsset, type Asset, type EnginePort } from "@musart/core";
 import {
   captureGestureOrigin,
   isGestureOriginCurrent,
@@ -99,6 +99,7 @@ export class PixelSelectionController implements PixelSelectionPort {
       !layer ||
       layer.kind !== "image" ||
       !asset ||
+      !isImageAsset(asset) ||
       index.isLocked(layer.id) ||
       !index.isVisible(layer.id)
     )

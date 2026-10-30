@@ -26,6 +26,8 @@ export async function chooseMotionEncoding(options: {
   width: number;
   height: number;
   frameRate: number;
+  videoBitrate?: number;
+  audioBitrate?: number;
   audio: { sampleRate: number; channels: number } | null;
   signal?: AbortSignal;
 }) {
@@ -33,7 +35,22 @@ export async function chooseMotionEncoding(options: {
   assertMotionAlphaMode(options.alpha);
   if (!["auto", "mp4", "webm"].includes(options.container))
     throw new MotionExportError("invalidOptions", "Invalid Motion output container.");
-  const quality = new Quality("high");
+  const videoBitrate = options.videoBitrate ?? 8_000_000;
+  const audioBitrate = options.audioBitrate ?? 192_000;
+  if (
+    !Number.isInteger(videoBitrate) ||
+    videoBitrate < 64_000 ||
+    videoBitrate > 100_000_000 ||
+    !Number.isInteger(audioBitrate) ||
+    audioBitrate < 32_000 ||
+    audioBitrate > 512_000
+  )
+    throw new MotionExportError(
+      "invalidOptions",
+      "Video/audio bitrates exceed the supported output range.",
+    );
+  const quality = new Quality({ bitrate: videoBitrate, bitrateMode: "variable" });
+  const audioQuality = new Quality({ bitrate: audioBitrate });
   const candidates: { container: "mp4" | "webm"; video: VideoCodec; audio: AudioCodec }[] = [
     { container: "mp4", video: "avc", audio: "aac" },
     { container: "webm", video: "vp9", audio: "opus" },
@@ -43,6 +60,15 @@ export async function chooseMotionEncoding(options: {
   for (const candidate of candidates) {
     if (options.container !== "auto" && candidate.container !== options.container) continue;
     options.signal?.throwIfAborted();
+    const format =
+      candidate.container === "mp4"
+        ? new Mp4OutputFormat({ fastStart: false })
+        : new WebMOutputFormat();
+    if (
+      !format.getSupportedVideoCodecs().includes(candidate.video) ||
+      (options.audio && !format.getSupportedAudioCodecs().includes(candidate.audio))
+    )
+      continue;
     if (
       !(await canEncodeVideo(candidate.video, {
         width: options.width,
@@ -58,7 +84,7 @@ export async function chooseMotionEncoding(options: {
       !(await canEncodeAudio(candidate.audio, {
         numberOfChannels: options.audio.channels,
         sampleRate: options.audio.sampleRate,
-        quality,
+        quality: audioQuality,
       }))
     )
       continue;
@@ -67,10 +93,8 @@ export async function chooseMotionEncoding(options: {
       videoCodec: candidate.video,
       audioCodec: candidate.audio,
       quality,
-      format:
-        candidate.container === "mp4"
-          ? new Mp4OutputFormat({ fastStart: false })
-          : new WebMOutputFormat(),
+      audioQuality,
+      format,
       mimeType: candidate.container === "mp4" ? ("video/mp4" as const) : ("video/webm" as const),
     };
   }

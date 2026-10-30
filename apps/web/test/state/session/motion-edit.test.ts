@@ -292,3 +292,30 @@ test("gradient drafts preserve other evaluated channels and can key a return to 
   expect(motionPropertyTrack(d.page(), angle)?.keyframes.at(-1)?.value).toBe(0);
   expect(d.page().layers[0]!.fillGradient).toEqual(gradient);
 });
+
+test("property edits and diamonds arm only the occurrence at the playhead and ignore gaps", () => {
+  const d = fixture();
+  addMotionPropertyKey(d.engine, x);
+  const first = d.page().motion!.tracks[0]!;
+  d.engine.execute({
+    type: "duplicateMotionOccurrence",
+    trackId: first.id,
+    start: { value: 3, rate: 1 },
+  });
+  const copy = d.page().motion!.tracks[1]!;
+  d.transport.seek({ value: 7, rate: 2 });
+  const commands = motionLayerCommands(d.engine, captureMotionEdit(d.engine, x), ["shape"], {
+    x: 77,
+  });
+  expect(commands[0]).toMatchObject({ type: "upsertMotionKeyframe", trackId: copy.id });
+  d.engine.transaction(commands);
+  expect(motionPropertyTrack(d.page(), x, { trackId: first.id })!.keyframes[0]!.value).toBe(10);
+  expect(motionPropertyTrack(d.page(), x, { trackId: copy.id })!.keyframes.at(-1)!.value).toBe(77);
+  d.transport.seek({ value: 5, rate: 2 });
+  const before = d.engine.getSnapshot();
+  addMotionPropertyKey(d.engine, x);
+  expect(
+    motionLayerCommands(d.engine, captureMotionEdit(d.engine, x), ["shape"], { x: 100 }),
+  ).toEqual([]);
+  expect(d.engine.getSnapshot()).toBe(before);
+});

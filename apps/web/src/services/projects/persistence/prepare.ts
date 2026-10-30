@@ -1,4 +1,4 @@
-import { isVideoAsset, type Project } from "@musart/core";
+import { isOriginalMediaAsset, type Project } from "@musart/core";
 import type { ProjectWriteFrame } from "./model";
 import { THUMBNAIL_RENDER_VERSION } from "../thumbnails/model";
 export interface AssetBasis {
@@ -21,7 +21,7 @@ export function prepareProjectWrite(
   const descriptions = [],
     originals = [];
   for (const asset of Object.values(assets)) {
-    if (isVideoAsset(asset)) {
+    if (isOriginalMediaAsset(asset)) {
       descriptions.push(asset);
       continue;
     }
@@ -54,7 +54,7 @@ export function withFullOriginals(frame: ProjectWriteFrame, project: Project): P
   return {
     ...rest,
     originals: Object.values(project.assets)
-      .filter((asset) => !isVideoAsset(asset))
+      .filter((asset) => !isOriginalMediaAsset(asset))
       .map((asset) => ({
         projectId: project.id,
         assetId: asset.id,

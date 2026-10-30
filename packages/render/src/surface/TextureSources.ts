@@ -1,4 +1,4 @@
-import { isVideoAsset, type Asset, type Composition, type Layer } from "@musart/core";
+import { isVideoAsset, isImageAsset, type Asset, type Composition, type Layer } from "@musart/core";
 import { LinearFilter, NoColorSpace, Texture, type WebGPURenderer } from "three/webgpu";
 import { assetIdentity } from "../cache/keys";
 import { GpuResourceCache, type GpuResource } from "../cache/GpuResourceCache";
@@ -92,6 +92,7 @@ export class TextureSources {
           throw Error("A timed video mask must reference a video layer, not an untimed asset.");
         continue;
       }
+      if (!isImageAsset(asset)) throw Error("Audio originals cannot be visual texture sources.");
       const key = `asset:${assetIdentity(asset)}`;
       let entry = this.cache.get<ImageResource>(key);
       if (!entry) {

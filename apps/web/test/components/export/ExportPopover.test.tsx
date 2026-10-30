@@ -30,6 +30,7 @@ test("exports scaled images and all compositions at chosen quality", async () =>
       format: "jpeg",
       quality: 0.9,
       allPages: true,
+      signal: expect.any(AbortSignal),
     },
     { page: data.page, revision: 0, selection: [] },
   );

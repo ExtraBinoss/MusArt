@@ -46,7 +46,11 @@ export function isMotionFramePlanFor(program: MotionProgram, plan: MotionFramePl
   return issuedPlans.get(plan) === program;
 }
 
-function activeAt(layer: CompiledMotionLayer, time: MotionTime, terminal: boolean): boolean {
+function activeAt(
+  layer: Pick<CompiledMotionLayer, "start" | "end">,
+  time: MotionTime,
+  terminal: boolean,
+): boolean {
   const start = compareMotionTime(time, layer.start);
   const end = layer.end === null ? -1 : compareMotionTime(time, layer.end);
   return terminal ? start > 0 && end <= 0 : start >= 0 && end < 0;
@@ -83,9 +87,15 @@ export function evaluateMotion(
     compareMotionTime(sampledTime, program.duration) === 0;
   const values: MotionFrameValue[] = [];
   const activeLayerIds: string[] = [];
+  const activeIds = new Set<string>();
+  const valuedIds = new Set<string>();
   const mediaRequests: MotionFrameMediaRequest[] = [];
   for (const layer of program.layers) {
-    if (program.mode === "static" || activeAt(layer, sampledTime, terminalPreview)) {
+    if (
+      !activeIds.has(layer.id) &&
+      (program.mode === "static" || activeAt(layer, sampledTime, terminalPreview))
+    ) {
+      activeIds.add(layer.id);
       activeLayerIds.push(layer.id);
       if (layer.media)
         mediaRequests.push(
@@ -105,6 +115,12 @@ export function evaluateMotion(
           }),
         );
     }
+    if (
+      valuedIds.has(layer.id) ||
+      (layer.propertyScope && !activeAt(layer.propertyScope, sampledTime, terminalPreview))
+    )
+      continue;
+    valuedIds.add(layer.id);
     for (const property of layer.properties)
       values.push(
         Object.freeze({ target: property.target, value: propertyValue(property, sampledTime) }),

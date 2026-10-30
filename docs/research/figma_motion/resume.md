@@ -1,7 +1,9 @@
 # Resume Motion work after the next explicit “go”
 
-Stopped gracefully at the user's request on 2026-10-30. Do not resume coding until
-asked. The later “go, give me the recap” requests the recap, not implementation.
+The previous checkpoint stopped gracefully at the user's request on 2026-10-30.
+The later explicit “ok continue, ... envoie sous agent ... (commit ... + push)”
+resumed implementation. The historical checkpoint below is preserved as evidence;
+see the implementation log and subsequent commits for the resumed work.
 
 ## Workspace and checkpoints
 

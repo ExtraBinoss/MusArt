@@ -257,30 +257,38 @@ const EffectDetails = memo(function EffectDetails({
                 </div>
               </div>
               <div className="effect-compositing">
-                <MotionNumberInput
-                  engine={engine}
-                  target={{
-                    kind: "effect",
-                    layerId: layer.id,
-                    effectId: effect.id,
-                    property: "opacity",
-                  }}
-                  displayScale={100}
-                  identity={effect}
-                  resetValue={100}
-                  label={t("opacity")}
-                  scrubLabel={<Sun size={14} aria-hidden="true" />}
-                  value={(effect.opacity ?? 1) * 100}
-                  min={0}
-                  max={100}
-                  unit="%"
-                  disabled={disabled}
-                  onStart={begin}
-                  onPreview={(value) => update(effect, { opacity: value / 100 }, true)}
-                  onCommit={(value) => update(effect, { opacity: value / 100 })}
-                  onCancel={cancel}
-                />
+                <div className="effect-parameter-row">
+                  <MotionNumberInput
+                    engine={engine}
+                    target={{
+                      kind: "effect",
+                      layerId: layer.id,
+                      effectId: effect.id,
+                      property: "opacity",
+                    }}
+                    displayScale={100}
+                    identity={effect}
+                    resetValue={100}
+                    label={t("opacity")}
+                    scrubLabel={
+                      <>
+                        <Sun size={14} aria-hidden="true" />
+                        <span>{t("opacity")}</span>
+                      </>
+                    }
+                    value={(effect.opacity ?? 1) * 100}
+                    min={0}
+                    max={100}
+                    unit="%"
+                    disabled={disabled}
+                    onStart={begin}
+                    onPreview={(value) => update(effect, { opacity: value / 100 }, true)}
+                    onCommit={(value) => update(effect, { opacity: value / 100 })}
+                    onCancel={cancel}
+                  />
+                </div>
                 <MotionField
+                  className="effect-property-row"
                   engine={engine}
                   target={{
                     kind: "effect",
@@ -302,28 +310,32 @@ const EffectDetails = memo(function EffectDetails({
                     fallback={effect.blendMode ?? "normal"}
                   >
                     {(value) => (
-                      <SelectField
-                        identity={effect}
-                        label={t("blendMode")}
-                        value={String(value)}
-                        disabled={disabled}
-                        options={BLEND_MODES.map((mode) => ({
-                          value: mode,
-                          label: t(getBlendDefinition(mode).nameKey),
-                        }))}
-                        onPreview={(mode) =>
-                          update(effect, { blendMode: mode as Effect["blendMode"] }, true)
-                        }
-                        onPreviewCancel={cancel}
-                        onValueChange={(mode) =>
-                          update(effect, { blendMode: mode as Effect["blendMode"] })
-                        }
-                      />
+                      <label className="effect-select-field">
+                        <span>{t("blendMode")}</span>
+                        <SelectField
+                          identity={effect}
+                          label={t("blendMode")}
+                          value={String(value)}
+                          disabled={disabled}
+                          options={BLEND_MODES.map((mode) => ({
+                            value: mode,
+                            label: t(getBlendDefinition(mode).nameKey),
+                          }))}
+                          onPreview={(mode) =>
+                            update(effect, { blendMode: mode as Effect["blendMode"] }, true)
+                          }
+                          onPreviewCancel={cancel}
+                          onValueChange={(mode) =>
+                            update(effect, { blendMode: mode as Effect["blendMode"] })
+                          }
+                        />
+                      </label>
                     )}
                   </MotionValueField>
                 </MotionField>
               </div>
               <MotionField
+                className="effect-property-row"
                 engine={engine}
                 target={{
                   kind: "effect",

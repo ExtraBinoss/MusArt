@@ -143,6 +143,7 @@
   border: 0;
   color: var(--muted-foreground);
   background: transparent;
+  pointer-events: none;
 }
 .motion-easing-segment::before {
   content: "";
@@ -164,6 +165,7 @@
   background: var(--background);
   stroke-width: 1.4;
   transition: opacity 100ms ease-out;
+  pointer-events: auto;
 }
 .motion-easing-segment[data-motion-link-source] {
   pointer-events: none;
@@ -173,6 +175,7 @@
 }
 .motion-easing-segment[data-motion-link-source] > svg {
   opacity: 0;
+  pointer-events: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .motion-easing-segment > svg {

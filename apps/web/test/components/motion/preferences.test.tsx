@@ -1,11 +1,54 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, renderHook } from "@testing-library/react";
 import { EditorEngine } from "@musart/core";
-import { useTimelinePreferences } from "../../../src/components/motion/preferences";
+import {
+  useTimelinePreferences,
+  useTimelineRangeZoom,
+  useTimelineCollapsedRows,
+} from "../../../src/components/motion/preferences";
 import { ProjectPreferencesProvider } from "../../../src/components/workspace/preferences/context";
 import type { ProjectLayoutPreferences } from "../../../src/services/projects/preferences/model";
 
 afterEach(() => vi.unstubAllGlobals());
+
+test("collapsed row actions stay stable and never mutate an earlier presentation snapshot", () => {
+  const probe = renderHook(() => useTimelineCollapsedRows()),
+    original = probe.result.current.collapsed;
+  const toggle = probe.result.current.toggle;
+  act(() => toggle("layer"));
+  expect(probe.result.current.collapsed.has("layer")).toBe(true);
+  expect(original.size).toBe(0);
+  probe.rerender();
+  expect(probe.result.current.toggle).toBe(toggle);
+  act(() => toggle("layer"));
+  expect(probe.result.current.collapsed.size).toBe(0);
+});
+
+test("range zoom remains stable across scroll renders and retains its pointer anchor at the maximum", () => {
+  const options = {
+    zoom: 120,
+    width: 800,
+    actionWidth: 144,
+    protectZoom: vi.fn(),
+    saveZoom: vi.fn(),
+    setZoom: vi.fn(),
+    viewport: { current: document.createElement("div") },
+    horizontalScroll: { current: 0 },
+    desiredZoom: { current: 120 },
+    anchor: { current: null as { time: number; x: number } | null },
+  };
+  const probe = renderHook((props) => useTimelineRangeZoom(props), { initialProps: options });
+  const first = probe.result.current;
+  probe.rerender({ ...options });
+  expect(probe.result.current).toBe(first);
+  act(() => probe.result.current(1, 2));
+  expect(options.setZoom).toHaveBeenLastCalledWith(608);
+  expect(options.anchor.current).toEqual({ time: 1, x: 24 });
+  probe.rerender({ ...options, zoom: 640 });
+  act(() => probe.result.current(1, 2));
+  expect(options.viewport.current.scrollLeft).toBe(616);
+  expect(options.saveZoom).toHaveBeenLastCalledWith(640);
+});
 
 test("restores zoom and responsive height, with one committed resize and no document edit", async () => {
   vi.stubGlobal("innerHeight", 800);

@@ -40,11 +40,13 @@ test("filters real Motion projects independently from blank formats and preserve
   setup().mount(<TemplateGallery onChoose={onChoose} />);
   await choose("Mode du modèle", "Motion");
   const cards = screen.getAllByRole("button");
-  expect(cards).toHaveLength(2);
-  expect(cards[0]).toHaveTextContent("5 s");
-  expect(cards[1]).toHaveTextContent("100 effets");
+  expect(cards).toHaveLength(6);
+  expect(screen.getByRole("button", { name: /In Bloom/ })).toHaveTextContent("5 s");
+  expect(screen.getByRole("button", { name: /Laboratoire/ })).toHaveTextContent("100 effets");
+  for (const name of [/Orbit Study/, /Paper Motion/, /Atlas des transitions/, /Sound Playground/])
+    expect(screen.getByRole("button", { name })).toBeVisible();
   expect(cards.every((card) => Boolean(card.querySelector('[data-mode="motion"] svg')))).toBe(true);
-  fireEvent.click(cards[0]!);
+  fireEvent.click(screen.getByRole("button", { name: /In Bloom/ }));
   expect(onChoose).toHaveBeenLastCalledWith("in-bloom");
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "Laboratoire" } });
   expect(screen.getAllByRole("button")).toHaveLength(1);
@@ -52,6 +54,7 @@ test("filters real Motion projects independently from blank formats and preserve
   await choose("Mode du modèle", "Statique");
   expect(screen.queryByRole("button", { name: /In Bloom/ })).toBeNull();
   expect(screen.getByRole("button", { name: /AFTERHOURS/ })).toBeVisible();
+  expect(screen.getByRole("button", { name: /Colorfield/ })).toBeVisible();
   expect(
     screen.getByRole("button", { name: /TikTok/ }).querySelector('[data-mode="static"]'),
   ).not.toBeNull();

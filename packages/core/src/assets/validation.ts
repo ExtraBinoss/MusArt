@@ -5,6 +5,59 @@ import { validateMotionTime } from "../motion/time";
 export function validateAssetDescription(asset: Record<string, unknown>): void {
   assertText(asset.name);
   assertText(asset.mime, 128);
+  if (asset.kind === "audio") {
+    ensure(
+      Object.keys(asset).every((key) =>
+        [
+          "id",
+          "kind",
+          "name",
+          "mime",
+          "originalId",
+          "contentRevision",
+          "byteLength",
+          "duration",
+          "firstTimestamp",
+          "timeResolution",
+          "sampleRate",
+          "channels",
+        ].includes(key),
+      ),
+      "INVALID_DOCUMENT",
+      "Audio descriptions contain metadata only",
+    );
+    ensure(/^audio\/[\w.+-]+$/.test(asset.mime), "INVALID_DOCUMENT", "Unsupported audio MIME type");
+    ensure(
+      !Object.hasOwn(asset, "dataUrl") &&
+        !Object.hasOwn(asset, "blob") &&
+        !Object.hasOwn(asset, "width") &&
+        !Object.hasOwn(asset, "height"),
+      "INVALID_DOCUMENT",
+      "Audio must remain a nonvisual binary original",
+    );
+    assertText(asset.originalId, 256);
+    assertText(asset.contentRevision, 256);
+    ensure(
+      Number.isSafeInteger(asset.byteLength) && Number(asset.byteLength) > 0,
+      "INVALID_DOCUMENT",
+      "Invalid audio byte length",
+    );
+    validateMotionTime(asset.duration);
+    validateMotionTime(asset.firstTimestamp);
+    ensure(asset.duration.value > 0, "INVALID_DOCUMENT", "Invalid audio duration");
+    ensure(
+      Number.isSafeInteger(asset.timeResolution) && Number(asset.timeResolution) > 0,
+      "INVALID_DOCUMENT",
+      "Invalid audio timebase",
+    );
+    assertNumber(asset.sampleRate, 8000, 192000);
+    ensure(
+      Number.isInteger(asset.sampleRate) && (asset.channels === 1 || asset.channels === 2),
+      "INVALID_DOCUMENT",
+      "Audio requires a mono/stereo original at 8–192 kHz",
+    );
+    return;
+  }
   assertNumber(asset.width, 1, 32768);
   assertNumber(asset.height, 1, 32768);
   if (asset.kind === "video") {

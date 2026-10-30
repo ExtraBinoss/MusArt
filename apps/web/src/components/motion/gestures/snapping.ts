@@ -1,8 +1,27 @@
-import { motionTimeToSeconds, type MotionTime } from "@musart/core";
+import { motionTimeToSeconds, type Composition, type MotionTime } from "@musart/core";
 
 export interface TimelineSnapReference {
   readonly seconds: number;
   readonly time: MotionTime;
+}
+
+/** Collect once at gesture capture; pointer updates only binary-search this retained list. */
+export function timelineSnapReferences(
+  page: Composition,
+  movingKeys: ReadonlySet<string>,
+): TimelineSnapReference[] {
+  const references: TimelineSnapReference[] = [{ seconds: 0, time: { value: 0, rate: 1 } }];
+  if (page.motion)
+    references.push({
+      seconds: motionTimeToSeconds(page.motion.duration),
+      time: page.motion.duration,
+    });
+  for (const track of page.motion?.tracks ?? [])
+    for (const property of track.properties)
+      for (const key of property.keyframes)
+        if (!movingKeys.has(key.id))
+          references.push({ seconds: motionTimeToSeconds(key.time), time: key.time });
+  return references.sort((a, b) => a.seconds - b.seconds);
 }
 
 /** Binary-search sorted references, keeping their exact rational time and stable tie order. */

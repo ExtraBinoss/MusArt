@@ -1,6 +1,6 @@
 import { Blob as NodeBlob } from "node:buffer";
 import { beforeEach, afterEach, expect, it, vi } from "vitest";
-import { createProject } from "@musart/core";
+import { createProject, type AudioAsset } from "@musart/core";
 import { ProjectStore } from "../../../../src/services/projects/storage";
 import { openStudioDatabase } from "../../../../src/services/projects/database";
 import { mediaOriginalBytes } from "../../../../src/services/projects/media/persistence";
@@ -105,4 +105,46 @@ it("prepares outside publication, rejects stale CAS and consumes each preparatio
   const afterClose = await d.store.prepareSave(d.project);
   await d.store.close();
   await expect(d.store.persistPrepared(afterClose)).rejects.toThrow("closed");
+});
+
+it("stores standalone audio without image-store reads, reloads it and retires the original atomically", async () => {
+  const d = setup(),
+    db = await openStudioDatabase(d.name);
+  const audio: AudioAsset = {
+    id: "sound",
+    kind: "audio",
+    name: "Whoosh",
+    mime: "audio/wav",
+    originalId: "sound-original",
+    contentRevision: "sfx-r1",
+    byteLength: 3,
+    duration: { value: 1, rate: 1 },
+    firstTimestamp: { value: 0, rate: 1 },
+    timeResolution: 48000,
+    channels: 1,
+    sampleRate: 48000,
+  };
+  const project = createProject({ assets: { [audio.id]: audio } });
+  try {
+    await d.store.save(project, undefined, {
+      mediaOriginals: [
+        {
+          originalId: audio.originalId,
+          contentRevision: audio.contentRevision,
+          blob: new Blob(["wav"], { type: "audio/wav" }),
+        },
+      ],
+    });
+    expect(await db.count("assets")).toBe(0);
+    expect(await d.store.load(project.id)).toEqual(project);
+    const blob = await d.store.loadMediaOriginal(project.id, audio);
+    expect(blob.size).toBe(3);
+    await d.store.remove(project.id);
+    expect(await db.count("mediaOriginals")).toBe(0);
+    await expect(d.store.loadMediaOriginal(project.id, audio)).rejects.toMatchObject({
+      code: "PROJECT_DELETED",
+    });
+  } finally {
+    db.close();
+  }
 });

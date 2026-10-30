@@ -129,7 +129,12 @@ export function SelectionOverlays({
   const presented = controller.read().page;
   const index = createLayerGeometryIndex(presented);
   return (
-    <div ref={root} className="canvas-selection-overlays" data-selection-size={selected.length} data-selection-count={selected.length}>
+    <div
+      ref={root}
+      className="canvas-selection-overlays"
+      data-selection-size={selected.length}
+      data-selection-count={selected.length}
+    >
       {selected.length > MAX_INDIVIDUAL_FRAMES ? (
         <CollectiveFrame
           selected={selected}
@@ -147,6 +152,7 @@ export function SelectionOverlays({
               key={layer.id}
               className="canvas-selection"
               data-layer-id={layer.id}
+              data-layer-kind={layer.kind}
               data-locked={locked || undefined}
               style={{
                 display: index.isVisible(layer.id) && !layer.maskSource ? undefined : "none",

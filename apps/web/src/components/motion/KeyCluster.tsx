@@ -120,20 +120,19 @@ function ClusterList(props: ClusterProps) {
   const { t } = useTranslation("motion");
   const viewport = useRef<HTMLDivElement>(null);
   const count = props.after - props.first;
-  const virtual = useVirtualList(count, 28, viewport, 2);
+  const { first, last, height, attachViewport } = useVirtualList(count, 28, viewport, 2);
   return (
     <div
       className="motion-cluster-scroll"
-      ref={viewport}
+      ref={attachViewport}
       style={{ height: Math.min(180, count * 28) }}
-      onScroll={virtual.onScroll}
       role="list"
       aria-label={t("clusterTitle", { count })}
       tabIndex={0}
     >
-      <div style={{ height: virtual.height, position: "relative" }}>
-        {Array.from({ length: Math.max(0, virtual.last - virtual.first) }, (_, offset) => {
-          const index = props.first + virtual.first + offset,
+      <div style={{ height: height, position: "relative" }}>
+        {Array.from({ length: Math.max(0, last - first) }, (_, offset) => {
+          const index = props.first + first + offset,
             key = props.keys[index]!;
           const time = formatTimelineTime(key.time, props.unit);
           return (
@@ -141,7 +140,7 @@ function ClusterList(props: ClusterProps) {
               role="listitem"
               key={key.id}
               className="motion-cluster-entry"
-              style={{ top: (virtual.first + offset) * 28 }}
+              style={{ top: (first + offset) * 28 }}
             >
               <button
                 type="button"

@@ -3,6 +3,9 @@
   align-items: center;
   gap: 3px;
   min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 .motion-property-input {
   flex: 1;
@@ -26,4 +29,12 @@
 }
 .motion-property-paint {
   align-items: flex-start;
+}
+.effect-controls .motion-property-field {
+  gap: 8px;
+}
+.effect-controls .motion-property-diamond {
+  flex-basis: 24px;
+  width: 24px;
+  padding-inline: 3px;
 }

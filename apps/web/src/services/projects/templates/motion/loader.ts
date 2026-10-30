@@ -1,4 +1,4 @@
-import { isVideoAsset, parseProject } from "@musart/core";
+import { isOriginalMediaAsset, parseProject } from "@musart/core";
 import type { EditorServices } from "../../../../state/contracts";
 import { i18n } from "../../../../state/i18n";
 import type { MediaOriginalInput } from "../../media/model";
@@ -6,17 +6,17 @@ import type { MotionTemplateId, MotionTemplateManifest } from "./model";
 
 const resources = {
   en: {
-    unsupported: "This editor cannot install video templates.",
+    unsupported: "This editor cannot install media templates.",
     download: "The template could not be downloaded. Please try again.",
     invalid: "The template bundle is invalid.",
-    integrity: "The template video does not match its original source.",
+    integrity: "The template media does not match its original source.",
     tooLarge: "The template bundle exceeds its download limit.",
   },
   fr: {
-    unsupported: "Cet éditeur ne peut pas installer les modèles vidéo.",
+    unsupported: "Cet éditeur ne peut pas installer les modèles multimédias.",
     download: "Le modèle n’a pas pu être téléchargé. Réessayez.",
     invalid: "Le modèle est invalide.",
-    integrity: "La vidéo du modèle ne correspond pas à sa source originale.",
+    integrity: "Le média du modèle ne correspond pas à sa source originale.",
     tooLarge: "Le modèle dépasse sa limite de téléchargement.",
   },
 };
@@ -110,28 +110,30 @@ export function parseMotionTemplateManifest(
       manifest.version !== 1 ||
       manifest.templateId !== id ||
       !Array.isArray(manifest.originals) ||
-      manifest.originals.length !== 1
+      manifest.originals.length < 1 ||
+      manifest.originals.length > 16
     )
       throw Error();
     const project = parseProject(JSON.stringify(manifest.project));
     if (project.pages.length !== 1 || project.pages[0]!.motion?.mode !== "motion") throw Error();
-    const videos = Object.values(project.assets).filter(isVideoAsset);
-    if (!videos.length) throw Error();
+    const media = Object.values(project.assets).filter(isOriginalMediaAsset);
+    const seen = new Set<string>();
     for (const original of manifest.originals) {
       if (
         !original ||
         typeof original.file !== "string" ||
-        !/^media\/[a-zA-Z0-9][a-zA-Z0-9.-]*\.mp4$/.test(original.file) ||
+        !/^media\/[a-zA-Z0-9][a-zA-Z0-9.-]*\.(?:mp4|wav)$/.test(original.file) ||
         original.file.includes("..") ||
         !Number.isSafeInteger(original.byteLength) ||
         original.byteLength <= 0 ||
         original.byteLength > 8 * 1024 * 1024 ||
-        original.mime !== "video/mp4" ||
+        !["video/mp4", "audio/wav"].includes(original.mime) ||
+        seen.has(original.originalId) ||
         !/^sha256:[a-f0-9]{64}$/.test(original.contentRevision)
       )
         throw Error();
       if (
-        !videos.every(
+        !media.some(
           (asset) =>
             asset.originalId === original.originalId &&
             asset.contentRevision === original.contentRevision &&
@@ -140,7 +142,21 @@ export function parseMotionTemplateManifest(
         )
       )
         throw Error();
+      seen.add(original.originalId);
     }
+    if (
+      media.some(
+        (asset) =>
+          !manifest.originals.some(
+            (original) =>
+              original.originalId === asset.originalId &&
+              original.contentRevision === asset.contentRevision &&
+              original.byteLength === asset.byteLength &&
+              original.mime === asset.mime,
+          ),
+      )
+    )
+      throw Error();
     return { version: 1, templateId: id, project, originals: manifest.originals };
   } catch {
     throw new MotionTemplateError("invalid");
@@ -155,7 +171,11 @@ export async function openMotionTemplate(
   fetcher: TemplateFetcher = fetch,
 ): Promise<void> {
   options.signal?.throwIfAborted();
-  if (templateId !== "in-bloom" && templateId !== "motion-stress-lab")
+  if (
+    templateId !== "in-bloom" &&
+    templateId !== "motion-stress-lab" &&
+    templateId !== "sound-playground"
+  )
     throw new MotionTemplateError("invalid");
   if (!services.openMediaProject) throw new MotionTemplateError("unsupported");
   const base = `${import.meta.env.BASE_URL}templates/motion/`;

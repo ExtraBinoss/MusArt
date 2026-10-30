@@ -1,6 +1,8 @@
 import { registerFeatureTranslations } from "../../state/i18n/feature-resources";
 export const messages = {
   en: {
+    renameChanged: "The layer changed. Start renaming it again.",
+    renameFailed: "The layer could not be renamed.",
     mixed: "Mixed",
     actions: "Layer actions",
     createActions: "Add effects and adjustments",
@@ -34,6 +36,8 @@ export const messages = {
     lockedByParent: "Locked by {{name}}",
   },
   fr: {
+    renameChanged: "Le calque a changé. Relancez le renommage.",
+    renameFailed: "Le calque n’a pas pu être renommé.",
     mixed: "Mixte",
     actions: "Actions des calques",
     createActions: "Ajouter des effets et corrections",

@@ -4,6 +4,41 @@ import { setup } from "../../../support/ui";
 import { projectTimelineRows } from "../../../../src/components/motion/tree";
 import { TimelineLayerRow } from "../../../../src/components/motion/layer-drag/TimelineLayerRow";
 
+it("counts retained-row commits on its existing DOM node only when automation is enabled", () => {
+  const d = setup(),
+    row = projectTimelineRows(d.page, new Set())[0]!;
+  const originalUrl = location.href;
+  try {
+    history.replaceState({}, "", "/?automation=1");
+    const view = d.mount(
+      <TimelineLayerRow row={row} top={0} height={24} reduced>
+        Row
+      </TimelineLayerRow>,
+    );
+    const node = view.container.firstElementChild!;
+    expect(view.container.children).toHaveLength(1);
+    expect(node).toHaveAttribute("data-react-renders", "1");
+    view.rerender(
+      <TimelineLayerRow row={row} top={24} height={24} reduced>
+        Row
+      </TimelineLayerRow>,
+    );
+    expect(view.container.firstElementChild).toBe(node);
+    expect(node).toHaveAttribute("data-react-renders", "2");
+    view.unmount();
+    history.replaceState({}, "", "/");
+    const quiet = d.mount(
+      <TimelineLayerRow row={row} top={0} height={24} reduced>
+        Row
+      </TimelineLayerRow>,
+    );
+    expect(quiet.container.firstElementChild).not.toHaveAttribute("data-react-renders");
+    quiet.unmount();
+  } finally {
+    history.replaceState({}, "", originalUrl);
+  }
+});
+
 it("retains its source DOM shell, shares target handlers and shows an explicit invalid-drop explanation", () => {
   const d = setup();
   const row = projectTimelineRows(d.page, new Set()).find(

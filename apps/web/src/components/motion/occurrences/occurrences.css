@@ -1,0 +1,31 @@
+.motion-occurrence-surface {
+  position: absolute;
+  inset: 0;
+}
+.motion-row.is-selected .motion-track-wrap[data-occurrence-selected="true"] .motion-track {
+  box-shadow: inset 0 0 0 1px var(--motion-track-color);
+}
+.motion-gap-add {
+  position: absolute;
+  top: 7px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0;
+  border: 1px dashed var(--action);
+  border-radius: 3px;
+  color: var(--action);
+  background: color-mix(in srgb, var(--action) 12%, transparent);
+}
+.motion-gap-add[hidden] {
+  display: none;
+}
+.motion-gap-add .motion-gap-copy,
+.motion-gap-add[data-copy="true"] .motion-gap-plus {
+  display: none;
+}
+.motion-gap-add[data-copy="true"] .motion-gap-copy {
+  display: block;
+}

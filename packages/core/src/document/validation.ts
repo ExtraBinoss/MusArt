@@ -108,7 +108,9 @@ function validateLayer(value: unknown, ids: Set<string>, assets: Record<string, 
     ensure(value.assetId !== null, "INVALID_DOCUMENT", "Image sans ressource");
     const asset = assets[value.assetId as string] as { kind?: unknown };
     ensure(
-      (asset.kind === "video") === (value.kind === "video"),
+      value.kind === "video"
+        ? asset.kind === "video"
+        : asset.kind === undefined || asset.kind === "image",
       "INVALID_DOCUMENT",
       "Layer and original media kinds do not match",
     );

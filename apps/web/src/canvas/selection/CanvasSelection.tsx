@@ -124,6 +124,7 @@ function TimelineHoverOutline({
         return;
       }
       node.dataset.layerId = layer.id;
+      node.dataset.layerKind = layer.kind;
       node.dataset.playback = String(Boolean(frame.playback));
       Object.assign(node.style, {
         width: `${layer.width}px`,

@@ -1,10 +1,24 @@
-import { fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, screen } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 import { setup } from "../../support/ui";
 import { TimelineRows } from "../../../src/components/motion/TimelineRows";
+import { createTimelineGestures } from "../../../src/components/motion/gestures";
 import { projectTimelineRows } from "../../../src/components/motion/tree";
 import { makeTransport } from "./support";
 import { createTimelineHoverSource } from "../../../src/state/motion/hover";
+
+const counters = vi.hoisted(() => ({ clips: vi.fn() }));
+vi.mock("../../../src/components/motion/occurrences/TrackClips", async (load) => {
+  const actual =
+    await load<typeof import("../../../src/components/motion/occurrences/TrackClips")>();
+  return {
+    ...actual,
+    TrackClips(props: Parameters<typeof actual.TrackClips>[0]) {
+      counters.clips(props.layerId);
+      return <actual.TrackClips {...props} />;
+    },
+  };
+});
 
 it("selects canonical layers, toggles expansion and seeks an exact stored keyframe", () => {
   const d = setup();
@@ -146,4 +160,71 @@ it("publishes row/property hover without selecting and retires virtualized hover
   view.rerender(<TimelineRows {...props} first={rows.length} />);
   expect(hover.read()).toBeNull();
   view.unmount();
+});
+
+it("keeps layer-row clip subtrees memoized when only key selection changes while property markers update", () => {
+  const d = setup();
+  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  d.engine.execute({
+    type: "upsertMotionKeyframe",
+    target: { kind: "layer", layerId: d.rectangle.id, property: "x" },
+    time: { value: 1, rate: 2 },
+    value: 42,
+  });
+  const before = d.engine.getSnapshot(),
+    page = before.project.pages[0]!,
+    rows = projectTimelineRows(page, new Set()),
+    runtime = makeTransport(page),
+    gestures = createTimelineGestures({
+      engine: d.engine,
+      transport: runtime.transport,
+      compositionId: page.id,
+      onSelection: vi.fn(),
+      onError: vi.fn(),
+    });
+  const property = rows.find((row) => row.kind === "property")!;
+  if (property.kind !== "property") throw Error("Missing property");
+  const props = {
+    rows,
+    first: 0,
+    last: rows.length,
+    rowHeight: 26,
+    selected: new Set<string>(),
+    pixelsPerSecond: 240,
+    duration: 2,
+    left: 0,
+    width: 500,
+    unit: "ms" as const,
+    transport: runtime.transport,
+    onToggle: vi.fn(),
+    onSelect: vi.fn(),
+    gestures,
+    engine: d.engine,
+    compositionId: page.id,
+  };
+  counters.clips.mockClear();
+  const view = d.mount(<TimelineRows {...props} />),
+    baseline = counters.clips.mock.calls.length,
+    wrap = document.querySelector(
+      `.motion-row:not(.is-property)[data-layer-id="${d.rectangle.id}"] .motion-track-wrap`,
+    ),
+    marker = screen.getByRole("button", { name: "Position X : image clé à 500 ms" });
+  expect(baseline).toBeGreaterThan(0);
+  expect(marker).toHaveAttribute("aria-pressed", "false");
+  act(() => gestures.selectKey(property.property.keyframes[0]!.id, false));
+  view.rerender(<TimelineRows {...props} />);
+  expect(marker).toHaveAttribute("aria-pressed", "true");
+  expect(counters.clips).toHaveBeenCalledTimes(baseline);
+  expect(
+    document.querySelector(
+      `.motion-row:not(.is-property)[data-layer-id="${d.rectangle.id}"] .motion-track-wrap`,
+    ),
+  ).toBe(wrap);
+  act(() => gestures.selectKey(property.property.keyframes[0]!.id, true));
+  view.rerender(<TimelineRows {...props} />);
+  expect(marker).toHaveAttribute("aria-pressed", "false");
+  expect(counters.clips).toHaveBeenCalledTimes(baseline);
+  expect(d.engine.getSnapshot()).toBe(before);
+  view.unmount();
+  gestures.dispose();
 });

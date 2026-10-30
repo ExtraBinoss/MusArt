@@ -19,6 +19,7 @@ export function useTimelineLayerDrag(options: {
   gestures: TimelineGestures;
   active: boolean;
   onError: (message: string) => void;
+  chosenOccurrences?: ReadonlyMap<string, string>;
 }) {
   const { engine, page, collapsed, transport, gestures, active, onError } = options;
   const run = useCallback(
@@ -31,8 +32,23 @@ export function useTimelineLayerDrag(options: {
     },
     [onError],
   );
-  const native = useLayerDrag(page, engine, run);
-  const { cancelOwned } = native;
+  const { layers, pageId, target, rejected, dragging, cancel, cancelOwned, clearTarget, handlers } =
+    useLayerDrag(page, engine, run);
+  const native = useMemo(
+    () => ({
+      layers,
+      pageId,
+      target,
+      rejected,
+      dragging,
+      cancel,
+      cancelOwned,
+      clearTarget,
+      handlers,
+      ...handlers,
+    }),
+    [layers, pageId, target, rejected, dragging, cancel, cancelOwned, clearTarget, handlers],
+  );
   const pointer = useMemo(
     () =>
       createTimelineLayerPointer({
@@ -52,7 +68,10 @@ export function useTimelineLayerDrag(options: {
       cancelOwned();
     }
   }, [active, pointer, cancelOwned]);
-  const canonical = useMemo(() => projectTimelineRows(page, collapsed), [page, collapsed]);
+  const canonical = useMemo(
+    () => projectTimelineRows(page, collapsed, options.chosenOccurrences),
+    [page, collapsed, options.chosenOccurrences],
+  );
   const moving = native.dragging !== null && native.pageId === page.id;
   const rows = useMemo(() => {
     if (!moving) return canonical;
@@ -62,25 +81,23 @@ export function useTimelineLayerDrag(options: {
       next.delete(native.target.id);
       hidden = next;
     }
-    return projectTimelineRows({ ...page, layers: native.layers }, hidden);
-  }, [moving, canonical, page, collapsed, native.layers, native.target]);
+    return projectTimelineRows(
+      { ...page, layers: native.layers },
+      hidden,
+      options.chosenOccurrences,
+    );
+  }, [moving, canonical, page, collapsed, native.layers, native.target, options.chosenOccurrences]);
   const controller = useMemo(() => layerDragController(engine), [engine]);
-  return {
-    rows,
-    canonical,
-    native,
-    pointer,
-    moving,
-    page,
-    target: moving ? native.target : null,
-    rejected: moving ? native.rejected : null,
-    dragging: moving ? native.dragging : null,
-    rejectProperty(event: DragEvent<HTMLElement>, id: string) {
+  const rejectProperty = useCallback(
+    (event: DragEvent<HTMLElement>, id: string) => {
       event.stopPropagation();
       event.dataTransfer.dropEffect = "none";
       controller.clear({ id, reason: "property" });
     },
-    window(first: number, last: number) {
+    [controller],
+  );
+  const window = useCallback(
+    (first: number, last: number) => {
       return layerDragWindow<TimelineRow>(
         rows,
         canonical,
@@ -89,7 +106,24 @@ export function useTimelineLayerDrag(options: {
         moving ? native.dragging : null,
       );
     },
-  };
+    [rows, canonical, moving, native.dragging],
+  );
+  return useMemo(
+    () => ({
+      rows,
+      canonical,
+      native,
+      pointer,
+      moving,
+      page,
+      target: moving ? native.target : null,
+      rejected: moving ? native.rejected : null,
+      dragging: moving ? native.dragging : null,
+      rejectProperty,
+      window,
+    }),
+    [rows, canonical, native, pointer, moving, page, rejectProperty, window],
+  );
 }
 
 export type TimelineLayerDrag = ReturnType<typeof useTimelineLayerDrag>;

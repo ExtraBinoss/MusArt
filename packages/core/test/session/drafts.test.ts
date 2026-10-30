@@ -148,3 +148,72 @@ test("page nested metadata is copied from commands without modifying shared neig
   ).toThrow();
   expect(engine.getSnapshot()).toBe(snapshot);
 });
+
+test("audio scalar updates preserve visual resource references, original snapshots and exact undo", () => {
+  const engine = new EditorEngine(
+    createProject({
+      pages: [
+        createPage({
+          id: "p",
+          layers: [createLayer("rectangle", { id: "a" })],
+          motion: {
+            version: 1,
+            mode: "motion",
+            initialized: true,
+            duration: { value: 2, rate: 1 },
+            frameRate: { numerator: 30, denominator: 1 },
+            tracks: [],
+            audioTracks: [
+              {
+                id: "sound-clip",
+                name: "Sound",
+                assetId: "sound",
+                start: { value: 0, rate: 1 },
+                end: { value: 2, rate: 1 },
+                sourceIn: { value: 0, rate: 1 },
+                volume: 1,
+                mute: false,
+              },
+            ],
+          },
+        }),
+      ],
+      assets: {
+        sound: {
+          id: "sound",
+          kind: "audio",
+          name: "Sound",
+          mime: "audio/wav",
+          originalId: "original",
+          contentRevision: "r",
+          byteLength: 1,
+          duration: { value: 2, rate: 1 },
+          firstTimestamp: { value: 0, rate: 1 },
+          timeResolution: 48000,
+          sampleRate: 48000,
+          channels: 1,
+        },
+      },
+    }),
+  );
+  const before = engine.getSnapshot(),
+    page = before.project.pages[0]!,
+    track = page.motion!.audioTracks![0]!;
+  engine.execute({ type: "updateMotionAudioTrack", trackId: track.id, patch: { volume: 0.4 } });
+  const after = engine.getSnapshot(),
+    changed = after.project.pages[0]!;
+  expect(changed.motion!.audioTracks![0]!.volume).toBe(0.4);
+  expect(track.volume).toBe(1);
+  expect(after.project.assets).toBe(before.project.assets);
+  expect(changed.layers).toBe(page.layers);
+  expect(changed.motion!.tracks).toBe(page.motion!.tracks);
+  expect(changed.motion!.audioTracks![0]!.start).toBe(track.start);
+  expect(() =>
+    engine.execute({ type: "updateMotionAudioTrack", trackId: track.id, patch: { volume: NaN } }),
+  ).toThrow();
+  expect(engine.getSnapshot()).toBe(after);
+  engine.undo();
+  expect(engine.getSnapshot().project).toBe(before.project);
+  engine.redo();
+  expect(engine.getSnapshot().project).toBe(after.project);
+});

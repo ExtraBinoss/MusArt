@@ -35,6 +35,12 @@ it("projects the shared source into a bounded canonical DOM window and restores 
     onError,
   };
   const hook = renderHook((props) => useTimelineLayerDrag(props), { initialProps: options });
+  const stable = hook.result.current;
+  hook.rerender({ ...options });
+  expect(hook.result.current).toBe(stable);
+  expect(hook.result.current.native).toBe(stable.native);
+  expect(hook.result.current.window).toBe(stable.window);
+  expect(hook.result.current.rejectProperty).toBe(stable.rejectProperty);
   const node = document.createElement("div");
   vi.spyOn(node, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 200, 24));
   const event = {

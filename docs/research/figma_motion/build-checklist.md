@@ -16,6 +16,12 @@ This is a claimable delivery plan, not a statement that Motion has been implemen
 
 Implementation tasks started `planned`, except the explicitly `user-deferred` camera phase T15. Work is now active: see the [implementation log](implementation-log.md) for completed submilestones, actual focused/native checks and remaining scope. Do not mark an entire capability complete because a UI control or a mock exists.
 
+The current resumed-integration ledger is [progress-2026-10-30.md](progress-2026-10-30.md).
+It distinguishes pushed milestones from working changes and records the latest
+native evidence. The detailed checkboxes below remain the original acceptance
+inventory; an unchecked cross-domain gate must not erase a verified submilestone
+or be interpreted as proof that no implementation exists.
+
 ## Dependency waves
 
 | Wave                                 | Tasks              | Parallelism and gate                                                                                                                                                              |

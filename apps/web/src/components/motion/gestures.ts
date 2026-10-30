@@ -3,7 +3,6 @@ import {
   addMotionTime,
   compareMotionTime,
   getAncestors,
-  getDescendants,
   motionTimeToSeconds,
   subtractMotionTime,
   type Command,
@@ -19,13 +18,18 @@ import type { TimelineRow } from "./tree";
 import { createTimelineMarquee } from "./selection/marquee";
 import { createDragAutoScroll } from "../shared/scroll/drag-auto-scroll";
 import { createTimelineLinkPreview } from "./link-preview";
-import { createKeyframeTooltipPreview } from "./gestures/tooltip";
+import { createTimelineTooltipPreview, renderTimelineGestureTooltip } from "./gestures/tooltip";
 import {
   toTimelinePointerInput,
   type TimelinePointerInput,
   type TimelinePointerMove,
 } from "./gestures/input";
-import { nearestTimelineSnap } from "./gestures/snapping";
+import {
+  acceptsOccurrencePlacement,
+  occurrenceMoveTargets,
+  previewOccurrenceMove,
+} from "./gestures/occurrences";
+import { nearestTimelineSnap, timelineSnapReferences } from "./gestures/snapping";
 import { isTimelineGestureCurrent, type TimelineGestureOrigin } from "./gestures/origin";
 export type { TimelinePointerInput, TimelinePointerMove } from "./gestures/input";
 type TrackAction = "move" | "trimStart" | "trimEnd";
@@ -52,7 +56,7 @@ interface Gesture extends TimelineGestureOrigin {
   scrollLoop: ReturnType<typeof createDragAutoScroll> | null;
   point: { x: number; y: number; shift: boolean };
   preview: ReturnType<NonNullable<TimelineTransport["beginKeyframePreview"]>>;
-  tooltip?: ReturnType<typeof createKeyframeTooltipPreview>;
+  tooltip?: ReturnType<typeof createTimelineTooltipPreview>;
   links?: ReturnType<typeof createTimelineLinkPreview>;
 }
 
@@ -96,6 +100,15 @@ export function createTimelineGestures(options: {
   });
 
   function setSelection(next: ReadonlySet<string>) {
+    if (next === selected) return;
+    let same = next.size === selected.size;
+    if (same)
+      for (const id of next)
+        if (!selected.has(id)) {
+          same = false;
+          break;
+        }
+    if (same) return;
     selected = new Set(next);
     if (!disposed) options.onSelection();
   }
@@ -154,10 +167,14 @@ export function createTimelineGestures(options: {
       }
     } else if (gesture.action === "move") {
       gesture.links?.shift(gesture.delta);
-      for (const node of root.querySelectorAll<HTMLElement>(".motion-row[data-layer-id]")) {
-        if (!gesture.layerIds.has(node.dataset.layerId!)) continue;
-        node.style.setProperty("--motion-drag-x", `${px}px`);
-        gesture.touched.add(node);
+      if (gesture.page.motion?.version === 2) {
+        previewOccurrenceMove(root, gesture.track!.id, gesture.keyIds, px, gesture.touched);
+      } else {
+        for (const node of root.querySelectorAll<HTMLElement>(".motion-row[data-layer-id]")) {
+          if (!gesture.layerIds.has(node.dataset.layerId!)) continue;
+          node.style.setProperty("--motion-drag-x", `${px}px`);
+          gesture.touched.add(node);
+        }
       }
     } else {
       const track = gesture.track!,
@@ -178,10 +195,7 @@ export function createTimelineGestures(options: {
         gesture.touched.add(node);
       }
     }
-    const feedback = surface?.feedback;
-    gesture.tooltip?.set(addMotionTime(gesture.anchor, gesture.delta));
-    if (feedback)
-      feedback.textContent = `${motionTimeToSeconds(addMotionTime(gesture.anchor, gesture.delta)).toFixed(3)} s${gesture.snapped ? " ◇" : ""}`;
+    renderTimelineGestureTooltip(surface?.feedback, gesture);
   }
   function movePoint() {
     const gesture = active;
@@ -224,6 +238,12 @@ export function createTimelineGestures(options: {
       gesture.rejected = true;
       return;
     }
+    if (
+      gesture.track &&
+      gesture.action !== "keys" &&
+      !acceptsOccurrencePlacement(gesture.page, gesture.track, gesture.action, delta)
+    )
+      return;
     gesture.rejected = false;
     gesture.delta = delta;
     preview(gesture);
@@ -305,6 +325,13 @@ export function createTimelineGestures(options: {
       options.onError("locked");
       return;
     }
+    if (
+      data.track &&
+      page.motion.tracks.find((track) => track.id === data.track!.id) !== data.track
+    ) {
+      options.onError("changed");
+      return;
+    }
     options.onStart?.();
     input.node.focus();
     const focused = engine.getSnapshot();
@@ -350,22 +377,12 @@ export function createTimelineGestures(options: {
     engine.select(
       input.shiftKey ? [...new Set([...snapshot.selection, data.layerId])] : [data.layerId],
     );
-    const layerIds = new Set(
+    const targets =
       data.action === "move"
-        ? getDescendants(page, [data.layerId]).map((item) => item.id)
-        : [data.layerId],
-    );
-    layerIds.add(data.layerId);
-    const movingKeys = new Set(
-      data.keyIds ??
-        (data.action === "move"
-          ? page.motion.tracks
-              .filter((track) => layerIds.has(track.layerId))
-              .flatMap((track) =>
-                track.properties.flatMap((property) => property.keyframes.map((key) => key.id)),
-              )
-          : []),
-    );
+        ? occurrenceMoveTargets(page, data.layerId, data.track?.id)
+        : { layerIds: new Set([data.layerId]), keyIds: [] };
+    const { layerIds } = targets;
+    const movingKeys = new Set(data.keyIds ?? targets.keyIds);
     if (data.action === "move")
       links = createTimelineLinkPreview(page, [...movingKeys], () =>
         surface
@@ -377,16 +394,7 @@ export function createTimelineGestures(options: {
             }
           : null,
       );
-    const references = [
-      { seconds: 0, time: { value: 0, rate: 1 } },
-      { seconds: motionTimeToSeconds(page.motion.duration), time: page.motion.duration },
-    ];
-    for (const track of page.motion.tracks)
-      for (const property of track.properties)
-        for (const key of property.keyframes)
-          if (!movingKeys.has(key.id))
-            references.push({ seconds: motionTimeToSeconds(key.time), time: key.time });
-    references.sort((a, b) => a.seconds - b.seconds);
+    const references = timelineSnapReferences(page, movingKeys);
     const gesture: Gesture = {
       node: input.node,
       pointer: input.pointerId,
@@ -400,7 +408,7 @@ export function createTimelineGestures(options: {
       originalKeys: data.originalKeys ?? new Set(selected),
       action: data.action,
       ...(data.track ? { track: data.track } : {}),
-      keyIds: data.keyIds ?? [],
+      keyIds: data.action === "move" ? [...movingKeys] : (data.keyIds ?? []),
       layerIds,
       anchor: data.anchor,
       delta: { value: 0, rate: 1 },
@@ -414,7 +422,7 @@ export function createTimelineGestures(options: {
       point: { x: input.clientX, y: input.clientY, shift: input.shiftKey },
       preview: keyPreview,
       ...(links ? { links } : {}),
-      ...(data.action === "keys" ? { tooltip: createKeyframeTooltipPreview(input.node) } : {}),
+      tooltip: createTimelineTooltipPreview(input.node, data.action),
     };
     active = gesture;
     if (surface)
@@ -568,7 +576,7 @@ export function createTimelineGestures(options: {
       if (event.key !== "Delete" && event.key !== "Backspace") return;
       if (
         (event.target as HTMLElement).closest(
-          "input,textarea,[contenteditable=true],[role=combobox],[data-slot=popover-content]",
+          "input,textarea,[contenteditable=true],[role=combobox],[role=menu],[role=listbox],[data-slot=popover-content]",
         )
       )
         return;

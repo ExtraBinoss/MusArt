@@ -9,6 +9,7 @@ Read [AGENTS.md](../../AGENTS.md) and [the architecture contracts](../architectu
 | Measurement and reproducibility | [Protocol](protocol.md)                | Frozen builds, environment, isolated cohorts, clocks and artifacts        |
 | Canvas interactions             | [Canvas](canvas.md)                    | Navigation, selection, geometry, guides and drawing                       |
 | React and interface layout      | [Layout](layout.md)                    | Inspector, virtual layers, search, preview controls and browser layout    |
+| Motion timeline                 | [Timeline](motion-timeline.md)         | Virtual windows, retained controls, clip gestures and user Chrome traces  |
 | Persistence and journals        | [Storage](storage.md)                  | IndexedDB, autosave, concurrency, history and reload                      |
 | GPU rendering and exports       | [Rendering](rendering.md)              | Sources, composition, analytical text, effects and retained resources     |
 | Visible thumbnails              | [Latency cohort](thumbnail-latency.md) | Decoded previews after native scrolling and the first artboard activation |

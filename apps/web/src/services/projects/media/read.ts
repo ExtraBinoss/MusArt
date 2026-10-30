@@ -1,6 +1,6 @@
 import { MediaStorageError } from "./errors";
 import type { IDBPDatabase } from "idb";
-import type { VideoAsset } from "@musart/core";
+import type { OriginalMediaAsset } from "@musart/core";
 import type { StudioDatabase } from "../database";
 import { readProjectWriteRevision } from "../writes/revision";
 
@@ -8,7 +8,7 @@ import { readProjectWriteRevision } from "../writes/revision";
 export async function readMediaOriginal(
   db: IDBPDatabase<StudioDatabase>,
   projectId: string,
-  asset: VideoAsset,
+  asset: OriginalMediaAsset,
   signal?: AbortSignal,
 ): Promise<Blob> {
   signal?.throwIfAborted();
@@ -17,7 +17,10 @@ export async function readMediaOriginal(
   try {
     await readProjectWriteRevision(tx.objectStore("preferences"), projectId);
     if (!(await tx.objectStore("projects").getKey(projectId)))
-      throw new MediaStorageError("VIDEO_ORIGINAL_MISSING", "Video source project is missing.");
+      throw new MediaStorageError(
+        asset.kind === "audio" ? "AUDIO_ORIGINAL_MISSING" : "VIDEO_ORIGINAL_MISSING",
+        "Media source project is missing.",
+      );
     const key: [string, string] = [projectId, asset.originalId];
     const header = await tx.objectStore("mediaOriginalMeta").get(key);
     if (
@@ -26,8 +29,8 @@ export async function readMediaOriginal(
       header.byteLength !== asset.byteLength
     )
       throw new MediaStorageError(
-        "VIDEO_ORIGINAL_MISSING",
-        `Video original metadata is missing or stale: ${asset.originalId}`,
+        asset.kind === "audio" ? "AUDIO_ORIGINAL_MISSING" : "VIDEO_ORIGINAL_MISSING",
+        `Media original metadata is missing or stale: ${asset.originalId}`,
       );
     const original = await tx.objectStore("mediaOriginals").get(key);
     if (
@@ -37,8 +40,8 @@ export async function readMediaOriginal(
       original.blob.size !== asset.byteLength
     )
       throw new MediaStorageError(
-        "VIDEO_ORIGINAL_MISSING",
-        `Video original is missing or corrupt: ${asset.originalId}`,
+        asset.kind === "audio" ? "AUDIO_ORIGINAL_MISSING" : "VIDEO_ORIGINAL_MISSING",
+        `Media original is missing or corrupt: ${asset.originalId}`,
       );
     await done;
     signal?.throwIfAborted();

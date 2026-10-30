@@ -15,7 +15,8 @@ import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import { SelectField } from "../../shared/SelectField";
-import { CurveGraph } from "./CurveGraph";
+import { PreviewCurveGraph } from "./PreviewCurveGraph";
+import { createEasingPreview } from "./preview";
 import {
   captureEasingOrigin,
   commitEasing,
@@ -111,7 +112,7 @@ export function EasingPopover({
   const [fields, setFields] = useState<Record<string, string>>(() => curveFields(draft));
   const [stale, setStale] = useState(false);
   const [error, setError] = useState("");
-  const [preview, setPreview] = useState<MotionEasing | null>(null);
+  const preview = useMemo(() => createEasingPreview(), []);
   const presets = useMemo(
     () =>
       open
@@ -135,19 +136,19 @@ export function EasingPopover({
       ) {
         setStale(true);
         setError("changed");
-        setPreview(null);
+        preview.set(null);
       }
     });
-  }, [engine, open, origin]);
+  }, [engine, open, origin, preview]);
   function setCurve(value: MotionEasing) {
     if (stale || !isMotionEasing(value)) return;
     setDraft(value);
     setFields(curveFields(value));
-    setPreview(null);
+    preview.set(null);
     setError("");
   }
   function changeOpen(next: boolean) {
-    setPreview(null);
+    preview.set(null);
     if (next) {
       try {
         const value = captureEasingOrigin(engine, compositionId, property.id, destination.id);
@@ -169,7 +170,7 @@ export function EasingPopover({
     if (!origin || !candidate || stale) return;
     try {
       commitEasing(engine, origin, candidate);
-      setOpen(false);
+      changeOpen(false);
     } catch {
       setError(engine.getSnapshot().revision !== origin.revision ? "changed" : "failed");
     }
@@ -191,6 +192,7 @@ export function EasingPopover({
             <p>{t("incoming")}</p>
           </header>
           <SelectField
+            identity={origin}
             label={t("preset")}
             value={selectedPreset}
             disabled={stale}
@@ -199,14 +201,27 @@ export function EasingPopover({
             selectedLabel={
               <PresetLabel value={selectedPreset} label={t(selectedPreset)} easing={draft} />
             }
-            onPreview={(value) => setPreview(presetCurve(value))}
-            onPreviewCancel={() => setPreview(null)}
+            onPreview={(value) => {
+              const current = engine.getSnapshot();
+              if (
+                !origin ||
+                current.project.id !== origin.projectId ||
+                current.pageId !== origin.pageId ||
+                current.revision !== origin.revision
+              ) {
+                preview.set(null);
+                return;
+              }
+              preview.set(presetCurve(value));
+            }}
+            onPreviewCancel={() => preview.set(null)}
             onValueChange={(value) => setCurve(presetCurve(value))}
           />
-          <CurveGraph
-            easing={preview ?? draft}
+          <PreviewCurveGraph
+            preview={preview}
+            easing={draft}
             onChange={setCurve}
-            disabled={stale || preview !== null}
+            disabled={stale}
           />
           {draft.type === "hold" && <p className="motion-easing-hint">{t("holdHint")}</p>}
           {(draft.type === "cubicBezier" || draft.type === "spring") && (
@@ -262,7 +277,7 @@ export function EasingPopover({
             </p>
           )}
           <footer>
-            <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
+            <Button variant="ghost" size="sm" onClick={() => changeOpen(false)}>
               {t("cancel")}
             </Button>
             <Button size="sm" onClick={apply} disabled={!candidate || stale || !origin}>

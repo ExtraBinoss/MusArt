@@ -244,6 +244,13 @@ it("keeps collisions atomic and leaves text-field Delete to native editing", () 
   d.root.append(input);
   d.keyDown("Delete", input);
   expect(d.engine.getSnapshot().project).toBe(before);
+  const menu = document.createElement("div"),
+    item = document.createElement("button");
+  menu.setAttribute("role", "menu");
+  menu.append(item);
+  d.root.append(menu);
+  d.keyDown("Delete", item);
+  expect(d.engine.getSnapshot().project).toBe(before);
   expect(d.controls.consumePointerClick(1)).toBe(true);
   expect(d.controls.consumePointerClick(1)).toBe(false);
   d.controls.dispose();
@@ -363,5 +370,37 @@ it("retires a horizontal gesture without overwriting a later authoritative selec
   expect(installed).toEqual(["b"]);
   expect(d.engine.getSnapshot().project).toBe(before);
   expect(d.row.style.getPropertyValue("--motion-drag-x")).toBe("");
+  d.controls.dispose();
+});
+
+it("keeps selection identity and notification count for semantic no-ops, independent of insertion order", () => {
+  const d = fixture(),
+    first = d.keys[0]!.id,
+    second = d.keys[1]!.id;
+  const empty = d.controls.readSelected();
+  d.controls.selectKeys([], false);
+  expect(d.controls.readSelected()).toBe(empty);
+  expect(d.onSelection).not.toHaveBeenCalled();
+  d.controls.selectKeys([first, second], false);
+  const both = d.controls.readSelected();
+  expect(d.onSelection).toHaveBeenCalledOnce();
+  d.controls.selectKeys([second, first], false);
+  d.controls.selectKeys([first, second], true);
+  expect(d.controls.readSelected()).toBe(both);
+  expect([...d.controls.readSelected()]).toEqual([first, second]);
+  expect(d.onSelection).toHaveBeenCalledOnce();
+  d.controls.selectKeys([first], false);
+  const one = d.controls.readSelected();
+  expect(one).not.toBe(both);
+  expect(d.onSelection).toHaveBeenCalledTimes(2);
+  d.controls.selectKeys([second], false);
+  expect(d.controls.readSelected()).not.toBe(one);
+  expect([...d.controls.readSelected()]).toEqual([second]);
+  expect(d.onSelection).toHaveBeenCalledTimes(3);
+  d.controls.selectKeys([], false);
+  const cleared = d.controls.readSelected();
+  d.controls.selectKeys([], false);
+  expect(d.controls.readSelected()).toBe(cleared);
+  expect(d.onSelection).toHaveBeenCalledTimes(4);
   d.controls.dispose();
 });

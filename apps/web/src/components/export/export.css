@@ -30,9 +30,75 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 14px;
 }
+.composition-export-settings {
+  display: grid;
+  gap: 14px;
+}
+.export-artboard-picker {
+  display: grid;
+  gap: 6px;
+}
+.export-artboard-picker > button {
+  width: 100%;
+  min-width: 0;
+}
+.motion-export-preview {
+  display: grid;
+  gap: 6px;
+}
+.motion-export-preview-surface {
+  height: 158px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--muted);
+}
+.motion-export-preview-surface canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.motion-export-preview-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.motion-export-preview-slider {
+  min-width: 0;
+  flex: 1;
+}
+.motion-export-preview-controls output {
+  font-size: 10px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.export-preview-audio-note {
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+.export-settings-panel progress {
+  width: 100%;
+  accent-color: var(--primary);
+}
 .export-preview-wrap {
   position: relative;
   min-width: 0;
+}
+.motion-export-settings .export-format-row {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+}
+.motion-export-settings .export-format-row [data-slot="select-trigger"] {
+  width: 100%;
+  min-width: 0;
+}
+.motion-export-settings .export-format-row [data-slot="select-value"] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .export-preview-shadow {
   height: 158px;

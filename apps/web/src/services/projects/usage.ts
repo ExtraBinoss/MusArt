@@ -1,4 +1,4 @@
-import { isVideoAsset } from "@musart/core";
+import { isOriginalMediaAsset } from "@musart/core";
 import { mediaOriginalBytes } from "./media/persistence";
 import type { IDBPDatabase } from "idb";
 import type { ProjectUsage, OriginStorageEstimate } from "../../state/contracts";
@@ -28,7 +28,7 @@ export async function projectUsage(
         }
       } else
         for (const asset of Object.values(record.project.assets).filter(
-          (asset) => !isVideoAsset(asset),
+          (asset) => !isOriginalMediaAsset(asset),
         ))
           assets += logicalBytes({ projectId: id, assetId: asset.id, dataUrl: asset.dataUrl });
       let media = await tx.objectStore("mediaOriginalMeta").index("by-project").openCursor(id);

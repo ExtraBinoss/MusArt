@@ -1,6 +1,7 @@
 import { PRESETS, createProject, serializeProject } from "@musart/core";
 import type { EditorServices } from "../../../state/contracts";
 import type { TemplateLoadOptions } from "./motion/loader";
+import { DESIGNED_TEMPLATES, isDesignedTemplateId } from "./designed/catalog";
 
 export interface ProjectTemplate {
   readonly id: string;
@@ -14,6 +15,12 @@ export interface ProjectTemplate {
   readonly descriptionKey?: string;
 }
 export const TEMPLATE_CATALOG: readonly ProjectTemplate[] = Object.freeze([
+  ...DESIGNED_TEMPLATES.map((template) =>
+    Object.freeze({
+      ...template,
+      preview: `${import.meta.env.BASE_URL}templates/designed/${template.id}.webp`,
+    }),
+  ),
   Object.freeze({
     id: "afterhours-techno",
     nameKey: "templates:afterhours",
@@ -44,6 +51,16 @@ export const TEMPLATE_CATALOG: readonly ProjectTemplate[] = Object.freeze([
     descriptionKey: "templates:stressDescription",
     preview: `${import.meta.env.BASE_URL}templates/motion/motion-stress-lab.webp`,
   }),
+  Object.freeze({
+    id: "sound-playground",
+    nameKey: "templates:soundPlayground",
+    width: 1080,
+    height: 1080,
+    category: "artwork" as const,
+    mode: "motion" as const,
+    descriptionKey: "templates:soundPlaygroundDescription",
+    preview: `${import.meta.env.BASE_URL}templates/motion/sound-playground.webp`,
+  }),
   ...PRESETS.map((preset) =>
     Object.freeze({
       id: `preset:${preset.id}`,
@@ -64,7 +81,16 @@ export async function createProjectFromTemplate(
   options: TemplateLoadOptions = {},
 ): Promise<void> {
   options.signal?.throwIfAborted();
-  if (templateId === "in-bloom" || templateId === "motion-stress-lab") {
+  if (isDesignedTemplateId(templateId)) {
+    const { openDesignedTemplate } = await import("./designed/load");
+    await openDesignedTemplate(services, templateId, options);
+    return;
+  }
+  if (
+    templateId === "in-bloom" ||
+    templateId === "motion-stress-lab" ||
+    templateId === "sound-playground"
+  ) {
     const { openMotionTemplate } = await import("./motion/loader");
     await openMotionTemplate(services, templateId, options);
     return;

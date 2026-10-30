@@ -34,13 +34,15 @@ export function validateProjectWrite(frame: ProjectWriteFrame): void {
       Object.hasOwn(asset, "dataUrl")
     )
       throw Error("Invalid original metadata.");
-    if (asset.kind === "video")
+    if (asset.kind === "video" || asset.kind === "audio")
       validateAssetDescription(asset as unknown as Record<string, unknown>);
     ids.add(asset.id);
   }
   const originals = new Set<string>();
   const imageIds = new Set(
-    frame.descriptions.filter((asset) => asset.kind !== "video").map((asset) => asset.id),
+    frame.descriptions
+      .filter((asset) => asset.kind !== "video" && asset.kind !== "audio")
+      .map((asset) => asset.id),
   );
   for (const asset of frame.originals) {
     if (

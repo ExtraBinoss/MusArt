@@ -26,7 +26,7 @@ test("probes the checked-in CC0 original and preserves exact video PTS instead o
     orientation: { rotation: 0, flip: false, pixelAspectRatio: { numerator: 1, denominator: 1 } },
   });
   expect(media.video).not.toHaveProperty("dataUrl");
-  expect(originals).toHaveLength(1);
+  expect(originals).toHaveLength(4);
   expect(originals[0]!.file).toBe("media/flower.mp4");
   expect(media.video.contentRevision).toBe(
     "sha256:0cd83d944a6ca7822b4a8306cecc60a36e859b041f6702c6a1ad9ead78924451",

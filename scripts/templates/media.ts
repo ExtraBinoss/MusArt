@@ -3,11 +3,17 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import type { ImageAsset, VideoAsset } from "../../packages/core/src/index";
+import type { ImageAsset, VideoAsset, AudioAsset } from "../../packages/core/src/index";
 import type {
   MotionTemplateMedia,
   MotionTemplateManifest,
 } from "../../apps/web/src/services/projects/templates/motion/model";
+
+import {
+  synthesizeSfx,
+  encodeSfxWav,
+  SFX_BANK,
+} from "../../apps/web/src/services/motion/audio/sfx";
 
 const execute = promisify(execFile);
 interface StockSource {
@@ -103,6 +109,7 @@ export function parseTemplateVideoProbe(
 export async function readTemplateMedia(directory: string): Promise<{
   media: MotionTemplateMedia;
   originals: MotionTemplateManifest["originals"];
+  audioOriginals: { file: string; data: Uint8Array }[];
 }> {
   const sources = JSON.parse(
     await readFile(resolve(directory, "sources.json"), "utf8"),
@@ -157,5 +164,37 @@ export async function readTemplateMedia(directory: string): Promise<{
   }
   if (!video || photos.length !== 3)
     throw Error("The Motion templates require one real video and three original photographs.");
-  return { media: { photos, video }, originals };
+  const sounds: AudioAsset[] = [],
+    audioOriginals: { file: string; data: Uint8Array }[] = [];
+  for (const preset of ["silk-whoosh", "soft-plop", "glass-chime"]) {
+    const samples = synthesizeSfx(preset),
+      data = new Uint8Array(encodeSfxWav(samples));
+    const contentRevision = `sha256:${createHash("sha256").update(data).digest("hex")}`,
+      originalId = `musart-sfx-${preset}-v1`,
+      file = `media/${preset}.wav`;
+    const asset: AudioAsset = {
+      id: `sfx-${preset}`,
+      kind: "audio",
+      name: SFX_BANK.find((item) => item.id === preset)!.name,
+      mime: "audio/wav",
+      originalId,
+      contentRevision,
+      byteLength: data.byteLength,
+      duration: { value: samples.length, rate: 48000 },
+      firstTimestamp: { value: 0, rate: 1 },
+      timeResolution: 48000,
+      sampleRate: 48000,
+      channels: 1,
+    };
+    sounds.push(asset);
+    originals.push({
+      originalId,
+      contentRevision,
+      file,
+      byteLength: data.byteLength,
+      mime: asset.mime,
+    });
+    audioOriginals.push({ file, data });
+  }
+  return { media: { photos, video, sounds }, originals, audioOriginals };
 }

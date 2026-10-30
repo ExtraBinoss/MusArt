@@ -16,17 +16,27 @@ export const moveMotionTrack: CommandHandler<"moveMotionTrack"> = ({ page, pageI
   affected.add(layer.id);
   const duration = page.motion.duration;
   for (const current of page.motion.tracks) {
-    if (!affected.has(current.layerId)) continue;
+    if (page.motion.version === 2 ? current.id !== track.id : !affected.has(current.layerId))
+      continue;
     current.start = addMotionTime(current.start, command.delta);
     current.end = addMotionTime(current.end ?? duration, command.delta);
     ensure(current.end.value > 0, "INVALID_COMMAND", "Track lies before the composition");
-    if (compareMotionTime(current.end, page.motion.duration) > 0)
+    if (compareMotionTime(current.end, page.motion.duration) > 0) {
+      if (page.motion.version === 2)
+        for (const sibling of page.motion.tracks)
+          if (
+            sibling.layerId === current.layerId &&
+            sibling.id !== current.id &&
+            sibling.end === null
+          )
+            sibling.end = { ...page.motion.duration };
       page.motion.duration = current.end;
+    }
     for (const property of current.properties)
       for (const key of property.keyframes) {
         key.time = addMotionTime(key.time, command.delta);
         ensure(
-          key.time.value >= 0,
+          page.motion.version === 2 || key.time.value >= 0,
           "INVALID_COMMAND",
           "Moving this track would place keys before zero",
         );
@@ -59,7 +69,11 @@ export const moveMotionKeyframes: CommandHandler<"moveMotionKeyframes"> = (
         if (ids.has(key.id)) {
           if (!changed) assertEditable(page, getLayer(page, track.layerId));
           key.time = addMotionTime(key.time, command.delta);
-          ensure(key.time.value >= 0, "INVALID_COMMAND", "Negative keyframe time");
+          ensure(
+            page.motion.version === 2 || key.time.value >= 0,
+            "INVALID_COMMAND",
+            "Negative keyframe time",
+          );
           found++;
           changed = true;
         }
