@@ -206,6 +206,7 @@ test("imports a real standalone WAV, prepares a bounded waveform and schedules a
   await page.screenshot({ path: "artifacts/motion/audio/ui-playback.png" });
   await page.getByRole("button", { name: "Ajouter un son", exact: true }).click();
   const previewButton = page.getByRole("button", { name: "Écouter Bright riser", exact: true });
+  await page.locator(".motion-sfx-list").evaluate((node) => node.scrollTo(0, node.scrollHeight));
   await previewButton.scrollIntoViewIfNeeded();
   const bankHeader = await page.locator(".motion-audio-library-header strong").boundingBox();
   if (!bankHeader) throw Error("The sound bank has no visible header.");
@@ -214,7 +215,9 @@ test("imports a real standalone WAV, prepares a bounded waveform and schedules a
   await expect
     .poll(() => page.evaluate(() => window.__musartAudioWitness!.starts))
     .toBeGreaterThan(hoverBefore.starts);
-  await expect(page.locator(".motion-sfx-waveform path").first()).not.toHaveAttribute("d", "");
+  await expect(
+    page.locator('canvas.motion-sfx-waveform[data-waveform-ready="true"]').first(),
+  ).toBeVisible();
   const playingHover = await page.evaluate(() => ({ ...window.__musartAudioWitness! }));
   expect(playingHover.energy).toBeGreaterThan(hoverBefore.energy);
   expect(playingHover.mainDecodes).toBe(0);

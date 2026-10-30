@@ -1,4 +1,5 @@
 export type SfxCategory = "whoosh" | "impact" | "pop" | "riser" | "tone";
+export const SFX_RECIPE_VERSION = 1;
 export interface SfxDefinition {
   readonly id: string;
   readonly category: SfxCategory;

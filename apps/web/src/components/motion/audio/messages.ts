@@ -1,6 +1,8 @@
 import { registerFeatureTranslations } from "../../../state/i18n/feature-resources";
 export const messages = {
   en: {
+    soundInfo: "About these sounds",
+    originalLicense: "15 original MusArt sounds. MIT license.",
     hoverPreview: "Hover or focus a sound to preview it",
     enableAudio: "Press Play to enable sound previews in this browser.",
     browserSound: "Preview follows your browser’s sound and mute settings.",
@@ -46,6 +48,8 @@ export const messages = {
     trimEnd: "Trim audio end: {{name}}",
   },
   fr: {
+    soundInfo: "À propos de ces sons",
+    originalLicense: "15 sons originaux MusArt. Licence MIT.",
     hoverPreview: "Survolez un son ou sélectionnez-le au clavier pour l’écouter",
     enableAudio: "Appuyez sur Lire pour autoriser le son dans ce navigateur.",
     browserSound: "L’aperçu suit les réglages audio et muet du navigateur.",

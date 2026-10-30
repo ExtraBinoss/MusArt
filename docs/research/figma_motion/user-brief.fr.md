@@ -1030,6 +1030,69 @@ baseline, without bars or a mirrored centerline. Prepare the shape outside the m
 thread, use bounded chunks when useful, keep playback progress imperative and clean
 up native resources. No production pixel readbacks are permitted.
 
+## M129 — Preserve waveforms during hover
+
+```text
+au hover les waveformes ne sont plus visible for some reason
+```
+
+Keep each genuine canvas mountain visible before, during and after audition,
+including development StrictMode effect replay and virtualized remounts.
+
+## M130 — Grouped and virtualized sound bank
+
+```text
+oublie pas de les catégoriser dans des catégories genre tu met des marqueurs entre chaque catégories quoi  oublie pas de vlist etc hein
+```
+
+Show compact category separators in the full bank, preserve category filtering
+and use the shared virtual-list engine with bounded visible rows and scroll shadows.
+
+## M131 — New native trace and possible canvas timeline
+
+```text
+fait ca, mais je tassure ya tjr du lag, la liste est laggy et aussi je vois des lignes qui ne s'affiche pas pendant le scroll fin c'est vrm pas smooth, sois faut passer en timeline full canvas, genre purement que du canvas api, car la c'est plus possible ca lag trop, t'es sur on doit pas passé en timeline canvas etc ??? /home/albi/Téléchargements/Trace-20261030T133413.json
+```
+
+Analyze the new user trace before declaring performance solved. Investigate missing
+rows during scrolling and assess a canvas timeline body against measured JavaScript,
+React, layout and painting costs. Preserve native editor controls and document
+semantics when changing presentation; a canvas alone does not bypass main-thread
+blocking work. Raw captures stay in ignored artifacts.
+
+## M132 — Inspect Beam before choosing the timeline renderer
+
+```text
+pask ej'en ai marre de faire du javascript pour rien alors qu'on pourrait faire une timeline motion full canvas2D comme ça on gère tu vois ??? et on arrete de se battre. j'ai deaj fait ca en engine pure dans Beam ../../../Beam tu vois ?? y'a une timeline full canvas avec pleinnnn d'optimisation tu peux anlayser, m'en parler et voir si c'est smart
+```
+
+Read the existing Beam implementation and discuss whether its optimized Canvas2D
+timeline approach fits MusArt. This asks for an evidence-based architecture
+assessment, not an immediate unreviewed renderer replacement. The matching source
+repository is `/home/albi/Documents/Projects/Beam`; `/home/albi/Documents/Beam`
+contains composition data.
+
+## M133 — Implement the viewport Canvas timeline
+
+```text
+fait une belle canvas limité au viewport, copie colle ce qui a dans Beam, les overlays restent en DOM; mais tout ce qui est lignes et track etc c'est du canvas2D, of course la liste à gauche c'est du texte et html c'est normal. mais la timeline motion doit etre du full canvas, avec dnd etc.. tout pareil hein !!!
+```
+
+This authorizes the implementation after M132's assessment. Render the temporal
+body in a viewport-bounded Canvas2D surface, retain the HTML label gutter and DOM
+overlays, and preserve all editing, drag/drop, trim, keyboard and undo semantics.
+
+## M134 — Verify Beam's actual rendering backend
+
+```text
+normalement le truc de beam est full webgl et engine, verifie bien comment c'est fait, dit moi si tu trouves des trucs
+```
+
+Inspect actual context creation and runtime boundaries. Beam's shared timeline
+surface requests Canvas2D; its Blick audio waveform renderer requests WebGL2 in
+a shared worker, then publishes ImageBitmaps. Distinguish these paths rather than
+describe the entire timeline as WebGL or assume its performance transfers unchanged.
+
 ## Reference handling
 
 The screenshots are user-supplied Figma UI references, not MusArt product assets. They document the requested appearance and interaction target; they do not grant a license to redistribute Figma code, brand assets or an external design system inside the application. Preserve MusArt branding and use the repository's genuine shadcn/Radix controls.

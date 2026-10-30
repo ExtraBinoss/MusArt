@@ -3,72 +3,93 @@ import {
   createSfxPreview,
   type SfxPreviewState,
 } from "../../../../src/components/motion/audio/sfx-preview";
+import shapes from "../../../../src/services/motion/audio/bank/shapes.json";
+import type { BankPort, BankShapeData } from "../../../../src/services/motion/audio/bank/model";
 afterEach(() => vi.useRealTimers());
-function setup() {
+function fixture() {
   vi.useFakeTimers();
-  const notify = vi.fn<(s: SfxPreviewState) => void>(),
-    port = {
-      previewPreset: vi.fn(async () => {}),
-      stopPreview: vi.fn(),
-      preparation: { sfxWaveform: vi.fn(async () => new Float32Array([0, 0.5, 0])) },
-    };
-  return { port, notify, preview: createSfxPreview(port, notify) };
+  const port = {
+      open: vi.fn(),
+      close: vi.fn(),
+      preview: vi.fn(async () => {}),
+      stop: vi.fn(),
+      clock: vi.fn(),
+      atlas: vi.fn(),
+    } as unknown as BankPort,
+    preview = createSfxPreview(port, shapes as BankShapeData),
+    notify = vi.fn<(state: SfxPreviewState) => void>();
+  preview.subscribe(notify);
+  const owner = preview.open();
+  return { port, preview, owner, notify };
 }
-it("debounces hover, renders genuine worker peaks and stops immediately on leave", async () => {
-  const d = setup();
-  d.preview.hover("soft-plop");
-  await vi.advanceTimersByTimeAsync(149);
-  expect(d.port.previewPreset).not.toHaveBeenCalled();
+it("uses a short intent gate, keeps Play synchronous, and retires the exact playback token on leave", async () => {
+  const d = fixture();
+  d.preview.hover(d.owner, "soft-plop");
+  await vi.advanceTimersByTimeAsync(34);
+  expect(d.port.preview).not.toHaveBeenCalled();
   await vi.advanceTimersByTimeAsync(1);
-  expect(d.port.previewPreset).toHaveBeenCalledWith("soft-plop", false);
-  expect(d.notify).toHaveBeenLastCalledWith(
-    expect.objectContaining({ id: "soft-plop", status: "ready", peaks: expect.any(Float32Array) }),
+  expect(d.port.preview).toHaveBeenCalledWith(
+    d.owner,
+    expect.objectContaining({ kind: "bank-playback" }),
+    "soft-plop",
+    false,
   );
-  d.preview.leave("soft-plop");
-  expect(d.notify).toHaveBeenLastCalledWith({ id: null, status: "idle" });
+  expect(d.notify).toHaveBeenLastCalledWith(
+    expect.objectContaining({ id: "soft-plop", status: "ready" }),
+  );
+  const state = d.preview.read()!;
+  d.preview.leave(d.owner, "soft-plop");
+  expect(d.port.stop).toHaveBeenCalledWith(d.owner, state.playback);
+  d.preview.play(d.owner, "glass-chime");
+  expect(d.port.preview).toHaveBeenLastCalledWith(d.owner, expect.any(Object), "glass-chime", true);
+  d.preview.close(d.owner);
   expect(vi.getTimerCount()).toBe(0);
 });
-it("keeps explicit Play synchronous to the browser gesture and replaces pending hovers", async () => {
-  const d = setup();
-  d.preview.hover("soft-plop");
-  d.preview.play("glass-chime");
-  expect(d.port.previewPreset).toHaveBeenCalledWith("glass-chime", true);
-  await vi.advanceTimersByTimeAsync(200);
-  expect(d.port.previewPreset).toHaveBeenCalledOnce();
-  d.preview.stop();
+it("suppresses accidental sounds during catalog scrolling but accepts explicit focus/Play", async () => {
+  const d = fixture();
+  d.preview.hover(d.owner, "soft-plop");
+  d.preview.scroll(d.owner);
+  d.preview.hover(d.owner, "glass-chime");
+  await vi.advanceTimersByTimeAsync(90);
+  expect(d.port.preview).not.toHaveBeenCalled();
+  d.preview.hover(d.owner, "glass-chime", true);
+  await vi.advanceTimersByTimeAsync(35);
+  expect(d.port.preview).toHaveBeenCalledOnce();
+  d.preview.close(d.owner);
 });
-it("discards retired results, blocked audio is actionable, and close cancels pending work", async () => {
-  const d = setup();
-  let release!: (v: Float32Array<ArrayBuffer>) => void;
-  d.port.preparation.sfxWaveform.mockImplementationOnce(
+it("old bank cleanup and late preparations cannot stop or paint a newer owner", async () => {
+  const d = fixture();
+  let finish!: () => void;
+  vi.mocked(d.port.preview).mockImplementationOnce(
     () =>
-      new Promise((r) => {
-        release = r;
+      new Promise<void>((resolve) => {
+        finish = resolve;
       }),
   );
-  d.port.previewPreset.mockRejectedValueOnce(new DOMException("Press Play", "NotAllowedError"));
-  d.preview.play("soft-plop");
+  d.preview.play(d.owner, "soft-plop");
+  d.preview.close(d.owner);
+  const owner = d.preview.open();
+  d.preview.play(owner, "glass-chime");
+  const calls = vi.mocked(d.port.stop).mock.calls.length;
+  d.preview.stop(d.owner);
+  d.preview.close(d.owner);
+  expect(d.port.stop).toHaveBeenCalledTimes(calls);
+  finish();
   await vi.advanceTimersByTimeAsync(0);
-  expect(d.notify).toHaveBeenLastCalledWith(expect.objectContaining({ status: "blocked" }));
-  d.preview.stop();
-  const calls = d.notify.mock.calls.length;
-  release(new Float32Array([1]));
-  await vi.advanceTimersByTimeAsync(0);
-  expect(d.notify).toHaveBeenCalledTimes(calls);
-  d.preview.hover("glass-chime");
-  d.preview.stop(false);
-  await vi.advanceTimersByTimeAsync(200);
-  expect(d.port.previewPreset).toHaveBeenCalledOnce();
+  expect(d.preview.read()).toMatchObject({ owner, id: "glass-chime", status: "ready" });
+  d.preview.close(owner);
 });
-
-it("preserves a genuine waveform failure and stops audio instead of overwriting it with ready", async () => {
-  const d = setup();
-  d.port.preparation.sfxWaveform.mockRejectedValueOnce(Error("Waveform preparation failed"));
-  d.preview.play("soft-plop");
-  await vi.advanceTimersByTimeAsync(0);
-  expect(d.notify).toHaveBeenLastCalledWith(
-    expect.objectContaining({ status: "error", error: "Waveform preparation failed" }),
+it("reports blocked native audio without a false ready state and cancels intent-only preparation", async () => {
+  const d = fixture();
+  vi.mocked(d.port.preview).mockRejectedValueOnce(
+    new DOMException("Press Play", "NotAllowedError"),
   );
-  expect(d.port.stopPreview).toHaveBeenCalled();
-  d.preview.stop();
+  d.preview.play(d.owner, "soft-plop");
+  await vi.advanceTimersByTimeAsync(0);
+  expect(d.preview.read()).toMatchObject({ status: "blocked" });
+  d.preview.close(d.owner);
+  const intent = d.preview.warm();
+  d.preview.closeIntent();
+  expect(d.port.close).toHaveBeenLastCalledWith(intent);
+  expect(vi.getTimerCount()).toBe(0);
 });

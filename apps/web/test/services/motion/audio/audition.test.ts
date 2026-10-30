@@ -2,12 +2,18 @@ import { expect, it, vi } from "vitest";
 import { AudioAudition } from "../../../../src/services/motion/audio/audition";
 import { sfxWav, synthesizeSfx } from "../../../../src/services/motion/audio/sfx";
 import { audioFixture } from "../../../support/audio";
+import type { BankAudioCache } from "../../../../src/services/motion/audio/bank/cache";
+import type {
+  BankOwner,
+  BankPlayback,
+  BankShapeData,
+} from "../../../../src/services/motion/audio/bank/model";
 import type { AudioPreparation } from "../../../../src/services/motion/audio/preparation";
 const state = vi.hoisted(() => ({ mixer: vi.fn(), read: vi.fn(), dispose: vi.fn() }));
 vi.mock("../../../../src/services/motion/audio/mixer-worker-client", () => ({
   createWorkerAudioMixer: state.mixer,
 }));
-function setup() {
+function setup(bank?: BankAudioCache) {
   const d = audioFixture(),
     copy = vi.fn(),
     start = vi.fn(),
@@ -63,6 +69,8 @@ function setup() {
     () => ({ resolveOriginal: async () => new Blob() }),
     errors,
     () => context as unknown as AudioContext,
+    undefined,
+    bank,
   );
   return { ...d, audition, context, gain, start, stop, disconnect, copy, errors, preparation };
 }
@@ -176,4 +184,82 @@ it("keeps another cue's native audition alive and retires only its owner", async
   await d.audition.dispose();
   expect(d.stop).toHaveBeenCalledOnce();
   expect(d.context.close).toHaveBeenCalledOnce();
+});
+
+function cachedBank() {
+  const bank = {
+    ready: vi.fn(() => true),
+    open: vi.fn(async () => []),
+    owns: vi.fn(() => true),
+    close: vi.fn(() => true),
+    closeCurrent: vi.fn(),
+    original: vi.fn(),
+    buffer: vi.fn(async () => ({ buffer: {} as AudioBuffer, duration: 1 })),
+    dispose: vi.fn(),
+    client: { atlas: vi.fn() },
+  };
+  return bank;
+}
+it("starts cached bank PCM without a decoder worker and exposes the actual native clock with owner/playback tokens", async () => {
+  const bank = cachedBank(),
+    d = setup(bank as unknown as BankAudioCache),
+    a: BankOwner = { kind: "sound-bank", token: Symbol() },
+    b: BankOwner = { kind: "sound-bank", token: Symbol() },
+    one: BankPlayback = { kind: "bank-playback", token: Symbol() },
+    two: BankPlayback = { kind: "bank-playback", token: Symbol() };
+  d.context.currentTime = 42;
+  d.audition.openBank(a, {} as BankShapeData);
+  await d.audition.previewBank(a, one, "soft-plop", true);
+  expect(d.start).toHaveBeenLastCalledWith(42);
+  expect(state.mixer).not.toHaveBeenCalled();
+  expect(d.context.decodeAudioData).not.toHaveBeenCalled();
+  d.context.currentTime = 42.4;
+  expect(d.audition.readBankClock(a, one)).toMatchObject({
+    preset: "soft-plop",
+    elapsed: expect.closeTo(0.4),
+    duration: 1,
+    playing: true,
+  });
+  d.audition.stopBank(b, one);
+  d.audition.stopBank(a, two);
+  expect(d.stop).not.toHaveBeenCalled();
+  await d.audition.previewBank(b, two, "glass-chime", true);
+  expect(d.stop).toHaveBeenCalledOnce();
+  bank.owns.mockImplementation((owner?: BankOwner) => owner === b);
+  await expect(d.audition.previewBank(a, one, "soft-plop", true)).rejects.toMatchObject({
+    name: "AbortError",
+  });
+  expect(d.stop).toHaveBeenCalledOnce();
+  d.audition.stopBank(a, one);
+  d.audition.stopTrack("soft-plop");
+  expect(d.stop).toHaveBeenCalledOnce();
+  expect(d.audition.readBankClock(a, one)).toBeNull();
+  expect(d.audition.readBankClock(b, two)?.playing).toBe(true);
+  const node = d.context.createBufferSource.mock.results.at(-1)!.value;
+  node.onended!();
+  expect(d.audition.readBankClock(b, two)).toMatchObject({ elapsed: 1, playing: false });
+  await d.audition.dispose();
+  expect(bank.dispose).toHaveBeenCalledOnce();
+});
+it("drops a retired bank preparation without stopping the new owner's source", async () => {
+  const bank = cachedBank(),
+    d = setup(bank as unknown as BankAudioCache),
+    a: BankOwner = { kind: "sound-bank", token: Symbol() },
+    b: BankOwner = { kind: "sound-bank", token: Symbol() },
+    one: BankPlayback = { kind: "bank-playback", token: Symbol() },
+    two: BankPlayback = { kind: "bank-playback", token: Symbol() };
+  let resolve!: (value: { buffer: AudioBuffer; duration: number }) => void;
+  bank.buffer.mockImplementationOnce(
+    () =>
+      new Promise((r) => {
+        resolve = r;
+      }),
+  );
+  const old = d.audition.previewBank(a, one, "soft-plop", true).catch((error) => error);
+  await d.audition.previewBank(b, two, "glass-chime", true);
+  resolve({ buffer: {} as AudioBuffer, duration: 1 });
+  await expect(old).resolves.toMatchObject({ name: "AbortError" });
+  expect(d.start).toHaveBeenCalledOnce();
+  expect(d.audition.readBankClock(b, two)?.playing).toBe(true);
+  await d.audition.dispose();
 });

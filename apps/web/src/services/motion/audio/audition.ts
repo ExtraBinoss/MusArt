@@ -11,6 +11,15 @@ import type { AudioPreparation } from "./preparation";
 import { createWorkerAudioMixer } from "./mixer-worker-client";
 import { createPresetAudition } from "./preset";
 import { abortableAudio } from "./abort";
+import { BankAudioCache } from "./bank/cache";
+import type { BankOwner, BankPlayback, BankClock, BankShapeData, BankJob } from "./bank/model";
+interface BankClaim {
+  owner: BankOwner;
+  playback: BankPlayback;
+  preset: string;
+  generation: number;
+  clock: { start: number; duration: number; ended: boolean } | null;
+}
 
 /** Solo auditions use the real shared DSP, with <=4 seconds of native PCM storage. */
 export class AudioAudition {
@@ -26,6 +35,7 @@ export class AudioAudition {
   private retiring = Promise.resolve();
   private generation = 0;
   private closed = false;
+  private bankClaim: BankClaim | null = null;
   constructor(
     private readonly engine: EnginePort,
     private readonly preparation: AudioPreparation,
@@ -34,6 +44,7 @@ export class AudioAudition {
     private readonly createContext = () =>
       new AudioContext({ sampleRate: 48000, latencyHint: "interactive" }),
     private readonly createMixer = createWorkerAudioMixer,
+    private readonly bank = new BankAudioCache(),
   ) {}
 
   private audioContext() {
@@ -54,6 +65,7 @@ export class AudioAudition {
     volume = 1,
     trackId: string | null = null,
     authoredVolume = volume,
+    bankClaim?: BankClaim,
   ) {
     if (this.closed || this.generation !== generation) return;
     const source = context.createBufferSource();
@@ -76,6 +88,8 @@ export class AudioAudition {
     }
     this.trackId = trackId;
     source.onended = () => {
+      if (bankClaim && this.bankClaim === bankClaim && bankClaim.clock)
+        bankClaim.clock.ended = true;
       source.disconnect();
       gain.disconnect();
       if (this.source === source) {
@@ -84,7 +98,104 @@ export class AudioAudition {
         this.trackId = null;
       }
     };
-    source.start();
+    if (bankClaim?.clock) {
+      bankClaim.clock.start = context.currentTime;
+      source.start(bankClaim.clock.start);
+    } else source.start();
+  }
+  openBank(owner: BankOwner, data: BankShapeData) {
+    const cold = !this.bank.ready(data);
+    if (cold) this.preparation.pauseWaveforms();
+    void this.bank.open(owner, data).then(() => {
+      if (cold && this.bank.owns(owner)) this.preparation.resumeWaveforms();
+    });
+  }
+  closeBank(owner: BankOwner) {
+    this.stopBank(owner);
+    const closed = this.bank.close(owner);
+    if (closed) this.preparation.resumeWaveforms();
+  }
+  closeBankWarmup() {
+    this.bank.closeCurrent();
+  }
+  bankOriginal(id: string) {
+    return this.bank.original(id);
+  }
+  bankAtlas(owner: BankOwner, input: Omit<Extract<BankJob, { type: "atlas" }>, "id" | "type">) {
+    if (!this.bank.owns(owner))
+      return Promise.reject(new DOMException("Sound-bank owner retired.", "AbortError"));
+    return this.bank.client.atlas(owner, input);
+  }
+  stopBank(owner: BankOwner, playback?: BankPlayback) {
+    const claim = this.bankClaim;
+    if (claim?.owner === owner && (!playback || claim.playback === playback)) this.stop(false);
+  }
+  readBankClock(owner: BankOwner, playback: BankPlayback): BankClock | null {
+    const claim = this.bankClaim,
+      context = this.context;
+    if (!claim || claim.owner !== owner || claim.playback !== playback || !claim.clock || !context)
+      return null;
+    const elapsed = claim.clock.ended
+      ? claim.clock.duration
+      : Math.max(0, Math.min(claim.clock.duration, context.currentTime - claim.clock.start));
+    return {
+      preset: claim.preset,
+      elapsed,
+      duration: claim.clock.duration,
+      playing: !claim.clock.ended && elapsed < claim.clock.duration && context.state === "running",
+    };
+  }
+  previewBank(
+    owner: BankOwner,
+    playback: BankPlayback,
+    preset: string,
+    interactive: boolean,
+  ): Promise<void> {
+    if (this.closed || !this.bank.owns(owner))
+      return Promise.reject(new DOMException("Sound-bank owner retired.", "AbortError"));
+    this.stop(false);
+    const generation = ++this.generation,
+      origin = this.engine.getSnapshot(),
+      controller = new AbortController();
+    this.controller = controller;
+    const claim: BankClaim = { owner, playback, preset, generation, clock: null };
+    this.bankClaim = claim;
+    let context: AudioContext, resumed: Promise<void>;
+    try {
+      context = this.audioContext();
+      if (!interactive && context.state !== "running")
+        throw new DOMException(
+          "Press Play to enable sound previews in this browser.",
+          "NotAllowedError",
+        );
+      resumed = context.state === "running" ? Promise.resolve() : context.resume();
+    } catch (error) {
+      return Promise.reject(error);
+    }
+    const prepared = this.bank.buffer(owner, preset, context);
+    this.job = (async () => {
+      const [, entry] = await Promise.all([abortableAudio(resumed, controller.signal), prepared]);
+      controller.signal.throwIfAborted();
+      const current = this.engine.getSnapshot();
+      if (
+        !this.closed &&
+        generation === this.generation &&
+        current.project === origin.project &&
+        current.pageId === origin.pageId
+      ) {
+        claim.clock = { start: context.currentTime, duration: entry.duration, ended: false };
+        this.play(entry.buffer, context, generation, 1, null, 1, claim);
+      }
+    })();
+    void this.job.catch((error: unknown) => {
+      if (
+        !this.closed &&
+        generation === this.generation &&
+        !(error instanceof DOMException && ["AbortError", "NotAllowedError"].includes(error.name))
+      )
+        this.onError(error);
+    });
+    return this.job;
   }
   preset(id: string, interactive = true): Promise<void> {
     this.stop();
@@ -297,6 +408,7 @@ export class AudioAudition {
   stop(resumeWaveforms = true) {
     if (resumeWaveforms) this.preparation.resumeWaveforms();
     this.generation++;
+    this.bankClaim = null;
     this.controller?.abort();
     this.controller = null;
     const source = this.source;
@@ -320,6 +432,7 @@ export class AudioAudition {
     if (this.closed) return;
     this.closed = true;
     this.stop();
+    this.bank.dispose();
     await this.retiring;
     const context = this.context;
     this.context = null;

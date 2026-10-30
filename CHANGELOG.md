@@ -27,6 +27,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
+- Give every built-in sound a ready Canvas mountain waveform, native-clock gray/green playback progress and compact grouped virtualized browsing. Reuse bounded prepared WAV/PCM/native-buffer caches and one idle-safe worker instead of reopening a decoder for every audition; move license details behind the bank's Info action.
 - Construct transition-editor controls only while their Radix content is present, retaining selections and exit animations without rebuilding closed forms during timeline updates.
 - Unify layer reordering across Layers, timeline labels and clip bars with one engine-scoped controller. Vertical drags update canonical stacking order; horizontal drags retain deterministic timing. Add owner-safe cancellation, explicit invalid-drop cues, cached geometry, virtualized source retention and shared edge scrolling.
 - Sample final timeline pointer-up coordinates and modifiers before committing, and restore gesture selection only while the gesture still owns it.
@@ -72,6 +73,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
+- Preserve sound-bank Canvas geometry through development StrictMode replay and virtualized remounts. Bound high-DPR fallback surfaces before allocation and prevent a retired asynchronous insertion from closing a newer bank owner.
 - Localize timeline virtual-window updates to the row body, admit bounded row blocks through a generic constant-time planner and cache viewport dimensions outside scroll handlers. Construct sound-bank controls only during Radix's actual content lifetime, preserving popup animations while removing closed-catalog work from scrolling.
 - Keep ordinary clip clicks free of duration-popup mounting; show live duration only after an accepted move or trim begins. Preserve key-selection identity for unchanged sets and restrict key-marker invalidation to property rows.
 - Retain memoized visual and audio row subtrees while the timeline's virtual window changes, and isolate easing/transition hover previews from their authored forms. Focused Chrome traces confirm reduced scroll JavaScript work; complete interaction frame-budget acceptance remains in progress.

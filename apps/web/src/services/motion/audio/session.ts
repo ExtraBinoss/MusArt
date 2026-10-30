@@ -5,11 +5,13 @@ import { AudioPreparation } from "./preparation";
 import { MotionAudioPlayback } from "./playback";
 import { AudioAudition } from "./audition";
 import { SFX_BANK } from "./sfx";
+import type { BankPort } from "./bank/model";
 const sessions = new WeakMap<EnginePort, MotionAudioSession>();
 
 /** Platform lifetime owns worker/native audio. Portable authored data remains pure core TypeScript. */
 export class MotionAudioSession {
   readonly preparation: AudioPreparation;
+  readonly bank: BankPort;
   private readonly playback: MotionAudioPlayback;
   private readonly audition: AudioAudition;
   private readonly stop: () => void;
@@ -30,6 +32,17 @@ export class MotionAudioSession {
     const transport = createMotionTransport(engine);
     this.audition = new AudioAudition(engine, this.preparation, resolver, onError);
     this.playback = new MotionAudioPlayback(engine, transport, resolver, onError);
+    this.bank = {
+      open: (owner, data) => this.audition.openBank(owner, data),
+      close: (owner) => this.audition.closeBank(owner),
+      preview: (owner, playback, preset, interactive) => {
+        transport.pause();
+        return this.audition.previewBank(owner, playback, preset, interactive);
+      },
+      stop: (owner, playback) => this.audition.stopBank(owner, playback),
+      clock: (owner, playback) => this.audition.readBankClock(owner, playback),
+      atlas: (owner, input) => this.audition.bankAtlas(owner, input),
+    };
     let mixPublication = transport.readAudioMixPublication();
     let project = engine.getSnapshot().project,
       playing = transport.read().playing;
@@ -56,7 +69,7 @@ export class MotionAudioSession {
     const origin = this.engine.getSnapshot(),
       preset = SFX_BANK.find((item) => item.id === id);
     if (!preset) throw Error("Unknown sound preset.");
-    const blob = await this.preparation.sfx(id);
+    const blob = this.audition.bankOriginal(id) ?? (await this.preparation.sfx(id));
     const current = this.engine.getSnapshot();
     if (
       this.closed ||
@@ -100,7 +113,10 @@ export class MotionAudioSession {
   }
   stopPreview(trackId?: string) {
     if (trackId !== undefined) this.audition.stopTrack(trackId);
-    else this.audition.stop();
+    else {
+      this.audition.stop();
+      this.audition.closeBankWarmup();
+    }
   }
   async dispose() {
     if (this.closed) return;

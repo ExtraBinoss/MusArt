@@ -1,70 +1,68 @@
+import type {
+  BankOwner,
+  BankPlayback,
+  BankPort,
+  BankShapeData,
+} from "../../../services/motion/audio/bank/model";
 export interface SfxPreviewState {
+  readonly owner: BankOwner;
   readonly id: string | null;
+  readonly playback?: BankPlayback;
   readonly status: "idle" | "preparing" | "ready" | "blocked" | "error";
-  readonly peaks?: Float32Array;
   readonly error?: string;
 }
-interface PreviewPort {
-  previewPreset(id: string, interactive: boolean): Promise<void>;
-  stopPreview(): void;
-  preparation: { sfxWaveform(id: string): Promise<Float32Array> };
-}
 
-/** One delayed audition. Retired hover/focus work can neither play nor update its replacement. */
-export function createSfxPreview(
-  port: PreviewPort,
-  notify: (state: SfxPreviewState) => void,
-  delay = 150,
-) {
-  let generation = 0,
+/** Finite owner-scoped previews; native clock consumers subscribe without parent React state. */
+export function createSfxPreview(port: BankPort, data: BankShapeData, delay = 35) {
+  let owner: BankOwner | null = null,
+    viewOpen = false,
     timer: ReturnType<typeof setTimeout> | null = null,
-    active: string | null = null;
-  const stop = (publish = true) => {
+    generation = 0,
+    suppressedUntil = 0;
+  let state: SfxPreviewState | null = null;
+  const listeners = new Set<(state: SfxPreviewState) => void>();
+  const emit = (value: SfxPreviewState) => {
+    state = value;
+    for (const listener of listeners) listener(value);
+  };
+  function stop(held: BankOwner) {
+    if (held !== owner) return;
     generation++;
     if (timer !== null) clearTimeout(timer);
     timer = null;
-    active = null;
-    port.stopPreview();
-    if (publish) notify({ id: null, status: "idle" });
-  };
-  function start(id: string, interactive: boolean) {
-    stop(false);
-    active = id;
-    const current = generation;
-    let envelopeFailed = false;
-    let state: SfxPreviewState = { id, status: "preparing" };
-    notify(state);
-    const update = (patch: Partial<SfxPreviewState>) => {
-      if (current === generation) {
-        state = { ...state, ...patch };
-        notify(state);
-      }
-    };
-    void port.preparation.sfxWaveform(id).then(
-      (peaks) => update({ peaks }),
-      (error: unknown) => {
-        if (current === generation) {
-          envelopeFailed = true;
-          port.stopPreview();
-          update({ status: "error", error: error instanceof Error ? error.message : "" });
-        }
-      },
-    );
-    let playback: Promise<void>;
+    if (state?.playback) port.stop(held, state.playback);
+    emit({ owner: held, id: null, status: "idle" });
+  }
+  function warm() {
+    if (!owner) owner = { kind: "sound-bank", token: Symbol("sound-bank") };
+    port.open(owner, data);
+    return owner;
+  }
+  function start(held: BankOwner, id: string, interactive: boolean) {
+    if (held !== owner) return;
+    stop(held);
+    const playback: BankPlayback = { kind: "bank-playback", token: Symbol(id) },
+      current = ++generation;
+    emit({ owner: held, id, playback, status: "preparing" });
+    let task: Promise<void>;
     try {
-      playback = port.previewPreset(id, interactive);
+      task = port.preview(held, playback, id, interactive);
     } catch (error) {
-      playback = Promise.reject(error);
+      task = Promise.reject(error);
     }
-    void playback.then(
+    void task.then(
       () => {
-        if (current === generation && !envelopeFailed) update({ status: "ready" });
+        if (held === owner && current === generation)
+          emit({ owner: held, id, playback, status: "ready" });
       },
       (error: unknown) => {
-        if (current !== generation) return;
+        if (held !== owner || current !== generation) return;
         if (error instanceof DOMException && error.name === "AbortError") return;
-        port.stopPreview();
-        update({
+        port.stop(held, playback);
+        emit({
+          owner: held,
+          id,
+          playback,
           status:
             error instanceof DOMException && error.name === "NotAllowedError" ? "blocked" : "error",
           error: error instanceof Error ? error.message : "",
@@ -73,21 +71,55 @@ export function createSfxPreview(
     );
   }
   return {
-    hover(id: string) {
-      if (active === id) return;
-      stop(false);
-      active = id;
-      timer = setTimeout(() => {
-        timer = null;
-        start(id, false);
-      }, delay);
+    warm,
+    open() {
+      viewOpen = true;
+      return warm();
     },
-    play(id: string) {
-      start(id, true);
+    close(held: BankOwner) {
+      if (owner !== held) return;
+      stop(held);
+      owner = null;
+      viewOpen = false;
+      port.close(held);
     },
-    leave(id: string) {
-      if (active === id) stop();
+    closeIntent() {
+      if (owner && !viewOpen) {
+        const held = owner;
+        stop(held);
+        owner = null;
+        port.close(held);
+      }
     },
     stop,
+    hover(held: BankOwner, id: string, focus = false) {
+      if (held !== owner || (!focus && performance.now() < suppressedUntil) || state?.id === id)
+        return;
+      stop(held);
+      const playback: BankPlayback = { kind: "bank-playback", token: Symbol(id) };
+      emit({ owner: held, id, playback, status: "preparing" });
+      timer = setTimeout(() => {
+        timer = null;
+        start(held, id, false);
+      }, delay);
+    },
+    play(held: BankOwner, id: string) {
+      start(held, id, true);
+    },
+    leave(held: BankOwner, id: string) {
+      if (held === owner && state?.id === id) stop(held);
+    },
+    scroll(held: BankOwner) {
+      if (held !== owner) return;
+      suppressedUntil = performance.now() + 100;
+      stop(held);
+    },
+    subscribe(listener: (state: SfxPreviewState) => void) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    read: () => state,
   };
 }
