@@ -1,3 +1,4 @@
+import { createMotionTransport } from "../../services/motion/transport";
 import { getAncestors, getWorldMatrix, invertMatrix, type EnginePort } from "@musart/core";
 import type { Tool } from "../../canvas/EditorCanvas";
 import type { CommandId } from "./model";
@@ -15,6 +16,14 @@ export function documentShortcut(
   context: Context,
 ): (() => void | Promise<void>) | undefined {
   const { engine } = context;
+  if (id === "action:togglePlayback") {
+    const transport = createMotionTransport(engine);
+    if (transport.read().mode !== "motion") return;
+    return () => {
+      if (transport.read().playing) transport.pause();
+      else transport.play();
+    };
+  }
   const tools: Partial<Record<CommandId, Tool>> = {
     "action:toolPointer": "pointer",
     "action:toolHand": "hand",

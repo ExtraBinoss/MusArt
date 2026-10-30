@@ -1,3 +1,4 @@
+import "../../motion/messages";
 import type { SearchAction, SearchCategory } from "./model";
 
 export interface ActionDefinition {
@@ -6,9 +7,17 @@ export interface ActionDefinition {
   label: string;
   terms: string;
   shortcut?: string[];
-  gate?: "selection" | "editable" | "group" | "ungroup" | "undo" | "redo";
+  gate?: "selection" | "editable" | "group" | "ungroup" | "undo" | "redo" | "motion";
 }
 export const ACTIONS: readonly ActionDefinition[] = [
+  {
+    action: "togglePlayback",
+    category: "view",
+    label: "motion:togglePlayback",
+    terms: "play pause motion timeline lire lecture animation",
+    shortcut: ["Mod", "Space"],
+    gate: "motion",
+  },
   {
     action: "toolPointer",
     category: "tools",

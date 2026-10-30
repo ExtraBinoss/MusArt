@@ -360,3 +360,44 @@ test("leaves focused widget keys and consumed events to their own controls", () 
   expect(d.store.get(toolAtom)).toBe("pointer");
   hook.unmount();
 });
+
+test("Ctrl/Cmd Space plays Motion from canvas and timeline controls, respecting input, repeat and custom bindings", async () => {
+  const d = setup();
+  const { createMotionTransport } = await import("../../../src/services/motion/transport");
+  const transport = createMotionTransport(d.engine);
+  const hook = renderHook(() => useShortcuts(d.engine, d.services, d.onTask), {
+    wrapper: ({ children }) => createElement(Provider, { store: d.store }, children),
+  });
+  await act(() => fireEvent.keyDown(document, { key: " ", ctrlKey: true }));
+  expect(transport.read().playing).toBe(false);
+  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const before = d.engine.getSnapshot();
+  await act(() => fireEvent.keyDown(document, { key: " ", ctrlKey: true }));
+  expect(transport.read().playing).toBe(true);
+  await act(() => fireEvent.keyDown(document, { key: " ", ctrlKey: true, repeat: true }));
+  expect(transport.read().playing).toBe(true);
+  const panel = document.createElement("section"),
+    button = document.createElement("button"),
+    input = document.createElement("input");
+  panel.setAttribute("data-keybinding-capture", "");
+  panel.setAttribute("data-document-shortcuts", "");
+  panel.append(button, input);
+  document.body.append(panel);
+  await act(() => fireEvent.keyDown(input, { key: " ", metaKey: true }));
+  expect(transport.read().playing).toBe(true);
+  await act(() => fireEvent.keyDown(button, { key: " ", metaKey: true }));
+  expect(transport.read().playing).toBe(false);
+  act(() =>
+    keybindings.assign("action:togglePlayback", [
+      { key: "p", mod: true, alt: false, shift: false },
+    ]),
+  );
+  await act(() => fireEvent.keyDown(document, { key: " ", ctrlKey: true }));
+  expect(transport.read().playing).toBe(false);
+  await act(() => fireEvent.keyDown(document, { key: "p", ctrlKey: true }));
+  expect(transport.read().playing).toBe(true);
+  expect(d.engine.getSnapshot()).toBe(before);
+  hook.unmount();
+  panel.remove();
+  transport.dispose();
+});

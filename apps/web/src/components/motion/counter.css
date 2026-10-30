@@ -1,0 +1,24 @@
+/* Keep rapidly changing precision out of the native input's horizontal text viewport. */
+.motion-time-counter > input[data-slot] {
+  width: max(50px, calc(var(--counter-width) + 12px));
+  font-variant-numeric: tabular-nums;
+}
+.motion-time-counter > input:not(:focus) {
+  color: transparent;
+}
+.motion-time-counter-display {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 5px;
+  pointer-events: none;
+  font: inherit;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: pre;
+}
+.motion-time-counter:focus-within .motion-time-counter-display {
+  visibility: hidden;
+}

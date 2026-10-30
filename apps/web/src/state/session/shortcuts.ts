@@ -66,7 +66,10 @@ export function useShortcuts(
         target instanceof HTMLElement ? target.closest("[data-keybinding-capture]") : null;
       const documentScope = Boolean(
         capture?.hasAttribute("data-document-shortcuts") &&
-        (command === "action:undo" || command === "action:redo" || command === "action:save"),
+        (command === "action:undo" ||
+          command === "action:redo" ||
+          command === "action:save" ||
+          command === "action:togglePlayback"),
       );
       if (capture && !documentScope) return;
       if (command !== "action:save" && isEditingShortcutTarget(target, { documentScope })) return;

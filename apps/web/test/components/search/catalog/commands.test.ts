@@ -50,3 +50,19 @@ test("inherited locks and real undo/redo availability remain authoritative", () 
       ?.disabled,
   ).toBeUndefined();
 });
+
+test("Motion playback availability follows mode changes without losing cached metadata", () => {
+  const engine = new EditorEngine(createProject()),
+    cache = new SearchCommands(),
+    bindings = bindingSnapshot(),
+    t = (key: string) => key;
+  const read = () =>
+    cache
+      .read(engine.getSnapshot(), t, bindings, "en")
+      .find((item) => item.id === "action:togglePlayback");
+  expect(read()?.disabled).toBe("motion:requiresMotion");
+  engine.execute({ type: "setCompositionMode", mode: "motion" });
+  expect(read()?.disabled).toBeUndefined();
+  engine.undo();
+  expect(read()?.disabled).toBe("motion:requiresMotion");
+});

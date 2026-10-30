@@ -104,17 +104,21 @@ Portable clipboard and project files currently support embedded images. Video or
 
 These controls apply while the timeline is focused. Document shortcuts use the bindings configured in Preferences; text fields keep their normal editing behavior.
 
-| Action                        | Default shortcut or gesture           | Scope                                                                            |
-| ----------------------------- | ------------------------------------- | -------------------------------------------------------------------------------- |
-| Play / pause                  | `Space`                               | Ruler, track or key focus. Other focused buttons retain their normal activation. |
-| Step one frame                | `←` / `→`                             | Focused time ruler; pauses playback.                                             |
-| Start / exact composition end | `Home` / `End`                        | Focused time ruler.                                                              |
-| Undo / redo a document edit   | `Ctrl+Z` / `Ctrl+Shift+Z` or `Ctrl+Y` | Timeline controls, excluding active text entry.                                  |
-| Save                          | `Ctrl+S`                              | Timeline controls and fields.                                                    |
-| Delete selected keys          | `Delete` / `Backspace`                | Timeline selection; keeps layers intact.                                         |
-| Cancel the current gesture    | `Escape`                              | Key/track drag, time scrub, marquee or panel resize.                             |
-| Zoom the timeline             | `Ctrl` + wheel                        | Timeline viewport, around the pointer.                                           |
-| Scroll time / tracks          | Wheel or two-finger trackpad          | Both horizontal and vertical axes.                                               |
+| Action                        | Default shortcut or gesture           | Scope                                                                       |
+| ----------------------------- | ------------------------------------- | --------------------------------------------------------------------------- |
+| Play / pause                  | `Ctrl+Space` (`⌘Space` on Mac)        | Canvas or timeline controls, excluding text entry. Editable in Preferences. |
+| Step one frame                | `←` / `→`                             | Focused time ruler; pauses playback.                                        |
+| Start / exact composition end | `Home` / `End`                        | Focused time ruler.                                                         |
+| Undo / redo a document edit   | `Ctrl+Z` / `Ctrl+Shift+Z` or `Ctrl+Y` | Timeline controls, excluding active text entry.                             |
+| Save                          | `Ctrl+S`                              | Timeline controls and fields.                                               |
+| Delete selected keys          | `Delete` / `Backspace`                | Timeline selection; keeps layers intact.                                    |
+| Cancel the current gesture    | `Escape`                              | Key/track drag, time scrub, marquee or panel resize.                        |
+| Zoom the timeline             | `Ctrl` + wheel                        | Timeline viewport, around the pointer.                                      |
+| Scroll time / tracks          | Wheel or two-finger trackpad          | Both horizontal and vertical axes.                                          |
+
+The Play/Pause tooltip shows the active binding as keycaps. `Space` alone also remains available with ruler, track or key focus; it still pans the canvas when held there. macOS may reserve `⌘Space` for [Spotlight](https://support.apple.com/guide/mac-help/keyboard-shortcuts-mchlp2262/mac); reassign the Motion binding or the system shortcut if needed.
+
+The running counter uses fixed-width tabular digits and stable display precision (whole milliseconds or three decimal seconds). Focusing it reveals its exact editable value; scrubbing and keyframe previews retain rational time without document edits or React frame updates.
 
 Click a property's diamond in the inspector to create its first key at the current time. Subsequent edits of that animated property create or update a key at the playhead.
 

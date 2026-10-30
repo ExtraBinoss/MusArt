@@ -25,6 +25,7 @@ import {
   Copy,
   ClipboardPaste,
   CopyPlus,
+  Play,
 } from "lucide-react";
 import type { SearchItem } from "./catalog/model";
 
@@ -42,6 +43,7 @@ const categories = {
   help: Keyboard,
 };
 const actions = {
+  togglePlayback: Play,
   toolPointer: MousePointer2,
   toolHand: Hand,
   toolShape: Shapes,

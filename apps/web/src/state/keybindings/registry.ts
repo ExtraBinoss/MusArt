@@ -16,6 +16,7 @@ const key = (key: string, mod = false, shift = false, alt = false): KeyChord => 
   alt,
 });
 const extraDefaults: Partial<Record<CommandId, readonly KeyChord[]>> = {
+  "action:togglePlayback": [key("Space", true)],
   "action:redo": [key("z", true, true), key("y", true)],
   "action:delete": [key("Backspace"), key("Delete")],
   "action:exportImage": [key("e", true, true)],

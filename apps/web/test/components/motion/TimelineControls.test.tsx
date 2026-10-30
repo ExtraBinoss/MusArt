@@ -150,6 +150,37 @@ it("shows the dragged key time without seeking or committing React frames and re
   expect(field).toHaveValue(1000);
 });
 
+it("keeps a steady readable clock while retaining exact rational input values without React frame commits", () => {
+  const { d, runtime, Host } = fixture(),
+    commits = vi.fn();
+  const view = d.mount(
+    <Profiler id="clock" onRender={commits}>
+      <Host />
+    </Profiler>,
+  );
+  const field = screen.getByRole("spinbutton", { name: "Temps actuel" });
+  const display = view.container.querySelector(".motion-time-counter-display")!;
+  const count = commits.mock.calls.length;
+  for (const value of [999123, 1000123, 1001123, 1033123]) {
+    act(() => runtime.update({ time: { value, rate: 1000000 } }));
+    expect(field).toHaveValue(value / 1000);
+    expect(display.textContent).toBe(String(Math.round(value / 1000)));
+  }
+  expect(commits.mock.calls.length).toBe(count);
+  expect(field).not.toHaveClass("is-live-number-changing");
+  act(() => runtime.update({ time: { value: 503499999, rate: 1000000000 } }));
+  expect(field).toHaveValue(503.5);
+  expect(display.textContent).toBe("504");
+  act(() => runtime.update({ time: { value: 1033123, rate: 1000000 } }));
+  fireEvent.click(screen.getByRole("button", { name: "Unité de temps" }));
+  expect(display.textContent).toBe("1.033");
+  expect(field).toHaveValue(1.033123);
+  expect(screen.getByRole("button", { name: "Lire" })).toHaveAttribute(
+    "aria-keyshortcuts",
+    "Control+Space",
+  );
+});
+
 /** These regressions exercise the explicitly selected detailed keyframe view. */
 function setup() {
   const result = baseSetup();

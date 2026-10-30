@@ -6,6 +6,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Stabilized the live timeline counter with fixed tabular width and readable playback precision while keeping exact editable times and imperative frame updates. Added configurable Ctrl/Cmd+Space playback from the canvas and timeline, with platform-aware keycaps and protected text entry.
+
 - Kept the Motion preset picker at a stable size across Library/My presets, categories and search; replaced its preview image with the bundled alpine-lake photograph.
 - Reworked Blur into a separable premultiplied-RGBA Gaussian with transparent overscan, making photo edges visibly soften during Motion entrances. Corrected Share Your Work card geometry, text/photo stacking and drift from the supplied video frames, with editable photo shadows.
 

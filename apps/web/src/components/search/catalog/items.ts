@@ -28,6 +28,7 @@ export function createSearchCommandItems(
     snapshot.project.pages[0]!;
   const { selected, editable, hasGroup } = layerSelection(page, snapshot.selection);
   const disabled = {
+    motion: page.motion?.mode === "motion" ? undefined : t("motion:requiresMotion"),
     selection: selected.length ? undefined : t("search:noSelection"),
     editable: editable ? undefined : t("search:noSelection"),
     group: editable && selected.length > 1 ? undefined : t("search:groupSelection"),

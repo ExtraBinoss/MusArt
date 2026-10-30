@@ -1,3 +1,4 @@
+import { createMotionTransport } from "../../services/motion/transport";
 import { createEffect, createPage, createLayerGeometryIndex, type EnginePort } from "@musart/core";
 import type { Tool } from "../../canvas/EditorCanvas";
 import { createViewportActions } from "../../canvas/session/viewport-actions";
@@ -132,6 +133,13 @@ export function createSearchActions(context: SearchActions) {
       engine.execute({ type: "updatePage", patch: { rulers: !selection(engine).page.rulers } }),
     design: () => context.onPanelMode("design"),
     animate: () => context.onPanelMode("animate"),
+    togglePlayback: () => {
+      const transport = createMotionTransport(engine);
+      if (transport.read().mode === "motion") {
+        if (transport.read().playing) transport.pause();
+        else transport.play();
+      }
+    },
     settings: () => context.onProjects("settings"),
     editorSettings: () => context.onProjects("settingsEditor"),
     enableSnapping: () => {

@@ -15,7 +15,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { TimelineIconButton } from "./ControlButton";
 import { PlaybackMode } from "./PlaybackMode";
 import { formatTimelineTime, parseTimelineTime } from "./time";
-import { createLiveNumberMotion } from "../shared/live-number";
+import { CurrentTime } from "./CurrentTime";
+import { useKeybindings } from "../../state/keybindings/use-keybindings";
+import { chordTokens } from "../../state/keybindings/chords";
+import { modifierLabel } from "../search/shortcuts";
 import type { TimelineTransport, TimelineUnit } from "./model";
 import "./messages";
 
@@ -34,98 +37,6 @@ function AutoKey({ engine, active }: { engine: EnginePort; active: boolean }) {
     >
       <Diamond size={12} />
     </TimelineIconButton>
-  );
-}
-
-function CurrentTime({
-  transport,
-  unit,
-  active,
-}: {
-  transport: TimelineTransport;
-  unit: TimelineUnit;
-  active: boolean;
-}) {
-  const { t } = useTranslation("motion");
-  const input = useRef<HTMLInputElement>(null);
-  const cancelled = useRef(false);
-  const [error, setError] = useState(false);
-  useEffect(() => {
-    const node = input.current;
-    if (!node) return;
-    const motion = createLiveNumberMotion(node, {
-      read: () => node.value,
-      write: (text) => {
-        node.value = text;
-      },
-    });
-    const sync = () => {
-      const editing = transport.readEditingTime?.();
-      node.setAttribute("aria-label", t(editing ? "keyTime" : "currentTime"));
-      if (editing || document.activeElement !== node)
-        motion.set(formatTimelineTime(editing ?? transport.read().time, unit));
-    };
-    sync();
-    const stop = transport.subscribe(sync);
-    return () => {
-      stop();
-      motion.dispose();
-    };
-  }, [transport, unit, t]);
-  function commit() {
-    const field = input.current;
-    if (!field) return;
-    if (!active) {
-      field.value = formatTimelineTime(transport.read().time, unit);
-      return;
-    }
-    if (cancelled.current) {
-      cancelled.current = false;
-      setError(false);
-      return;
-    }
-    const time = parseTimelineTime(field.value, unit),
-      state = transport.read();
-    if (!time || compareMotionTime(time, state.duration) > 0) {
-      setError(true);
-      field.value = formatTimelineTime(state.time, unit);
-      return;
-    }
-    transport.pause();
-    transport.seek(time);
-    setError(false);
-  }
-  return (
-    <div className="motion-time-field">
-      <Input
-        ref={input}
-        type="number"
-        step="any"
-        min={0}
-        defaultValue={formatTimelineTime(transport.read().time, unit)}
-        aria-label={t("currentTime")}
-        aria-invalid={error}
-        disabled={!active}
-        onBlur={commit}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            event.currentTarget.blur();
-          }
-          if (event.key === "Escape") {
-            event.preventDefault();
-            cancelled.current = true;
-            event.currentTarget.value = formatTimelineTime(transport.read().time, unit);
-            event.currentTarget.blur();
-          }
-        }}
-      />
-      {error && (
-        <span className="motion-field-error" role="alert">
-          {t("invalidTime")}
-        </span>
-      )}
-    </div>
   );
 }
 
@@ -270,11 +181,26 @@ export const TimelineControls = memo(function TimelineControls({
   }, [transport]);
   const page = snapshot.project.pages.find((item) => item.id === snapshot.pageId)!;
   const duration = page.motion?.duration ?? transport.read().duration;
+  const bindings = useKeybindings();
+  const playbackChord = bindings.bindings.get("action:togglePlayback")?.[0];
   return (
     <div className="motion-transport">
       <TimelineIconButton
         label={t(state.playing ? "pause" : "play")}
-        shortcut={[t("space")]}
+        shortcut={
+          playbackChord
+            ? chordTokens(playbackChord).map((key) => (key === "Space" ? t("space") : key))
+            : undefined
+        }
+        aria-keyshortcuts={
+          playbackChord
+            ? chordTokens(playbackChord)
+                .map((key) =>
+                  key === "Mod" ? (modifierLabel() === "⌘" ? "Meta" : "Control") : key,
+                )
+                .join("+")
+            : undefined
+        }
         disabled={!active}
         onClick={() => (state.playing ? transport.pause() : transport.play())}
       >

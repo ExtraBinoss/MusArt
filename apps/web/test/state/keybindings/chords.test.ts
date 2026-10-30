@@ -16,7 +16,8 @@ test("normalizes portable chords and display tokens without inventing modifier-o
   expect(normalizeKey("not a key")).toBeNull();
   expect(normalizeChord({ ...chord, key: "?", shift: true })).toEqual({ ...chord, key: "?" });
   expect(normalizeChord({ ...chord, key: "Tab", mod: false })).toBeNull();
-  expect(normalizeChord({ ...chord, key: "Space" })).toBeNull();
+  expect(normalizeChord({ ...chord, key: "Space" })).toEqual({ ...chord, key: "Space" });
+  expect(normalizeChord({ ...chord, key: "Space", mod: false })).toBeNull();
   expect(normalizeChord({ ...chord, key: "Escape" })).toBeNull();
   for (const invalid of [null, {}, "k", { ...chord, alt: 1 }, { ...chord, key: 3 }])
     expect(normalizeChord(invalid)).toBeNull();

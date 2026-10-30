@@ -14,6 +14,7 @@ export class SearchCommands {
   private translate: SearchTranslate | null = null;
   private bindings: BindingSnapshot | null = null;
   private locale = "";
+  private motionHint = "";
   private base: SearchItem[] = [];
   private readonly states = new Map<string, SearchItem[]>();
   read(
@@ -23,6 +24,7 @@ export class SearchCommands {
     locale: string,
   ): SearchItem[] {
     if (this.translate !== t || this.bindings !== bindings || this.locale !== locale) {
+      this.motionHint = t("motion:requiresMotion");
       this.base = createSearchCommandItems(
         { ...snapshot, selection: EMPTY_SELECTION, canUndo: false, canRedo: false },
         t,
@@ -38,6 +40,7 @@ export class SearchCommands {
       snapshot.project.pages[0]!;
     const state = layerSelection(page, snapshot.selection);
     const allowed: Record<Gate, boolean> = {
+      motion: page.motion?.mode === "motion",
       selection: state.selected.length > 0,
       editable: state.editable,
       group: state.editable && state.selected.length > 1,
@@ -50,6 +53,8 @@ export class SearchCommands {
     if (!rows)
       rows = this.base.map((item) => {
         const gate = item.target.kind === "effect" ? "editable" : gates.get(item.id);
+        if (gate === "motion")
+          return { ...item, disabled: allowed.motion ? undefined : this.motionHint };
         return gate && allowed[gate] ? { ...item, disabled: undefined } : item;
       });
     this.states.delete(key);

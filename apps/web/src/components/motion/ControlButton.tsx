@@ -1,3 +1,4 @@
+import { modifierLabel } from "../search/shortcuts";
 import { useContext, type ComponentProps, type ReactNode } from "react";
 import { TimelineControlTooltips } from "./control-tooltips";
 import { Button } from "../ui/button";
@@ -41,7 +42,7 @@ export function TimelineIconButton({
         {shortcut && (
           <KbdGroup>
             {shortcut.map((key) => (
-              <Kbd key={key}>{key}</Kbd>
+              <Kbd key={key}>{key === "Mod" ? modifierLabel() : key}</Kbd>
             ))}
           </KbdGroup>
         )}

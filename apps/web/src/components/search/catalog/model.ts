@@ -55,6 +55,7 @@ export type SearchAction =
   | "rulers"
   | "design"
   | "animate"
+  | "togglePlayback"
   | "settings"
   | "editorSettings"
   | "enableSnapping"

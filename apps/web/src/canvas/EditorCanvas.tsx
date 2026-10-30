@@ -480,7 +480,7 @@ export function EditorCanvas({
         }}
         onKeyDown={(event) => {
           if ((event.target as HTMLElement).closest("[data-canvas-control]")) return;
-          if (event.code === "Space") {
+          if (event.code === "Space" && !event.ctrlKey && !event.metaKey && !event.altKey) {
             event.preventDefault();
             setSpace(true);
           }

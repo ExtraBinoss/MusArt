@@ -35,7 +35,7 @@ export function normalizeChord(value: unknown): KeyChord | null {
   const key = normalizeKey(chord.key);
   if (
     !key ||
-    key === "Space" ||
+    (key === "Space" && !chord.mod) ||
     (key === "Tab" && !chord.mod && !chord.alt) ||
     (key === "Escape" && (chord.mod || chord.alt || chord.shift))
   )
