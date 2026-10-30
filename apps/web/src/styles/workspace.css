@@ -15,12 +15,8 @@
   font-weight: 600;
   letter-spacing: -0.5px;
 }
-.brand-button > svg:first-child {
-  color: var(--primary);
-}
-.brand-button > svg:last-child {
-  margin-left: 5px;
-  color: var(--muted-foreground);
+.brand-button > .melt-mascot {
+  margin: 0;
 }
 .project-title {
   display: flex;
@@ -270,10 +266,6 @@
   width: 36px;
   height: 36px;
   padding: 0;
-}
-.brand-button > svg:last-child {
-  margin: 0;
-  color: var(--primary);
 }
 .project-pill {
   display: flex;

@@ -27,7 +27,7 @@ export function LandingPage({
     <div className="landing-page">
       <header className="landing-nav">
         <a href="#musart-intro" className="landing-brand">
-          <MeltLogo size={30} />
+          <MeltLogo size={30} interactive />
           {brand.name}
         </a>
         <Button variant="ghost" disabled={busy} onClick={onCreate}>

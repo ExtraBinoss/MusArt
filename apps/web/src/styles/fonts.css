@@ -1,3 +1,15 @@
+/* UI display font served by Fontshare; never exposed as an editable document font. */
+@font-face {
+  font-family: "Clash Display";
+  font-style: normal;
+  font-weight: 200 700;
+  font-display: swap;
+  src: url("https://cdn.fontshare.com/wf/DK2FOA46SRWJ5HXWWU5TK4N4CMHYD236/FPEAXZZSH5L2K5MTJFRIWD2MC32IJMN3/THOOS4VOCKT7H2XEB27NQDYM2NYS4AAR.woff2")
+    format("woff2");
+}
+:root {
+  --font-brand-display: "Clash Display", "Inter Variable", ui-sans-serif, sans-serif;
+}
 @font-face {
   font-family: "Inter Variable";
   font-style: normal;

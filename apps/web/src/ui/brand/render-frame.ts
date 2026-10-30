@@ -33,6 +33,18 @@ export function createMascotSurface(svg: SVGSVGElement, id: string) {
     defs = node("defs", root),
     clip = node("clipPath", defs),
     clipBody = node("path", clip);
+  const tint = node("linearGradient", defs);
+  tint.id = `${id}-tint`;
+  attrs(tint, { x1: "0%", y1: "0%", x2: "100%", y2: "100%" });
+  attrs(node("stop", tint), {
+    offset: "0%",
+    "stop-color": "color-mix(in srgb, currentColor 78%, white)",
+  });
+  attrs(node("stop", tint), { offset: "48%", "stop-color": "currentColor" });
+  attrs(node("stop", tint), {
+    offset: "100%",
+    "stop-color": `color-mix(in srgb, currentColor 84%, ${brand.colors.ink})`,
+  });
   clip.id = `${id}-body`;
   const back = node("g", root),
     behind = node("g", root),
@@ -60,7 +72,7 @@ export function createMascotSurface(svg: SVGSVGElement, id: string) {
   }
   function paint(frame: BotFrame) {
     if (disposed) return;
-    attrs(bodyPath, { d: frame.bodyPath, fill: brand.colors.primary });
+    attrs(bodyPath, { d: frame.bodyPath, fill: `url(#${tint.id})` });
     attrs(clipBody, { d: frame.bodyPath });
     attrs(body, { opacity: frame.bodyAlpha });
     const eyes = eyeNodes(frame.eyes.length);

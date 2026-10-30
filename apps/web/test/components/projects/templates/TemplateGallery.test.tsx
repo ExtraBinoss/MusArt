@@ -1,3 +1,4 @@
+import { TEMPLATE_CATALOG } from "../../../../src/services/projects/templates/catalog";
 import { LIBRARY_MODE_KEY } from "../../../../src/components/projects/dashboard/library-mode";
 import { beforeEach, expect, test, vi } from "vitest";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
@@ -61,7 +62,9 @@ test("filters real Motion projects independently from blank formats and preserve
   expect(screen.queryByText("Tous les modèles")).toBeNull();
   fireEvent.click(screen.getByRole("radio", { name: "Motion" }));
   const cards = screen.getAllByRole("button");
-  expect(cards).toHaveLength(6);
+  expect(cards).toHaveLength(
+    TEMPLATE_CATALOG.filter((template) => template.mode === "motion").length,
+  );
   for (const name of [/Orbit Study/, /Paper Motion/, /Atlas des transitions/, /Sound Playground/])
     await waitFor(() => expect(screen.getByRole("button", { name })).toBeVisible());
   expect(screen.getByRole("button", { name: /In Bloom/ })).toHaveTextContent("1440 × 1040 px");
@@ -85,21 +88,25 @@ test("wires live previews only for authored Motion cards and disables their inte
   const d = setup(),
     choose = vi.fn();
   const view = d.mount(<TemplateGallery onChoose={choose} />);
-  expect(document.querySelectorAll(".template-grid [data-motion-preview]")).toHaveLength(2);
+  const motionTemplates = TEMPLATE_CATALOG.filter(
+    (template) => template.mode === "motion" && template.preview,
+  );
+  expect(document.querySelectorAll(".template-grid [data-motion-preview]")).toHaveLength(
+    motionTemplates.length,
+  );
   expect(
     document.querySelector('.template-artwork > img[src="/templates/afterhours.webp"]'),
   ).not.toBeNull();
   fireEvent.click(screen.getByRole("radio", { name: "Motion" }));
   const previews = document.querySelectorAll<HTMLElement>(".template-grid [data-motion-preview]");
-  expect([...previews].map((preview) => preview.dataset.motionPreview)).toEqual([
-    "in-bloom",
-    "motion-stress-lab",
-  ]);
-  expect(previews[0]!.querySelector("img")).toHaveAttribute(
+  expect([...previews].map((preview) => preview.dataset.motionPreview)).toEqual(
+    motionTemplates.map((template) => template.id),
+  );
+  expect(document.querySelector('[data-motion-preview="in-bloom"] img')).toHaveAttribute(
     "src",
     "/templates/motion/in-bloom.webp",
   );
-  expect(previews[1]!.querySelector("img")).toHaveAttribute(
+  expect(document.querySelector('[data-motion-preview="motion-stress-lab"] img')).toHaveAttribute(
     "src",
     "/templates/motion/motion-stress-lab.webp",
   );

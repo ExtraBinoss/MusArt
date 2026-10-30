@@ -27,6 +27,7 @@ export function createBrandPlayback(
     time = 0.75,
     end = 0,
     active = true,
+    hovered = false,
     visible = true,
     disposed = false,
     frame: number | null = null,
@@ -40,7 +41,11 @@ export function createBrandPlayback(
   }
   function wantsFrames() {
     return (
-      active && visible && !page.hidden && !reduced.matches && (state !== "idle" || time < end)
+      active &&
+      visible &&
+      !page.hidden &&
+      !reduced.matches &&
+      (state !== "idle" || hovered || time < end)
     );
   }
   function tick(stamp: number) {
@@ -48,7 +53,7 @@ export function createBrandPlayback(
     if (disposed || !wantsFrames()) return;
     time += last === null ? 0 : Math.min(0.1, Math.max(0, (stamp - last) / 1000));
     last = stamp;
-    if (stamp - paintedAt >= 1000 / 30 || (state === "idle" && time >= end)) {
+    if (stamp - paintedAt >= 1000 / 30 || (state === "idle" && !hovered && time >= end)) {
       paintedAt = stamp;
       surface.paint(engine.sample(time));
     }
@@ -56,7 +61,13 @@ export function createBrandPlayback(
   }
   function resume() {
     if (disposed) return;
-    if (reduced.matches && active && visible && !page.hidden && (state !== "idle" || time < end)) {
+    if (
+      reduced.matches &&
+      active &&
+      visible &&
+      !page.hidden &&
+      (state !== "idle" || hovered || time < end)
+    ) {
       time = Math.max(time, end);
       surface.paint(engine.sample(time));
     }
@@ -76,6 +87,13 @@ export function createBrandPlayback(
   page.addEventListener("visibilitychange", environment);
   reduced.addEventListener("change", environment);
   return {
+    setHovered(next: boolean) {
+      if (disposed || next === hovered) return;
+      hovered = next;
+      if (next) engine.blink(time);
+      else end = Math.max(end, time + 0.25);
+      resume();
+    },
     setState(next: BrandState) {
       if (disposed || next === state) return;
       state = next;

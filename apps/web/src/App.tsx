@@ -177,7 +177,7 @@ export function App({ engine, services, welcome = false }: AppProps) {
                           aria-label={t("projectMenu")}
                           onClick={() => setProjectMenu("projects")}
                         >
-                          <MeltLogo />
+                          <MeltLogo interactive />
                         </Button>
                         <ProjectPill
                           key={projectId}

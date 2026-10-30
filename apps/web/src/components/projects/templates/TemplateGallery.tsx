@@ -11,6 +11,10 @@ import { ModeIcon } from "../../motion/ModeIcon";
 import { LibraryModeFilter } from "../dashboard/LibraryModeFilter";
 import { useLibraryMode, type LibraryMode } from "../dashboard/library-mode";
 import { templatePreview } from "./preview";
+import { LibraryItemActions } from "../items/context";
+import { LibraryOpenButton } from "../items/LibraryBrowser";
+import { isMotionTemplateId } from "../../../services/projects/templates/motion/identity";
+import "../items/messages";
 import { MotionTemplatePreview } from "./motion-preview/MotionTemplatePreview";
 import "./messages";
 import "./templates.css";
@@ -98,82 +102,109 @@ export function TemplateGallery({
         {templates.map((template, index) => {
           const name = t(template.nameKey);
           return (
-            <motion.div
+            <LibraryItemActions
               key={template.id}
-              className="template-card-entry"
-              initial={reduced ? false : { opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: reduced ? 0 : 0.18,
-                delay: reduced ? 0 : Math.min(index * 0.025, 0.15),
+              item={{
+                kind: "template",
+                id: template.id,
+                name,
+                mode: template.mode,
+                preview: template.preview,
+                width: template.width,
+                height: template.height,
               }}
+              open={() => onChoose(template.id)}
+              disabled={busy}
             >
-              <Button
-                key={template.id}
-                variant="ghost"
-                className="template-card"
-                disabled={busy}
-                aria-label={t("templates:use", { name })}
-                onClick={() => onChoose(template.id)}
-              >
-                <div
-                  className="template-artwork"
-                  data-artwork={Boolean(template.preview)}
-                  style={
-                    template.preview ? undefined : { background: templatePreview(template.id) }
-                  }
+              {(activation) => (
+                <motion.div
+                  key={template.id}
+                  className="template-card-entry"
+                  initial={reduced ? false : { opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: reduced ? 0 : 0.18,
+                    delay: reduced ? 0 : Math.min(index * 0.025, 0.15),
+                  }}
                 >
-                  {template.preview &&
-                  template.mode === "motion" &&
-                  (template.id === "in-bloom" ||
-                    template.id === "motion-stress-lab" ||
-                    template.id === "share-your-work") ? (
-                    <MotionTemplatePreview
-                      templateId={template.id}
-                      poster={template.preview}
-                      disabled={busy}
-                    />
-                  ) : template.preview ? (
-                    <img
-                      src={template.preview}
-                      alt=""
-                      loading="lazy"
-                      width={template.width}
-                      height={template.height}
-                    />
-                  ) : (
+                  <Button
+                    key={template.id}
+                    variant="ghost"
+                    className="template-card"
+                    disabled={busy}
+                    aria-label={
+                      activation.inspectable
+                        ? t("libraryItem:preview", { name })
+                        : t("templates:use", { name })
+                    }
+                    onClick={activation.click}
+                    onDoubleClick={activation.double}
+                  >
                     <div
-                      className="template-paper"
-                      style={{
-                        aspectRatio: `${template.width} / ${template.height}`,
-                        width: template.width >= template.height ? "76%" : "auto",
-                        height: template.width >= template.height ? "auto" : "76%",
-                      }}
+                      className="template-artwork"
+                      data-artwork={Boolean(template.preview)}
+                      style={
+                        template.preview ? undefined : { background: templatePreview(template.id) }
+                      }
                     >
-                      {["instagram", "tiktok", "youtube", "linkedin"].includes(
-                        template.brandId ?? "",
-                      ) ? (
-                        <SocialBrandIcon id={template.brandId!} size={28} />
+                      {template.preview &&
+                      template.mode === "motion" &&
+                      isMotionTemplateId(template.id) ? (
+                        <MotionTemplatePreview
+                          templateId={template.id}
+                          poster={template.preview}
+                          disabled={busy}
+                        />
+                      ) : template.preview ? (
+                        <img
+                          src={template.preview}
+                          alt=""
+                          loading="lazy"
+                          width={template.width}
+                          height={template.height}
+                        />
                       ) : (
-                        <FileImage size={28} strokeWidth={1.1} aria-hidden />
+                        <div
+                          className="template-paper"
+                          style={{
+                            aspectRatio: `${template.width} / ${template.height}`,
+                            width: template.width >= template.height ? "76%" : "auto",
+                            height: template.width >= template.height ? "auto" : "76%",
+                          }}
+                        >
+                          {["instagram", "tiktok", "youtube", "linkedin"].includes(
+                            template.brandId ?? "",
+                          ) ? (
+                            <SocialBrandIcon id={template.brandId!} size={28} />
+                          ) : (
+                            <FileImage size={28} strokeWidth={1.1} aria-hidden />
+                          )}
+                        </div>
                       )}
                     </div>
+                    <div className="template-caption project-card-overlay">
+                      <span className="template-meta">
+                        <span className="template-title">{name}</span>
+                        <span className="template-size">
+                          {template.width} × {template.height} px
+                        </span>
+                      </span>
+                      <span className="template-mode" data-mode={template.mode}>
+                        <ModeIcon mode={template.mode} size={14} />
+                        <span>{t(`templates:${template.mode}`)}</span>
+                      </span>
+                    </div>
+                  </Button>
+                  {activation.inspectable && (
+                    <LibraryOpenButton
+                      onOpen={activation.direct}
+                      disabled={busy}
+                      label={t("templates:use", { name })}
+                    />
                   )}
-                </div>
-                <div className="template-caption project-card-overlay">
-                  <span className="template-meta">
-                    <span className="template-title">{name}</span>
-                    <span className="template-size">
-                      {template.width} × {template.height} px
-                    </span>
-                  </span>
-                  <span className="template-mode" data-mode={template.mode}>
-                    <ModeIcon mode={template.mode} size={14} />
-                    <span>{t(`templates:${template.mode}`)}</span>
-                  </span>
-                </div>
-              </Button>
-            </motion.div>
+                </motion.div>
+              )}
+            </LibraryItemActions>
           );
         })}
       </div>

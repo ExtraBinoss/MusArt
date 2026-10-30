@@ -47,10 +47,23 @@
 .motion-template-preview-loading-mark {
   display: none;
   position: absolute;
-  inset: 0;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--popover) 88%, transparent);
   place-items: center;
   pointer-events: none;
 }
 .motion-template-preview[data-preview-status="loading"] > .motion-template-preview-loading-mark {
   display: grid;
+}
+
+.motion-template-preview[data-preview-status="loading"] .motion-template-preview-status {
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
 }

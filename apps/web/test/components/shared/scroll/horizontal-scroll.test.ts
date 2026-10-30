@@ -6,11 +6,19 @@ afterEach(() => {
   for (const dispose of disposers.splice(0)) dispose();
   vi.unstubAllGlobals();
 });
-function fixture() {
+function fixture(shadows = false) {
   vi.spyOn(document, "hidden", "get").mockReturnValue(false);
   const root = document.createElement("div");
   root.innerHTML =
     '<div data-viewport tabindex="0"><div><button>Category</button><input></div></div><button data-horizontal-direction="-1"></button><button data-horizontal-direction="1"></button>';
+  if (shadows) {
+    root.dataset.scrollControls = "shadows";
+    root.querySelectorAll("[data-horizontal-direction]").forEach((node) => node.remove());
+    root.insertAdjacentHTML(
+      "beforeend",
+      '<span class="scroll-shadow-inline-start" aria-hidden="true"></span><span class="scroll-shadow-inline-end" aria-hidden="true"></span>',
+    );
+  }
   const viewport = root.querySelector<HTMLElement>("[data-viewport]")!;
   Object.defineProperties(viewport, {
     clientWidth: { value: 100, configurable: true },
@@ -282,4 +290,28 @@ test("non-overflowing and incomplete surfaces allocate no animation work", () =>
   f.stop();
   f.left.remove();
   expect(() => installHorizontalScroll(f.root, f.viewport)()).not.toThrow();
+});
+
+test("shadow edges replace arrows, scroll only on hover and stop for press, limits and disposal", () => {
+  const f = fixture(true);
+  expect(f.root.querySelectorAll("button[data-horizontal-direction]")).toHaveLength(0);
+  expect(f.left).toHaveAttribute("data-scroll-disabled");
+  f.pointer(f.right, "pointerenter");
+  f.frame(100);
+  f.frame(120);
+  expect(f.viewport.scrollLeft).toBeGreaterThan(0);
+  f.pointer(f.right, "pointerdown");
+  expect(f.frames.size).toBe(0);
+  const before = f.viewport.scrollLeft;
+  f.right.click();
+  expect(f.viewport.scrollLeft).toBe(before);
+  f.pointer(f.right, "pointerenter");
+  f.viewport.scrollLeft = 700;
+  f.frame(140);
+  expect(f.right).toHaveAttribute("data-scroll-disabled");
+  expect(f.frames.size).toBe(0);
+  f.pointer(f.left, "pointerenter");
+  expect(f.frames.size).toBe(1);
+  f.stop();
+  expect(f.frames.size).toBe(0);
 });

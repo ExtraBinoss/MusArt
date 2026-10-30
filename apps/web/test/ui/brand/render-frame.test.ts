@@ -17,7 +17,12 @@ test("retains bounded real SVG paths for every engine state, keeps clip IDs loca
   other.paint(frame);
   expect(svg.querySelector("clipPath")!.id).toBe("first-body");
   expect(otherSvg.querySelector("clipPath")!.id).toBe("second-body");
-  expect(svg.querySelector('path[fill="#B39ADB"]')).toHaveAttribute("d", frame.bodyPath);
+  expect(svg.querySelector('[data-mascot-part="body"]')).toHaveAttribute("d", frame.bodyPath);
+  expect(svg.querySelector('[data-mascot-part="body"]')).toHaveAttribute(
+    "fill",
+    "url(#first-tint)",
+  );
+  expect(svg.querySelector("#first-tint")!.children).toHaveLength(3);
   for (const state of SEQUENCE) {
     const source = createDahliaEngine(state);
     surface.paint(source.sample(0.75));

@@ -1,3 +1,4 @@
+import { bindHoverPreview } from "../../../shared/preview/hover-preview";
 import { createBrandActivity } from "../../../../ui/brand/activity";
 import { BrandStatus } from "../../../../ui/brand/BrandStatus";
 import { useEffect, useMemo, useRef } from "react";
@@ -32,14 +33,13 @@ export function MotionPreviewSurface({
   useEffect(() => {
     const element = root.current;
     const host = viewport.current;
-    const owner = element?.closest("button");
+    const owner = element?.closest<HTMLElement>("[data-preview-owner],button");
     if (!element || !host || !owner) return;
     const carousel = owner.closest("[data-carousel]");
     const hover = matchMedia("(hover: hover) and (pointer: fine)");
     const reduced = matchMedia("(prefers-reduced-motion: reduce)");
     let alive = true;
     let generation = 0;
-    let pointerDown = false;
     let preview: PreviewOwner | null = null;
     function status(value: PreviewStatus, error?: unknown) {
       if (!alive || !element) return;
@@ -69,9 +69,8 @@ export function MotionPreviewSurface({
         !hover.matches ||
         reduced.matches ||
         document.hidden ||
-        pointerDown ||
         carousel?.hasAttribute("data-carousel-moving") ||
-        owner!.disabled ||
+        (owner instanceof HTMLButtonElement && owner.disabled) ||
         owner!.matches(":active") ||
         preview ||
         (event instanceof PointerEvent && event.pointerType === "touch")
@@ -82,53 +81,23 @@ export function MotionPreviewSurface({
         if (generation === token) status(value, error);
       });
     }
-    function focusOut(event: FocusEvent) {
-      if (!(event.relatedTarget instanceof Node) || !owner!.contains(event.relatedTarget)) stop();
-    }
-    function beginPointer() {
-      pointerDown = true;
-      stop();
-    }
-    function endPointer() {
-      pointerDown = false;
-    }
-    function carouselMotion() {
-      if (carousel?.hasAttribute("data-carousel-moving")) stop();
-      else if (owner!.matches(":hover") || owner!.contains(document.activeElement))
-        start(new Event("pointerenter"));
-    }
+    const intent = bindHoverPreview(owner, {
+      enabled: () =>
+        !disabled &&
+        !(owner instanceof HTMLButtonElement && owner.disabled) &&
+        !carousel?.hasAttribute("data-carousel-moving"),
+      onChange: (target) => {
+        if (target) start(new Event("pointerenter"));
+        else stop();
+      },
+    });
+    const carouselMotion = () => intent.refresh();
     carousel?.addEventListener("musart:carousel-motion", carouselMotion);
-    owner.addEventListener("pointerenter", start);
-    owner.addEventListener("pointerleave", stop);
-    owner.addEventListener("focusin", start);
-    owner.addEventListener("focusout", focusOut);
-    owner.addEventListener("pointerdown", beginPointer);
-    window.addEventListener("pointerup", endPointer);
-    window.addEventListener("pointercancel", endPointer);
-    document.addEventListener("visibilitychange", stop);
-    window.addEventListener("blur", stop);
-    window.addEventListener("scroll", stop, true);
-    hover.addEventListener("change", stop);
-    reduced.addEventListener("change", stop);
-    // A metadata/page rebind can mount under an existing pointer without another pointerenter event.
-    if (owner.matches(":hover") || owner.contains(document.activeElement))
-      start(new Event("focusin"));
     return () => {
       stop();
       alive = false;
       loading.set(false);
-      owner.removeEventListener("pointerenter", start);
-      owner.removeEventListener("pointerleave", stop);
-      owner.removeEventListener("focusin", start);
-      owner.removeEventListener("focusout", focusOut);
-      owner.removeEventListener("pointerdown", beginPointer);
-      window.removeEventListener("pointerup", endPointer);
-      window.removeEventListener("pointercancel", endPointer);
-      document.removeEventListener("visibilitychange", stop);
-      window.removeEventListener("blur", stop);
-      window.removeEventListener("scroll", stop, true);
-      hover.removeEventListener("change", stop);
-      reduced.removeEventListener("change", stop);
+      intent.dispose();
       carousel?.removeEventListener("musart:carousel-motion", carouselMotion);
     };
   }, [startPreview, disabled, t, loading]);
@@ -137,7 +106,7 @@ export function MotionPreviewSurface({
       {poster ? <img src={poster} alt="" loading="lazy" draggable={false} /> : children}
       <span ref={viewport} className="motion-template-preview-canvas" aria-hidden />
       <span className="motion-template-preview-loading-mark">
-        <BrandStatus size={34} state="preparing" activity={loading} />
+        <BrandStatus size={16} state="preparing" activity={loading} />
       </span>
       <span ref={feedback} className="motion-template-preview-status" role="status" />
     </span>

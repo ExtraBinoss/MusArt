@@ -1,7 +1,8 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Trash2 } from "lucide-react";
 import type { EnginePort, MotionAnimationPreset } from "@musart/core";
+import { bindHoverPreview } from "../../shared/preview/hover-preview";
 import { ScrollShadow } from "../../shared/scroll/ScrollShadow";
 import { useVirtualList } from "../../shared/scroll/use-virtual-list";
 import { Button } from "../../ui/button";
@@ -44,14 +45,28 @@ export function PresetGrid({
     const node = viewport.current;
     if (!node) return;
     const measure = () => {
-      if (node.clientWidth > 0)
-        setRowHeight(Math.ceil(((node.clientWidth - 10) / 2 - 2) * 0.75 + 59));
+      const grid = node.querySelector<HTMLElement>(".animation-preset-grid");
+      if (grid && grid.clientWidth > 0)
+        setRowHeight(Math.ceil(((grid.clientWidth - 10) / 2 - 2) * 0.75 + 59));
     };
     const observer = new ResizeObserver(measure);
     observer.observe(node);
     measure();
     return () => observer.disconnect();
   }, []);
+  useEffect(() => {
+    const node = viewport.current;
+    if (!node) return;
+    const intent = bindHoverPreview(node, {
+      selector: ".animation-preset-card",
+      onChange: (button) => {
+        const preset = button ? entries[Number(button.dataset.presetIndex)] : undefined;
+        const mount = button?.querySelector<HTMLDivElement>(".animation-card-live");
+        setHover(preset && mount ? { id: preset.id, mount } : null);
+      },
+    });
+    return () => intent.dispose();
+  }, [entries]);
   const visible = entries.slice(first * 2, last * 2);
   const hovered = hover && visible.find((preset) => preset.id === hover.id);
   useLayoutEffect(() => {
@@ -79,18 +94,11 @@ export function PresetGrid({
       onScroll({ currentTarget: node });
     }
   }
-  function preview(button: HTMLButtonElement, id: string) {
-    const mount = button.querySelector<HTMLDivElement>(".animation-card-live");
-    if (mount) setHover({ id, mount });
-  }
+
   return (
     <>
       <ScrollShadow className="animation-preset-shadow">
-        <div
-          ref={attachViewport}
-          className="animation-preset-scroll"
-          onScroll={() => setHover(null)}
-        >
+        <div ref={attachViewport} className="animation-preset-scroll">
           <div
             className="animation-preset-grid"
             role="list"
@@ -116,14 +124,6 @@ export function PresetGrid({
                       type="button"
                       aria-label={preset.name}
                       data-preset-index={index}
-                      onPointerEnter={(event) => preview(event.currentTarget, preset.id)}
-                      onFocus={(event) => preview(event.currentTarget, preset.id)}
-                      onPointerLeave={() =>
-                        setHover((current) => (current?.id === preset.id ? null : current))
-                      }
-                      onBlur={() =>
-                        setHover((current) => (current?.id === preset.id ? null : current))
-                      }
                       onKeyDown={(event) => {
                         const delta =
                           event.key === "ArrowDown"

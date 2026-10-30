@@ -37,6 +37,9 @@
   align-items: center;
   gap: 6px;
 }
+.animation-search > div {
+  width: 100%;
+}
 .animation-search input {
   height: 30px;
 }
@@ -55,6 +58,7 @@
   height: 100%;
   scrollbar-width: thin;
   scrollbar-gutter: stable;
+  padding: 0 14px 14px;
 }
 .animation-preset-grid {
   position: relative;
@@ -106,6 +110,7 @@
   object-fit: cover;
 }
 .animation-card-live {
+  pointer-events: none;
   position: absolute;
   inset: 0;
 }
@@ -337,8 +342,11 @@
 .animation-preset-shadow {
   flex: 1;
   min-height: 0;
+  margin-inline: -14px;
+  margin-bottom: -14px;
 }
 .animation-category-strip {
+  --scroll-shadow-surface: var(--popover);
   flex-shrink: 0;
 }
 .animation-categories button {
@@ -346,6 +354,7 @@
 }
 .animation-category-strip .horizontal-scroll-viewport {
   scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--foreground) 14%, transparent) transparent;
   padding-bottom: 3px;
 }
 .animation-category-strip .horizontal-scroll-viewport::-webkit-scrollbar {
@@ -353,11 +362,23 @@
   height: 6px;
 }
 .animation-category-strip .horizontal-scroll-viewport::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--foreground) 20%, transparent);
   border: 2px solid transparent;
   background-clip: padding-box;
 }
-.animation-category-strip:hover .horizontal-scroll-viewport::-webkit-scrollbar-thumb {
+.animation-category-strip .horizontal-scroll-viewport:hover {
+  scrollbar-color: color-mix(in srgb, var(--foreground) 35%, transparent) transparent;
+}
+.animation-category-strip .horizontal-scroll-viewport:hover::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--foreground) 35%, transparent);
   border-width: 0;
+}
+@supports selector(::-webkit-scrollbar) {
+  .animation-category-strip .horizontal-scroll-viewport,
+  .animation-category-strip .horizontal-scroll-viewport:hover {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
 }
 .motion-animation-popover[data-state="open"] {
   animation: motion-picker-in 160ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -390,12 +411,6 @@
     animation: none;
   }
 }
-.animation-category-strip[data-scroll-right] .horizontal-scroll-arrow.is-right,
-.animation-category-strip[data-scroll-left] .horizontal-scroll-arrow.is-left {
-  opacity: 1;
-  pointer-events: auto;
-}
-
 .animation-instance-footer {
   display: grid;
   grid-template-columns: 1fr auto;

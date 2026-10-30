@@ -92,7 +92,7 @@ test("template choices use the real creation API and preserve failure state", as
       onTask={d.onTask}
     />,
   );
-  const preset = screen.getByRole("button", { name: /Publication Instagram/ });
+  const preset = screen.getByRole("button", { name: /^Créer depuis .*Publication Instagram/ });
   fireEvent.click(preset);
   await waitFor(() => expect(d.onTask).toHaveLastResolvedWith(false));
   expect(close).not.toHaveBeenCalled();
@@ -166,7 +166,7 @@ test("captures template origin before download, prevents duplicate opening, and 
   };
   const view = d.mount(<ProjectDialog {...props} origin={first} />);
   fireEvent.click(screen.getByRole("radio", { name: "Motion" }));
-  const card = screen.getByRole("button", { name: /In Bloom/ });
+  const card = screen.getByRole("button", { name: "Créer depuis In Bloom — Démo Motion" });
   fireEvent.click(card);
   fireEvent.click(card);
   expect(create).toHaveBeenCalledOnce();
@@ -276,7 +276,7 @@ test("a pending gallery open cannot race a second open or import, and cannot clo
   );
   const view = d.mount(<ProjectDialog services={d.services} onClose={close} onTask={d.onTask} />);
   await screen.findByRole("article", { name: "Study" });
-  fireEvent.click(screen.getByRole("button", { name: "Study" }));
+  fireEvent.doubleClick(screen.getByRole("button", { name: "Study" }));
   fireEvent.click(screen.getByRole("button", { name: "Second" }));
   fireEvent.change(screen.getByLabelText("Importer .musart", { selector: "input" }), {
     target: { files: [new File(["{}"], "other.musart")] },
@@ -386,7 +386,7 @@ test("recent project shortcuts share the library mutation gate", async () => {
   d.mount(<ProjectDialog services={d.services} onTask={d.onTask} onClose={close} />);
   const recent = await screen.findByRole("button", { name: "Ouvrir le projet récent Study" });
   fireEvent.click(recent);
-  fireEvent.click(screen.getByRole("button", { name: "Study" }));
+  fireEvent.doubleClick(screen.getByRole("button", { name: "Study" }));
   expect(d.services.openProject).toHaveBeenCalledExactlyOnceWith("project-a");
   expect(screen.getByRole("button", { name: "Retour à l’accueil" })).toBeDisabled();
   expect(screen.getByRole("button", { name: "Templates" })).toBeDisabled();

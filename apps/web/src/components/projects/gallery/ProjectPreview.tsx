@@ -18,12 +18,16 @@ export function ProjectPreview({
   project,
   services,
   onOpen,
+  onDoubleClick,
+  previewLabel,
   children,
   disabled = false,
 }: {
   project: ProjectSummary;
   services: EditorServices;
-  onOpen: () => void;
+  onOpen: (event?: import("react").MouseEvent<HTMLButtonElement>) => void;
+  onDoubleClick?: () => void;
+  previewLabel?: string;
   children?: ReactNode;
   disabled?: boolean;
 }) {
@@ -158,9 +162,10 @@ export function ProjectPreview({
       <button
         type="button"
         className="project-preview-open"
-        aria-label={t("openNamedProject", { name: project.name })}
+        aria-label={previewLabel ?? t("openNamedProject", { name: project.name })}
         disabled={disabled}
         onClick={onOpen}
+        onDoubleClick={onDoubleClick}
       >
         <motion.div
           className="project-preview-track"

@@ -13,12 +13,14 @@ export const MeltLogo = memo(function MeltLogo({
   state = "idle",
   activity,
   className = "",
+  interactive = false,
 }: {
   size?: number;
   decorative?: boolean;
   state?: BrandState;
   activity?: BrandActivity;
   className?: string;
+  interactive?: boolean;
 }) {
   const { t } = useTranslation("brand"),
     id = useId().replace(/[^a-zA-Z0-9_-]/g, ""),
@@ -43,6 +45,28 @@ export const MeltLogo = memo(function MeltLogo({
       surface.dispose();
     };
   }, [id]);
+  useLayoutEffect(() => {
+    if (!interactive) return;
+    const owner = element.current?.closest("button,a") ?? element.current;
+    if (!owner) return;
+    const update = () =>
+      runtime.current?.setHovered(
+        owner.matches(":hover") || owner.contains(document.activeElement),
+      );
+    const enter = () => runtime.current?.setHovered(true);
+    const leave = () => runtime.current?.setHovered(owner.contains(document.activeElement));
+    owner.addEventListener("pointerenter", enter);
+    owner.addEventListener("pointerleave", leave);
+    owner.addEventListener("focusin", enter);
+    owner.addEventListener("focusout", update);
+    return () => {
+      runtime.current?.setHovered(false);
+      owner.removeEventListener("pointerenter", enter);
+      owner.removeEventListener("pointerleave", leave);
+      owner.removeEventListener("focusin", enter);
+      owner.removeEventListener("focusout", update);
+    };
+  }, [interactive]);
   useLayoutEffect(() => {
     runtime.current?.setState(state);
   }, [state]);

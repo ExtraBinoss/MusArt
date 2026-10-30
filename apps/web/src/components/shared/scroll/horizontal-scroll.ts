@@ -1,8 +1,15 @@
 /** Native viewport gestures and bounded hover work, with no React updates while scrolling. */
 export function installHorizontalScroll(root: HTMLElement, viewport: HTMLElement) {
-  const left = root.querySelector<HTMLButtonElement>('[data-horizontal-direction="-1"]'),
-    right = root.querySelector<HTMLButtonElement>('[data-horizontal-direction="1"]');
+  const shadows = root.dataset.scrollControls === "shadows";
+  const left = root.querySelector<HTMLElement>(
+      shadows ? ".scroll-shadow-inline-start" : '[data-horizontal-direction="-1"]',
+    ),
+    right = root.querySelector<HTMLElement>(
+      shadows ? ".scroll-shadow-inline-end" : '[data-horizontal-direction="1"]',
+    );
   if (!left || !right) return () => {};
+  left.dataset.horizontalDirection = "-1";
+  right.dataset.horizontalDirection = "1";
   let maximum = 0,
     width = 0,
     frame: number | undefined,
@@ -18,11 +25,15 @@ export function installHorizontalScroll(root: HTMLElement, viewport: HTMLElement
     direction = 0;
   }
   function paint() {
-    left!.disabled = viewport.scrollLeft <= 1;
-    right!.disabled = maximum - viewport.scrollLeft <= 1;
-    root.toggleAttribute("data-scroll-left", !left!.disabled);
-    root.toggleAttribute("data-scroll-right", !right!.disabled);
-    if ((direction < 0 && left!.disabled) || (direction > 0 && right!.disabled)) stopHover();
+    const atStart = viewport.scrollLeft <= 1,
+      atEnd = maximum - viewport.scrollLeft <= 1;
+    if (left instanceof HTMLButtonElement) left.disabled = atStart;
+    if (right instanceof HTMLButtonElement) right.disabled = atEnd;
+    left!.toggleAttribute("data-scroll-disabled", atStart);
+    right!.toggleAttribute("data-scroll-disabled", atEnd);
+    root.toggleAttribute("data-scroll-left", !atStart);
+    root.toggleAttribute("data-scroll-right", !atEnd);
+    if ((direction < 0 && atStart) || (direction > 0 && atEnd)) stopHover();
   }
   function move(delta: number) {
     const before = viewport.scrollLeft;
@@ -47,8 +58,8 @@ export function installHorizontalScroll(root: HTMLElement, viewport: HTMLElement
   function hover(event: PointerEvent) {
     if (event.pointerType !== "mouse" || event.buttons || document.hidden || reduced.matches)
       return;
-    const button = event.currentTarget as HTMLButtonElement;
-    if (button.disabled) return;
+    const button = event.currentTarget as HTMLElement;
+    if (button.hasAttribute("data-scroll-disabled")) return;
     stopHover();
     direction = Number(button.dataset.horizontalDirection);
     frame = requestAnimationFrame(tick);
@@ -169,9 +180,10 @@ export function installHorizontalScroll(root: HTMLElement, viewport: HTMLElement
   for (const button of [left, right]) {
     button.addEventListener("pointerenter", hover);
     button.addEventListener("pointerleave", stopHover);
+    button.addEventListener("pointerdown", stopHover);
     button.addEventListener("pointercancel", stopHover);
     button.addEventListener("blur", stopHover);
-    button.addEventListener("click", clickArrow);
+    if (!shadows) button.addEventListener("click", clickArrow);
   }
   return () => {
     cancel();
@@ -192,9 +204,10 @@ export function installHorizontalScroll(root: HTMLElement, viewport: HTMLElement
     for (const button of [left, right]) {
       button.removeEventListener("pointerenter", hover);
       button.removeEventListener("pointerleave", stopHover);
+      button.removeEventListener("pointerdown", stopHover);
       button.removeEventListener("pointercancel", stopHover);
       button.removeEventListener("blur", stopHover);
-      button.removeEventListener("click", clickArrow);
+      if (!shadows) button.removeEventListener("click", clickArrow);
     }
   };
 }

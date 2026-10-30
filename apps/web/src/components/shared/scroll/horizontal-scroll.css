@@ -78,3 +78,14 @@
     transition: none;
   }
 }
+
+/* The existing fades are the hover targets; the native scrollbar stays uncovered. */
+.horizontal-scroll[data-scroll-controls="shadows"] .scroll-shadow-side {
+  width: 28px;
+  bottom: var(--scroll-shadow-scrollbar-bottom, 6px);
+}
+.horizontal-scroll[data-scroll-controls="shadows"][data-scroll-left] .scroll-shadow-inline-start,
+.horizontal-scroll[data-scroll-controls="shadows"][data-scroll-right] .scroll-shadow-inline-end {
+  opacity: 1;
+  pointer-events: auto;
+}

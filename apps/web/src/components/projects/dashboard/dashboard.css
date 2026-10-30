@@ -65,6 +65,7 @@
   padding-right: 0;
 }
 .dashboard-brand[data-slot="button"] {
+  font-family: var(--font-brand-display);
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -226,6 +227,7 @@
   margin-bottom: 28px;
 }
 .dashboard-intro h2 {
+  font-family: var(--font-brand-display);
   margin: 0;
   font-size: clamp(28px, 3vw, 38px);
   font-weight: 600;

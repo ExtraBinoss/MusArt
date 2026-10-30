@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Search, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   ANIMATION_CATEGORIES,
@@ -12,7 +12,7 @@ import {
   type SavedMotionPreset,
 } from "../../../services/motion/animations/presets";
 import { SegmentedTabs } from "../../shared/segmented/SegmentedTabs";
-import { Input } from "../../ui/input";
+import { SearchInput } from "../../assets/SearchInput";
 import { Button } from "../../ui/button";
 import { PresetGrid } from "./PresetGrid";
 import { HorizontalScroll } from "../../shared/scroll/HorizontalScroll";
@@ -133,16 +133,19 @@ export function PresetPicker({
           setCategory("all");
         }}
       />
-      <label className="animation-search">
-        <Search size={14} />
-        <Input
+      <div className="animation-search">
+        <SearchInput
           aria-label={t("search")}
-          placeholder={t("search")}
+          hints={MOTION_ANIMATION_PRESETS.slice(0, 6).map((preset) => ({ label: preset.name }))}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
-      </label>
-      <HorizontalScroll label={t("categories")} className="animation-category-strip">
+      </div>
+      <HorizontalScroll
+        label={t("categories")}
+        className="animation-category-strip"
+        edgeControls="shadows"
+      >
         <div className="animation-categories">
           {["all", ...ANIMATION_CATEGORIES].map((value) => (
             <Button

@@ -1,3 +1,6 @@
+import { useLibraryItemActivation } from "../items/context";
+import { LibraryOpenButton } from "../items/LibraryBrowser";
+import "../items/messages";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Copy, Ellipsis, Pencil, Trash2, HardDrive, History } from "lucide-react";
@@ -41,6 +44,20 @@ export function ProjectCard({
   const previewPage = project.pages.find((page) => page.mode === "motion") ?? project.pages[0];
   const mode =
     project.mode ?? (project.pages.some((page) => page.mode === "motion") ? "motion" : "static");
+  const activation = useLibraryItemActivation(
+    {
+      kind: "project",
+      id: project.id,
+      name: project.name,
+      mode,
+      pageId: previewPage?.id,
+      preview: project.thumbnail,
+      width: previewPage?.width,
+      height: previewPage?.height,
+    },
+    onOpen,
+    disabled,
+  );
   const [editing, setEditing] = useState(false),
     [saving, setSaving] = useState(false);
   const cancelled = useRef(false),
@@ -73,7 +90,16 @@ export function ProjectCard({
       data-active={active || undefined}
       aria-current={active ? "true" : undefined}
     >
-      <ProjectPreview project={project} services={services} onOpen={onOpen} disabled={disabled}>
+      <ProjectPreview
+        project={project}
+        services={services}
+        onOpen={(event) => (event ? activation.click(event) : onOpen())}
+        onDoubleClick={activation.double}
+        previewLabel={
+          activation.inspectable ? t("libraryItem:preview", { name: project.name }) : undefined
+        }
+        disabled={disabled}
+      >
         <div className="project-card-overlay project-card-caption">
           <div className="project-card-copy">
             <div className="project-card-meta">
@@ -106,7 +132,8 @@ export function ProjectCard({
                   type="button"
                   className="project-card-name"
                   disabled={disabled}
-                  onClick={onOpen}
+                  onClick={activation.click}
+                  onDoubleClick={activation.double}
                   onKeyDown={(event) => {
                     if (event.key === "F2") {
                       event.preventDefault();
@@ -181,6 +208,13 @@ export function ProjectCard({
           </DropdownMenuContent>
         </DropdownMenu>
       </ProjectPreview>
+      {activation.inspectable && (
+        <LibraryOpenButton
+          onOpen={activation.direct}
+          disabled={disabled}
+          label={t("openNamedProject", { name: project.name })}
+        />
+      )}
     </article>
   );
 }

@@ -13,11 +13,13 @@ export function HorizontalScroll({
   label,
   className,
   viewportClassName,
+  edgeControls = "arrows",
 }: {
   children: ReactNode;
   label: string;
   className?: string;
   viewportClassName?: string;
+  edgeControls?: "arrows" | "shadows";
 }) {
   const root = useRef<HTMLDivElement>(null),
     viewport = useRef<HTMLDivElement>(null);
@@ -27,10 +29,14 @@ export function HorizontalScroll({
       root.current && viewport.current
         ? installHorizontalScroll(root.current, viewport.current)
         : undefined,
-    [],
+    [edgeControls],
   );
   return (
-    <div className={cn("horizontal-scroll", className)} ref={root}>
+    <div
+      className={cn("horizontal-scroll", className)}
+      ref={root}
+      data-scroll-controls={edgeControls}
+    >
       <ScrollShadow axis="horizontal" className="horizontal-scroll-shadow">
         <div
           ref={viewport}
@@ -42,24 +48,28 @@ export function HorizontalScroll({
           <div className="horizontal-scroll-content">{children}</div>
         </div>
       </ScrollShadow>
-      <button
-        type="button"
-        className="horizontal-scroll-arrow is-left"
-        data-horizontal-direction="-1"
-        aria-label={t("left", { label })}
-        disabled
-      >
-        <ChevronLeft size={14} aria-hidden />
-      </button>
-      <button
-        type="button"
-        className="horizontal-scroll-arrow is-right"
-        data-horizontal-direction="1"
-        aria-label={t("right", { label })}
-        disabled
-      >
-        <ChevronRight size={14} aria-hidden />
-      </button>
+      {edgeControls === "arrows" && (
+        <>
+          <button
+            type="button"
+            className="horizontal-scroll-arrow is-left"
+            data-horizontal-direction="-1"
+            aria-label={t("left", { label })}
+            disabled
+          >
+            <ChevronLeft size={14} aria-hidden />
+          </button>
+          <button
+            type="button"
+            className="horizontal-scroll-arrow is-right"
+            data-horizontal-direction="1"
+            aria-label={t("right", { label })}
+            disabled
+          >
+            <ChevronRight size={14} aria-hidden />
+          </button>
+        </>
+      )}
     </div>
   );
 }

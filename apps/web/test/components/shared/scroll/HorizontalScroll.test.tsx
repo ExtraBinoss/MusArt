@@ -27,3 +27,20 @@ test("uses the existing horizontal ScrollShadow around a named native viewport",
   expect(remove).toHaveBeenCalledWith("wheel", expect.any(Function));
   expect(remove).toHaveBeenCalledWith("click", expect.any(Function), true);
 });
+
+test("shadow controls retain a focusable native viewport and expose no arrow buttons", () => {
+  const d = setup();
+  d.mount(
+    <HorizontalScroll label="Motion categories" edgeControls="shadows">
+      <button>Move</button>
+    </HorizontalScroll>,
+  );
+  const viewport = screen.getByRole("group", { name: "Motion categories" });
+  expect(viewport).toHaveAttribute("tabindex", "0");
+  expect(screen.getAllByRole("button")).toHaveLength(1);
+  expect(viewport.parentElement!.querySelectorAll(".scroll-shadow-side")).toHaveLength(2);
+  expect(viewport.closest("[data-scroll-controls]")).toHaveAttribute(
+    "data-scroll-controls",
+    "shadows",
+  );
+});

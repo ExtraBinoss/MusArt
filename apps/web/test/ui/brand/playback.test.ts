@@ -143,3 +143,24 @@ test("reduced motion presents the pending pose when an inactive or offscreen own
   expect(f.callbacks.size).toBe(0);
   f.playback.dispose();
 });
+test("hover blinks and keeps one genuine idle animation chain, then returns to rest", () => {
+  const f = fixture();
+  f.playback.setHovered(true);
+  f.playback.setHovered(true);
+  expect(f.callbacks.size).toBe(1);
+  f.step(17);
+  const first = f.surface.paint.mock.calls.length;
+  f.step(17);
+  expect(f.surface.paint).toHaveBeenCalledTimes(first);
+  f.step(17);
+  expect(f.surface.paint).toHaveBeenCalledTimes(first + 1);
+  for (let i = 0; i < 12; i++) f.step(100);
+  expect(f.surface.paint.mock.calls.length).toBeGreaterThan(5);
+  f.playback.setHovered(false);
+  for (let i = 0; i < 4; i++) f.step(100);
+  expect(f.callbacks.size).toBe(0);
+  f.reduce(true);
+  f.playback.setHovered(true);
+  expect(f.callbacks.size).toBe(0);
+  f.playback.dispose();
+});

@@ -1,3 +1,4 @@
+import { LibraryBrowser, FavoritesRail } from "./items/LibraryBrowser";
 import { brand } from "../../ui/brand/config";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
@@ -186,164 +187,176 @@ function ProjectDashboard({
       />
     );
   return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        if (!open && !welcome && !busy && !preferences && !creating) onClose();
-      }}
+    <LibraryBrowser
+      services={services}
+      busy={busy}
+      onOpenProject={(id) => complete(() => services.openProject(id))}
+      onOpenTemplate={chooseTemplate}
     >
-      <DialogContent
-        closeLabel={t("close")}
-        showCloseButton={!welcome && !busy}
-        onEscapeKeyDown={(event) => {
-          if (welcome || busy || preferences || creating) event.preventDefault();
+      <Dialog
+        open
+        onOpenChange={(open) => {
+          if (!open && !welcome && !busy && !preferences && !creating) onClose();
         }}
-        onInteractOutside={(event) => {
-          if (welcome || busy || preferences || creating) event.preventDefault();
-        }}
-        data-welcome={welcome || undefined}
-        className="floating-panel project-dashboard translate-x-0 translate-y-0"
       >
-        <div className="dashboard-sidebar">
-          <Button
-            variant="ghost"
-            className="dashboard-brand"
-            aria-label={t("dashboard:home")}
-            disabled={busy}
-            onClick={home}
-          >
-            <MeltLogo size={32} />
-            <span>{brand.name}</span>
-          </Button>
-          <LibrarySidebar
-            services={services}
-            onTask={onTask}
-            view={view}
-            busy={busy}
-            onViewChange={changeView}
-            onChooseRecent={(id) => complete(() => services.openProject(id))}
-            onPreferences={() => setPreferences(true)}
-          />
-        </div>
-        <div ref={librarySurface} className="dashboard-main">
-          <DialogHeader className="dashboard-header">
-            <div className="dashboard-header-line">
-              <Button
-                variant="ghost"
-                className="dashboard-home"
-                aria-label={t("dashboard:backHomeLabel")}
-                disabled={busy}
-                onClick={home}
-              >
-                <ArrowLeft size={15} />
-                {t("dashboard:backHome")}
-              </Button>
-            </div>
-            <DialogTitle className="sr-only">{t("dashboard:title")}</DialogTitle>
-            <DialogDescription className="sr-only">{t("dashboard:description")}</DialogDescription>
-          </DialogHeader>
-          <div className="dashboard-body">
-            <ScrollShadow className="dashboard-list-scroll" surface="var(--background)">
-              <section aria-labelledby={headingId} className="dashboard-pane scrollable-panel">
-                <div className="dashboard-pane-content">
-                  <div className="dashboard-intro">
-                    <div>
-                      <h2 id={headingId}>
-                        {t(
-                          view === "projects" && projectName && !welcome
-                            ? "dashboard:projectHeading"
-                            : "dashboard:question",
-                        )}
-                      </h2>
-                      <p>
-                        {t(
-                          view === "projects" ? "dashboard:projectsHint" : "dashboard:description",
-                        )}
-                      </p>
-                    </div>
-                    <ProjectCreateActions
-                      label={t(view === "projects" ? "dashboard:new" : "dashboard:custom")}
-                      disabled={busy}
-                      onCreate={custom}
-                      onImport={() => fileRef.current?.click()}
-                    />
-                  </div>
-                  <LibraryToolbar
-                    view={view}
-                    query={queries[view]}
-                    onQueryChange={(query) =>
-                      setQueries((current) => ({ ...current, [view]: query }))
-                    }
-                    mode={libraryMode}
-                    onModeChange={setLibraryMode}
-                    projects={projectHints}
-                    disabled={busy}
-                  />
-                  <div ref={libraryContent} className="dashboard-grid-stage">
-                    <AnimatePresence initial={false}>
-                      <LibraryTransition key={view}>
-                        {view === "projects" ? (
-                          <ProjectGallery
-                            services={services}
-                            activeProjectId={projectId}
-                            onTask={perform}
-                            busy={busy}
-                            onOpen={() => {
-                              if (scope.current.alive) onClose();
-                            }}
-                            onCreate={custom}
-                            showCreateAction={false}
-                            query={queries.projects}
-                            hideSearch
-                            mode={libraryMode}
-                            onProjectsLoaded={setProjectHints}
-                          />
-                        ) : (
-                          <TemplateGallery
-                            busy={busy}
-                            onChoose={chooseTemplate}
-                            onCancel={
-                              templateLoading ? () => templateRequest.current?.abort() : undefined
-                            }
-                            query={queries.templates}
-                            mode={libraryMode}
-                            hideToolbar
-                          />
-                        )}
-                      </LibraryTransition>
-                    </AnimatePresence>
-                  </div>
-                </div>
-              </section>
-            </ScrollShadow>
-          </div>
-          {mobile && (
-            <MobileLibraryNavigation
+        <DialogContent
+          closeLabel={t("close")}
+          showCloseButton={!welcome && !busy}
+          onEscapeKeyDown={(event) => {
+            if (welcome || busy || preferences || creating) event.preventDefault();
+          }}
+          onInteractOutside={(event) => {
+            if (welcome || busy || preferences || creating) event.preventDefault();
+          }}
+          data-welcome={welcome || undefined}
+          className="floating-panel project-dashboard translate-x-0 translate-y-0"
+        >
+          <div className="dashboard-sidebar">
+            <Button
+              variant="ghost"
+              className="dashboard-brand"
+              aria-label={t("dashboard:home")}
+              disabled={busy}
+              onClick={home}
+            >
+              <MeltLogo size={32} interactive />
+              <span>{brand.name}</span>
+            </Button>
+            <LibrarySidebar
+              services={services}
+              onTask={onTask}
               view={view}
               busy={busy}
-              preferences={preferences}
-              surface={librarySurface}
-              content={libraryContent}
               onViewChange={changeView}
+              onChooseRecent={(id) => complete(() => services.openProject(id))}
               onPreferences={() => setPreferences(true)}
             />
-          )}
-        </div>
-        {creationDialog}
-        {preferences && <PreferencesDialog onClose={() => setPreferences(false)} />}
-        <input
-          ref={fileRef}
-          className="sr-only"
-          type="file"
-          accept=".musart,.json,application/json"
-          aria-label={t("dashboard:import")}
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) complete(() => services.openPortable(file));
-            event.target.value = "";
-          }}
-        />
-      </DialogContent>
-    </Dialog>
+          </div>
+          <div ref={librarySurface} className="dashboard-main">
+            <DialogHeader className="dashboard-header">
+              <div className="dashboard-header-line">
+                <Button
+                  variant="ghost"
+                  className="dashboard-home"
+                  aria-label={t("dashboard:backHomeLabel")}
+                  disabled={busy}
+                  onClick={home}
+                >
+                  <ArrowLeft size={15} />
+                  {t("dashboard:backHome")}
+                </Button>
+              </div>
+              <DialogTitle className="sr-only">{t("dashboard:title")}</DialogTitle>
+              <DialogDescription className="sr-only">
+                {t("dashboard:description")}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="dashboard-body">
+              <ScrollShadow className="dashboard-list-scroll" surface="var(--background)">
+                <section aria-labelledby={headingId} className="dashboard-pane scrollable-panel">
+                  <div className="dashboard-pane-content">
+                    <div className="dashboard-intro">
+                      <div>
+                        <h2 id={headingId}>
+                          {t(
+                            view === "projects" && projectName && !welcome
+                              ? "dashboard:projectHeading"
+                              : "dashboard:question",
+                          )}
+                        </h2>
+                        <p>
+                          {t(
+                            view === "projects"
+                              ? "dashboard:projectsHint"
+                              : "dashboard:description",
+                          )}
+                        </p>
+                      </div>
+                      <ProjectCreateActions
+                        label={t(view === "projects" ? "dashboard:new" : "dashboard:custom")}
+                        disabled={busy}
+                        onCreate={custom}
+                        onImport={() => fileRef.current?.click()}
+                      />
+                    </div>
+                    <FavoritesRail />
+                    <LibraryToolbar
+                      view={view}
+                      query={queries[view]}
+                      onQueryChange={(query) =>
+                        setQueries((current) => ({ ...current, [view]: query }))
+                      }
+                      mode={libraryMode}
+                      onModeChange={setLibraryMode}
+                      projects={projectHints}
+                      disabled={busy}
+                    />
+                    <div ref={libraryContent} className="dashboard-grid-stage">
+                      <AnimatePresence initial={false}>
+                        <LibraryTransition key={view}>
+                          {view === "projects" ? (
+                            <ProjectGallery
+                              services={services}
+                              activeProjectId={projectId}
+                              onTask={perform}
+                              busy={busy}
+                              onOpen={() => {
+                                if (scope.current.alive) onClose();
+                              }}
+                              onCreate={custom}
+                              showCreateAction={false}
+                              query={queries.projects}
+                              hideSearch
+                              mode={libraryMode}
+                              onProjectsLoaded={setProjectHints}
+                            />
+                          ) : (
+                            <TemplateGallery
+                              busy={busy}
+                              onChoose={chooseTemplate}
+                              onCancel={
+                                templateLoading ? () => templateRequest.current?.abort() : undefined
+                              }
+                              query={queries.templates}
+                              mode={libraryMode}
+                              hideToolbar
+                            />
+                          )}
+                        </LibraryTransition>
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                </section>
+              </ScrollShadow>
+            </div>
+            {mobile && (
+              <MobileLibraryNavigation
+                view={view}
+                busy={busy}
+                preferences={preferences}
+                surface={librarySurface}
+                content={libraryContent}
+                onViewChange={changeView}
+                onPreferences={() => setPreferences(true)}
+              />
+            )}
+          </div>
+          {creationDialog}
+          {preferences && <PreferencesDialog onClose={() => setPreferences(false)} />}
+          <input
+            ref={fileRef}
+            className="sr-only"
+            type="file"
+            accept=".musart,.json,application/json"
+            aria-label={t("dashboard:import")}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) complete(() => services.openPortable(file));
+              event.target.value = "";
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    </LibraryBrowser>
   );
 }

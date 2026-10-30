@@ -6,6 +6,10 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Added preview-first project/template cards with an author panel, direct Open actions, double-click opening and persistent transactional favorites above the library. Shared Motion hover intent now resumes the card beneath a stationary pointer after scrolling, includes every registered Motion template, and shows compact loading indicators. Unified the Add motion typewriter search and refined the gradient mascot, hover animation and Clash Display interface headings. Removed legacy editor logo overrides so the landing, library and editor consistently use the shared brand primary.
+
+- Moved the Add motion preset scrollbar to the outer right/bottom gutter, made its category scrollbar subtle until hovered, and replaced category arrows with immediately visible scroll shadows that auto-scroll on hover. Preserved wheel, touch and keyboard navigation through the shared horizontal controller.
+
 - Replaced repeated property/point trash icons in animation Details with quiet right-aligned minus controls, retaining one trash icon at the far right for deleting the complete animation.
 
 - Placed each animation property's delete control beside its name and contextual info, keeping property ownership clear within Details.

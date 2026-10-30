@@ -1,4 +1,4 @@
-import { planMotionInitialization } from "@musart/core";
+import { MOTION_ANIMATION_PRESETS, planMotionInitialization } from "@musart/core";
 import { expect, test } from "@playwright/test";
 
 test("motion presets stay simple, preview natively and persist globally across projects", async ({
@@ -27,7 +27,7 @@ test("motion presets stay simple, preview natively and persist globally across p
   const picker = page.locator(".motion-animation-popover");
   await expect(picker.locator(".animation-preset-grid")).toHaveAttribute(
     "data-total-presets",
-    "61",
+    String(MOTION_ANIMATION_PRESETS.length),
   );
   expect(await picker.locator(".animation-preset-card").count()).toBeLessThan(25);
   await expect(picker.locator("footer")).toHaveCount(0);
@@ -36,9 +36,41 @@ test("motion presets stay simple, preview natively and persist globally across p
     .locator("button")
     .evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().top));
   expect(new Set(categoryBounds).size).toBe(1);
-  await picker.locator("[data-horizontal-direction='1']").hover();
-  await expect.poll(() => strip.evaluate((node) => node.scrollLeft)).toBeGreaterThan(30);
+  await expect(picker.locator(".horizontal-scroll-arrow")).toHaveCount(0);
+  await expect
+    .poll(() =>
+      picker
+        .locator(".scroll-shadow-inline-end")
+        .evaluate((node) => getComputedStyle(node).opacity),
+    )
+    .toBe("1");
+  const gutter = await picker.evaluate((node) => {
+    const popup = node.getBoundingClientRect(),
+      viewport = node.querySelector(".animation-preset-scroll")!.getBoundingClientRect();
+    return { right: popup.right - viewport.right, bottom: popup.bottom - viewport.bottom };
+  });
+  expect(gutter.right).toBeLessThanOrEqual(2);
+  expect(gutter.bottom).toBeLessThanOrEqual(2);
+  const scrollbar = () =>
+    strip.evaluate((node) => ({
+      thumb: getComputedStyle(node, "::-webkit-scrollbar-thumb").borderTopWidth,
+      height: getComputedStyle(node, "::-webkit-scrollbar").height,
+    }));
   await picker.locator("header").hover();
+  expect(await scrollbar()).toEqual({ thumb: "2px", height: "6px" });
+  await picker.locator(".scroll-shadow-inline-end").hover();
+  await expect.poll(() => strip.evaluate((node) => node.scrollLeft)).toBeGreaterThan(30);
+  await strip.hover({ position: { x: 100, y: 5 } });
+  expect((await scrollbar()).thumb).toBe("0px");
+  await picker.locator("header").hover();
+  const stopped = await strip.evaluate((node) => node.scrollLeft);
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  );
+  expect(await strip.evaluate((node) => node.scrollLeft)).toBe(stopped);
   await strip.evaluate((node) => {
     node.scrollLeft = 0;
   });
