@@ -217,3 +217,21 @@ export { createLayerGeometryIndex, LayerGeometryIndex } from "./layers/geometry-
 export { copyContent, parseClipboard, MAX_CLIPBOARD_CHARACTERS } from "./clipboard/content";
 export { pasteContent } from "./clipboard/paste";
 export type { ClipboardContent } from "./clipboard/model";
+
+export type {
+  MotionAnimation,
+  MotionAnimationPreset,
+  AnimationChannel,
+  AnimationPoint,
+  AnimationCategory,
+  AnimationTarget,
+} from "./motion/animations/model";
+export { MOTION_ANIMATION_PRESETS } from "./motion/animations/catalog";
+export {
+  validateMotionAnimationPreset,
+  ANIMATION_CATEGORIES,
+} from "./motion/animations/validation";
+export {
+  captureMotionAnimationPreset,
+  extractMotionAnimationPreset,
+} from "./motion/animations/extract";

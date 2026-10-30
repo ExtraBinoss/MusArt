@@ -82,6 +82,7 @@ async function prepare(page: Page) {
   await page.goto("/?automation=1", { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => Boolean(window.musart), undefined, { timeout: 20000 });
   await page.evaluate((project) => window.musart!.load(project), project);
+  await page.getByRole("button", { name: "Keyframes", exact: true }).click();
   await expect(page.locator('.canvas-artboard canvas[data-renderer-ready="true"]')).toBeVisible({
     timeout: 20000,
   });
@@ -175,41 +176,31 @@ test("transition choices share a real retained GPU preview and release it withou
       ).__transitionDevices,
     },
   }));
-  await page.locator('.motion-row:not(.is-property)[data-layer-id="card"]').hover();
-  await page.getByRole("button", { name: "Ajouter une transition", exact: true }).click();
-  const panel = page.getByRole("dialog", { name: "Transition", exact: true });
-  const preview = panel.locator(".motion-transition-preview"),
-    canvas = preview.locator("canvas");
-  // Exercise cold hover/leave before the first GPU acknowledgement.
-  await preview.hover();
-  await panel.locator("header").hover();
-  await expect(canvas).toHaveAttribute("data-transition-style", "fade");
-  await expect(canvas).toHaveAttribute("data-backend", "webgpu");
-  await canvas.evaluate((node) =>
-    Object.defineProperty(window, "__retainedTransitionCanvas", { value: node }),
-  );
+  await page
+    .locator(".layer-animations")
+    .getByRole("button", { name: "Ajouter une animation", exact: true })
+    .click();
+  const panel = page.getByRole("dialog", { name: "Ajouter une animation", exact: true });
+  const fadeCard = panel.getByRole("button", { name: "Fade", exact: true });
+  await fadeCard.hover();
+  await expect(fadeCard.locator("canvas")).toHaveAttribute("data-backend", "webgpu");
+  await fadeCard
+    .locator("canvas")
+    .evaluate((node) =>
+      Object.defineProperty(window, "__retainedTransitionCanvas", { value: node }),
+    );
   const quiet = await counts(page);
-  const fade = await preview
-    .locator(".motion-transition-preview-surface")
+  const fade = await fadeCard
+    .locator(".animation-card-live")
     .screenshot({ path: `${output}/fade.png` });
-  await panel.getByRole("combobox", { name: "Catégorie de transition", exact: true }).click();
-  await page.getByRole("option", { name: "Révélations", exact: true }).click();
-  await panel.locator("header").hover();
-  await expect(canvas).toHaveAttribute("data-transition-style", "wipe");
-  const wipe = await preview
-    .locator(".motion-transition-preview-surface")
+  const wipeCard = panel.getByRole("button", { name: "Wipe", exact: true });
+  await wipeCard.hover();
+  const canvas = wipeCard.locator("canvas");
+  await expect(canvas).toBeVisible();
+  const wipe = await wipeCard
+    .locator(".animation-card-live")
     .screenshot({ path: `${output}/wipe.png` });
   expect(fade.equals(wipe)).toBe(false);
-  await preview.hover();
-  const first = Number(await canvas.getAttribute("data-preview-frames"));
-  await expect
-    .poll(async () => Number(await canvas.getAttribute("data-preview-frames")))
-    .toBeGreaterThan(first + 1);
-  await panel.locator("header").hover();
-  await page.waitForTimeout(120);
-  const stopped = await canvas.getAttribute("data-preview-frames");
-  await page.waitForTimeout(120);
-  await expect(canvas).toHaveAttribute("data-preview-frames", stopped!);
   expect(
     await canvas.evaluate(
       (node) =>
@@ -217,6 +208,21 @@ test("transition choices share a real retained GPU preview and release it withou
           .__retainedTransitionCanvas === node,
     ),
   ).toBe(true);
+  const first = Number(await canvas.getAttribute("data-preview-frames"));
+  await expect
+    .poll(async () => Number(await canvas.getAttribute("data-preview-frames")))
+    .toBeGreaterThan(first + 1);
+  await panel.locator("header").hover();
+  const frames = () =>
+    page.evaluate(
+      () =>
+        (window as unknown as { __retainedTransitionCanvas: HTMLCanvasElement })
+          .__retainedTransitionCanvas.dataset.previewFrames,
+    );
+  await page.waitForTimeout(120);
+  const stopped = await frames();
+  await page.waitForTimeout(120);
+  expect(await frames()).toBe(stopped);
   expect(await counts(page)).toEqual(quiet);
   const during = await page.evaluate(() => ({
     ...(
@@ -227,7 +233,7 @@ test("transition choices share a real retained GPU preview and release it withou
   }));
   expect(during.created - before.devices.created).toBe(1);
   expect(during.active - before.devices.active).toBe(1);
-  await panel.getByRole("button", { name: "Annuler", exact: true }).click();
+  await page.keyboard.press("Escape");
   await expect
     .poll(() =>
       page.evaluate(

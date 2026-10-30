@@ -124,6 +124,7 @@ test("one visual layer owns independent clips, property keys, a gap copy and one
       window.musart!.load(project);
       window.musart!.select(["occurrence-card"]);
     }, fixture());
+    await page.getByRole("button", { name: "Keyframes", exact: true }).click();
     const dock = page.locator(".motion-timeline-dock");
     await expect(dock).toBeVisible();
     const pin = page.getByRole("button", { name: "Épingler la timeline", exact: true });

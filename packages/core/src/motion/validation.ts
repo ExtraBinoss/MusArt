@@ -1,3 +1,4 @@
+import { validateMotionAnimations } from "./animations/validation";
 import type { Composition } from "../document/model";
 import { assertList, assertRecord, assertUniqueId } from "../document/guards";
 import { ensure } from "../errors";
@@ -107,6 +108,8 @@ export function validateCompositionMotion(
       siblings.push({ start: track.start, end: intervalEnd });
       intervals.set(track.layerId, siblings);
     }
+    keys += validateMotionAnimations(track.animations, boundLayer!, ids);
+    ensure(keys <= 100000, "INVALID_DOCUMENT", "Too many Motion animation points");
     assertList(track.properties, 1024);
     const addresses = new Set<string>();
     for (const property of track.properties) {

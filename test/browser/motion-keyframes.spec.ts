@@ -84,6 +84,7 @@ async function load(page: Page) {
     window.musart!.load(project);
     window.musart!.select(["card"]);
   }, project);
+  await page.getByRole("button", { name: "Keyframes", exact: true }).click();
   await expect(page.locator('.canvas-artboard canvas[data-renderer-ready="true"]')).toBeVisible({
     timeout: 20000,
   });

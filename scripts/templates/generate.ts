@@ -1,3 +1,4 @@
+import { generateShareYourWork } from "./share-work";
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
@@ -22,6 +23,12 @@ export async function generateMotionTemplates(options: {
     await writeFile(path, original.data);
   }
   const written: string[] = [];
+  written.push(
+    ...(await generateShareYourWork(
+      options.outputDirectory,
+      resolve(options.mediaDirectory, "share-work"),
+    )),
+  );
   for (const [templateId, build] of [
     ["in-bloom", createBloomTemplate],
     ["motion-stress-lab", createStressTemplate],

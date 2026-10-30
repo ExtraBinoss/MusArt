@@ -110,7 +110,6 @@ export function parseMotionTemplateManifest(
       manifest.version !== 1 ||
       manifest.templateId !== id ||
       !Array.isArray(manifest.originals) ||
-      manifest.originals.length < 1 ||
       manifest.originals.length > 16
     )
       throw Error();
@@ -178,7 +177,8 @@ export async function prepareMotionTemplate(
   if (
     templateId !== "in-bloom" &&
     templateId !== "motion-stress-lab" &&
-    templateId !== "sound-playground"
+    templateId !== "sound-playground" &&
+    templateId !== "share-your-work"
   )
     throw new MotionTemplateError("invalid");
   const base = `${import.meta.env.BASE_URL}templates/motion/`;
@@ -222,7 +222,8 @@ export async function openMotionTemplate(
   if (
     templateId !== "in-bloom" &&
     templateId !== "motion-stress-lab" &&
-    templateId !== "sound-playground"
+    templateId !== "sound-playground" &&
+    templateId !== "share-your-work"
   )
     throw new MotionTemplateError("invalid");
   if (!services.openMediaProject) throw new MotionTemplateError("unsupported");

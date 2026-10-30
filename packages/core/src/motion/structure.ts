@@ -17,6 +17,10 @@ export function duplicateMotionTracks(
       const duplicate = cloneValue(track);
       duplicate.id = nextId("track");
       duplicate.layerId = layerIds.get(track.layerId)!;
+      for (const animation of duplicate.animations ?? []) {
+        animation.id = nextId("animation");
+        animation.effectIds = animation.effectIds.map((id) => effectIds.get(id)!);
+      }
       for (const property of duplicate.properties) {
         property.id = nextId("property");
         property.target =
@@ -50,9 +54,17 @@ export function pruneMotionProperties(page: Composition): void {
   let changed = false;
   const tracks = page.motion.tracks.map((track) => {
     const properties = track.properties.filter(({ target }) => resolveMotionProperty(page, target));
-    if (properties.length === track.properties.length) return track;
+    const layer = page.layers.find((layer) => layer.id === track.layerId);
+    const animations = track.animations?.filter((animation) =>
+      animation.effectIds.every((id) => layer?.effects.some((effect) => effect.id === id)),
+    );
+    if (
+      properties.length === track.properties.length &&
+      animations?.length === track.animations?.length
+    )
+      return track;
     changed = true;
-    return { ...track, properties };
+    return { ...track, properties, ...(animations ? { animations } : {}) };
   });
   if (changed) page.motion = { ...page.motion, tracks };
 }

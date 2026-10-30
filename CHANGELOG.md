@@ -24,6 +24,10 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Added
 
+- Added editable Motion animation blocks with 61 built-in presets, a two-column hover-preview library, per-layer animation controls, optional detailed keyframes, and globally saved personal presets in IndexedDB.
+- Added declarative composable animation channels, target-relative custom timeline extraction, and centered layer/group scaling shared by geometry, native GPU rendering and export.
+- Added the editable Share Your Work photo-collage template, recreating the supplied reference cadence with replacement photographs, scale/blur entrances and compact action tracks.
+
 - Introduced the Melt identity with the original Maskot/Bloub SVG engine, a wide-eyed Dahlia mascot, reusable SVG morphing, a shared violet palette and operation-driven loading/preparation marks with on-demand, reduced-motion-aware playback. Existing local projects and `.musart` formats remain compatible.
 
 - Shared the editor's mobile bottom navigation with the project library: Projects, Templates, disabled upcoming Community and Preferences. Cancellable native swipes move the content and indicator imperatively, preserve search drafts and vertical scrolling, handle pointer-capture transfers, and select once on release. Safe areas, keyboard controls and reduced motion remain supported.

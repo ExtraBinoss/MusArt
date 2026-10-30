@@ -46,13 +46,15 @@ export function layerTransform(layer: Layer): Matrix {
   const sine = Math.sin(radians);
   const cx = layer.width / 2;
   const cy = layer.height / 2;
+  const sx = layer.scaleX ?? 1,
+    sy = layer.scaleY ?? 1;
   return [
-    cosine,
-    sine,
-    -sine,
-    cosine,
-    layer.x + cx - cosine * cx + sine * cy,
-    layer.y + cy - sine * cx - cosine * cy,
+    cosine * sx,
+    sine * sx,
+    -sine * sy,
+    cosine * sy,
+    layer.x + cx - cosine * sx * cx + sine * sy * cy,
+    layer.y + cy - sine * sx * cx - cosine * sy * cy,
   ];
 }
 export function getAncestors(page: Composition, layerId: string): Layer[] {

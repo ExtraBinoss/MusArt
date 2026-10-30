@@ -1,8 +1,13 @@
 import {
+  animationPreviewAssets,
+  createAnimationPreviewDocument,
+} from "../animations/preview-document";
+import {
   applyMotionFrame,
   evaluateMotion,
   type EnginePort,
   type TransitionStyle,
+  type MotionAnimationPreset,
 } from "@musart/core";
 import type { createRenderSession } from "@musart/render";
 import { createTransitionPreviewDocument } from "./preview-document";
@@ -10,6 +15,7 @@ import { createTransitionPreviewDocument } from "./preview-document";
 type Session = ReturnType<typeof createRenderSession>;
 export interface TransitionPreviewParameters {
   style: TransitionStyle;
+  preset?: MotionAnimationPreset;
   placement: "in" | "out";
   duration: number;
 }
@@ -98,11 +104,16 @@ export function createTransitionPreviewSession(
       description = parameters;
     dirty = false;
     const job = (async () => {
-      const source = (program ??= createTransitionPreviewDocument(
-        description.style,
-        description.placement,
-        description.duration,
-      ));
+      const source =
+        program ??
+        (description.preset
+          ? await createAnimationPreviewDocument(description.preset, description.duration)
+          : createTransitionPreviewDocument(
+              description.style,
+              description.placement,
+              description.duration,
+            ));
+      if (token === generation) program = source;
       const target = await renderer();
       if (!target || closed || !visible || token !== generation) return;
       const duration = description.duration;
@@ -119,7 +130,7 @@ export function createTransitionPreviewSession(
       );
       await target.withCanvasFrame(
         applyMotionFrame(source, plan),
-        {},
+        animationPreviewAssets(source),
         (canvas) => {
           if (closed || !visible || token !== generation) return;
           if (first) {
@@ -162,6 +173,7 @@ export function createTransitionPreviewSession(
       if (closed) return;
       if (
         !parameters ||
+        next.preset !== parameters.preset ||
         next.style !== parameters.style ||
         next.placement !== parameters.placement ||
         next.duration !== parameters.duration

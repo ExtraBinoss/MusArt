@@ -15,15 +15,13 @@ test("the persistent host opens without a toolbar trigger, closes cleanly and cr
   await act(async () => {
     await requestLayerTransition(d.engine, d.page.id, d.rectangle.id, { x: 40, y: 90 });
   });
-  expect(screen.getByRole("dialog", { name: "Transition" })).toBeVisible();
-  expect(screen.getByRole("spinbutton", { name: "Durée" })).toHaveValue(200);
-  const apply = screen
-    .getByRole("dialog")
-    .querySelector<HTMLButtonElement>("footer button:last-child")!;
-  fireEvent.click(apply);
+  expect(screen.getByRole("dialog", { name: "Ajouter une animation" })).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "Fade" }));
   expect(screen.queryByRole("dialog")).toBeNull();
   expect(getTransitionRequests(d.engine).read()).toBeNull();
   expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.effects[0]!.type).toBe("transition");
+  const animation = d.engine.getSnapshot().project.pages[0]!.motion!.tracks[0]!.animations![0]!;
+  expect(animation.duration).toEqual({ value: 200, rate: 1000 });
   act(() => d.engine.undo());
   expect(d.engine.getSnapshot().project).toEqual(before);
   mount.unmount();

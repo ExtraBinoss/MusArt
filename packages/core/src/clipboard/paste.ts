@@ -13,6 +13,7 @@ function reservedIds(project: Project): Set<string> {
     for (const track of page.motion?.audioTracks ?? []) result.add(track.id);
     for (const track of page.motion?.tracks ?? []) {
       result.add(track.id);
+      for (const animation of track.animations ?? []) result.add(animation.id);
       for (const property of track.properties) {
         result.add(property.id);
         for (const key of property.keyframes) result.add(key.id);
@@ -75,6 +76,7 @@ export function pasteContent(
   for (const track of page.motion?.audioTracks ?? []) ids.set(track.id, allocate());
   for (const track of page.motion?.tracks ?? []) {
     ids.set(track.id, allocate());
+    for (const animation of track.animations ?? []) ids.set(animation.id, allocate());
     for (const property of track.properties) {
       ids.set(property.id, allocate());
       for (const key of property.keyframes) ids.set(key.id, allocate());
@@ -107,6 +109,15 @@ export function pasteContent(
               ...track,
               id: ids.get(track.id)!,
               layerId: ids.get(track.layerId)!,
+              ...(track.animations
+                ? {
+                    animations: track.animations.map((animation) => ({
+                      ...animation,
+                      id: ids.get(animation.id)!,
+                      effectIds: animation.effectIds.map((id) => ids.get(id)!),
+                    })),
+                  }
+                : {}),
               properties: track.properties.map((property) => ({
                 ...property,
                 id: ids.get(property.id)!,

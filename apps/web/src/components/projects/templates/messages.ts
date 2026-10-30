@@ -2,6 +2,9 @@ import { i18n } from "../../../state/i18n";
 
 const resources = {
   en: {
+    shareYourWork: "Share Your Work",
+    shareYourWorkDescription:
+      "1.5 s · Staggered photo cards, scale, blur and editable motion blocks",
     soundPlayground: "Sound Playground",
     soundPlaygroundDescription: "6 s · Original SFX, playful groups, fades and transitions",
     orbit: "Orbit Study",
@@ -30,6 +33,8 @@ const resources = {
     cancel: "Cancel",
   },
   fr: {
+    shareYourWork: "Share Your Work",
+    shareYourWorkDescription: "1,5 s · Cartes photo décalées, scale, flou et blocs modifiables",
     soundPlayground: "Sound Playground",
     soundPlaygroundDescription: "6 s · Sons originaux, groupes animés, fondus et transitions",
     orbit: "Orbit Study",

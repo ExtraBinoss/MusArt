@@ -1,3 +1,4 @@
+import { evaluateAnimations } from "./animations/compile";
 import type { MotionProgram, CompiledMotionProperty, CompiledMotionLayer } from "./compile";
 import type { MotionPropertyTarget, MotionValue } from "./properties/model";
 import {
@@ -121,10 +122,13 @@ export function evaluateMotion(
     )
       continue;
     valuedIds.add(layer.id);
+    const firstValue = values.length;
     for (const property of layer.properties)
       values.push(
         Object.freeze({ target: property.target, value: propertyValue(property, sampledTime) }),
       );
+    if (layer.animations?.length)
+      evaluateAnimations(layer.animations, sampledTime, values, firstValue);
   }
   const plan: MotionFramePlan = Object.freeze({
     compositionId: program.compositionId,

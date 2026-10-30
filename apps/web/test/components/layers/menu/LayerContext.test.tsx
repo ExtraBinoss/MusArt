@@ -69,9 +69,9 @@ test("a direct layer transition action initializes Static and survives the closi
   );
   fireEvent.contextMenu(screen.getByText("Stack"));
   await act(async () => {
-    fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une transition" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une animation" }));
   });
-  expect(await screen.findByRole("dialog", { name: "Transition" })).toBeVisible();
+  expect(await screen.findByRole("dialog", { name: "Ajouter une animation" })).toBeVisible();
   expect(screen.queryByRole("menu")).toBeNull();
   expect(d.engine.getSnapshot().project.pages[0]!.motion?.mode).toBe("motion");
 });

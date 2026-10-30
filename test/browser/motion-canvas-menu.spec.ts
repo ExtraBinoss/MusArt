@@ -57,19 +57,19 @@ test("canvas right-click targets the visible occurrence and preserves right-drag
   const point = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
   await page.getByRole("button", { name: "Lire", exact: true }).click();
   await page.mouse.click(point.x, point.y, { button: "right" });
-  const action = page.getByRole("menuitem", { name: "Ajouter une transition", exact: true });
+  const action = page.getByRole("menuitem", { name: "Ajouter une animation", exact: true });
   await expect(action).toBeVisible();
   // The modal menu correctly hides its background controls from the accessibility tree.
   await expect(page.locator('.motion-timeline button[aria-label="Lire"]')).toBeVisible();
   await action.click();
-  const editor = page.getByRole("dialog", { name: "Transition", exact: true });
+  const editor = page.getByRole("dialog", { name: "Ajouter une animation", exact: true });
   await expect(editor).toBeVisible();
   await editor.screenshot({ path: "artifacts/motion/ui/canvas-transition.png" });
-  await editor.getByRole("button", { name: "Ajouter une transition", exact: true }).click();
+  await editor.getByRole("button", { name: "Fade", exact: true }).click();
   const authored = await page.evaluate(() => window.musart!.snapshot());
   const tracks = authored.project.pages[0]!.motion!.tracks;
   expect(tracks).toHaveLength(2);
-  expect(tracks.find((track) => track.id === first.id)!.properties).toHaveLength(1);
+  expect(tracks.find((track) => track.id === first.id)!.animations).toHaveLength(1);
   expect(tracks.find((track) => track.id !== first.id)!.properties).toHaveLength(0);
   expect(authored.project.pages[0]!.layers).toHaveLength(1);
   await page.evaluate(() => window.musart!.undo());

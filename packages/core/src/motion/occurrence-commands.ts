@@ -82,6 +82,10 @@ export const duplicateMotionOccurrence: CommandHandler<"duplicateMotionOccurrenc
   copy.end = command.end
     ? cloneValue(command.end)
     : addMotionTime(original.end ?? page.motion!.duration, delta);
+  for (const animation of copy.animations ?? []) {
+    animation.id = nextId("animation");
+    animation.start = addMotionTime(animation.start, delta);
+  }
   for (const property of copy.properties) {
     property.id = nextId("property");
     for (const key of property.keyframes) {

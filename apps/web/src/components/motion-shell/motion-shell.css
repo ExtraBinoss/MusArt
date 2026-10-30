@@ -30,6 +30,7 @@
 .motion-timeline-dock[data-motion-body-hidden="true"]
   :is(
     .motion-row-space,
+    .motion-simple-rows,
     .motion-empty,
     .motion-resize,
     .motion-gesture-error,

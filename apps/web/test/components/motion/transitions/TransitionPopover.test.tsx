@@ -1,49 +1,14 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, it, vi } from "vitest";
 import { TransitionPopover } from "../../../../src/components/motion/transitions/TransitionPopover";
 import { setup } from "../../../support/ui";
 import { makeTransport } from "../support";
-import { useSyncExternalStore } from "react";
-import type { TransitionPreviewSource } from "../../../../src/components/motion/transitions/preview-source";
-import { i18n } from "../../../../src/state/i18n";
 
-const metrics = vi.hoisted(() => ({ selectRenders: vi.fn() }));
-vi.mock("../../../../src/components/shared/SelectField", async (load) => {
-  const actual = await load<typeof import("../../../../src/components/shared/SelectField")>();
-  return {
-    ...actual,
-    SelectField(props: Parameters<typeof actual.SelectField>[0]) {
-      metrics.selectRenders();
-      return <actual.SelectField {...props} />;
-    },
-  };
-});
-vi.mock("../../../../src/components/motion/transitions/TransitionPreview", () => ({
-  TransitionPreview: ({
-    style,
-    optionActive,
-    previewSource,
-  }: {
-    style: string;
-    optionActive: boolean;
-    previewSource: TransitionPreviewSource;
-  }) => {
-    const hovered = useSyncExternalStore(
-      previewSource.subscribe,
-      previewSource.read,
-      previewSource.read,
-    );
-    return (
-      <div
-        data-testid="transition-preview"
-        data-style={hovered ?? style}
-        data-active={String(optionActive || hovered !== null)}
-      />
-    );
-  },
+// GPU correctness and lifecycle are exercised in the native browser suite.
+vi.mock("../../../../src/components/motion/animations/PresetPreview", () => ({
+  PresetPreview: () => null,
 }));
-
 function fixture() {
   const d = setup();
   d.engine.execute({ type: "setCompositionMode", mode: "motion" });
@@ -60,115 +25,56 @@ function fixture() {
   return { ...d, page };
 }
 
-it("keeps drafts local, selects a category/style, and creates editable exit keys in one commit", async () => {
+it("browses a two-column motion library without editing the document, then applies one undoable action", async () => {
   const d = fixture(),
     user = userEvent.setup();
-  const before = d.engine.getSnapshot();
-  await user.click(screen.getByRole("button", { name: "Ajouter une transition" }));
-  expect(screen.getByRole("dialog", { name: "Transition" })).toBeVisible();
-  fireEvent.click(screen.getByRole("radio", { name: "Sortie" }));
-  const category = screen.getByRole("combobox", { name: "Catégorie de transition" });
-  await user.click(category);
-  await user.click(screen.getByRole("option", { name: "Révélations" }));
-  const style = screen.getByRole("combobox", { name: "Style de transition" });
-  await user.click(style);
-  await user.click(screen.getByRole("option", { name: "Iris" }));
-  expect(d.engine.getSnapshot()).toBe(before);
-  fireEvent.change(screen.getByRole("spinbutton", { name: "Durée" }), { target: { value: "250" } });
-  await user.click(
-    screen.getByRole("dialog").querySelector<HTMLButtonElement>("footer button:last-child")!,
-  );
+  const before = d.engine.getSnapshot().project;
+  await user.click(screen.getByRole("button", { name: "Ajouter une animation" }));
+  const dialog = screen.getByRole("dialog", { name: "Ajouter une animation" });
+  expect(dialog.querySelectorAll(".animation-preset-card")).toHaveLength(61);
+  fireEvent.click(screen.getByRole("button", { name: "Déplacement" }));
+  expect(dialog.querySelectorAll(".animation-preset-card")).toHaveLength(8);
+  await user.hover(screen.getByRole("button", { name: "Move · Left" }));
+  expect(d.engine.getSnapshot().project).toBe(before);
+  await user.click(screen.getByRole("button", { name: "Move · Left" }));
   await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-  const page = d.engine.getSnapshot().project.pages[0]!;
-  expect(page.layers.find(({ id }) => id === d.rectangle.id)!.effects[0]).toMatchObject({
-    type: "transition",
-    settings: { style: "iris", progress: 1 },
-  });
-  const keys = page.motion!.tracks.find(({ layerId }) => layerId === d.rectangle.id)!.properties[0]!
-    .keyframes;
-  expect(keys.map(({ value }) => value)).toEqual([1, 0]);
-  expect(keys[0]!.time).toEqual({ value: 7, rate: 4 });
-  d.engine.undo();
-  expect(d.engine.getSnapshot().project).toEqual(before.project);
+  const animation = d.engine.getSnapshot().project.pages[0]!.motion!.tracks[0]!.animations![0]!;
+  expect(animation.preset.id).toBe("move-left");
+  expect(animation.preset.channels[0]!.operation).toBe("add");
+  act(() => d.engine.undo());
+  expect(d.engine.getSnapshot().project).toEqual(before);
 });
 
-it("keeps the editor open on empty clicks and rejects invalid duration or a stale document", () => {
-  const d = fixture();
-  fireEvent.click(screen.getByRole("button", { name: "Ajouter une transition" }));
-  fireEvent.click(screen.getByRole("dialog"));
-  expect(screen.getByRole("dialog")).toBeVisible();
-  const apply = screen
-    .getByRole("dialog")
-    .querySelector<HTMLButtonElement>("footer button:last-child")!;
-  fireEvent.change(screen.getByRole("spinbutton", { name: "Durée" }), {
-    target: { value: "9999" },
-  });
-  fireEvent.click(apply);
-  expect(screen.getByRole("alert")).toHaveTextContent("tient dans ce clip");
-  fireEvent.change(screen.getByRole("spinbutton", { name: "Durée" }), { target: { value: "500" } });
-  d.engine.execute({ type: "renameProject", name: "Another edit" });
-  fireEvent.click(apply);
-  expect(screen.getByRole("alert")).toHaveTextContent("a changé");
-  expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.effects).toHaveLength(0);
-  fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
-  expect(screen.queryByRole("dialog")).toBeNull();
-});
-
-it("previews hovered and keyboard-focused choices locally and restores the selected style on dismissal", async () => {
+it("searches and rejects a stale project without applying a selected preset", async () => {
   const d = fixture(),
-    user = userEvent.setup(),
-    before = d.engine.getSnapshot();
-  await user.click(screen.getByRole("button", { name: "Ajouter une transition" }));
-  await user.click(screen.getByRole("combobox", { name: "Style de transition" }));
-  const beforeHover = metrics.selectRenders.mock.calls.length;
-  fireEvent.pointerMove(screen.getByRole("option", { name: "Passage au noir" }), {
-    pointerType: "mouse",
-  });
-  expect(screen.getByTestId("transition-preview")).toHaveAttribute("data-style", "fade-black");
-  expect(screen.getByTestId("transition-preview")).toHaveAttribute("data-active", "true");
-  expect(metrics.selectRenders).toHaveBeenCalledTimes(beforeHover);
-  fireEvent.focus(screen.getByRole("option", { name: "Fondu" }));
-  expect(metrics.selectRenders).toHaveBeenCalledTimes(beforeHover);
-  await user.keyboard("{Escape}");
-  expect(screen.getByTestId("transition-preview")).toHaveAttribute("data-style", "fade");
-  expect(screen.getByTestId("transition-preview")).toHaveAttribute("data-active", "false");
-  expect(metrics.selectRenders).toHaveBeenCalledTimes(beforeHover);
-  expect(d.engine.getSnapshot()).toBe(before);
-});
-
-it("builds no form labels or select options while closed and retains the parent draft on reopening", async () => {
-  const translate = vi.spyOn(i18n, "t");
-  metrics.selectRenders.mockClear();
-  const d = fixture(),
-    before = d.engine.getSnapshot(),
     user = userEvent.setup();
-  expect(metrics.selectRenders).not.toHaveBeenCalled();
-  expect(
-    translate.mock.calls.some(
-      ([key]) =>
-        key === "categoryLabel" ||
-        key === "operator" ||
-        key === "duration" ||
-        key === "hint" ||
-        String(key).startsWith("category.") ||
-        String(key).startsWith("style."),
-    ),
-  ).toBe(false);
-  await user.click(screen.getByRole("button", { name: "Ajouter une transition" }));
-  await user.click(screen.getByRole("combobox", { name: "Catégorie de transition" }));
-  await user.click(screen.getByRole("option", { name: "Révélations" }));
-  await user.click(screen.getByRole("combobox", { name: "Style de transition" }));
-  await user.click(screen.getByRole("option", { name: "Iris" }));
-  fireEvent.click(screen.getByRole("radio", { name: "Sortie" }));
-  fireEvent.change(screen.getByRole("spinbutton", { name: "Durée" }), { target: { value: "250" } });
-  fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
-  expect(screen.queryByRole("dialog")).toBeNull();
-  await user.click(screen.getByRole("button", { name: "Ajouter une transition" }));
-  expect(screen.getByRole("combobox", { name: "Catégorie de transition" })).toHaveTextContent(
-    "Révélations",
+  await user.click(screen.getByRole("button", { name: "Ajouter une animation" }));
+  fireEvent.change(screen.getByRole("textbox", { name: "Rechercher une animation…" }), {
+    target: { value: "Scale & focus" },
+  });
+  expect(document.querySelectorAll(".animation-preset-card")).toHaveLength(1);
+  act(() => d.engine.execute({ type: "renameProject", name: "Changed while browsing" }));
+  await user.click(screen.getByRole("button", { name: "Scale & focus" }));
+  expect(screen.getByRole("alert")).toHaveTextContent("Le projet a changé");
+  expect(d.engine.getSnapshot().project.pages[0]!.motion!.tracks[0]!.animations).toBeUndefined();
+});
+
+it("fits a preset to the visible positive range of a pre-roll occurrence", async () => {
+  const d = fixture(),
+    user = userEvent.setup();
+  const track = d.engine.getSnapshot().project.pages[0]!.motion!.tracks[0]!;
+  act(() =>
+    d.engine.execute({
+      type: "setMotionTrackRange",
+      trackId: track.id,
+      start: { value: -150, rate: 1000 },
+      end: { value: 300, rate: 1000 },
+    }),
   );
-  expect(screen.getByRole("combobox", { name: "Style de transition" })).toHaveTextContent("Iris");
-  expect(screen.getByRole("radio", { name: "Sortie" })).toHaveAttribute("data-state", "checked");
-  expect(screen.getByRole("spinbutton", { name: "Durée" })).toHaveValue(500);
-  expect(d.engine.getSnapshot()).toBe(before);
+  await user.click(screen.getByRole("button", { name: "Ajouter une animation" }));
+  await user.click(screen.getByRole("button", { name: "Focus" }));
+  const animation = d.engine.getSnapshot().project.pages[0]!.motion!.tracks[0]!.animations![0]!;
+  expect(animation.start.value).toBe(0);
+  expect(animation.duration).toEqual({ value: 300, rate: 1000 });
+  expect(screen.queryByRole("alert")).toBeNull();
 });

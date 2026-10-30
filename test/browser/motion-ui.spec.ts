@@ -79,6 +79,7 @@ async function load(page: Page, empty = false, project = fixture(empty)) {
   await page.goto("/?automation=1");
   await page.waitForFunction(() => Boolean(window.musart));
   await page.evaluate((project) => window.musart!.load(project), project);
+  await page.getByRole("button", { name: "Keyframes", exact: true }).click();
   await expect(page.locator(".motion-timeline-dock")).toHaveCSS("opacity", "1");
   await expect(page.locator('.canvas-artboard canvas[data-renderer-ready="true"]')).toBeVisible({
     timeout: 20000,
@@ -505,6 +506,7 @@ test("shared scroll shadows and visible rows stay bounded in a 500-layer timelin
     properties: [],
   }));
   await page.evaluate((project) => window.musart!.load(project), project);
+  await page.getByRole("button", { name: "Keyframes", exact: true }).click();
   await expect(page.locator('.canvas-artboard canvas[data-renderer-ready="true"]')).toBeVisible();
   const scroll = page.locator(".motion-timeline-scroll"),
     shadow = page.locator(".motion-scroll-shadow");

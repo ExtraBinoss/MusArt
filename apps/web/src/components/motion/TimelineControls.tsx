@@ -1,3 +1,4 @@
+import { useAnimationPresentation } from "./animations/presentation";
 import { memo, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Diamond, Pause, Play } from "lucide-react";
@@ -246,6 +247,7 @@ export const TimelineControls = memo(function TimelineControls({
   active?: boolean;
 }) {
   const { t } = useTranslation("motion");
+  const { details } = useAnimationPresentation(engine);
   const [state, setState] = useState(() => {
     const value = transport.read();
     return { playing: value.playing, playbackMode: value.playbackMode };
@@ -278,7 +280,7 @@ export const TimelineControls = memo(function TimelineControls({
       >
         {state.playing ? <Pause size={14} /> : <Play size={14} />}
       </TimelineIconButton>
-      <AutoKey engine={engine} active={active} />
+      {details && <AutoKey engine={engine} active={active} />}
       <CurrentTime transport={transport} unit={unit} active={active} />
       <span className="motion-time-divider" aria-hidden>
         /

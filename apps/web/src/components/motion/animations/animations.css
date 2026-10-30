@@ -1,0 +1,302 @@
+.motion-animation-popover {
+  width: min(360px, calc(100vw - 24px));
+  padding: 0;
+  max-height: min(calc(100dvh - 24px), var(--radix-popover-content-available-height, 800px));
+  overflow: hidden;
+}
+.animation-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  max-height: inherit;
+}
+.animation-picker header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.animation-picker header strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.animation-picker header > span,
+.animation-picker footer {
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+.animation-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.animation-search input {
+  height: 30px;
+}
+.animation-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.animation-categories button {
+  font-size: 10px;
+}
+.animation-preset-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  max-height: min(440px, calc(100dvh - 300px));
+  min-height: 120px;
+  flex: 1 1 auto;
+  scrollbar-width: thin;
+}
+.animation-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.animation-preset-cell {
+  position: relative;
+  min-width: 0;
+}
+.animation-preset-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  overflow: hidden;
+  background: var(--muted);
+  padding: 0 0 8px;
+  cursor: pointer;
+}
+.animation-preset-card:hover,
+.animation-preset-card:focus-visible {
+  border-color: var(--primary);
+  outline: 2px solid color-mix(in srgb, var(--primary) 30%, transparent);
+}
+.animation-card-image {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #20232b;
+  overflow: hidden;
+}
+.animation-card-image > img {
+  position: absolute;
+  width: 56.25%;
+  height: 83.333%;
+  left: 21.875%;
+  top: 8.333%;
+  object-fit: cover;
+}
+.animation-card-live {
+  position: absolute;
+  inset: 0;
+}
+.animation-card-live canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.animation-card-name {
+  font-size: 11px;
+  font-weight: 550;
+  padding: 7px 8px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+.animation-card-category {
+  font-size: 10px;
+  color: var(--muted-foreground);
+  padding: 2px 8px 0;
+}
+.animation-preset-delete {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+}
+.animation-picker-empty {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  padding: 30px 12px;
+  text-align: center;
+}
+.animation-picker [role="alert"],
+.layer-animations [role="alert"] {
+  color: var(--destructive);
+  font-size: 11px;
+}
+.layer-animations {
+  min-width: 0;
+}
+.layer-animations .section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.animation-instance {
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  margin-top: 7px;
+  overflow: hidden;
+}
+.animation-instance[data-selected="true"] {
+  border-color: var(--primary);
+}
+.animation-instance-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+}
+.animation-instance-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  font-size: 11px;
+}
+.animation-instance-body {
+  padding: 0 8px 8px;
+  display: grid;
+  gap: 8px;
+}
+.animation-instance-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.animation-instance-actions {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+.animation-detail-channel {
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+  font-size: 11px;
+}
+.animation-detail-channel > strong {
+  display: block;
+  padding-bottom: 6px;
+}
+.animation-detail-point {
+  display: grid;
+  grid-template-columns: 1fr 1fr 22px;
+  gap: 4px;
+  margin-bottom: 5px;
+  align-items: center;
+}
+.animation-save-form {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.animation-timeline-toggle {
+  display: flex;
+  gap: 2px;
+  padding: 0;
+  flex-shrink: 0;
+}
+.motion-timeline .motion-timeline-actions[data-animation-controls] {
+  width: var(--animation-actions-width, 284px);
+}
+
+.motion-simple-rows {
+  position: relative;
+  min-height: 140px;
+}
+.motion-simple-row {
+  position: relative;
+  display: flex;
+  height: 32px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+}
+.motion-simple-label {
+  position: sticky;
+  z-index: 3;
+  left: 0;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  width: var(--motion-gutter, 244px);
+  flex-shrink: 0;
+  padding: 0 12px;
+  background: var(--background);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.motion-simple-lane {
+  position: relative;
+  flex: 1;
+}
+.motion-animation-block {
+  position: absolute;
+  top: 5px;
+  height: 22px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--muted);
+  color: var(--foreground);
+  font-size: 10px;
+  text-align: left;
+  padding: 0 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  touch-action: none;
+  cursor: grab;
+  min-width: 5px;
+}
+.motion-animation-block[data-selected="true"] {
+  background: color-mix(in srgb, var(--primary) 30%, var(--muted));
+  border-color: var(--primary);
+}
+.motion-animation-block[data-disabled="true"] {
+  opacity: 0.4;
+}
+.motion-animation-block > span {
+  pointer-events: none;
+}
+.motion-animation-block .animation-block-edge {
+  position: absolute;
+  width: 7px;
+  top: 0;
+  bottom: 0;
+  cursor: ew-resize;
+  pointer-events: auto;
+}
+.animation-block-edge[data-edge="start"] {
+  left: 0;
+}
+.animation-block-edge[data-edge="end"] {
+  right: 0;
+}
+
+.motion-timeline[data-dense-actions] .animation-timeline-toggle button {
+  padding: 0;
+  width: 22px;
+  min-width: 22px;
+}
+.motion-timeline[data-dense-actions] .animation-timeline-toggle button span {
+  display: none;
+}
+.motion-timeline[data-dense-actions] .motion-timeline-actions .motion-zoom[data-slot] {
+  width: 32px;
+}
+
+.motion-timeline[data-compact] .animation-timeline-toggle button {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+}

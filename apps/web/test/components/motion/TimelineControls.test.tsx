@@ -1,7 +1,8 @@
+import { animationPresentation } from "../../../src/components/motion/animations/presentation";
 import { Profiler, useState, useSyncExternalStore } from "react";
 import { act, fireEvent, screen } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
-import { setup } from "../../support/ui";
+import { setup as baseSetup } from "../../support/ui";
 import { TimelineControls } from "../../../src/components/motion/TimelineControls";
 import type { TimelineUnit } from "../../../src/components/motion/model";
 import { makeTransport } from "./support";
@@ -148,3 +149,10 @@ it("shows the dragged key time without seeking or committing React frames and re
   runtime.editTime({ value: 4, rate: 1 });
   expect(field).toHaveValue(1000);
 });
+
+/** These regressions exercise the explicitly selected detailed keyframe view. */
+function setup() {
+  const result = baseSetup();
+  animationPresentation(result.engine).set({ details: true });
+  return result;
+}

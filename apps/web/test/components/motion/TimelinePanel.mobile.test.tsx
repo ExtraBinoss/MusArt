@@ -1,6 +1,7 @@
+import { animationPresentation } from "../../../src/components/motion/animations/presentation";
 import { act, screen } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
-import { setup } from "../../support/ui";
+import { setup as baseSetup } from "../../support/ui";
 import { makeTransport, pointer } from "./support";
 import { TimelinePanel } from "../../../src/components/motion/TimelinePanel";
 import { canvasContext } from "./canvas/support";
@@ -87,3 +88,10 @@ it("uses the full mobile time area for playback following without a hidden deskt
   );
   expect(document.querySelector(".motion-timeline-actions")).toBeNull();
 });
+
+/** These regressions exercise the explicitly selected detailed keyframe view. */
+function setup() {
+  const result = baseSetup();
+  animationPresentation(result.engine).set({ details: true });
+  return result;
+}

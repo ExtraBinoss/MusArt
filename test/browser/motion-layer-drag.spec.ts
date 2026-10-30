@@ -70,6 +70,7 @@ async function load(page: Page, count = 2) {
   await page.goto("/?automation=1", { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => Boolean(window.musart));
   await page.evaluate((project) => window.musart!.load(project), fixture(count));
+  await page.getByRole("button", { name: "Keyframes", exact: true }).click();
   await page.getByRole("button", { name: "Épingler la timeline", exact: true }).click();
   await expect(page.locator(".motion-timeline-dock")).toHaveAttribute("data-motion-pinned", "true");
   await expect(page.locator(".motion-timeline-dock")).not.toHaveAttribute("data-motion-animating");

@@ -124,6 +124,7 @@ async function ready(page: Page, count = 1) {
       document.querySelectorAll(".canvas-handle").length === 5,
   );
   await page.getByRole("button", { name: "Épingler la timeline", exact: true }).click();
+  await page.getByRole("button", { name: "Keyframes", exact: true }).click();
   await page.waitForFunction(() => {
     const dock = document.querySelector<HTMLElement>(".motion-timeline-dock")!;
     return dock.dataset.motionPinned === "true" && !dock.hasAttribute("data-motion-animating");

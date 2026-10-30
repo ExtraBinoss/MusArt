@@ -1,3 +1,4 @@
+import * as animations from "../motion/animations/commands";
 import * as layers from "../layers/commands";
 import * as pages from "../pages/commands";
 import * as guides from "../guides/commands";
@@ -58,6 +59,9 @@ export const COMMAND_HANDLERS: CommandHandlers = Object.freeze({
   setMotionAudioTrackRange: audio.setMotionAudioTrackRange,
   updateMotionAudioTrack: audio.updateMotionAudioTrack,
   deleteMotionAudioTrack: audio.deleteMotionAudioTrack,
+  addMotionAnimation: animations.addMotionAnimation,
+  updateMotionAnimation: animations.updateMotionAnimation,
+  deleteMotionAnimation: animations.deleteMotionAnimation,
   applyMotionTransition,
   moveMotionTrack,
   moveMotionKeyframes,

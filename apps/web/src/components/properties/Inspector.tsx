@@ -1,3 +1,4 @@
+import { LayerAnimations } from "../motion/animations/LayerAnimations";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
   Palette,
@@ -472,6 +473,7 @@ export const Inspector = memo(
                     <p className="muted-description">{t("selectLayer")}</p>
                   </section>
                 )}
+                {layer && <LayerAnimations engine={engine} layerId={layer.id} />}
                 <SpacingPanel
                   page={page}
                   layer={displayLayer}

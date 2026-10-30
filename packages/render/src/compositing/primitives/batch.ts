@@ -111,7 +111,7 @@ export class PrimitiveBatch implements GpuResource {
             layer.y + layer.height / 2 - offsetY,
             0,
           );
-          this.scale.set(layer.width, -layer.height, 1);
+          this.scale.set(layer.width * (layer.scaleX ?? 1), -layer.height * (layer.scaleY ?? 1), 1);
           this.rotation.setFromAxisAngle(this.axis, (layer.rotation * Math.PI) / 180);
           mesh.setMatrixAt(index, this.matrix.compose(this.position, this.rotation, this.scale));
           const fill = this.colors.read(layer.fill),

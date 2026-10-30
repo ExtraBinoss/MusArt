@@ -1,9 +1,10 @@
+import { animationPresentation } from "../../../../src/components/motion/animations/presentation";
 import { act, fireEvent, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { createEffect, planMotionInitialization } from "@musart/core";
 import { MotionDiamond } from "../../../../src/components/properties/motion/MotionDiamond";
 import { createMotionTransport } from "../../../../src/services/motion/transport";
-import { setup } from "../../../support/ui";
+import { setup as baseSetup } from "../../../support/ui";
 test("adds the first real key and imperatively reflects playhead, mode and lock changes", () => {
   const d = setup();
   d.engine.execute({
@@ -140,3 +141,10 @@ test("switches occurrence arming at clip boundaries and disables the diamond in 
   expect(node.title).toContain("dans un clip");
   expect(renders).toBe(before);
 });
+
+/** These regressions exercise the explicitly selected detailed keyframe view. */
+function setup() {
+  const result = baseSetup();
+  animationPresentation(result.engine).set({ details: true });
+  return result;
+}

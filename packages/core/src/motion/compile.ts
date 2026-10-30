@@ -1,3 +1,4 @@
+import type { CompiledAnimationChannel } from "./animations/compile";
 import type { Composition, Project } from "../document/model";
 import { cloneValue, freezeValue } from "../document/immutable";
 import { validateProject } from "../document/validation";
@@ -25,6 +26,7 @@ export interface CompiledMotionLayer {
   readonly start: MotionTime;
   readonly end: MotionTime | null;
   readonly properties: readonly CompiledMotionProperty[];
+  readonly animations?: readonly CompiledAnimationChannel[];
   readonly media?: {
     readonly assetId: string;
     readonly sourceStart: MotionTime;

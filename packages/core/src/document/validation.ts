@@ -26,7 +26,7 @@ import type { Asset } from "../assets/model";
 const kinds = ["rectangle", "ellipse", "text", "image", "video", "group", "vector"];
 const effectTypes = Object.keys(EFFECT_CATALOG);
 
-function validateEffect(value: unknown, ids: Set<string>): void {
+export function validateEffect(value: unknown, ids: Set<string>): void {
   assertRecord(value);
   assertUniqueId(value.id, ids);
   ensure(
@@ -70,6 +70,8 @@ function validateLayer(value: unknown, ids: Set<string>, assets: Record<string, 
   assertNumber(value.width, 0.01, 32768);
   assertNumber(value.height, 0.01, 32768);
   assertNumber(value.rotation, -360000, 360000);
+  for (const key of ["scaleX", "scaleY"] as const)
+    if (value[key] !== undefined) assertNumber(value[key], 0.001, 100);
   assertNumber(value.opacity, 0, 1);
   assertNumber(value.strokeWidth, 0, 1024);
   assertNumber(value.radius, 0, 32768);

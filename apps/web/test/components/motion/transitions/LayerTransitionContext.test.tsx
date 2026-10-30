@@ -16,10 +16,10 @@ test("the row menu closes while its single permanent host keeps the transition e
   );
   fireEvent.contextMenu(screen.getByText("Timeline row"), { clientX: 70, clientY: 90 });
   await act(async () => {
-    fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une transition" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une animation" }));
   });
   expect(screen.queryByRole("menu")).toBeNull();
-  expect(screen.getByRole("dialog", { name: "Transition" })).toBeVisible();
+  expect(screen.getByRole("dialog", { name: "Ajouter une animation" })).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
   expect(screen.queryByRole("dialog")).toBeNull();
 });
@@ -34,7 +34,7 @@ test("an open stale row menu cannot convert or edit a same-ID replacement", asyn
   d.engine.load(structuredClone(d.engine.getSnapshot().project));
   const before = d.engine.getSnapshot();
   await act(async () => {
-    fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une transition" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une animation" }));
   });
   expect(d.engine.getSnapshot()).toBe(before);
 });

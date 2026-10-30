@@ -20,6 +20,8 @@ const schemas: Readonly<Record<LayerMotionProperty, MotionPropertySchema>> = Obj
   width: number(0.01, 32768),
   height: number(0.01, 32768),
   rotation: number(-360000, 360000),
+  scaleX: number(0.001, 100),
+  scaleY: number(0.001, 100),
   opacity: number(0, 1),
   visible: { kind: "boolean", interpolation: "hold" },
   fill: color,
@@ -79,6 +81,7 @@ export function layerMotionSchema(
 }
 
 export function readLayerMotionValue(layer: Layer, property: LayerMotionProperty): unknown {
+  if (property === "scaleX" || property === "scaleY") return layer[property] ?? 1;
   if (property === "fillGradient.angle") return layer.fillGradient?.angle;
   if (property === "fillGradient.kind") return layer.fillGradient?.kind;
   return Object.hasOwn(schemas, property) ? layer[property] : undefined;

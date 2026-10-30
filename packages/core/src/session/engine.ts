@@ -257,6 +257,7 @@ export class EditorEngine implements EnginePort {
       for (const track of page.motion?.audioTracks ?? []) occupied.add(track.id);
       for (const track of page.motion?.tracks ?? []) {
         occupied.add(track.id);
+        for (const animation of track.animations ?? []) occupied.add(animation.id);
         for (const property of track.properties) {
           occupied.add(property.id);
           for (const key of property.keyframes) occupied.add(key.id);

@@ -1,3 +1,4 @@
+import { animationPresentation } from "../../motion/animations/presentation";
 import { useLayoutEffect, useRef } from "react";
 import { Diamond } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -81,7 +82,7 @@ export function MotionDiamond({
       const animated = properties.some((property) => property?.keyframes.length);
       const node = button.current;
       if (!node) return;
-      const hidden = state.mode !== "motion";
+      const hidden = state.mode !== "motion" || !animationPresentation(engine).read().details;
       const blocked =
         disabled ||
         unavailable ||
@@ -105,8 +106,12 @@ export function MotionDiamond({
           : t(animated ? "armed" : "add", { property: label });
     };
     const stop = transport.subscribe(update);
+    const stopPresentation = animationPresentation(engine).subscribe(update);
     update();
-    return stop;
+    return () => {
+      stop();
+      stopPresentation();
+    };
   }, [engine, target, targets, label, disabled, t]);
   return (
     <Button

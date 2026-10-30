@@ -35,6 +35,8 @@ export const moveMotionTrack: CommandHandler<"moveMotionTrack"> = ({ page, pageI
             sibling.end = { ...page.motion.duration };
       page.motion.duration = current.end;
     }
+    for (const animation of current.animations ?? [])
+      animation.start = addMotionTime(animation.start, command.delta);
     for (const property of current.properties)
       for (const key of property.keyframes) {
         key.time = addMotionTime(key.time, command.delta);

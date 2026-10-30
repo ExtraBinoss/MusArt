@@ -136,7 +136,12 @@ export class LayerGeometryIndex {
     const cached = this.bounds.get(id);
     if (cached) return cached;
     const layer = this.get(id);
-    if (layer.parentId === null && layer.rotation === 0) {
+    if (
+      layer.parentId === null &&
+      layer.rotation === 0 &&
+      (layer.scaleX ?? 1) === 1 &&
+      (layer.scaleY ?? 1) === 1
+    ) {
       const direct = Object.freeze({
         x: layer.x,
         y: layer.y,
@@ -173,7 +178,13 @@ export class LayerGeometryIndex {
     for (const id of ids) {
       const layer = this.#lookup.get(id);
       if (!layer) continue;
-      const bounds = layer.parentId === null && layer.rotation === 0 ? layer : this.worldBounds(id);
+      const bounds =
+        layer.parentId === null &&
+        layer.rotation === 0 &&
+        (layer.scaleX ?? 1) === 1 &&
+        (layer.scaleY ?? 1) === 1
+          ? layer
+          : this.worldBounds(id);
       left = Math.min(left, bounds.x);
       top = Math.min(top, bounds.y);
       right = Math.max(right, bounds.x + bounds.width);

@@ -478,23 +478,18 @@ test("Canvas gap duplication and clip right-click transition preserve independen
     revisionBefore = await revision(page);
   await page.mouse.click(second.x, second.y, { button: "right" });
   await page.getByRole("menuitem", { name: "Ajouter une transition au clip", exact: true }).click();
-  const editor = page.getByRole("dialog", { name: "Transition", exact: true });
+  const editor = page.getByRole("dialog", { name: "Ajouter une animation", exact: true });
   await expect(editor).toBeVisible();
   await editor.screenshot({ path: `${output}/clip-context-transition.png` });
-  await editor.getByRole("button", { name: "Ajouter une transition", exact: true }).click();
+  await editor.getByRole("button", { name: "Fade", exact: true }).click();
   await expect.poll(() => revision(page)).toBe(revisionBefore + 1);
   const transitioned = await authored(page);
   expect(transitioned.find((track) => track.id === "card-first")).toEqual(
     before.project.pages[0]!.motion!.tracks.find((track) => track.id === "card-first"),
   );
-  const channel = transitioned
-    .find((track) => track.id === "card-second")!
-    .properties.find(
-      (property) =>
-        property.target.kind === "effectSetting" && property.target.property === "progress",
-    )!;
-  expect(channel.keyframes).toHaveLength(2);
-  expect(channel.keyframes[0]!.time).toEqual({ value: 10, rate: 1 });
+  const animation = transitioned.find((track) => track.id === "card-second")!.animations![0]!;
+  expect(animation.preset.channels[0]!.points).toHaveLength(2);
+  expect(animation.start.value / animation.start.rate).toBeGreaterThanOrEqual(10);
   await undo(page);
   expect(await page.evaluate(() => window.musart!.snapshot().project)).toEqual(before.project);
 });

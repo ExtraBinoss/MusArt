@@ -40,7 +40,7 @@ it("opens a layer-specific action only after a stationary right-button release",
   await act(async () => {
     fireEvent.pointerUp(d.canvas, d.down);
   });
-  expect(screen.getByRole("menuitem", { name: "Ajouter une transition" })).toBeVisible();
+  expect(screen.getByRole("menuitem", { name: "Ajouter une animation" })).toBeVisible();
   expect(d.engine.getSnapshot().selection).toEqual([d.rectangle.id]);
   expect(d.engine.getSnapshot().project).toBe(before);
 });
@@ -84,7 +84,7 @@ it("pauses playback and retains the occurrence under the pointer when the menu o
     });
     expect(transport.read().playing).toBe(false);
     transport.seek({ value: 3, rate: 2 });
-    fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une transition" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une animation" }));
     expect(request).not.toHaveBeenCalled();
     await waitFor(() =>
       expect(request).toHaveBeenCalledWith(
@@ -136,12 +136,12 @@ it("hands a captured canvas action to the real persistent host after focus-scope
   await act(async () => {
     fireEvent.pointerUp(d.canvas, d.down);
   });
-  fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une transition" }));
-  expect(await screen.findByRole("dialog", { name: "Transition" })).toBeVisible();
+  fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une animation" }));
+  expect(await screen.findByRole("dialog", { name: "Ajouter une animation" })).toBeVisible();
   expect(screen.queryByRole("menu")).toBeNull();
   expect(requests.getTransitionRequests(d.engine).read()?.origin.trackId).toBe(track.id);
   expect(d.engine.getSnapshot().project).toBe(before);
-  fireEvent.click(screen.getByRole("button", { name: "Ajouter une transition" }));
+  fireEvent.click(screen.getByRole("button", { name: "Fade" }));
   expect(d.engine.getSnapshot().project.pages[0]!.layers[0]!.effects[0]!.type).toBe("transition");
   act(() => d.engine.undo());
   expect(d.engine.getSnapshot().project).toEqual(before);
@@ -158,7 +158,7 @@ it.each(["edit", "replacement", "unmount"] as const)(
       await act(async () => {
         fireEvent.pointerUp(d.canvas, d.down);
       });
-      fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une transition" }));
+      fireEvent.click(screen.getByRole("menuitem", { name: "Ajouter une animation" }));
       expect(request).not.toHaveBeenCalled();
       if (change === "edit")
         act(() => d.engine.execute({ type: "renameProject", name: "Changed while closing" }));

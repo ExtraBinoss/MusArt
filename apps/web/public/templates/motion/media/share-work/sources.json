@@ -1,0 +1,78 @@
+{
+  "license": "https://unsplash.com/license",
+  "description": "Eight locally bundled replacement photographs. Cropped from the existing attributed Unsplash fixtures; no reference artwork redistributed.",
+  "images": [
+    {
+      "name": "forest",
+      "photoPage": "https://unsplash.com/photos/eOpewngf68w",
+      "photographer": "Sebastian Unrau",
+      "source": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e",
+      "file": "card-1.jpg",
+      "sha256": "baf95a9425e1d2b18092ac5c3f66a40f786848c8e8e056481e18089f166cafe2",
+      "sourceFixture": "01-forest-1.jpg"
+    },
+    {
+      "name": "boathouse",
+      "photoPage": "https://unsplash.com/photos/zAjdgNXsMeg",
+      "photographer": "Luca Bravo",
+      "source": "https://images.unsplash.com/photo-1470770841072-f978cf4d019e",
+      "file": "card-2.jpg",
+      "sha256": "fba87c69ff371be0f81b16599dc71fa12805312ea3e384ee97eb840faaa69a4f",
+      "sourceFixture": "06-boathouse-1.jpg"
+    },
+    {
+      "name": "beach",
+      "photoPage": "https://unsplash.com/@seantookthese",
+      "photographer": "Sean O.",
+      "source": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+      "file": "card-3.jpg",
+      "sha256": "47dd091efb5b3f66fb159d83c55c62fd6f1ac797965d6f427f91197627e7ff9b",
+      "sourceFixture": "11-beach-1.jpg"
+    },
+    {
+      "name": "peaks",
+      "photoPage": null,
+      "photographer": null,
+      "source": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b",
+      "file": "card-4.jpg",
+      "sha256": "bef40f1fae8f030922f123f65751909ac32d3e82ad1e5bd7cf9ceae28b057420",
+      "sourceFixture": "16-peaks-1.jpg"
+    },
+    {
+      "name": "valley",
+      "photoPage": null,
+      "photographer": null,
+      "source": "https://images.unsplash.com/photo-1469474968028-56623f02e42e",
+      "file": "card-5.jpg",
+      "sha256": "e2d06b7d0fb7df42d9c3df58b80b642a66bd73c1b580f368aecba98e39a1dda3",
+      "sourceFixture": "21-valley-1.jpg"
+    },
+    {
+      "name": "stars",
+      "photoPage": null,
+      "photographer": null,
+      "source": "https://images.unsplash.com/photo-1519681393784-d120267933ba",
+      "file": "card-6.jpg",
+      "sha256": "56561b5b72031af0ad91484d0790aa22546c20d4f9b3c5fe0bcc6ae1e4ff4744",
+      "sourceFixture": "26-stars-1.jpg"
+    },
+    {
+      "name": "alpine",
+      "photoPage": null,
+      "photographer": null,
+      "source": "https://images.unsplash.com/photo-1501785888041-af3ef285b470",
+      "file": "card-7.jpg",
+      "sha256": "25bb650595445c94de92e6cde954525451a5dffe52c3f9afb2d10fcefaf74dc1",
+      "sourceFixture": "31-alpine-1.jpg"
+    },
+    {
+      "name": "ocean",
+      "photoPage": null,
+      "photographer": null,
+      "source": "https://images.unsplash.com/photo-1518837695005-2083093ee35b",
+      "file": "card-8.jpg",
+      "sha256": "8a12493eb52891ee0effe3083474301b8cedfa1c401d7f0f46355461a01661e4",
+      "sourceFixture": "36-ocean-1.jpg"
+    }
+  ]
+}

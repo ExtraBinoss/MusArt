@@ -125,7 +125,9 @@ export function TemplateGallery({
                 >
                   {template.preview &&
                   template.mode === "motion" &&
-                  (template.id === "in-bloom" || template.id === "motion-stress-lab") ? (
+                  (template.id === "in-bloom" ||
+                    template.id === "motion-stress-lab" ||
+                    template.id === "share-your-work") ? (
                     <MotionTemplatePreview
                       templateId={template.id}
                       poster={template.preview}

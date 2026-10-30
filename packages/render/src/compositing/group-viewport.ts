@@ -70,16 +70,21 @@ export function sourcePlacement(
 ): Layer {
   const x = parent?.x ?? 0,
     y = parent?.y ?? 0;
-  if (!bounds) return x || y ? { ...layer, x: layer.x - x, y: layer.y - y } : layer;
+  if (!bounds && !x && !y && (layer.scaleX ?? 1) === 1 && (layer.scaleY ?? 1) === 1) return layer;
+  const region = bounds ?? { x: 0, y: 0, width: layer.width, height: layer.height };
   const center = transformPoint(layerTransform(layer), {
-    x: bounds.x + bounds.width / 2,
-    y: bounds.y + bounds.height / 2,
+    x: region.x + region.width / 2,
+    y: region.y + region.height / 2,
   });
+  const width = region.width * (layer.scaleX ?? 1),
+    height = region.height * (layer.scaleY ?? 1);
   return {
     ...layer,
-    x: center.x - bounds.width / 2 - x,
-    y: center.y - bounds.height / 2 - y,
-    width: bounds.width,
-    height: bounds.height,
+    x: center.x - width / 2 - x,
+    y: center.y - height / 2 - y,
+    width,
+    height,
+    scaleX: 1,
+    scaleY: 1,
   };
 }

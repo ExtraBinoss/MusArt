@@ -1,3 +1,6 @@
+import { SimpleTimelineRows } from "./animations/SimpleTimelineRows";
+import { AnimationViewToggle } from "./animations/AnimationViewToggle";
+import { useAnimationPresentation } from "./animations/presentation";
 import {
   useCallback,
   useEffect,
@@ -37,7 +40,7 @@ import "./messages";
 import "./timeline.css";
 import "./timeline-compact.css";
 
-const ACTION_WIDTH = 112;
+const ACTION_WIDTH = 252;
 
 export function TimelinePanel({
   engine,
@@ -60,6 +63,7 @@ export function TimelinePanel({
   active?: boolean;
   compact?: boolean;
 }) {
+  const { details } = useAnimationPresentation(engine);
   const GUTTER = compact ? 120 : 244;
   const rowHeight = compact ? 32 : 24;
   const { t } = useTranslation("motion");
@@ -95,7 +99,7 @@ export function TimelinePanel({
   const resize = useRef<{ pointer: number; y: number; height: number } | null>(null);
   const page = snapshot.project.pages.find((item) => item.id === snapshot.pageId)!;
   const chosenOccurrences = useOccurrenceProjection(engine, page, transport);
-  const actionWidth = compact ? 0 : ACTION_WIDTH + 32;
+  const actionWidth = compact ? 0 : Math.min(ACTION_WIDTH + 32, Math.max(144, view.width - 112));
   const duration = page.motion ? motionTimeToSeconds(page.motion.duration) : 2;
   const width = Math.max(view.width, Math.min(1_000_000, duration * zoom + actionWidth + 64));
   const scale = zoom;
@@ -355,10 +359,12 @@ export function TimelinePanel({
         ref={panel}
         className="motion-timeline"
         data-compact={compact || undefined}
+        data-dense-actions={view.width < 396 || undefined}
         style={
           {
             height: compact ? undefined : height,
             "--motion-gutter": `${GUTTER}px`,
+            "--animation-actions-width": `${actionWidth}px`,
           } as import("react").CSSProperties
         }
         aria-label={t("timeline")}
@@ -367,7 +373,7 @@ export function TimelinePanel({
         data-document-shortcuts
         onKeyDown={(event) => {
           if (!event.currentTarget.contains(event.target as Node)) return;
-          gestures.keyDown(event);
+          if (details) gestures.keyDown(event);
           if (
             event.defaultPrevented ||
             event.key !== " " ||
@@ -386,7 +392,9 @@ export function TimelinePanel({
             return;
           if (
             target.closest("button") &&
-            !target.closest(".motion-key,.motion-track,.motion-trim-handle,.motion-row-name")
+            !target.closest(
+              ".motion-key,.motion-track,.motion-trim-handle,.motion-row-name,.motion-animation-block",
+            )
           )
             return;
           event.preventDefault();
@@ -489,7 +497,12 @@ export function TimelinePanel({
                   unit={unit}
                 />
                 {!compact && (
-                  <div className="motion-timeline-actions" data-has-pin={Boolean(onPin)}>
+                  <div
+                    className="motion-timeline-actions"
+                    data-has-pin={Boolean(onPin)}
+                    data-animation-controls
+                  >
+                    <AnimationViewToggle engine={engine} />
                     <TimelineActions
                       engine={engine}
                       active={active}
@@ -504,31 +517,43 @@ export function TimelinePanel({
                   </div>
                 )}
               </div>
-              <TimelineVirtualRows
-                viewport={viewport}
-                audioTracks={audioTracks}
-                assets={snapshot.project.assets}
-                onAudioError={audioError}
-                rows={rows}
-                onError={setInteractionError}
-                drag={layerDrag}
-                gestures={gestures}
-                interactive={active}
-                engine={engine}
-                compositionId={page.id}
-                rowHeight={rowHeight}
-                gutter={GUTTER}
-                selected={selected}
-                pixelsPerSecond={scale}
-                duration={duration}
-                left={Math.max(0, view.left - 120)}
-                width={view.width + 240}
-                unit={unit}
-                transport={transport}
-                onToggle={toggleRow}
-                onSelect={selectRow}
-                onZoomRange={zoomRange}
-              />
+              {!details ? (
+                <SimpleTimelineRows
+                  engine={engine}
+                  page={page}
+                  transport={transport}
+                  scale={scale}
+                  gutter={GUTTER}
+                  interactive={active}
+                  viewport={viewport}
+                />
+              ) : (
+                <TimelineVirtualRows
+                  viewport={viewport}
+                  audioTracks={audioTracks}
+                  assets={snapshot.project.assets}
+                  onAudioError={audioError}
+                  rows={rows}
+                  onError={setInteractionError}
+                  drag={layerDrag}
+                  gestures={gestures}
+                  interactive={active}
+                  engine={engine}
+                  compositionId={page.id}
+                  rowHeight={rowHeight}
+                  gutter={GUTTER}
+                  selected={selected}
+                  pixelsPerSecond={scale}
+                  duration={duration}
+                  left={Math.max(0, view.left - 120)}
+                  width={view.width + 240}
+                  unit={unit}
+                  transport={transport}
+                  onToggle={toggleRow}
+                  onSelect={selectRow}
+                  onZoomRange={zoomRange}
+                />
+              )}
               <div ref={playheadClip} className="motion-playhead-clip" aria-hidden>
                 <div ref={playhead} className="motion-playhead" />
               </div>
@@ -549,6 +574,7 @@ export function TimelinePanel({
         </ScrollShadow>
         {compact && (
           <div className="motion-compact-zoom">
+            <AnimationViewToggle engine={engine} />
             <span>{t("zoom")}</span>
             <TimelineActions engine={engine} active={active} onError={audioError} compact>
               {zoomControl}

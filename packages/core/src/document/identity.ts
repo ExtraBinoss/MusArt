@@ -23,6 +23,7 @@ export function reserveProjectIds(project: Project): void {
     for (const track of page.motion?.audioTracks ?? []) reserved.add(track.id);
     for (const track of page.motion?.tracks ?? []) {
       reserved.add(track.id);
+      for (const animation of track.animations ?? []) reserved.add(animation.id);
       for (const property of track.properties) {
         reserved.add(property.id);
         for (const key of property.keyframes) reserved.add(key.id);

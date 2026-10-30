@@ -49,6 +49,7 @@ export function validateCoverOptions(options: CoverOptions): void {
         id !== "in-bloom" &&
         id !== "motion-stress-lab" &&
         id !== "sound-playground" &&
+        id !== "share-your-work" &&
         !isDesignedTemplateId(id),
     )
   )

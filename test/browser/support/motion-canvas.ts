@@ -140,6 +140,7 @@ export async function prepareTemplate(page: Page, name: string) {
   await expect(page.getByRole("alert")).toHaveCount(0);
 }
 async function readyTimeline(page: Page) {
+  await page.getByRole("button", { name: "Keyframes", exact: true }).click();
   await expect(page.locator('.canvas-artboard canvas[data-renderer-ready="true"]')).toBeVisible({
     timeout: 20_000,
   });

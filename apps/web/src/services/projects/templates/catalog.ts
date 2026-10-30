@@ -61,6 +61,16 @@ export const TEMPLATE_CATALOG: readonly ProjectTemplate[] = Object.freeze([
     descriptionKey: "templates:soundPlaygroundDescription",
     preview: `${import.meta.env.BASE_URL}templates/motion/sound-playground.webp`,
   }),
+  Object.freeze({
+    id: "share-your-work",
+    nameKey: "templates:shareYourWork",
+    width: 480,
+    height: 480,
+    category: "artwork" as const,
+    mode: "motion" as const,
+    descriptionKey: "templates:shareYourWorkDescription",
+    preview: `${import.meta.env.BASE_URL}templates/motion/share-your-work.webp`,
+  }),
   ...PRESETS.map((preset) =>
     Object.freeze({
       id: `preset:${preset.id}`,
@@ -89,7 +99,8 @@ export async function createProjectFromTemplate(
   if (
     templateId === "in-bloom" ||
     templateId === "motion-stress-lab" ||
-    templateId === "sound-playground"
+    templateId === "sound-playground" ||
+    templateId === "share-your-work"
   ) {
     const { openMotionTemplate } = await import("./motion/loader");
     await openMotionTemplate(services, templateId, options);

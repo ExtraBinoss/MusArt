@@ -1,3 +1,4 @@
+import type { MotionAnimation, MotionAnimationCommand } from "./animations/model";
 import type { MotionTime, MotionFrameRate } from "./time";
 import type { MotionEasing } from "./easing";
 import type { MotionPropertyTarget, MotionValue } from "./properties/model";
@@ -26,6 +27,7 @@ export interface MotionLayerTrack {
   /** null follows the composition end; an explicit trim remains fixed. */
   end: MotionTime | null;
   properties: MotionPropertyTrack[];
+  animations?: MotionAnimation[];
   /** Source in-point is relative to the video's first PTS; audio shares this same placement. */
   media?: { sourceIn: MotionTime; mute: boolean; volume: number };
 }
@@ -52,6 +54,7 @@ export interface MotionInitializationPlan {
 }
 
 export type MotionCommand =
+  | MotionAnimationCommand
   | MotionAudioCommand
   | {
       type: "setCompositionMode";

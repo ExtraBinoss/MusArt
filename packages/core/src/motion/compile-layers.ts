@@ -1,3 +1,4 @@
+import { compileAnimations } from "./animations/compile";
 import { isVideoAsset } from "../assets/identity";
 import type { Asset } from "../assets/model";
 import type { Composition } from "../document/model";
@@ -81,6 +82,9 @@ export function compileMotionLayers(
             }
           : {}),
         properties,
+        ...(mode === "motion" && track?.animations?.length
+          ? { animations: compileAnimations(page, track) }
+          : {}),
       };
       if (mode === "static") return [{ ...common, start: zero, end: duration }];
       // Keep an inactive single segment so legacy off-range property sampling remains defined.

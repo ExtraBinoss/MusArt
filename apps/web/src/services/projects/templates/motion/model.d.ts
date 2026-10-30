@@ -1,6 +1,10 @@
 import type { Command, ImageAsset, Project, VideoAsset, AudioAsset } from "@musart/core";
 
-export type MotionTemplateId = "in-bloom" | "motion-stress-lab" | "sound-playground";
+export type MotionTemplateId =
+  | "in-bloom"
+  | "motion-stress-lab"
+  | "sound-playground"
+  | "share-your-work";
 
 /** Source descriptions are portable; binary video originals travel in the bundle sidecar. */
 export interface MotionTemplateMedia {

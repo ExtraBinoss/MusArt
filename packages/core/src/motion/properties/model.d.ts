@@ -7,6 +7,8 @@ export type LayerMotionProperty =
   | "width"
   | "height"
   | "rotation"
+  | "scaleX"
+  | "scaleY"
   | "opacity"
   | "visible"
   | "fill"

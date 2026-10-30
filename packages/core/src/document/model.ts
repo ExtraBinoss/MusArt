@@ -88,6 +88,9 @@ export interface Layer {
   width: number;
   height: number;
   rotation: number;
+  /** Presentation scale around the layer center; omitted means one. */
+  scaleX?: number;
+  scaleY?: number;
   opacity: number;
   visible: boolean;
   locked: boolean;

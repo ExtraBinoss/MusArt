@@ -1,8 +1,9 @@
+import { animationPresentation } from "../../../src/components/motion/animations/presentation";
 import { Profiler, useSyncExternalStore } from "react";
 import { act, fireEvent, screen } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { createLayer } from "@musart/core";
-import { setup } from "../../support/ui";
+import { setup as baseSetup } from "../../support/ui";
 import { makeTransport, PanelHost, pointer } from "./support";
 import { TimelinePanel } from "../../../src/components/motion/TimelinePanel";
 import { choose } from "../../support/select";
@@ -33,6 +34,7 @@ it("keeps the panel and header out of native vertical window publications", () =
   const d = audioFixture(40),
     runtime = makeTransport(d.page());
   const ui = setup();
+  animationPresentation(d.engine).set({ details: true });
   const view = ui.mount(<PanelHost engine={d.engine} transport={runtime.transport} />);
   try {
     const panel = document.querySelector<HTMLElement>(".motion-timeline")!;
@@ -564,3 +566,10 @@ it("clamps a wheel anchor to the temporal extent and never enlarges it with the 
   expect(clip.style.left).toBe("244px");
   expect(d.engine.getSnapshot().revision).toBe(1);
 });
+
+/** These regressions exercise the explicitly selected detailed keyframe view. */
+function setup() {
+  const result = baseSetup();
+  animationPresentation(result.engine).set({ details: true });
+  return result;
+}
