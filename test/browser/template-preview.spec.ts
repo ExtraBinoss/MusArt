@@ -199,7 +199,7 @@ test("saved Motion projects preview real persisted originals without replacing t
   expect(second.equals(first)).toBe(false);
   // Saved projects follow their own authored duration, beyond a template-only five-second window.
   await expect
-    .poll(async () => Number(await host.getAttribute("data-preview-time")))
+    .poll(async () => Number(await host.getAttribute("data-preview-time")), { timeout: 8000 })
     .toBeGreaterThan(5.1);
   expect(await page.evaluate(() => window.musart!.snapshot())).toEqual(before);
   expect(await counters(page)).toEqual(renders);
