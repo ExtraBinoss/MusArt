@@ -47,6 +47,10 @@ Completed implementation checkpoint: 2026-10-30, branch `feat/mobile-onboarding`
   [Cmd+K input-priority profiling](../performance/cmdk-priority.md). The measured
   input-echo tail improves while final results take longer; no general speedup
   or guarantee for other devices is claimed.
+- Command search now starts its entrance clock at the first available frame and
+  reveals sections/results through the reusable CSS BlurReveal primitive. Closing
+  releases input focus into an inert exit without `aria-hidden` on focused content;
+  Radix restores the original target after the visual exit.
 
 ## Remaining follow-up
 

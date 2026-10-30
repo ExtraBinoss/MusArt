@@ -153,42 +153,6 @@
   min-width: 19px;
   height: 20px;
 }
-@keyframes search-result-enter {
-  from {
-    opacity: 0;
-    transform: translateY(3px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.magic-search-item-content {
-  animation: search-result-enter 130ms ease-out both;
-}
-.magic-search-command [cmdk-item]:nth-child(2) .magic-search-item-content {
-  animation-delay: 8ms;
-}
-.magic-search-command [cmdk-item]:nth-child(3) .magic-search-item-content {
-  animation-delay: 16ms;
-}
-.magic-search-command [cmdk-item]:nth-child(4) .magic-search-item-content {
-  animation-delay: 24ms;
-}
-.magic-search-command [cmdk-item]:nth-child(5) .magic-search-item-content {
-  animation-delay: 32ms;
-}
-.magic-search-command [cmdk-item]:nth-child(n + 6) .magic-search-item-content {
-  animation-delay: 40ms;
-}
-.magic-search-surface[data-reduced-motion] .magic-search-item-content {
-  animation: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .magic-search-item-content {
-    animation: none;
-  }
-}
 .shortcuts-dialog[data-slot="dialog-content"] {
   max-width: 680px;
 }

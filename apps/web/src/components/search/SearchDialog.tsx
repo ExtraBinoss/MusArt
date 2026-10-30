@@ -1,6 +1,6 @@
-import type { ComponentProps } from "react";
-import { Dialog as DialogPrimitive } from "radix-ui";
-import { AnimatePresence, motion, useIsPresent } from "motion/react";
+import { useLayoutEffect, useRef, type ComponentProps } from "react";
+import { Dialog as DialogPrimitive, Slot } from "radix-ui";
+import { AnimatePresence, motion, useAnimationControls, useIsPresent } from "motion/react";
 
 const Content = motion.create(DialogPrimitive.Content);
 const Overlay = motion.create(DialogPrimitive.Overlay);
@@ -22,6 +22,27 @@ export function SearchDialog({ open, onOpenChange, reduced, ...props }: Props) {
 }
 function SearchDialogLayers({ reduced, children, ...props }: ContentProps & { reduced: boolean }) {
   const present = useIsPresent();
+  const controls = useAnimationControls();
+  const content = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (present) return;
+    // Retire native focus before the inert exit; Radix restores the origin after presence ends.
+    const focused = document.activeElement;
+    if (focused instanceof HTMLElement && content.current?.contains(focused)) focused.blur();
+  }, [present]);
+  useLayoutEffect(() => {
+    if (!present || reduced) return;
+    // Start after mounting/focus/style work, so it cannot consume the visual entrance clock.
+    let active = true;
+    const frame = requestAnimationFrame(() => {
+      if (active) void controls.start("visible");
+    });
+    return () => {
+      active = false;
+      cancelAnimationFrame(frame);
+    };
+  }, [present, reduced, controls]);
+  useLayoutEffect(() => () => controls.stop(), [controls]);
   const transition = {
     duration: reduced ? 0 : present ? 0.16 : 0.1,
     ease: [0.2, 0.8, 0.2, 1] as [number, number, number, number],
@@ -33,31 +54,34 @@ function SearchDialogLayers({ reduced, children, ...props }: ContentProps & { re
         data-slot="dialog-overlay"
         className="magic-search-overlay"
         initial={reduced ? false : { opacity: 0 }}
-        animate={{ opacity: 1 }}
+        variants={{ visible: { opacity: 1 } }}
+        animate={reduced ? "visible" : controls}
         exit={{ opacity: 0 }}
         transition={transition}
         style={{ pointerEvents: present ? "auto" : "none" }}
       />
-      <Content
-        {...props}
-        onEscapeKeyDown={(event) => {
-          props.onEscapeKeyDown?.(event);
-          // Escape first belongs to the native IME candidate list, including legacy composition events.
-          if (event.isComposing || event.keyCode === 229) event.preventDefault();
-        }}
-        forceMount
-        data-slot="dialog-content"
-        data-magic-search
-        inert={!present || undefined}
-        aria-hidden={!present || undefined}
-        initial={reduced ? false : { opacity: 0, y: 8, scale: 0.985 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 4, scale: 0.99 }}
-        transition={transition}
-        style={{ ...props.style, pointerEvents: present ? "auto" : "none" }}
-      >
-        {children}
-      </Content>
+      <Slot.Root ref={content}>
+        <Content
+          {...props}
+          onEscapeKeyDown={(event) => {
+            props.onEscapeKeyDown?.(event);
+            // Escape first belongs to the native IME candidate list, including legacy composition events.
+            if (event.isComposing || event.keyCode === 229) event.preventDefault();
+          }}
+          forceMount
+          data-slot="dialog-content"
+          data-magic-search
+          inert={!present || undefined}
+          initial={reduced ? false : { opacity: 0, y: 8, scale: 0.985 }}
+          variants={{ visible: { opacity: 1, y: 0, scale: 1 } }}
+          animate={reduced ? "visible" : controls}
+          exit={{ opacity: 0, y: 4, scale: 0.99 }}
+          transition={transition}
+          style={{ ...props.style, pointerEvents: present ? "auto" : "none" }}
+        >
+          {children}
+        </Content>
+      </Slot.Root>
     </DialogPrimitive.Portal>
   );
 }

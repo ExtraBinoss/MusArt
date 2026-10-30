@@ -261,3 +261,79 @@ test("spotlight category and close buttons own native keyboard activation", asyn
   expect(after.selection).toEqual(before.selection);
   expect(after.revision).toBe(before.revision);
 });
+
+test("spotlight closing excludes inert content without hiding its focused input", async ({
+  page,
+}) => {
+  const warnings: string[] = [];
+  const session = await page.context().newCDPSession(page);
+  session.on("Log.entryAdded", ({ entry }: { entry: { text: string } }) => {
+    if (/aria-hidden/i.test(entry.text)) warnings.push(entry.text);
+  });
+  page.on("console", (message) => {
+    if (/aria-hidden/i.test(message.text())) warnings.push(message.text());
+  });
+  await session.send("Log.enable");
+  try {
+    await ready(page);
+    const canvas = page.getByTestId("editor-canvas");
+    await canvas.focus();
+    await page.keyboard.press("Control+k");
+    await expect(page.getByRole("combobox")).toBeFocused();
+    await page.evaluate(() => {
+      const dialog = document.querySelector<HTMLElement>("[data-magic-search]")!;
+      (
+        window as unknown as {
+          __searchAccessibleExit: Promise<{
+            inert: boolean;
+            hidden: string | null;
+            focusedInside: boolean;
+          }>;
+        }
+      ).__searchAccessibleExit = new Promise((resolve) => {
+        const observer = new MutationObserver(() => {
+          if (!dialog.inert) return;
+          observer.disconnect();
+          requestAnimationFrame(() =>
+            resolve({
+              inert: dialog.inert,
+              hidden: dialog.getAttribute("aria-hidden"),
+              focusedInside: dialog.contains(document.activeElement),
+            }),
+          );
+        });
+        observer.observe(dialog, { attributes: true });
+      });
+    });
+    await page.keyboard.press("Escape");
+    expect(
+      await page.evaluate(
+        () =>
+          (
+            window as unknown as {
+              __searchAccessibleExit: Promise<{
+                inert: boolean;
+                hidden: string | null;
+                focusedInside: boolean;
+              }>;
+            }
+          ).__searchAccessibleExit,
+      ),
+    ).toEqual({ inert: true, hidden: null, focusedInside: false });
+    await expect(page.locator("[data-magic-search]")).toHaveCount(0);
+    await expect(canvas).toBeFocused();
+    for (const reducedMotion of ["no-preference", "reduce"] as const) {
+      await page.emulateMedia({ reducedMotion });
+      await page.keyboard.press("Control+k");
+      const input = page.getByRole("combobox");
+      await expect(input).toBeFocused();
+      await input.fill("règles");
+      await page.keyboard.press("Enter");
+      await expect(page.locator("[data-magic-search]")).toHaveCount(0);
+      await expect(canvas).toBeFocused();
+    }
+    expect(warnings).toEqual([]);
+  } finally {
+    await session.detach();
+  }
+});

@@ -206,6 +206,7 @@ test("keyboard search focuses before its first frame, animates open and inert cl
 }) => {
   await page.goto("/?automation=1");
   await page.waitForFunction(() => Boolean(window.musart));
+  await page.evaluate(() => document.fonts.ready);
   const canvas = page.getByTestId("editor-canvas"),
     trigger = page.locator(".toolbar .magic-search-trigger");
   await canvas.focus();
@@ -215,11 +216,17 @@ test("keyboard search focuses before its first frame, animates open and inert cl
       const sample = () => {
         const dialog = document.querySelector<HTMLElement>("[data-magic-search]");
         const trigger = document.querySelector<HTMLElement>(".toolbar .magic-search-trigger");
+        const list = dialog?.querySelector<HTMLElement>("[cmdk-list]");
+        const row = list?.querySelector<HTMLElement>(".magic-search-item-content");
         samples.push({
           focus: document.activeElement?.getAttribute("role"),
           opacity: dialog ? Number(getComputedStyle(dialog).opacity) : null,
           triggerFocused: document.activeElement === trigger,
           triggerRing: trigger?.matches(":focus-visible"),
+          panelHeight: dialog?.offsetHeight,
+          listHeight: list?.offsetHeight,
+          count: list?.querySelectorAll("[cmdk-item]").length,
+          rowOpacity: row ? Number(getComputedStyle(row).opacity) : null,
         });
         if (samples.length < 12) requestAnimationFrame(sample);
         else resolve(samples);
@@ -240,7 +247,16 @@ test("keyboard search focuses before its first frame, animates open and inert cl
       (
         window as unknown as {
           __searchMotion: Promise<
-            { focus: string; opacity: number; triggerFocused: boolean; triggerRing: boolean }[]
+            {
+              focus: string;
+              opacity: number;
+              triggerFocused: boolean;
+              triggerRing: boolean;
+              panelHeight: number;
+              listHeight: number;
+              count: number;
+              rowOpacity: number;
+            }[]
           >;
         }
       ).__searchMotion,
@@ -248,6 +264,17 @@ test("keyboard search focuses before its first frame, animates open and inert cl
   expect(samples[0]!.focus).toBe("combobox");
   expect(samples.every((sample) => !sample.triggerFocused && !sample.triggerRing)).toBe(true);
   expect(samples.some((sample) => sample.opacity > 0 && sample.opacity < 1)).toBe(true);
+  expect(
+    samples.filter((sample) => sample.opacity > 0.08 && sample.opacity < 0.95).length,
+  ).toBeGreaterThan(1);
+  expect(
+    samples.some(
+      (sample) => sample.opacity > 0.08 && sample.rowOpacity > 0 && sample.rowOpacity < 1,
+    ),
+  ).toBe(true);
+  expect(new Set(samples.map((sample) => sample.panelHeight)).size).toBe(1);
+  expect(new Set(samples.map((sample) => sample.listHeight)).size).toBe(1);
+  expect(new Set(samples.map((sample) => sample.count)).size).toBe(1);
   expect(await page.getByRole("option").count()).toBeLessThanOrEqual(24);
   await page.evaluate(() => {
     const dialog = document.querySelector<HTMLElement>("[data-magic-search]")!;

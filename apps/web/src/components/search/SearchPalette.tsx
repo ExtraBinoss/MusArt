@@ -14,6 +14,7 @@ import type { BindingSnapshot } from "../../state/keybindings/model";
 import { useEngineValue } from "../../state/session/editor";
 import { ScrollShadow } from "../shared/scroll/ScrollShadow";
 import { Button } from "../ui/button";
+import { BlurReveal } from "../ui/blur-text-animation";
 import { DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
 import { Command, CommandInput, CommandList, CommandGroup, CommandItem } from "../ui/command";
 import { Kbd, KbdGroup } from "../ui/kbd";
@@ -32,6 +33,7 @@ import "./messages";
 
 // cmdk still scores newly registered items when shouldFilter=false. Ranking already belongs to our index.
 const alreadyRanked = () => 1;
+const SEARCH_REVEAL = { durationMs: 150, blur: 3 } as const;
 function keepButtonActivation(event: KeyboardEvent<HTMLButtonElement>) {
   // Let the browser activate this button; cmdk must not reinterpret its key as a result choice.
   if (event.key === "Enter" || event.key === " ") event.stopPropagation();
@@ -177,23 +179,25 @@ const PaletteContent = memo(function PaletteContent({
         className="magic-search-command"
         label={t("search:title")}
       >
-        <div className="magic-search-input-row">
-          <CommandInput
-            ref={inputRef}
-            value={query}
-            onValueChange={changeQuery}
-            placeholder={t("search:search")}
-          />
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={t("close")}
-            onClick={onClose}
-            onKeyDown={keepButtonActivation}
-          >
-            <Kbd>Esc</Kbd>
-          </Button>
-        </div>
+        <BlurReveal {...SEARCH_REVEAL} asChild order={0} delayMs={0}>
+          <div className="magic-search-input-row">
+            <CommandInput
+              ref={inputRef}
+              value={query}
+              onValueChange={changeQuery}
+              placeholder={t("search:search")}
+            />
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={t("close")}
+              onClick={onClose}
+              onKeyDown={keepButtonActivation}
+            >
+              <Kbd>Esc</Kbd>
+            </Button>
+          </div>
+        </BlurReveal>
         <CategoryTabs category={category} available={available} onChange={changeCategory} t={t} />
         <span className="sr-only" role="status" aria-live="polite" aria-busy={pending}>
           {t("search:resultCount", { count: results.total })}
@@ -243,17 +247,41 @@ const ResultGroups = memo(function ResultGroups({
   }, [items]);
   if (!items.length)
     return (
-      <div cmdk-empty="" role="presentation" className="py-6 text-center text-sm">
-        {t("search:empty")}
-      </div>
+      <BlurReveal {...SEARCH_REVEAL} asChild order={2} delayMs={8}>
+        <div cmdk-empty="" role="presentation" className="py-6 text-center text-sm">
+          {t("search:empty")}
+        </div>
+      </BlurReveal>
     );
-  return [...groups].map(([value, group]) => (
-    <CommandGroup key={value} heading={t(`search:${value}`)}>
-      {group.map((item) => (
-        <ResultRow key={item.id} item={item} onChoose={onChoose} />
-      ))}
-    </CommandGroup>
-  ));
+  let order = 2;
+  const count = items.length + groups.size;
+  const delay = (rank: number) => 8 + ((rank - 2) / Math.max(1, count - 1)) * 40;
+  return [...groups].map(([value, group]) => {
+    const headingOrder = order++;
+    return (
+      <CommandGroup
+        key={value}
+        heading={
+          <BlurReveal {...SEARCH_REVEAL} order={headingOrder} delayMs={delay(headingOrder)}>
+            {t(`search:${value}`)}
+          </BlurReveal>
+        }
+      >
+        {group.map((item) => {
+          const rowOrder = order++;
+          return (
+            <ResultRow
+              key={item.id}
+              item={item}
+              onChoose={onChoose}
+              order={rowOrder}
+              delayMs={delay(rowOrder)}
+            />
+          );
+        })}
+      </CommandGroup>
+    );
+  });
 });
 const CategoryTabs = memo(function CategoryTabs({
   category,
@@ -267,53 +295,65 @@ const CategoryTabs = memo(function CategoryTabs({
   t: SearchTranslate;
 }) {
   return (
-    <div className="magic-search-categories" role="group" aria-label={t("search:categories")}>
-      {(
-        ["all", ...SEARCH_CATEGORIES.filter((value) => available.has(value))] as SearchFilter[]
-      ).map((value) => (
-        <Button
-          key={value}
-          variant={category === value ? "secondary" : "ghost"}
-          size="sm"
-          aria-pressed={category === value}
-          onClick={() => onChange(value)}
-          onKeyDown={keepButtonActivation}
-        >
-          {t(`search:${value}`)}
-        </Button>
-      ))}
-    </div>
+    <BlurReveal {...SEARCH_REVEAL} asChild order={1} delayMs={4}>
+      <div className="magic-search-categories" role="group" aria-label={t("search:categories")}>
+        {(
+          ["all", ...SEARCH_CATEGORIES.filter((value) => available.has(value))] as SearchFilter[]
+        ).map((value) => (
+          <Button
+            key={value}
+            variant={category === value ? "secondary" : "ghost"}
+            size="sm"
+            aria-pressed={category === value}
+            onClick={() => onChange(value)}
+            onKeyDown={keepButtonActivation}
+          >
+            {t(`search:${value}`)}
+          </Button>
+        ))}
+      </div>
+    </BlurReveal>
   );
 });
-const ResultRow = memo(function ResultRow({
-  item,
-  onChoose,
-}: {
-  item: SearchItem;
-  onChoose: Props["onChoose"];
-}) {
-  const Icon = getSearchIcon(item);
-  return (
-    <CommandItem
-      value={item.id}
-      disabled={Boolean(item.disabled)}
-      aria-description={item.disabled}
-      onSelect={() => onChoose(item)}
-    >
-      <span className="magic-search-item-content">
-        <Icon size={16} strokeWidth={1.6} />
-        <span className="magic-search-item-copy">
-          <span>{item.label}</span>
-          {(item.disabled || item.detail) && <small>{item.disabled || item.detail}</small>}
-        </span>
-        {item.shortcut && (
-          <KbdGroup>
-            {item.shortcut.map((key) => (
-              <Kbd key={key}>{key === "Mod" ? modifierLabel() : key}</Kbd>
-            ))}
-          </KbdGroup>
-        )}
-      </span>
-    </CommandItem>
-  );
-});
+const ResultRow = memo(
+  function ResultRow({
+    item,
+    onChoose,
+    order,
+    delayMs,
+  }: {
+    item: SearchItem;
+    onChoose: Props["onChoose"];
+    order: number;
+    delayMs: number;
+  }) {
+    const Icon = getSearchIcon(item);
+    return (
+      <CommandItem
+        value={item.id}
+        disabled={Boolean(item.disabled)}
+        aria-description={item.disabled}
+        onSelect={() => onChoose(item)}
+      >
+        <BlurReveal {...SEARCH_REVEAL} asChild order={order} delayMs={delayMs}>
+          <span className="magic-search-item-content">
+            <Icon size={16} strokeWidth={1.6} />
+            <span className="magic-search-item-copy">
+              <span>{item.label}</span>
+              {(item.disabled || item.detail) && <small>{item.disabled || item.detail}</small>}
+            </span>
+            {item.shortcut && (
+              <KbdGroup>
+                {item.shortcut.map((key) => (
+                  <Kbd key={key}>{key === "Mod" ? modifierLabel() : key}</Kbd>
+                ))}
+              </KbdGroup>
+            )}
+          </span>
+        </BlurReveal>
+      </CommandItem>
+    );
+    // Entrance positions are captured at mount; changing their rank must not rebuild retained rows.
+  },
+  (before, after) => before.item === after.item && before.onChoose === after.onChoose,
+);
