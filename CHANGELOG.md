@@ -6,6 +6,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Unified the mascot gradient across the interface, favicon and install icons, regenerated SVG/PNG/ICO assets, and versioned the favicon URL so browsers refresh the updated artwork.
+
 - Excluded portable template payloads and generated contour coordinates from Tailwind class discovery, preventing the development server and production CSS build from blocking on large numeric data.
 
 - Restored preset channel points in the optional Keyframes timeline, including source-preserving drag previews, endpoint retiming, intermediate-point deletion and easing edits with undo/redo. Corrected vertical canvas ruler labels that were rotated outside the visible strip.

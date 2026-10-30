@@ -24,3 +24,5 @@ After the coordinated native-browser slot is available, regenerate the optional
 Apple Touch and install PNG renditions with `bun scripts/brand-assets.ts --png`.
 These are native browser encodings of these same SVG sources.
 `raster-manifest.json` records their checksums. No raster artwork is authored.
+
+The retained interface mascot and generated SVG, PNG and ICO assets share the same three sRGB gradient stops in `tint.ts`. Regeneration versions the HTML favicon URL by its SVG content hash so browser icon caches request the updated artwork.

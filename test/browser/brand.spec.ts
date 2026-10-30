@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { createLayer, createPage, createProject } from "@musart/core";
+import { brand } from "../../apps/web/src/ui/brand/config";
+import { mascotTint } from "../../apps/web/src/ui/brand/tint";
 import { openProjectLibrary } from "./support/project-library";
 import { installReadbackProbe } from "./support/readback-probe";
 const metrics = [
@@ -28,7 +30,7 @@ test("Melt shares its SVG identity, violet actions and real install artwork on m
   await expect(page.getByRole("button", { name: "Try Melt", exact: true })).toBeVisible();
   const logo = page.locator(".landing-nav svg.melt-mascot");
   await expect(logo).toHaveAttribute("data-brand-state", "idle");
-  const path = await logo.locator('path[fill="#A259FF"]').getAttribute("d");
+  const path = await logo.locator('path[data-mascot-part="body"]').getAttribute("d");
   expect(path).toMatch(/^M.*C.*Z$/);
   for (const colorScheme of ["light", "dark"] as const) {
     await page.emulateMedia({ colorScheme });
@@ -40,17 +42,31 @@ test("Melt shares its SVG identity, violet actions and real install artwork on m
         .locator(".landing-cta")
         .first()
         .evaluate((node) => getComputedStyle(node).backgroundColor),
-    ).toBe("rgb(162, 89, 255)");
+    ).toBe("rgb(179, 154, 219)");
     await page.screenshot({ path: info.outputPath(`melt-${colorScheme}.png`) });
   }
   await page.evaluate(
     () =>
       new Promise<void>((done) => requestAnimationFrame(() => requestAnimationFrame(() => done()))),
   );
-  expect(await logo.locator('path[fill="#A259FF"]').getAttribute("d")).toBe(path);
+  expect(await logo.locator('path[data-mascot-part="body"]').getAttribute("d")).toBe(path);
   const manifest = await (await page.request.get("/manifest.webmanifest")).json();
   expect(manifest.name).toBe("Melt");
-  expect(manifest.theme_color).toBe("#A259FF");
+  expect(manifest.theme_color).toBe(brand.colors.primary);
+  expect(await logo.locator('path[data-mascot-part="body"]').getAttribute("fill")).toMatch(
+    /^url\(#.*-tint\)$/,
+  );
+  expect(
+    await logo
+      .locator("linearGradient")
+      .first()
+      .locator("stop")
+      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute("stop-color"))),
+  ).toEqual(mascotTint.map((stop) => stop.color));
+  const iconHref = await page.locator('link[rel="icon"]').getAttribute("href");
+  expect(iconHref).toMatch(/melt\.svg\?v=[a-f0-9]{12}$/);
+  const icon = await (await page.request.get(iconHref!)).text();
+  for (const stop of mascotTint) expect(icon).toContain(`stop-color="${stop.color}"`);
   for (const size of [180, 192, 512]) {
     const dimensions = await page.evaluate(async (size) => {
       const image = new Image();

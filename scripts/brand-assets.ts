@@ -2,20 +2,22 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { mascotTint } from "../apps/web/src/ui/brand/tint";
 import { brand } from "../apps/web/src/ui/brand/config";
 import { createDahliaEngine } from "../apps/web/src/ui/brand/dahlia";
 
 /** The very same timestamped engine frame as the idle interface logo, without DOM or rasterization. */
 export function renderBrandSvg(maskable = false): string {
   const frame = createDahliaEngine().sample(0.75);
-  const body = `<path fill="${brand.colors.primary}" d="${frame.bodyPath}"/>`;
+  const gradient = `<defs><linearGradient id="melt-tint" x1="0%" y1="0%" x2="100%" y2="100%">${mascotTint.map((stop) => `<stop offset="${stop.offset}" stop-color="${stop.color}"/>`).join("")}</linearGradient></defs>`;
+  const body = `<path fill="url(#melt-tint)" d="${frame.bodyPath}"/>`;
   const eyes = frame.eyes
     .map(
       (eye) =>
         `<path fill="${brand.colors.foreground}" d="${eye.d}" transform="${eye.matrix}" opacity="${eye.alpha}"/>`,
     )
     .join("");
-  const artwork = `<g>${body}${eyes}</g>`;
+  const artwork = `${gradient}<g>${body}${eyes}</g>`;
   const content = maskable
     ? `<rect width="512" height="512" fill="${brand.colors.soft}"/><g transform="translate(256 256) scale(1.7)">${artwork}</g>`
     : artwork;
@@ -69,10 +71,12 @@ export async function writeBrandAssets(
       return null;
     throw error;
   });
+  const iconRevision = createHash("sha256").update(renderBrandSvg()).digest("hex").slice(0, 12);
   if (html !== null)
     await writeFile(
       htmlPath,
       html
+        .replace(/(href="\/branding\/melt\.svg)(?:\?v=[^"]*)?(")/g, `$1?v=${iconRevision}$2`)
         .replace(/<title>[^<]*<\/title>/, `<title>${brand.name}</title>`)
         .replace(
           /(<meta name="theme-color" content=")[^"]*("\s*\/>)/,
@@ -116,7 +120,7 @@ export async function writeRasterBrandAssets(
     const folder = resolve(root, "apps/web/public/branding"),
       files: Record<string, string> = {};
     await mkdir(folder, { recursive: true });
-    for (const size of [180, 192, 512]) {
+    for (const size of [32, 180, 192, 512]) {
       const svg = renderBrandSvg(size === 180);
       const data = await page.evaluate(
         async ({ svg, size }) => {
@@ -140,6 +144,21 @@ export async function writeRasterBrandAssets(
       );
       const bytes = Buffer.from(data, "base64"),
         name = `melt-icon-${size}.png`;
+      if (size === 32) {
+        // ICO directory followed by one natively encoded PNG image.
+        const header = Buffer.alloc(22);
+        header.writeUInt16LE(1, 2);
+        header.writeUInt16LE(1, 4);
+        header[6] = 32;
+        header[7] = 32;
+        header.writeUInt16LE(1, 10);
+        header.writeUInt16LE(32, 12);
+        header.writeUInt32LE(bytes.length, 14);
+        header.writeUInt32LE(22, 18);
+        const icon = Buffer.concat([header, bytes]);
+        await writeFile(resolve(folder, "favicon.ico"), icon);
+        files["favicon.ico"] = createHash("sha256").update(icon).digest("hex");
+      }
       await writeFile(resolve(folder, name), bytes);
       files[name] = createHash("sha256").update(bytes).digest("hex");
     }

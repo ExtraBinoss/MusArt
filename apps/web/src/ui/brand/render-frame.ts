@@ -3,6 +3,7 @@ import type { BotFrame, DotRender } from "./engine/bot-types";
 import { mixHex } from "./engine/skins";
 import { RAYON } from "./engine/repere";
 import { brand } from "./config";
+import { mascotTint } from "./tint";
 const NS = "http://www.w3.org/2000/svg";
 function node<K extends keyof SVGElementTagNameMap>(tag: K, parent: SVGElement) {
   const element = document.createElementNS(NS, tag);
@@ -36,15 +37,8 @@ export function createMascotSurface(svg: SVGSVGElement, id: string) {
   const tint = node("linearGradient", defs);
   tint.id = `${id}-tint`;
   attrs(tint, { x1: "0%", y1: "0%", x2: "100%", y2: "100%" });
-  attrs(node("stop", tint), {
-    offset: "0%",
-    "stop-color": "color-mix(in srgb, currentColor 78%, white)",
-  });
-  attrs(node("stop", tint), { offset: "48%", "stop-color": "currentColor" });
-  attrs(node("stop", tint), {
-    offset: "100%",
-    "stop-color": `color-mix(in srgb, currentColor 84%, ${brand.colors.ink})`,
-  });
+  for (const stop of mascotTint)
+    attrs(node("stop", tint), { offset: stop.offset, "stop-color": stop.color });
   clip.id = `${id}-body`;
   const back = node("g", root),
     behind = node("g", root),
