@@ -1,6 +1,6 @@
 # Mobile and onboarding handoff
 
-Checkpoint: 2026-10-30, branch `feat/mobile-onboarding`, worktree
+Completed implementation checkpoint: 2026-10-30, branch `feat/mobile-onboarding`, worktree
 `/home/albi/Documents/Projects/Hackaton/MuseArtWeb-mobile`.
 
 ## Implemented
@@ -12,11 +12,14 @@ Checkpoint: 2026-10-30, branch `feat/mobile-onboarding`, worktree
   Static/Motion template filter and shared scroll shadows.
 - New-project dialog with visual presets, linked dimensions, live aspect preview
   and the same split-button structure as editor export for importing `.musart`.
-- Matching themed card-caption fades, shorter overlays and aligned template mode
-  captions. Creation controls are enlarged.
+- Matching themed card-caption fades, shorter overlays and aligned project/template
+  mode captions. Saved-project mode metadata comes from bounded manifest reads;
+  dimensions match the displayed Motion artboard. Creation controls are enlarged.
 - Genuine engine/GPU hover playback for authored Motion templates in the landing
-  and template gallery. It has bounded ownership, cancellation, resource cleanup
-  and no production GPU readbacks or document edits.
+  and template gallery, plus saved user projects through isolated readonly loads.
+  All previews share one bounded GPU owner, follow the selected artboard's authored
+  duration, cancel stale work and perform no production GPU readbacks or document
+  edits. Static projects retain their cached page carousel.
 - Full-width mobile canvas, bottom navigation, draggable sheets, animated handle
   feedback/navigation, compact tools, primary Motion activation and export sheet.
 - Mobile numeric sliders with precision fields, imperative previews, transparent
@@ -25,28 +28,26 @@ Checkpoint: 2026-10-30, branch `feat/mobile-onboarding`, worktree
   shadows on desktop/mobile timelines.
 - Responsive desktop dock with hover/wheel scrolling, shared shadows, ruler
   insets, consistent floating-control geometry and bottom zoom tooltips.
+- The canvas logo opens the shared creation dialog directly over the editor.
+  Cancel returns to the same canvas; the project-name menu exposes Projects on
+  desktop and phones without needing an open Tools sheet.
+- Integrated the verified Motion milestone `88675a9`, preserving both histories,
+  project layout/zoom preferences and dock Pin/peek behavior. Mobile single-panel
+  layouts never overwrite saved desktop split proportions.
 
 ## Remaining follow-up
 
 - Review the finished interface on the user's physical phone and incorporate any
   remaining visual or touch feedback. Native Chromium interaction checks passed;
   these do not replace Safari/physical-device verification.
-- Extend real Motion hover playback to saved user projects if requested across
-  both galleries. This checkpoint plays authored templates; saved project cards
-  retain their existing cached page-preview carousel.
-- Finish parity of saved-project captions with template captions: project cards
-  still show page count, dimensions and active/date metadata rather than the
-  template's right-aligned Static/Motion caption.
-- Confirm whether the editor logo should open creation directly. It currently
-  opens the library, which exposes the shared new-project dialog.
-- Integrate the newer Motion branch commit `88675a9` (project layout persistence
-  and timeline interactions) before merging this work. This branch was created
-  from `e2b0312`; upstream advanced during this session. Preserve both histories
-  and inspect overlapping timeline changes.
 - Replace the four landing placeholders with user-supplied clips. The paths and
   slots are documented in `apps/web/public/videos/README.md`.
-- No remote push, PR, deployment or release has been performed. Full CI/release
-  gates have not been run. Community intentionally remains disabled/coming soon.
+- Later upstream Motion work-in-progress (`1f49efa`) is outside this verified
+  integration; its separate gesture/export/audio roadmap remains documented in
+  that branch's resume file.
+- This feature branch is published on GitHub. No PR, deployment or release has
+  been performed, and full CI/release gates have not been run. Community
+  intentionally remains disabled/coming soon.
 
 ## Verification at this checkpoint
 
@@ -60,6 +61,17 @@ Checkpoint: 2026-10-30, branch `feat/mobile-onboarding`, worktree
   mobile/responsive scenarios. They include real imports, decoded exports,
   slider cancellation/undo, two-finger gestures and measured editor React/GPU
   readback counters. No production latency benchmark claim is made.
+- After integration, all ten focused native scenarios passed together: five
+  mobile interaction cases, two real IndexedDB layout/zoom restorations, desktop
+  toolbar/ruler overflow, authored-template hover playback and saved-project hover
+  playback beyond five seconds. The current document/selection and editor React
+  counters stayed unchanged during hover, with zero production readbacks.
+- Follow-up unit checks passed for saved metadata/captions and CRUD (36 tests),
+  isolated preview lifecycle/storage (23 tests), mixed-artboard/readonly ownership
+  paths (11 tests), caption dimensions (4 tests) and merged Motion UI (74 tests).
+  These focused cohorts overlap and are not a repository-wide test count.
+- Independent source audit found no outstanding navigation, readonly persistence,
+  stale-result, cancellation or preview-owner cleanup issue.
 - Ignored evidence/configuration lives under `artifacts/mobile-onboarding/`.
 
 ## Local preview

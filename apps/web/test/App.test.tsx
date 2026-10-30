@@ -86,7 +86,7 @@ test("assembles the pinned inspector, layers, project menu, export and import ac
   expect(screen.queryByRole("dialog", { name: "Tableau de bord MusArt" })).toBeNull();
   fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Fermer" }));
   fireEvent.click(screen.getByRole("button", { name: "Actions du projet" }));
-  fireEvent.click(screen.getByRole("button", { name: "Projets", exact: true }));
+  fireEvent.click(screen.getByRole("button", { name: "Projets" }));
   await screen.findByText("Aucun projet enregistré.");
   expect(screen.queryByRole("dialog", { name: "Un nouvel espace pour vos idées." })).toBeNull();
   fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Fermer" }));
