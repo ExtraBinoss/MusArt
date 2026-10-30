@@ -1,4 +1,14 @@
-import { memo, useCallback, useMemo, useState, type RefObject } from "react";
+import {
+  memo,
+  useCallback,
+  useDeferredValue,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type RefObject,
+} from "react";
 import type { EnginePort } from "@musart/core";
 import type { BindingSnapshot } from "../../state/keybindings/model";
 import { useEngineValue } from "../../state/session/editor";
@@ -71,34 +81,77 @@ const PaletteContent = memo(function PaletteContent({
   available: ReadonlySet<SearchItem["category"]>;
 }) {
   const [query, setQuery] = useState(""),
-    [category, setCategory] = useState<SearchFilter>("all"),
-    [activeId, setActiveId] = useState("");
-  const results = useMemo(() => searchItems(items, query, category), [items, query, category]);
-  // Supply the enabled selection before cmdk mounts, and synchronously when query results change.
+    [category, setCategory] = useState<SearchFilter>("all");
+  const criteria = useMemo(() => ({ query, category }), [query, category]);
+  const deferred = useDeferredValue(criteria);
+  const pending = !sameCriteria(criteria, deferred);
+  const latest = useRef(criteria),
+    displayed = useRef(deferred);
+  const [selection, setSelection] = useState({ id: "", criteria });
+  const results = useMemo(
+    () => searchItems(items, deferred.query, deferred.category),
+    [items, deferred],
+  );
   const activeItem =
-    results.items.find((item) => item.id === activeId && !item.disabled) ??
-    results.items.find((item) => !item.disabled);
+    (sameCriteria(selection.criteria, deferred)
+      ? results.items.find((item) => item.id === selection.id && !item.disabled)
+      : undefined) ?? results.items.find((item) => !item.disabled);
+  const context = useRef({ items, results, onChoose });
+  useLayoutEffect(() => {
+    displayed.current = deferred;
+    context.current = { items, results, onChoose };
+  }, [deferred, items, results, onChoose]);
   const changeQuery = useCallback((value: string) => {
+    // Native input/Enter may arrive before a background result render commits.
+    latest.current = { ...latest.current, query: value };
     setQuery(value);
-    setActiveId("");
   }, []);
-  const groups = useMemo(() => {
-    const grouped = new Map<SearchItem["category"], SearchItem[]>();
-    for (const item of results.items) {
-      const group = grouped.get(item.category);
-      if (group) group.push(item);
-      else grouped.set(item.category, [item]);
-    }
-    return grouped;
-  }, [results]);
   const changeCategory = useCallback(
     (value: SearchFilter) => {
+      latest.current = { ...latest.current, category: value };
       setCategory(value);
-      setActiveId("");
-      inputRef.current?.focus({ preventScroll: true });
+      const input = inputRef.current;
+      if (input && document.activeElement !== input) input.focus({ preventScroll: true });
     },
     [inputRef],
   );
+  const select = useCallback((id: string) => {
+    if (!sameCriteria(latest.current, displayed.current)) return;
+    const criteria = displayed.current;
+    setSelection((current) =>
+      current.id === id && sameCriteria(current.criteria, criteria) ? current : { id, criteria },
+    );
+  }, []);
+  const choose = useCallback((item: SearchItem) => {
+    // `inert` protects native interaction; this guard also rejects already queued row callbacks.
+    if (!sameCriteria(latest.current, displayed.current)) return;
+    const current = context.current;
+    const enabled = current.results.items.find(
+      (candidate) => candidate.id === item.id && !candidate.disabled,
+    );
+    if (enabled) current.onChoose(enabled);
+  }, []);
+  const captureKey = useCallback((event: KeyboardEvent<HTMLDivElement>) => {
+    if (
+      event.nativeEvent.isComposing ||
+      event.nativeEvent.keyCode === 229 ||
+      sameCriteria(latest.current, displayed.current)
+    )
+      return;
+    if (event.key === "Enter") {
+      event.preventDefault();
+      const current = context.current,
+        criteria = latest.current;
+      const enabled = searchItems(current.items, criteria.query, criteria.category).items.find(
+        (item) => !item.disabled,
+      );
+      if (enabled) current.onChoose(enabled);
+    } else if (
+      ["ArrowUp", "ArrowDown", "Home", "End"].includes(event.key) ||
+      (event.ctrlKey && ["j", "n", "p"].includes(event.key))
+    )
+      event.preventDefault();
+  }, []);
   useSearchPlaceholder(inputRef, items, t("search:searchPrefix"), reduced);
   return (
     <div className="magic-search-surface" data-reduced-motion={reduced || undefined}>
@@ -111,7 +164,8 @@ const PaletteContent = memo(function PaletteContent({
         filter={alreadyRanked}
         loop
         value={activeItem?.id ?? ""}
-        onValueChange={setActiveId}
+        onValueChange={select}
+        onKeyDownCapture={captureKey}
         className="magic-search-command"
         label={t("search:title")}
       >
@@ -127,28 +181,65 @@ const PaletteContent = memo(function PaletteContent({
           </Button>
         </div>
         <CategoryTabs category={category} available={available} onChange={changeCategory} t={t} />
-        <span className="sr-only" role="status" aria-live="polite">
+        <span className="sr-only" role="status" aria-live="polite" aria-busy={pending}>
           {t("search:resultCount", { count: results.total })}
         </span>
         <ScrollShadow>
-          <CommandList label={t("search:title")} data-search-result-count={results.total}>
-            {!results.items.length && (
-              <div cmdk-empty="" role="presentation" className="py-6 text-center text-sm">
-                {t("search:empty")}
-              </div>
-            )}
-            {[...groups].map(([value, group]) => (
-              <CommandGroup key={value} heading={t(`search:${value}`)}>
-                {group.map((item) => (
-                  <ResultRow key={item.id} item={item} onChoose={onChoose} />
-                ))}
-              </CommandGroup>
-            ))}
+          <CommandList
+            label={t("search:title")}
+            data-search-result-count={results.total}
+            data-search-query={deferred.query}
+            data-search-category={deferred.category}
+            data-search-pending={pending}
+            aria-busy={pending}
+            inert={pending || undefined}
+          >
+            <ResultGroups items={results.items} t={t} onChoose={choose} />
           </CommandList>
         </ScrollShadow>
       </Command>
     </div>
   );
+});
+interface Criteria {
+  query: string;
+  category: SearchFilter;
+}
+function sameCriteria(a: Criteria, b: Criteria): boolean {
+  return a.query === b.query && a.category === b.category;
+}
+/** The urgent input commit updates only the busy boundary, retaining the complete result subtree. */
+const ResultGroups = memo(function ResultGroups({
+  items,
+  t,
+  onChoose,
+}: {
+  items: readonly SearchItem[];
+  t: SearchTranslate;
+  onChoose: Props["onChoose"];
+}) {
+  const groups = useMemo(() => {
+    const grouped = new Map<SearchItem["category"], SearchItem[]>();
+    for (const item of items) {
+      const group = grouped.get(item.category);
+      if (group) group.push(item);
+      else grouped.set(item.category, [item]);
+    }
+    return grouped;
+  }, [items]);
+  if (!items.length)
+    return (
+      <div cmdk-empty="" role="presentation" className="py-6 text-center text-sm">
+        {t("search:empty")}
+      </div>
+    );
+  return [...groups].map(([value, group]) => (
+    <CommandGroup key={value} heading={t(`search:${value}`)}>
+      {group.map((item) => (
+        <ResultRow key={item.id} item={item} onChoose={onChoose} />
+      ))}
+    </CommandGroup>
+  ));
 });
 const CategoryTabs = memo(function CategoryTabs({
   category,

@@ -82,6 +82,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
+- Command search prioritizes controlled input over interruptible result updates. Retained results report their displayed criteria and stay busy/inert while newer criteria are pending; queued stale clicks and navigation cannot execute them, while immediate Enter resolves the latest enabled match and preserves IME composition.
+
 - Search now supplies its enabled selection before mounting and after every query change, so immediate Enter uses the new result. Opening focuses the input only once without scrolling the page, and the opaque fixed palette contains its own layout, style and paint work.
 
 - Cmd/Ctrl+K search now keeps typing, native keyboard selection and result updates inside a retained palette, retains and sorts only the best 80 matches, and preserves existing command guards. The palette uses one panel entrance and lightweight individual result animations, removes footer instructions, and types real translated effect/settings examples without React updates or idle work while hidden.

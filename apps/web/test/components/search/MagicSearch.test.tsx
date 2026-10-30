@@ -152,10 +152,12 @@ test("typing in search does not rebuild the independent command surface", async 
   );
   fireEvent.click(screen.getByRole("button", { name: "Rechercher dans MusArt" }));
   const input = await screen.findByRole("combobox");
-  const renders = surface.mock.calls.length;
+  const renders = surface.mock.calls.length,
+    shells = shellRender.mock.calls.length;
   fireEvent.change(input, { target: { value: "baguette" } });
   expect(await screen.findByRole("option", { name: /Baguette magique/ })).toBeVisible();
   expect(surface).toHaveBeenCalledTimes(renders);
+  expect(shellRender).toHaveBeenCalledTimes(shells);
 });
 function fixture(strict = false) {
   const d = setup();
