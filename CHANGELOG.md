@@ -29,6 +29,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 - Matched saved-project captions to template cards with a title and resolution on the left, the actual Static/Motion mode on the right, and theme-aware fading. Lightweight per-artboard mode metadata comes from existing bounded manifest reads; legacy artboards remain Static and listing never hydrates originals or history.
 
+- The canvas logo now opens the shared creation dialog directly over the editor. Cancelling returns to the same canvas without mounting the project library or changing the document. The project-name menu keeps an always-available Projects action on desktop and touch layouts.
 - Reorganized the compact mobile timeline with a smaller label gutter, touch-sized rows, a full-width transport toolbar and a separate zoom control. Shared scroll shadows now cover horizontal overflow while keeping sticky labels and native scrollbar controls clear.
 - Kept the desktop tool dock inside the available canvas height below the project controls, added hover-to-scroll overflow arrows with the shared scroll shadows, and animated floating controls away from visible rulers. Unified floating-control sizes and moved zoom tooltips below their buttons.
 

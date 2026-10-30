@@ -1,3 +1,4 @@
+import { openProjectLibrary } from "./support/project-library";
 import { test, expect, type Page, type Locator } from "@playwright/test";
 import { createLayer, createPage, createProject } from "@musart/core";
 import { inspectImage } from "./support/image-probe";
@@ -107,7 +108,7 @@ test("project cards use real overlay thumbnails and cycle only during unfocused 
   test.setTimeout(90000);
   await ready(page);
   await populate(page);
-  await page.getByRole("button", { name: "Menu du projet", exact: true }).click();
+  await openProjectLibrary(page);
   const card = page.getByRole("article", { name: "Library A", exact: true }),
     preview = card.locator(".project-preview");
   const first = card.getByRole("img", { name: "Red page", exact: true });
@@ -194,7 +195,7 @@ test("inactive CRUD, project storage, journal clearing, active clearing and crea
   test.setTimeout(90000);
   await ready(page);
   await populate(page);
-  await page.getByRole("button", { name: "Menu du projet", exact: true }).click();
+  await openProjectLibrary(page);
   const activeBefore = await page.evaluate(() => window.musart!.snapshot());
   let card = page.getByRole("article", { name: "Library A", exact: true });
   await expect(card).toBeVisible();
@@ -263,7 +264,7 @@ test("inactive CRUD, project storage, journal clearing, active clearing and crea
     .poll(() => page.evaluate(async () => (await window.musart!.historyInfo()).events))
     .toBe(0);
   expect(await page.evaluate(() => window.musart!.snapshot())).toEqual(canonical);
-  await page.getByRole("button", { name: "Menu du projet", exact: true }).click();
+  await openProjectLibrary(page);
   await page.getByRole("button", { name: "Nouveau projet", exact: true }).first().click();
   await page.getByRole("textbox", { name: "Nom", exact: true }).fill("Created through library");
   for (const [label, value] of [

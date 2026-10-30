@@ -17,6 +17,8 @@ Choose a project or template to open the editor. The creation button’s adjacen
 
 **New project** opens a separate dialog. Give the project a name, choose a visual format preset or enter custom dimensions, then select **Create**. The preview updates as the dimensions change. The link button locks or unlocks the aspect ratio. New projects use the standard canvas background; background editing remains available in the editor. Escape closes the creation dialog and returns to the library.
 
+In the editor, the MusArt logo opens that same creation dialog directly over the canvas. Cancelling returns to the current document. The project-name menu's **Projects** action opens the library on desktop and phones; the Projects command in the tool/search menu remains available too.
+
 ## On a phone
 
 The canvas fills the editor. The bottom navigation opens Properties, Motion, Layers or Tools in a sheet, and Export opens the export options. Drag the sheet's top pill down, press Escape or use its close button to return to the canvas.

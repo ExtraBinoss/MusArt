@@ -1,3 +1,4 @@
+import { openProjectLibrary } from "./support/project-library";
 import { expect, test, type Page } from "@playwright/test";
 import { createLayer, createPage, createProject } from "@musart/core";
 import { installReadbackProbe } from "./support/readback-probe";
@@ -104,7 +105,17 @@ test("mobile landing, project library, presets and creation lead to the full-wid
   const box = await page.getByTestId("editor-canvas").boundingBox();
   expect(box!.width).toBe(390);
   expect(box!.height).toBeGreaterThan(700);
-  await page.getByRole("button", { name: "Menu du projet", exact: true }).click();
+  const projectLabel = page.getByRole("button", { name: "Actions du projet", exact: true });
+  const beforeLogo = await projectLabel.textContent();
+  await page.getByRole("button", { name: "Nouveau projet", exact: true }).click();
+  await expect(
+    page.getByRole("dialog", { name: "Un nouvel espace pour vos idées." }),
+  ).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Tableau de bord MusArt" })).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(projectLabel).toHaveText(beforeLogo!);
+  await openProjectLibrary(page);
   await expect(page.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeVisible();
   await expect(page.getByRole("searchbox", { name: "Rechercher un projet" })).toBeVisible();
 });

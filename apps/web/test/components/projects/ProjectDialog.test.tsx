@@ -4,7 +4,7 @@ import { ProjectDialog } from "../../../src/components/projects/ProjectDialog";
 import { setup } from "../../support/ui";
 import { projectSummary } from "../../support/projects";
 import * as templates from "../../../src/services/projects/templates/catalog";
-test("new-project Escape dismisses creation and returns to the library", async () => {
+test("editor creation Escape closes without mounting the library or editing the document", async () => {
   const d = setup(),
     close = vi.fn();
   d.mount(
@@ -19,9 +19,9 @@ test("new-project Escape dismisses creation and returns to the library", async (
   expect(name).toHaveFocus();
   expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
   fireEvent.keyDown(name, { key: "Escape" });
-  await waitFor(() => expect(screen.queryByLabelText("Nom")).toBeNull());
-  expect(screen.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeVisible();
-  expect(close).not.toHaveBeenCalled();
+  await waitFor(() => expect(close).toHaveBeenCalledOnce());
+  expect(screen.queryByRole("dialog", { name: "Tableau de bord MusArt" })).toBeNull();
+  expect(d.services.createProject).not.toHaveBeenCalled();
 });
 test("shares a clean two-tab dashboard between welcome and open-project states", async () => {
   const d = setup(),

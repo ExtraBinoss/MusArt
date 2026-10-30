@@ -141,6 +141,38 @@ function ProjectDashboard({
       }
     });
   }
+  const creationDialog = creating && (
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open && !busy) {
+          if (initialView === "newProject" && !welcome) onClose();
+          else setCreating(false);
+        }
+      }}
+    >
+      <DialogContent
+        className="creation-dialog"
+        showCloseButton={!busy}
+        onEscapeKeyDown={(event) => {
+          if (busy) event.preventDefault();
+        }}
+        onInteractOutside={(event) => {
+          if (busy) event.preventDefault();
+        }}
+      >
+        <DialogHeader>
+          <DialogTitle>{t("creation:title")}</DialogTitle>
+          <DialogDescription>{t("creation:hint")}</DialogDescription>
+        </DialogHeader>
+        <NewProjectForm
+          disabled={busy}
+          onCreate={(options) => complete(() => services.createProject(options))}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+  if (initialView === "newProject" && !welcome) return creationDialog;
   if (landing)
     return (
       <LandingPage
@@ -297,34 +329,7 @@ function ProjectDashboard({
             </ScrollShadow>
           </Tabs>
         </div>
-        {creating && (
-          <Dialog
-            open
-            onOpenChange={(open) => {
-              if (!open && !busy) setCreating(false);
-            }}
-          >
-            <DialogContent
-              className="creation-dialog"
-              showCloseButton={!busy}
-              onEscapeKeyDown={(event) => {
-                if (busy) event.preventDefault();
-              }}
-              onInteractOutside={(event) => {
-                if (busy) event.preventDefault();
-              }}
-            >
-              <DialogHeader>
-                <DialogTitle>{t("creation:title")}</DialogTitle>
-                <DialogDescription>{t("creation:hint")}</DialogDescription>
-              </DialogHeader>
-              <NewProjectForm
-                disabled={busy}
-                onCreate={(options) => complete(() => services.createProject(options))}
-              />
-            </DialogContent>
-          </Dialog>
-        )}
+        {creationDialog}
         {preferences && <PreferencesDialog onClose={() => setPreferences(false)} />}
         <input
           ref={fileRef}

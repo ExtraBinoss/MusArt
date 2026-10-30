@@ -1,5 +1,5 @@
-import { useId, useState } from "react";
-import { ChevronDown, Download, Save } from "lucide-react";
+import { useId, useRef, useState } from "react";
+import { ChevronDown, Download, FolderOpen, Save } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { EnginePort } from "@musart/core";
 import type { EditorServices } from "../../state/contracts";
@@ -20,19 +20,23 @@ export function ProjectPill({
   services,
   name,
   onTask,
+  onProjects,
 }: {
   engine: EnginePort;
   services: EditorServices;
   name: string;
   onTask: TaskRunner;
+  onProjects?: () => void;
 }) {
+  const [open, setOpen] = useState(false);
+  const navigating = useRef(false);
   const bindings = useKeybindings();
   const save = bindings.bindings.get("action:save")?.[0];
   const [origin] = useState(() => engine.getSnapshot().project.id);
   const { t } = useTranslation(),
     inputId = useId();
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
@@ -49,6 +53,10 @@ export function ProjectPill({
         align="start"
         sideOffset={8}
         className="floating-panel project-actions"
+        onCloseAutoFocus={(event) => {
+          if (navigating.current) event.preventDefault();
+          navigating.current = false;
+        }}
       >
         <div className="project-rename">
           <Label htmlFor={inputId}>{t("projectName")}</Label>
@@ -65,6 +73,20 @@ export function ProjectPill({
           />
         </div>
         <Separator />
+        {onProjects && (
+          <Button
+            variant="ghost"
+            className="menu-item"
+            onClick={() => {
+              navigating.current = true;
+              setOpen(false);
+              onProjects();
+            }}
+          >
+            <FolderOpen size={14} />
+            {t("projects")}
+          </Button>
+        )}
         <Button
           variant="ghost"
           className="menu-item"

@@ -152,8 +152,8 @@ export function App({ engine, services, welcome = false }: AppProps) {
                       <Button
                         variant="ghost"
                         className="brand-button floating-panel"
-                        aria-label={t("projectMenu")}
-                        onClick={() => setProjectMenu("projects")}
+                        aria-label={t("newProject")}
+                        onClick={() => setProjectMenu("newProject")}
                       >
                         <MusArtLogo />
                       </Button>
@@ -163,6 +163,7 @@ export function App({ engine, services, welcome = false }: AppProps) {
                         services={services}
                         name={projectName}
                         onTask={onTask}
+                        onProjects={() => setProjectMenu("projects")}
                       />
                     </div>
                     {!mobile && (

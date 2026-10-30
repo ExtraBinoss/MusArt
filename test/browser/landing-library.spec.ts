@@ -1,3 +1,4 @@
+import { openProjectLibrary } from "./support/project-library";
 import { expect, test } from "@playwright/test";
 import { createLayer, createPage, createProject } from "@musart/core";
 
@@ -85,7 +86,7 @@ test("library keeps five decoded recent thumbnails, a real Home action and Stati
       await window.musart!.flushThumbnails();
     }
   }, projects);
-  await page.getByRole("button", { name: "Menu du projet", exact: true }).click();
+  await openProjectLibrary(page);
   const sidebar = page.locator(".library-sidebar");
   await expect(sidebar).toBeVisible();
   await expect(

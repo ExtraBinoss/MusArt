@@ -171,16 +171,11 @@ test("spotlight hands off real file pickers and opens settings/new/export dialog
     exact: true,
   });
   await expect(creation).toBeVisible();
-  await expect(page.locator('[role="dialog"]')).toHaveCount(2);
+  await expect(page.locator('[role="dialog"]')).toHaveCount(1);
   await expect(creation.getByRole("textbox", { name: "Nom", exact: true })).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(creation).toBeHidden();
   const dashboard = page.getByRole("dialog", { name: "Tableau de bord MusArt", exact: true });
-  await expect(dashboard).toBeVisible();
-  await expect(
-    dashboard.getByRole("button", { name: "Nouveau projet", exact: true }),
-  ).toBeVisible();
-  await page.keyboard.press("Escape");
   await expect(dashboard).toBeHidden();
   await expect(page.getByTestId("editor-canvas")).toBeVisible();
   await choose(page, "png", /^Exporter/);

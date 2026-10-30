@@ -81,8 +81,14 @@ test("assembles the pinned inspector, layers, project menu, export and import ac
   fireEvent.click(screen.getByRole("button", { name: "Exporter" }));
   expect(screen.getByRole("dialog")).toHaveAccessibleName("Exporter la composition");
   fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Annuler" }));
-  fireEvent.click(screen.getByRole("button", { name: "Menu du projet" }));
+  fireEvent.click(screen.getByRole("button", { name: "Nouveau projet" }));
+  await screen.findByRole("dialog", { name: "Un nouvel espace pour vos idées." });
+  expect(screen.queryByRole("dialog", { name: "Tableau de bord MusArt" })).toBeNull();
+  fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Fermer" }));
+  fireEvent.click(screen.getByRole("button", { name: "Actions du projet" }));
+  fireEvent.click(screen.getByRole("button", { name: "Projets", exact: true }));
   await screen.findByText("Aucun projet enregistré.");
+  expect(screen.queryByRole("dialog", { name: "Un nouvel espace pour vos idées." })).toBeNull();
   fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Fermer" }));
   fireEvent.click(screen.getByRole("button", { name: "Actions du projet" }));
   fireEvent.click(screen.getByRole("button", { name: /^Enregistrer/ }));
@@ -207,8 +213,7 @@ test("opens the real project/export dialogs and switches panel modes through com
   const creation = await screen.findByRole("dialog", { name: "Un nouvel espace pour vos idées." });
   expect(creation).toBeVisible();
   fireEvent.click(within(creation).getByRole("button", { name: "Fermer" }));
-  const library = screen.getByRole("dialog", { name: "Tableau de bord MusArt" });
-  fireEvent.click(within(library).getByRole("button", { name: "Fermer" }));
+  expect(screen.queryByRole("dialog", { name: "Tableau de bord MusArt" })).toBeNull();
   await search("animate", /Exporter un timelapse/);
   expect(await screen.findByRole("dialog", { name: "Timelapse" })).toBeVisible();
   expect(screen.queryByRole("tab", { name: "Animation" })).toBeNull();
