@@ -177,7 +177,7 @@ test("project cards use real overlay thumbnails and cycle only during unfocused 
   await expect(card.locator(".preview-arrows, .preview-dots button")).toHaveCount(0);
   await expect(card.locator(".project-card-overlay .project-card-meta")).toBeVisible();
   await expect(card.locator(".preview-page-caption")).toContainText(/Red page|Green page/);
-  await expect(page.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Tableau de bord Melt" })).toBeVisible();
   await page.screenshot({ path: "artifacts/screenshots/project-library.png" });
   await testInfo.attach("real-page-previews", {
     body: JSON.stringify(
@@ -244,7 +244,7 @@ test("inactive CRUD, project storage, journal clearing, active clearing and crea
     activeBefore.project.id,
   );
   await card.getByRole("button", { name: "Library A renamed", exact: true }).click();
-  await expect(page.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeHidden();
+  await expect(page.getByRole("dialog", { name: "Tableau de bord Melt" })).toBeHidden();
   let state = await page.evaluate(() => window.musart!.snapshot());
   expect(state.project.id).toBe("library-project-a");
   expect(state.project.pages).toHaveLength(2);

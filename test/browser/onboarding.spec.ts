@@ -41,8 +41,8 @@ for (const fallback of [false, true]) {
     await page.keyboard.press("Escape");
     await expect(landing).toBeVisible();
     expect(await storedProjectIds(page)).toEqual([]);
-    await page.getByRole("button", { name: "Try MusArt", exact: true }).click();
-    const dashboard = page.getByRole("dialog", { name: "Tableau de bord MusArt", exact: true });
+    await page.getByRole("button", { name: "Try Melt", exact: true }).click();
+    const dashboard = page.getByRole("dialog", { name: "Tableau de bord Melt", exact: true });
     await expect(dashboard).toBeVisible();
     expect(await storedProjectIds(page)).toEqual([]);
     await page.getByRole("button", { name: "Retour à l’accueil", exact: true }).click();
@@ -109,8 +109,8 @@ test("small screens, system dark mode, reduced motion and English stay usable", 
       .evaluate((element) => element.scrollWidth > element.clientWidth),
   ).toBe(false);
   await page.screenshot({ path: info.outputPath("first-visit-mobile-dark.png") });
-  await page.getByRole("button", { name: "Try MusArt", exact: true }).click();
-  const dashboard = page.getByRole("dialog", { name: "MusArt dashboard", exact: true });
+  await page.getByRole("button", { name: "Try Melt", exact: true }).click();
+  const dashboard = page.getByRole("dialog", { name: "Melt dashboard", exact: true });
   await expect(dashboard).toBeVisible();
   await expect(dashboard.getByRole("tab", { name: "Projects", exact: true })).toBeInViewport();
   await expect(
@@ -137,9 +137,9 @@ test("a real template download failure leaves the landing usable without saving 
   await expect(template).toBeEnabled();
   await expect(page.locator(".landing-page")).toBeVisible();
   expect(await storedProjectIds(page)).toEqual([]);
-  await page.getByRole("button", { name: "Try MusArt", exact: true }).click();
+  await page.getByRole("button", { name: "Try Melt", exact: true }).click();
   await expect(
-    page.getByRole("dialog", { name: "Tableau de bord MusArt", exact: true }),
+    page.getByRole("dialog", { name: "Tableau de bord Melt", exact: true }),
   ).toBeVisible();
   expect(await storedProjectIds(page)).toEqual([]);
 });

@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 async function openPreferences(page: Page) {
   await page.locator(".brand-button").click();
-  const dashboard = page.getByRole("dialog", { name: "Tableau de bord MusArt", exact: true });
+  const dashboard = page.getByRole("dialog", { name: "Tableau de bord Melt", exact: true });
   await dashboard.getByRole("button", { name: "Préférences", exact: true }).click();
   const preferences = page.getByRole("dialog", { name: "Préférences", exact: true });
   await expect(preferences).toBeVisible();
@@ -58,7 +58,7 @@ test("sidebar preferences persist editor settings and edit real shortcuts withou
   await expect(preview).not.toBeVisible();
   await preferences.getByRole("button", { name: "Fermer", exact: true }).click();
   await page
-    .getByRole("dialog", { name: "Tableau de bord MusArt", exact: true })
+    .getByRole("dialog", { name: "Tableau de bord Melt", exact: true })
     .getByRole("button", { name: "Fermer", exact: true })
     .click();
   const after = await page.evaluate(() => window.musart!.snapshot());

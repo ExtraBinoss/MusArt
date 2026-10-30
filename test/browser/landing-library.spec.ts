@@ -11,7 +11,7 @@ test("landing follows the app theme and its draggable showcase opens real templa
   const headline = page.getByRole("heading", { level: 1, name: "Créez. Animez." });
   await expect(headline).toBeVisible();
   await expect(page.locator(".landing-nav .landing-brand")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Try MusArt", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Try Melt", exact: true })).toBeVisible();
   await expect(page.locator(".landing-video-placeholder")).toHaveCount(4);
   await expect(page.locator(".landing-eyebrow")).toHaveCount(0);
   const light = await page
@@ -141,7 +141,7 @@ test("library keeps five decoded recent thumbnails, a real Home action and Stati
   await page.screenshot({ path: info.outputPath("library-sidebar-motion.png") });
   await page.getByRole("button", { name: "Retour à l’accueil", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Créez. Animez." })).toBeVisible();
-  await page.getByRole("button", { name: "Try MusArt", exact: true }).click();
+  await page.getByRole("button", { name: "Try Melt", exact: true }).click();
   await expect(sidebar).toBeVisible();
   await sidebar.getByRole("button", { name: "Projets", exact: true }).click();
   await sidebar

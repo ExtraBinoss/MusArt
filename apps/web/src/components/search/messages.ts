@@ -1,3 +1,4 @@
+import { brand } from "../../ui/brand/config";
 import { registerFeatureTranslations } from "../../state/i18n/feature-resources";
 
 export const messages = {
@@ -10,7 +11,7 @@ export const messages = {
     disableSnapping: "Disable snapping to elements",
     addTechnoArtboard: "Add techno poster artboard",
     templateChanged: "The project changed while the template was loading. Please try again.",
-    title: "Search MusArt",
+    title: `Search ${brand.name}`,
     search: "Search…",
     searchPrefix: "Search",
     description: "Find tools, layers, pages and actions.",
@@ -83,7 +84,7 @@ export const messages = {
     disableSnapping: "Désactiver le magnétisme des éléments",
     addTechnoArtboard: "Ajouter une affiche techno",
     templateChanged: "Le projet a changé pendant le chargement du modèle. Réessayez.",
-    title: "Rechercher dans MusArt",
+    title: `Rechercher dans ${brand.name}`,
     search: "Rechercher…",
     searchPrefix: "Rechercher",
     description: "Trouvez un outil, un calque, une page ou une action.",

@@ -1,0 +1,43 @@
+import { describe, expect, it } from "vitest";
+import { EYE_STYLES } from "../../../../src/ui/brand/engine/eye-styles";
+import { eyeShapePath } from "../../../../src/ui/brand/engine/eye-shape";
+import { createMascotEngine } from "../support/fixture";
+import { defaultPreset } from "../support/fixture";
+import { EXPRESSIONS } from "../../../../src/ui/brand/engine/expressions";
+
+describe("extended eyes and moods", () => {
+  it("offers 32 distinct eye outlines and retains the legacy identifiers", () => {
+    expect(EYE_STYLES).toHaveLength(32);
+    const paths = EYE_STYLES.map(({ id }) => eyeShapePath(30, 45, id, id, 1));
+    expect(new Set(paths).size).toBe(32);
+    expect(EYE_STYLES.map((s) => s.id)).toEqual(
+      expect.arrayContaining(["capsule", "sparkle", "star"]),
+    );
+  });
+  it.each(EYE_STYLES)("morphs $id through every other eye style", ({ id }) => {
+    for (const other of EYE_STYLES) {
+      const path = eyeShapePath(30, 45, id, other.id, 0.5);
+      expect(path).not.toMatch(/NaN|Infinity/);
+      expect(path.match(/C/g)).toHaveLength(64);
+    }
+  });
+  it.each(EXPRESSIONS)("renders $id with every eye style without changing the body", ({ id }) => {
+    const look = { ...defaultPreset().look, expression: id };
+    const body = createMascotEngine(look).sample(0.9).bodyPath;
+    for (const style of EYE_STYLES) {
+      const frame = createMascotEngine({ ...look, eyes: style.id }).sample(0.9);
+      expect(frame.bodyPath).toBe(body);
+      expect(frame.eyes).toHaveLength(2);
+      expect(JSON.stringify(frame)).not.toMatch(/NaN|Infinity/);
+    }
+  });
+});
+
+it("provides matching cubic path topology for property preview interpolation", () => {
+  const engine = createMascotEngine(defaultPreset().look);
+  const native = engine.sample(0.9);
+  const preview = engine.sample(0.9, 0.9, true);
+  expect(preview.bodyPath).toBe(native.bodyPath);
+  expect(preview.eyes.map((e) => e.matrix)).toEqual(native.eyes.map((e) => e.matrix));
+  for (const eye of preview.eyes) expect(eye.d.match(/C/g)).toHaveLength(64);
+});

@@ -357,7 +357,7 @@
   gap: 1px;
 }
 .storage-segment-0 {
-  background: #2563eb;
+  background: var(--primary);
 }
 .storage-segment-1 {
   background: #6f82ee;

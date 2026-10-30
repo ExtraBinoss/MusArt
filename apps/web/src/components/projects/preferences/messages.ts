@@ -1,3 +1,4 @@
+import { brand } from "../../../ui/brand/config";
 import { registerFeatureTranslations } from "../../../state/i18n/feature-resources";
 export const messages = {
   en: {
@@ -10,7 +11,7 @@ export const messages = {
     shortcuts: "Shortcuts",
     editor: "Editor",
     generalDescription: "Choose your workspace language and clipboard behavior.",
-    appearanceDescription: "Make MusArt comfortable in your environment.",
+    appearanceDescription: `Make ${brand.name} comfortable in your environment.`,
     shortcutsDescription: "Edit actual application shortcuts. Changes are saved on this device.",
     editorDescription: "Adjust the way objects respond while you work.",
     languageDescription: "Menus, tools and messages use your selected language.",
@@ -38,7 +39,7 @@ export const messages = {
     shortcuts: "Raccourcis",
     editor: "Éditeur",
     generalDescription: "Choisissez la langue et le comportement du presse-papiers.",
-    appearanceDescription: "Adaptez MusArt à votre environnement.",
+    appearanceDescription: `Adaptez ${brand.name} à votre environnement.`,
     shortcutsDescription:
       "Modifiez les vrais raccourcis de l’application. Ils sont enregistrés sur cet appareil.",
     editorDescription: "Réglez le comportement des objets pendant votre travail.",

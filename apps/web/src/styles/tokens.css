@@ -1,3 +1,4 @@
+@import "../ui/brand/brand.css";
 @custom-variant dark (&:is(.dark *));
 @theme inline {
   --color-background: var(--background);
@@ -31,8 +32,8 @@
   --popover: #ffffff;
   --primary: var(--action);
   --primary-foreground: var(--action-foreground);
-  --action: #2563eb;
-  --action-foreground: #ffffff;
+  --action: var(--brand-primary);
+  --action-foreground: var(--brand-primary-foreground);
   --media-image: var(--primary);
   --motion-accent: var(--primary);
   --motion-accent-foreground: var(--primary-foreground);
@@ -66,8 +67,8 @@
   --popover: #2a2a2a;
   --primary: var(--action);
   --primary-foreground: var(--action-foreground);
-  --action: #2563eb;
-  --action-foreground: #ffffff;
+  --action: var(--brand-primary);
+  --action-foreground: var(--brand-primary-foreground);
   --secondary: #353535;
   --muted: #303030;
   --muted-foreground: #a0a0a0;

@@ -1,3 +1,5 @@
+import { MeltLogo } from "../ui/brand/MeltLogo";
+import { BrandStatus } from "../ui/brand/BrandStatus";
 import { useTranslation } from "react-i18next";
 import "./messages";
 import "./loading.css";
@@ -43,7 +45,7 @@ export function Studio() {
         <App engine={runtime.engine} services={runtime.services} welcome={runtime.welcome} />
       ) : (
         <div className="studio-loading" role="status">
-          <span className="studio-loading-skeleton" aria-hidden="true" />
+          {error ? <MeltLogo size={52} /> : <BrandStatus size={52} state="preparing" />}
           <span>{t("opening")}</span>
         </div>
       )}

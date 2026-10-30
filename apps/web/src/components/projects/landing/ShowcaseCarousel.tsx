@@ -1,9 +1,10 @@
+import { brand } from "../../../ui/brand/config";
 import { useLayoutEffect, useRef } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { TEMPLATE_CATALOG } from "../../../services/projects/templates/catalog";
-import { MusArtLogo } from "../../branding/MusArtLogo";
+import { MeltLogo } from "../../../ui/brand/MeltLogo";
 import { SocialBrandIcon } from "../../assets/SocialBrandIcon";
 import { Button } from "../../ui/button";
 import { templatePreview } from "../templates/preview";
@@ -106,8 +107,8 @@ export function ShowcaseCarousel({
             <span className="landing-template-caption">
               <span>{t(template.nameKey)}</span>
               <span>
-                <MusArtLogo size={14} />
-                MusArt
+                <MeltLogo size={14} />
+                {brand.name}
               </span>
             </span>
           </Button>

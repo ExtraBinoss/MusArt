@@ -5,8 +5,8 @@ describe("portable file downloads", () => {
     expect(safeName("  Étude <01>  ")).toBe("Étude -01-");
     expect(safeName("a/b:c?d")).toBe("a-b-c-d");
     expect(safeName("\u0000")).toBe("-");
-    expect(safeName("")).toBe("MusArt");
-    expect(safeName("   ")).toBe("MusArt");
+    expect(safeName("")).toBe("Melt");
+    expect(safeName("   ")).toBe("Melt");
     expect(safeName("a".repeat(130))).toHaveLength(120);
   });
   it("downloads through a temporary anchor and revokes its URL after browser consumption", () => {

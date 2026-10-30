@@ -1,0 +1,14 @@
+@import "./palette.css";
+.melt-mascot {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+  color: var(--brand-primary);
+  user-select: none;
+}
+.melt-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}

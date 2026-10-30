@@ -1,10 +1,11 @@
+import { brand } from "../../ui/brand/config";
 import { registerFeatureTranslations } from "../../state/i18n/feature-resources";
 
 export const messages = {
   en: {
-    welcome: "Welcome to MusArt",
+    welcome: `Welcome to ${brand.name}`,
     edition: "STUDIO / 001",
-    introLabel: "WELCOME TO MUSART",
+    introLabel: `WELCOME TO ${brand.name.toUpperCase()}`,
     introTitle: "A little idea.\nA world of possibilities.",
     introDescription:
       "Your browser is your studio. Turn images, words and a little curiosity into something that feels like you.",
@@ -35,8 +36,7 @@ export const messages = {
     saveDetail2:
       "Download a .musart file with your layers and original images. Install custom fonts separately on another device.",
     saveFeature3: "Share more than a finished image",
-    saveDetail3:
-      "Export an image or copy editable items with their images to share with someone using MusArt.",
+    saveDetail3: `Export an image or copy editable items with their images to share with someone using ${brand.name}.`,
     next: "Next",
     discover: "Show me around",
     back: "Back",
@@ -54,7 +54,7 @@ export const messages = {
     artLine1: "Make it",
     artLine2: "yours.",
     artCaption: "A little color. A lot of possibility.",
-    live: "Live Gradient · made in MusArt",
+    live: `Live Gradient · made in ${brand.name}`,
     palettes: "Try a different palette",
     daydream: "Daydream palette",
     aurora: "Aurora palette",
@@ -66,9 +66,9 @@ export const messages = {
     imageTip: "Keep Include images when copying enabled to share editable artwork.",
   },
   fr: {
-    welcome: "Bienvenue dans MusArt",
+    welcome: `Bienvenue dans ${brand.name}`,
     edition: "STUDIO / 001",
-    introLabel: "BIENVENUE DANS MUSART",
+    introLabel: `BIENVENUE DANS ${brand.name.toUpperCase()}`,
     introTitle: "Une petite idée.\nMille possibilités.",
     introDescription:
       "Votre navigateur devient votre atelier. Des images, des mots et un peu de curiosité : créez quelque chose qui vous ressemble.",
@@ -102,8 +102,7 @@ export const messages = {
     saveDetail2:
       "Téléchargez un fichier .musart avec vos calques et images originales. Sur un autre appareil, installez les polices personnalisées séparément.",
     saveFeature3: "Partagez aussi vos éléments",
-    saveDetail3:
-      "Exportez une image ou copiez des éléments modifiables avec leurs images pour les partager avec une autre personne sur MusArt.",
+    saveDetail3: `Exportez une image ou copiez des éléments modifiables avec leurs images pour les partager avec une autre personne sur ${brand.name}.`,
     next: "Continuer",
     discover: "Faire un petit tour",
     back: "Retour",
@@ -121,7 +120,7 @@ export const messages = {
     artLine1: "Osez",
     artLine2: "créer.",
     artCaption: "Un peu de couleur. Beaucoup de possibles.",
-    live: "Live Gradient · créé dans MusArt",
+    live: `Live Gradient · créé dans ${brand.name}`,
     palettes: "Essayez une autre palette",
     daydream: "Palette Daydream",
     aurora: "Palette Aurora",

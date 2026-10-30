@@ -5,7 +5,7 @@ import { Plus, LoaderCircle, FolderOpen } from "lucide-react";
 import type { EditorServices, ProjectLibraryPage, ProjectSummary } from "../../../state/contracts";
 import type { TaskRunner } from "../ProjectDialog";
 import { SearchInput } from "../../assets/SearchInput";
-import { MusArtLogo } from "../../branding/MusArtLogo";
+import { MeltLogo } from "../../../ui/brand/MeltLogo";
 import "../dashboard/messages";
 import { Button } from "../../ui/button";
 import { ProjectCard } from "./ProjectCard";
@@ -133,9 +133,9 @@ export function ProjectGallery({
                 preview: project.thumbnail ? (
                   <img src={project.thumbnail} alt="" />
                 ) : (
-                  <MusArtLogo size={20} />
+                  <MeltLogo size={20} />
                 ),
-              })) ?? [{ label: t("dashboard:projects"), preview: <MusArtLogo size={20} /> }]
+              })) ?? [{ label: t("dashboard:projects"), preview: <MeltLogo size={20} /> }]
             }
             value={query}
             disabled={disabled}

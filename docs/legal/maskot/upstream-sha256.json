@@ -1,0 +1,23 @@
+{
+  "repository": "https://github.com/ExtraBinoss/Maskot",
+  "commit": "2825887abd292caa5dd46e8014f65481857fc183",
+  "files": {
+    "src/mascot/engine/bot-types.ts": "01ba0d18a6950252e85baa1690d3f48f3b70b1a2e038ec197d32791b64685139",
+    "src/mascot/engine/engine.ts": "a33e8981dc0eeceb263614a2e3422f6c3f73dcab75c6d8b73ca7afcf8b24892d",
+    "src/mascot/engine/expressions.ts": "def48183bd59d277bd32112ce3d3073ea45a1fea9366020b39d05cf757cdc435",
+    "src/mascot/engine/eye-shape.ts": "34756cbfd1347f0a6161f5a2d1c064d1993df86937075bc9f621961e1b61ffea",
+    "src/mascot/engine/face.ts": "0127edc9d34a9e1c7ee51b972b464f8f3dae5a9eecb2278f292d29209ea01f69",
+    "src/mascot/engine/repere.ts": "f7b16fb9f97c3b72bab7a96e2d31c264a3bf268733e281ac367150b029dd837f",
+    "src/mascot/engine/skins.ts": "01d517107593a15e6b1671cc75823394e71904beb62f5e7c1269d83e875babef",
+    "src/mascot/engine/eye-styles.ts": "fbd5f290468b9123ea37bea86ffa19c0c4318be80a676dcb1fb1f3dbffb779b0",
+    "src/mascot/engine/decor.ts": "79807eefb8135b603cf6c7e7fdb31c658d673aeeaac5d50d287325c76bb17fae",
+    "src/mascot/engine/eye-fit-data.ts": "ea760b49ff0721b8f9db2938f7eb82e20abf584ce28cba3beb9f43d9513b3024",
+    "src/mascot/engine/eye-geometry.ts": "3513c15e0994704e06f77878f2b362474deb5fd4ab7e1030c187c64dc330b78a",
+    "src/mascot/engine/eyefit.ts": "960f2deb321579ad73fa2ae72b03579cb519540ea0fd780dccb215aabd6b1735",
+    "src/mascot/engine/math.ts": "dfc61f70d791622846f6259ef087cb03f6230bd2c8743c3c36534d2aa78e0c50",
+    "src/mascot/engine/profiles.ts": "1a9106c24083f21e551eac3c3526af59be0d1f7a293518eb1c59a7ec5f8f0029",
+    "src/mascot/engine/shape.ts": "3ae9921c117bd6b972efeafbd708f9d0c2b02fd03edc72122c1a0bcaa352e3ab",
+    "src/mascot/engine/states.ts": "6a9368177db4704fff2593903ada4a6516af907d1270a65a703b1d5f36259123",
+    "src/lib/svg-morph.ts": "91c479013e78a15112ffcdc80b40754a345acd02d26122d0a4e5a9a66d5f5180"
+  }
+}

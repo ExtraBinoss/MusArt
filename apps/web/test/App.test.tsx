@@ -82,7 +82,7 @@ test("assembles the pinned inspector, layers, project menu, export and import ac
   expect(screen.getByRole("dialog")).toHaveAccessibleName("Exporter la composition");
   fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Annuler" }));
   fireEvent.click(screen.getByRole("button", { name: "Menu du projet" }));
-  await screen.findByRole("dialog", { name: "Tableau de bord MusArt" });
+  await screen.findByRole("dialog", { name: "Tableau de bord Melt" });
   expect(screen.queryByRole("dialog", { name: "Un nouvel espace pour vos idées." })).toBeNull();
   expect(d.services.createProject).not.toHaveBeenCalled();
   fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Fermer" }));
@@ -205,7 +205,7 @@ test("opens the real project/export dialogs and switches panel modes through com
   await screen.findByTestId("canvas");
   async function search(query: string, label: RegExp) {
     fireEvent.keyDown(document, { key: "k", ctrlKey: true });
-    fireEvent.change(await screen.findByRole("combobox", { name: "Rechercher dans MusArt" }), {
+    fireEvent.change(await screen.findByRole("combobox", { name: "Rechercher dans Melt" }), {
       target: { value: query },
     });
     fireEvent.click(await screen.findByRole("option", { name: label }));
@@ -214,7 +214,7 @@ test("opens the real project/export dialogs and switches panel modes through com
   const creation = await screen.findByRole("dialog", { name: "Un nouvel espace pour vos idées." });
   expect(creation).toBeVisible();
   fireEvent.click(within(creation).getByRole("button", { name: "Fermer" }));
-  expect(screen.queryByRole("dialog", { name: "Tableau de bord MusArt" })).toBeNull();
+  expect(screen.queryByRole("dialog", { name: "Tableau de bord Melt" })).toBeNull();
   await search("animate", /Exporter un timelapse/);
   expect(await screen.findByRole("dialog", { name: "Timelapse" })).toBeVisible();
   expect(screen.queryByRole("tab", { name: "Animation" })).toBeNull();
@@ -238,13 +238,11 @@ test("starts with the shared empty dashboard and mounts the editor only after ch
   fireEvent.keyDown(document, { key: "s", ctrlKey: true });
   fireEvent.keyDown(document, { key: "k", ctrlKey: true });
   expect(d.services.saveProject).not.toHaveBeenCalled();
-  expect(screen.queryByRole("combobox", { name: "Rechercher dans MusArt" })).toBeNull();
+  expect(screen.queryByRole("combobox", { name: "Rechercher dans Melt" })).toBeNull();
   fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
   expect(screen.getByRole("dialog")).toBeVisible();
-  fireEvent.mouseDown(screen.getByRole("tab", { name: "Templates" }), {
-    button: 0,
-    ctrlKey: false,
-  });
+  fireEvent.click(screen.getByRole("button", { name: "Templates" }));
+  expect(screen.getByRole("button", { name: "Templates" })).toHaveAttribute("aria-current", "page");
   fireEvent.click(screen.getByRole("button", { name: "Créer depuis Vidéo TikTok" }));
   await screen.findByTestId("canvas");
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();

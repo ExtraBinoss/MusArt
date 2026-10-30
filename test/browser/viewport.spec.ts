@@ -57,7 +57,7 @@ test("viewport travel stays bounded and measurement badges remain readable at ev
   const recenter = async () => {
     await page.keyboard.press("Control+k");
     await page
-      .getByRole("combobox", { name: "Rechercher dans MusArt", exact: true })
+      .getByRole("combobox", { name: "Rechercher dans Melt", exact: true })
       .fill("recentrer");
     await page.getByRole("option", { name: /Recentrer la vue/ }).click();
   };

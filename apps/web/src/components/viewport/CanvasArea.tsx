@@ -1,6 +1,6 @@
+import { BrandStatus } from "../../ui/brand/BrandStatus";
 import { lazy, memo, Suspense, useMemo, useRef } from "react";
 import { useAtomValue, useStore } from "jotai";
-import { LoaderCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { EnginePort } from "@musart/core";
 import type { FontResolver } from "@musart/render";
@@ -40,7 +40,7 @@ export const CanvasArea = memo(function CanvasArea({
       <Suspense
         fallback={
           <div className="canvas-loading">
-            <LoaderCircle size={20} className="animate-spin" />
+            <BrandStatus size={40} state="preparing" />
             <span>{t("loadingCanvas")}</span>
           </div>
         }

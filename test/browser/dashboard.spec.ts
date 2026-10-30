@@ -42,8 +42,8 @@ test("first launch enters the empty library; the visible techno template creates
   });
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1, name: "Créez. Animez." })).toBeVisible();
-  await page.getByRole("button", { name: "Try MusArt", exact: true }).click();
-  const dashboard = page.getByRole("dialog", { name: "Tableau de bord MusArt", exact: true });
+  await page.getByRole("button", { name: "Try Melt", exact: true }).click();
+  const dashboard = page.getByRole("dialog", { name: "Tableau de bord Melt", exact: true });
   await expect(dashboard).toBeVisible();
   const navigation = dashboard.getByRole("navigation", {
     name: "Navigation de l’atelier",
@@ -141,8 +141,8 @@ test("the split import action preserves a real failure and leaves the empty libr
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Try MusArt", exact: true }).click();
-  const dashboard = page.getByRole("dialog", { name: "Tableau de bord MusArt", exact: true });
+  await page.getByRole("button", { name: "Try Melt", exact: true }).click();
+  const dashboard = page.getByRole("dialog", { name: "Tableau de bord Melt", exact: true });
   await dashboard.getByRole("button", { name: "Options de création", exact: true }).click();
   const choosing = page.waitForEvent("filechooser");
   await page.getByRole("menuitem", { name: "Importer .musart", exact: true }).click();

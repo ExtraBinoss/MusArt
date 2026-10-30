@@ -91,7 +91,7 @@
   left: 0;
   top: 0;
   transform-origin: 0 0;
-  border: 1px solid #2563eb;
+  border: 1px solid var(--primary);
   pointer-events: none;
   box-sizing: border-box;
 }
@@ -118,7 +118,7 @@
   width: 8px;
   height: 8px;
   background: white;
-  border: 1px solid #2563eb;
+  border: 1px solid var(--primary);
   pointer-events: auto;
   padding: 0;
 }
@@ -154,7 +154,7 @@
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
-  background: #2563eb;
+  background: var(--primary);
   color: white;
   font-size: 10px;
   line-height: 18px;
@@ -163,8 +163,8 @@
 }
 .canvas-marquee {
   position: absolute;
-  background: #2563eb14;
-  border: 1px solid #2563eb;
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  border: 1px solid var(--primary);
   pointer-events: none;
 }
 .canvas-guide {

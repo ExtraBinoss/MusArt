@@ -1,3 +1,4 @@
+import { BrandStatus } from "../../ui/brand/BrandStatus";
 import { Component, memo, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
@@ -173,6 +174,18 @@ export const EditorScene = memo(function EditorScene({
   const density = useMemo(() => new DrawingDensity(), []);
   const { t } = useTranslation();
   const element = useRef<HTMLDivElement>(null);
+  const preparing = useMemo(() => {
+    let initialized = false;
+    return {
+      read: () => {
+        initialized ||= Boolean(
+          element.current?.querySelector('canvas[data-display-initialized="true"]'),
+        );
+        return !initialized;
+      },
+      subscribe: controller.presentation.subscribe,
+    };
+  }, [controller]);
   useRenderMetrics(element);
   return (
     <GpuBoundary
@@ -214,6 +227,7 @@ export const EditorScene = memo(function EditorScene({
         </Canvas>
         <div className="canvas-loading" role="status" aria-label={t("loadingCanvas")}>
           <span className="canvas-loading-glow" aria-hidden="true" />
+          <BrandStatus size={60} state="preparing" activity={preparing} />
         </div>
       </div>
     </GpuBoundary>

@@ -15,7 +15,7 @@ test("shows the animated headline, real templates and four deliberate video slot
   expect(document.querySelector(".landing-eyebrow")).toBeNull();
   expect(create).not.toHaveBeenCalled();
   fireEvent.click(screen.getAllByRole("button", { name: "Commencer à créer" })[0]!);
-  fireEvent.click(screen.getByRole("button", { name: "Try MusArt" }));
+  fireEvent.click(screen.getByRole("button", { name: "Try Melt" }));
   expect(create).toHaveBeenCalledTimes(2);
   fireEvent.click(screen.getByRole("button", { name: "Créer depuis AFTERHOURS — Techno" }));
   expect(choose).toHaveBeenCalledExactlyOnceWith("afterhours-techno");

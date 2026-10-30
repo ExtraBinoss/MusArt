@@ -53,7 +53,7 @@ async function ready(page: Page) {
 async function search(page: Page, query: string) {
   await expect(page.locator("[data-magic-search]")).toHaveCount(0);
   await page.keyboard.press("Control+k");
-  const input = page.getByRole("combobox", { name: "Rechercher dans MusArt", exact: true });
+  const input = page.getByRole("combobox", { name: "Rechercher dans Melt", exact: true });
   await expect(input).toBeFocused();
   await input.fill(query);
   return input;
@@ -62,7 +62,7 @@ async function choose(page: Page, query: string, label: RegExp) {
   await search(page, query);
   await page.getByRole("option", { name: label }).click();
   await expect(
-    page.getByRole("dialog", { name: "Rechercher dans MusArt", exact: true }),
+    page.getByRole("dialog", { name: "Rechercher dans Melt", exact: true }),
   ).toBeHidden();
   await expect(page.locator("[data-magic-search]")).toHaveCount(0);
 }
@@ -78,9 +78,7 @@ test("spotlight keyboard navigation, cross-page layers, effect undo and help use
     "true",
   );
   await page.getByRole("button", { name: "Tout", exact: true }).click();
-  await page
-    .getByRole("combobox", { name: "Rechercher dans MusArt", exact: true })
-    .fill("ete paris");
+  await page.getByRole("combobox", { name: "Rechercher dans Melt", exact: true }).fill("ete paris");
   await expect(page.getByRole("option", { name: /Été à Paris/ })).toHaveAttribute(
     "data-selected",
     "true",
@@ -175,7 +173,7 @@ test("spotlight hands off real file pickers and opens settings/new/export dialog
   await expect(creation.getByRole("textbox", { name: "Nom", exact: true })).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(creation).toBeHidden();
-  const dashboard = page.getByRole("dialog", { name: "Tableau de bord MusArt", exact: true });
+  const dashboard = page.getByRole("dialog", { name: "Tableau de bord Melt", exact: true });
   await expect(dashboard).toBeHidden();
   await expect(page.getByTestId("editor-canvas")).toBeVisible();
   await choose(page, "png", /^Exporter/);
@@ -190,7 +188,7 @@ test("spotlight immediate typing and Enter open the actual latest-query image pi
 }, info) => {
   await ready(page);
   await page.keyboard.press("Control+k");
-  await expect(page.getByRole("combobox", { name: "Rechercher dans MusArt" })).toBeFocused();
+  await expect(page.getByRole("combobox", { name: "Rechercher dans Melt" })).toBeFocused();
   await page.evaluate(() => {
     document.addEventListener(
       "keydown",
@@ -250,7 +248,7 @@ test("spotlight category and close buttons own native keyboard activation", asyn
   await layers.focus();
   await page.keyboard.press("Enter");
   await expect(layers).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByRole("combobox", { name: "Rechercher dans MusArt" })).toBeFocused();
+  await expect(page.getByRole("combobox", { name: "Rechercher dans Melt" })).toBeFocused();
   await expect(page.locator("[cmdk-list]")).toHaveAttribute("data-search-category", "layers");
   const close = page.getByRole("button", { name: "Fermer", exact: true });
   await close.focus();

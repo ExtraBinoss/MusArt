@@ -150,7 +150,7 @@ test("typing in search does not rebuild the independent command surface", async 
       {surface}
     </MagicSearch>,
   );
-  fireEvent.click(screen.getByRole("button", { name: "Rechercher dans MusArt" }));
+  fireEvent.click(screen.getByRole("button", { name: "Rechercher dans Melt" }));
   const input = await screen.findByRole("combobox");
   const renders = surface.mock.calls.length,
     shells = shellRender.mock.calls.length;
@@ -178,8 +178,8 @@ function fixture(strict = false) {
   );
   d.mount(strict ? <StrictMode>{search}</StrictMode> : search);
   const open = async () => {
-    fireEvent.click(screen.getByRole("button", { name: "Rechercher dans MusArt" }));
-    await screen.findByRole("dialog", { name: "Rechercher dans MusArt" });
+    fireEvent.click(screen.getByRole("button", { name: "Rechercher dans Melt" }));
+    await screen.findByRole("dialog", { name: "Rechercher dans Melt" });
     return screen.getByRole("combobox");
   };
   const choose = async (query: string, name: RegExp | string) => {
@@ -214,7 +214,7 @@ test("shared quick actions reject a deferred callback after a project replacemen
 test("opens from the top-left trigger and Cmd/Ctrl K, searches localized tools and executes with Enter", async () => {
   const d = fixture();
   fireEvent.keyDown(document, { key: "k", ctrlKey: true });
-  const dialog = await screen.findByRole("dialog", { name: "Rechercher dans MusArt" });
+  const dialog = await screen.findByRole("dialog", { name: "Rechercher dans Melt" });
   expect(dialog).toHaveAccessibleDescription(
     "Trouvez un outil, un calque, une page ou une action.",
   );
@@ -228,7 +228,7 @@ test("opens from the top-left trigger and Cmd/Ctrl K, searches localized tools a
   fireEvent.keyDown(input, { key: "Enter" });
   await waitFor(() => expect(d.store.get(toolAtom)).toBe("wand"));
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Rechercher dans MusArt" })).toHaveFocus();
+  expect(screen.getByRole("button", { name: "Rechercher dans Melt" })).toHaveFocus();
   fireEvent.keyDown(document, { key: "k", metaKey: true });
   await screen.findByRole("combobox");
   fireEvent.keyDown(screen.getByRole("combobox"), { key: "k", ctrlKey: true });
@@ -304,7 +304,7 @@ test("keyboard palette focus survives StrictMode cleanup, returns to its origin 
   expect(d.onTask).not.toHaveBeenCalled();
   await waitFor(() => expect(document.querySelector("[data-magic-search]")).toBeNull());
   await waitFor(() => expect(origin).toHaveFocus());
-  expect(screen.getByRole("button", { name: "Rechercher dans MusArt" })).not.toHaveFocus();
+  expect(screen.getByRole("button", { name: "Rechercher dans Melt" })).not.toHaveFocus();
   origin.remove();
 });
 test("hands off image imports and dialogs after closing", async () => {
