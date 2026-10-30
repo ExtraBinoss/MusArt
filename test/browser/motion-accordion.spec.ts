@@ -35,7 +35,7 @@ for (const reduced of [false, true])
     engine.execute({
       type: "addMotionAnimation",
       trackId: track.id,
-      preset: MOTION_ANIMATION_PRESETS.find((p) => p.id === "move-left")!,
+      preset: MOTION_ANIMATION_PRESETS.find((p) => p.id === "scale-blur")!,
       start: { value: 0, rate: 1 },
       duration: { value: 1, rate: 1 },
     });
@@ -90,6 +90,8 @@ for (const reduced of [false, true])
       page.getByText("Swap this animation’s start and end.", { exact: true }),
     ).toBeVisible();
     await page.keyboard.press("Escape");
+    const actionButtons = instance.locator(".animation-instance-actions button");
+    await expect(actionButtons.last()).toHaveAccessibleName("More animation actions");
     const details = instance.locator(".animation-details-disclosure"),
       detailsTrigger = details.getByRole("button", { name: "Details", exact: true });
     await expect(details.locator(".animation-details")).toHaveCount(0);
@@ -121,4 +123,47 @@ for (const reduced of [false, true])
     await trigger.press("Enter");
     await expect(instance.locator(".animation-instance-body")).toBeVisible();
     expect(await page.evaluate(() => window.musart!.snapshot().revision)).toBe(revision);
+    await instance.getByRole("button", { name: "Details", exact: true }).click();
+    const channel = instance.getByRole("region", { name: "Horizontal scale", exact: true });
+    await expect(channel.getByRole("textbox", { name: "Value", exact: true }).first()).toHaveValue(
+      "5",
+    );
+    await expect(
+      channel.getByText("100% = original size. Smaller shrinks; larger grows.", { exact: true }),
+    ).toBeVisible();
+    const reveal = await channel
+      .getByRole("button", { name: "Add point", exact: true })
+      .evaluate(async (button) => {
+        (button as HTMLButtonElement).click();
+        const samples: { opacity: number; blur: number }[] = [];
+        for (let i = 0; i < 10; i++) {
+          await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+          const point = button
+            .closest(".animation-detail-channel")!
+            .querySelector('[data-point-at="0.5"]');
+          if (point) {
+            const style = getComputedStyle(point);
+            samples.push({
+              opacity: Number(style.opacity),
+              blur: Number.parseFloat(style.filter.replace("blur(", "")),
+            });
+          }
+        }
+        return samples;
+      });
+    expect(reveal.length).toBeGreaterThan(0);
+    if (reduced)
+      expect(reveal.every((sample) => sample.opacity === 1 && sample.blur === 0)).toBe(true);
+    else
+      expect(
+        reveal.some((sample) => sample.opacity > 0 && sample.opacity < 1 && sample.blur > 0),
+      ).toBe(true);
+    const point = channel.locator('[data-point-at="0.5"]');
+    await expect(point).toHaveCSS("filter", "blur(0px)");
+    await expect(point.getByRole("textbox", { name: "Value", exact: true })).toHaveValue("52.5");
+    await expect(point.getByText("Step 1", { exact: true })).toBeVisible();
+    if (!reduced)
+      await channel.screenshot({ path: test.info().outputPath("readable-details.png") });
+    await point.getByRole("button", { name: "Remove step 1", exact: true }).click();
+    await expect(channel.locator(".animation-point")).toHaveCount(2);
   });

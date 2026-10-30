@@ -53,6 +53,32 @@ export const messages = {
     custom: "Custom animation",
     cancel: "Cancel",
     categories: "Animation categories",
+    horizontalMove: "Horizontal movement",
+    verticalMove: "Vertical movement",
+    horizontalScale: "Horizontal scale",
+    verticalScale: "Vertical scale",
+    effect: "Effect",
+    detailsHint:
+      "Each property has a start, an end, and optional steps in between. Time runs from 0% to 100% of this animation.",
+    scaleHint: "100% = original size. Smaller shrinks; larger grows.",
+    relative: {
+      width: "Movement as a % of the object's width. 0% = original position.",
+      height: "Movement as a % of the object's height. 0% = original position.",
+    },
+    operation: {
+      add: "Adds to the object's existing value. 0 = no change.",
+      multiply: "Multiplies the object's existing value.",
+      replace: "Sets this property's value during the animation.",
+    },
+    pointTime: "At",
+    step: "Step {{index}}",
+    deleteStep: "Remove step {{index}}",
+    removeProperty: "Remove {{name}} animation",
+    lastPropertyHint:
+      "Keep at least one property. To remove everything, delete the animation from its footer.",
+    fixedEndpoint: "Fixed start or end time",
+    endpointHint:
+      "Start stays at 0% and end at 100%. Edit their values, or remove the whole property with its trash button.",
     category: {
       move: "Move",
       scale: "Scale",
@@ -116,6 +142,32 @@ export const messages = {
     custom: "Animation personnalisée",
     cancel: "Annuler",
     categories: "Catégories d’animations",
+    horizontalMove: "Déplacement horizontal",
+    verticalMove: "Déplacement vertical",
+    horizontalScale: "Échelle horizontale",
+    verticalScale: "Échelle verticale",
+    effect: "Effet",
+    detailsHint:
+      "Chaque propriété a un départ, une arrivée et des étapes facultatives entre les deux. Le temps va de 0 % à 100 % de cette animation.",
+    scaleHint: "100 % = taille d’origine. Moins pour réduire, plus pour agrandir.",
+    relative: {
+      width: "Déplacement en % de la largeur de l’objet. 0 % = position d’origine.",
+      height: "Déplacement en % de la hauteur de l’objet. 0 % = position d’origine.",
+    },
+    operation: {
+      add: "S’ajoute à la valeur de l’objet. 0 = aucun changement.",
+      multiply: "Multiplie la valeur de l’objet.",
+      replace: "Définit la valeur de cette propriété pendant l’animation.",
+    },
+    pointTime: "À",
+    step: "Étape {{index}}",
+    deleteStep: "Retirer l’étape {{index}}",
+    removeProperty: "Retirer l’animation de {{name}}",
+    lastPropertyHint:
+      "Garde au moins une propriété. Pour tout retirer, supprime l’animation depuis ses actions.",
+    fixedEndpoint: "Temps de départ ou d’arrivée fixe",
+    endpointHint:
+      "Le départ reste à 0 % et l’arrivée à 100 %. Modifie leurs valeurs, ou retire toute la propriété avec sa poubelle.",
     category: {
       move: "Déplacement",
       scale: "Scale",

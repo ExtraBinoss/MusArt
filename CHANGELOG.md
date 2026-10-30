@@ -6,6 +6,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Clarified animation Details with localized property names, readable percentage units, labeled start/end/steps, explained endpoint locks, removable property channels and a blur reveal for newly inserted points. Moved the secondary action menu to the far right of each animation footer.
+
 - Simplified animation cards to a single compact Details/action footer, added named tooltips for duplicate/delete, moved Reverse and Save to a secondary menu with a plain-language reverse explanation, and matched easing select/menu density to the animation fields.
 
 - Expanded the Motion picker's usable grid, removed its redundant hover hint, added two-column virtualization with keyboard navigation and vertical scroll shadows, and moved categories into one horizontal row with a subtle scrollbar and continuous hover-edge scrolling. Picker entry/exit now uses a short composited fade/slide.

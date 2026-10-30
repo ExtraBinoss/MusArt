@@ -196,19 +196,15 @@
   flex-wrap: wrap;
 }
 .animation-detail-channel {
-  border-top: 1px solid var(--border);
-  padding-top: 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px;
   font-size: 11px;
-}
-.animation-detail-channel > strong {
-  display: block;
-  padding-bottom: 6px;
 }
 .animation-detail-point {
   display: grid;
-  grid-template-columns: 1fr 1fr 22px;
+  grid-template-columns: 1fr 1fr;
   gap: 4px;
-  margin-bottom: 5px;
   align-items: center;
 }
 .animation-save-form {
@@ -448,4 +444,65 @@
   padding-block: 4px;
   font-size: 11px;
   line-height: 16px;
+}
+
+.animation-details {
+  display: grid;
+  gap: 8px;
+  padding-top: 8px;
+}
+.animation-details-hint,
+.animation-channel-hint {
+  color: var(--muted-foreground);
+  font-size: 10px;
+  line-height: 1.5;
+  margin: 0;
+}
+.animation-channel-hint {
+  margin: 1px 0 7px;
+}
+.animation-channel-heading,
+.animation-point-heading,
+.animation-channel-controls,
+.animation-channel-easing {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+.animation-channel-heading strong {
+  font-weight: 550;
+}
+.animation-channel-points {
+  display: grid;
+  gap: 7px;
+}
+.animation-point {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+}
+.animation-point-heading {
+  min-height: 22px;
+  margin-bottom: 2px;
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+.animation-point-lock {
+  display: inline-flex;
+  padding: 4px;
+  cursor: help;
+}
+.animation-channel-controls {
+  flex-wrap: wrap;
+  margin-top: 7px;
+}
+.animation-channel-easing {
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.animation-channel-easing .animation-curve-select {
+  width: 108px;
+  color: var(--foreground);
 }

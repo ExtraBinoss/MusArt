@@ -73,6 +73,16 @@ export function AnimationActions({
         >
           <Copy size={12} />
         </Action>
+        <Action
+          label={t("remove")}
+          className="animation-delete-action"
+          disabled={disabled}
+          onClick={() =>
+            run(() => engine.execute({ type: "deleteMotionAnimation", animationId: animation.id }))
+          }
+        >
+          <Trash2 size={12} />
+        </Action>
         <DropdownMenu>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -136,16 +146,6 @@ export function AnimationActions({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Action
-          label={t("remove")}
-          className="animation-delete-action"
-          disabled={disabled}
-          onClick={() =>
-            run(() => engine.execute({ type: "deleteMotionAnimation", animationId: animation.id }))
-          }
-        >
-          <Trash2 size={12} />
-        </Action>
       </div>
       {saving && (
         <div className="animation-save-editor">

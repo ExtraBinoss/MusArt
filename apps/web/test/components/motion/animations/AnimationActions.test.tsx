@@ -35,6 +35,9 @@ function fixture(disabled = false) {
 it("duplicates and deletes through undoable commands while preserving the layer", () => {
   const d = fixture(),
     before = d.engine.getSnapshot().project;
+  expect(screen.getAllByRole("button").at(-1)).toHaveAccessibleName(
+    "Autres actions de l’animation",
+  );
   fireEvent.click(screen.getByRole("button", { name: "Dupliquer l’animation" }));
   expect(d.engine.getSnapshot().project.pages[0]!.motion!.tracks[0]!.animations![1]).toMatchObject({
     start: { value: 1, rate: 1 },
