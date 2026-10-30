@@ -330,3 +330,38 @@ it("restores the pre-axis selection on typed cancellation and ignores foreign po
   expect(d.row.style.getPropertyValue("--motion-drag-x")).toBe("");
   d.controls.dispose();
 });
+
+it("samples release-only position and modifier changes before its single commit", () => {
+  const d = fixture(),
+    before = d.engine.getSnapshot().project;
+  d.controls.beginTrack(d.event(), d.track(), "move");
+  d.send(d.body, "pointermove", 120);
+  d.send(d.body, "pointerup", 140);
+  expect(d.track().start).toEqual({ value: 2, rate: 5 });
+  d.engine.undo();
+  expect(d.engine.getSnapshot().project).toBe(before);
+  const state = d.engine.getSnapshot();
+  d.controls.updateOrigin(state.project.id, state.revision);
+  d.runtime.update({ time: { value: 1, rate: 2 } });
+  d.controls.beginTrack(d.event(), d.track(), "move");
+  d.send(d.body, "pointermove", 144);
+  d.send(d.body, "pointerup", 149, true);
+  expect(d.track().start).toEqual({ value: 1, rate: 2 });
+  d.controls.dispose();
+});
+
+it("retires a horizontal gesture without overwriting a later authoritative selection", () => {
+  const d = fixture(),
+    before = d.engine.getSnapshot().project;
+  d.controls.beginTrack(d.event(), d.track(), "move");
+  d.send(d.body, "pointermove", 140);
+  d.engine.select(["b"]);
+  const installed = d.engine.getSnapshot().selection;
+  d.controls.cancel();
+  d.send(d.body, "pointerup", 160);
+  expect(d.engine.getSnapshot().selection).toBe(installed);
+  expect(installed).toEqual(["b"]);
+  expect(d.engine.getSnapshot().project).toBe(before);
+  expect(d.row.style.getPropertyValue("--motion-drag-x")).toBe("");
+  d.controls.dispose();
+});

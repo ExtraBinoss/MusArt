@@ -26,15 +26,14 @@ import {
   type TimelinePointerMove,
 } from "./gestures/input";
 import { nearestTimelineSnap } from "./gestures/snapping";
+import { isTimelineGestureCurrent, type TimelineGestureOrigin } from "./gestures/origin";
 export type { TimelinePointerInput, TimelinePointerMove } from "./gestures/input";
 type TrackAction = "move" | "trimStart" | "trimEnd";
-interface Gesture {
+interface Gesture extends TimelineGestureOrigin {
   node: HTMLElement;
   pointer: number;
   x: number;
   scroll: number;
-  revision: number;
-  projectId: string;
   page: Composition;
   originalLayers: string[];
   originalKeys: ReadonlySet<string>;
@@ -134,12 +133,7 @@ export function createTimelineGestures(options: {
     clear(gesture);
     setSelection(gesture.originalKeys);
     const snapshot = engine.getSnapshot();
-    if (
-      !stale &&
-      snapshot.project.id === gesture.projectId &&
-      snapshot.pageId === gesture.page.id &&
-      snapshot.revision === gesture.revision
-    )
+    if (!stale && isTimelineGestureCurrent(snapshot, gesture))
       engine.select(gesture.originalLayers);
     if (stale && !disposed) options.onError("changed");
   }
@@ -244,14 +238,12 @@ export function createTimelineGestures(options: {
     const gesture = active;
     if (!gesture || gesture.pointer !== event.pointerId) return;
     const snapshot = engine.getSnapshot();
-    const stale =
-      snapshot.project.id !== gesture.projectId ||
-      snapshot.pageId !== gesture.page.id ||
-      snapshot.revision !== gesture.revision;
-    if (stale) {
+    if (!isTimelineGestureCurrent(snapshot, gesture)) {
       cancel(true);
       return;
     }
+    updatePointer(event);
+    if (active !== gesture) return;
     clear(gesture);
     if (gesture.rejected) {
       options.onError("gestureFailed");
@@ -315,6 +307,11 @@ export function createTimelineGestures(options: {
     }
     options.onStart?.();
     input.node.focus();
+    const focused = engine.getSnapshot();
+    if (focused.project !== snapshot.project || focused.pageId !== page.id) {
+      options.onError("changed");
+      return;
+    }
     transport.pause();
     let keyPreview: Gesture["preview"];
     let links =
@@ -395,8 +392,9 @@ export function createTimelineGestures(options: {
       pointer: input.pointerId,
       x: input.clientX,
       scroll: surface?.viewport?.scrollLeft ?? 0,
-      projectId: snapshot.project.id,
+      project: snapshot.project,
       revision: snapshot.revision,
+      installedLayers: engine.getSnapshot().selection,
       page,
       originalLayers,
       originalKeys: data.originalKeys ?? new Set(selected),
@@ -428,13 +426,7 @@ export function createTimelineGestures(options: {
       });
     gesture.stopEngine = engine.subscribe(() => {
       const next = engine.getSnapshot();
-      if (
-        active === gesture &&
-        (next.revision !== gesture.revision ||
-          next.project.id !== gesture.projectId ||
-          next.pageId !== gesture.page.id)
-      )
-        cancel(true);
+      if (active === gesture && !isTimelineGestureCurrent(next, gesture)) cancel(true);
     });
     gesture.node.addEventListener("pointermove", updatePointer);
     gesture.node.addEventListener("pointerup", finish);

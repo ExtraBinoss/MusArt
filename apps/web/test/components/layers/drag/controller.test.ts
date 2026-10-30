@@ -3,13 +3,22 @@ import { createLayer, createPage, createProject, EditorEngine } from "@musart/co
 import { layerDragController } from "../../../../src/components/layers/drag/controller";
 
 function fixture() {
-  const engine = new EditorEngine(createProject({ pages: [createPage({ layers: [
-    createLayer("group", { id: "group" }),
-    createLayer("rectangle", { id: "a", parentId: "group" }),
-    createLayer("ellipse", { id: "b", parentId: "group" }),
-  ] })] }));
+  const engine = new EditorEngine(
+    createProject({
+      pages: [
+        createPage({
+          layers: [
+            createLayer("group", { id: "group" }),
+            createLayer("rectangle", { id: "a", parentId: "group" }),
+            createLayer("ellipse", { id: "b", parentId: "group" }),
+          ],
+        }),
+      ],
+    }),
+  );
   const page = () => engine.getSnapshot().project.pages[0]!;
-  const controller = layerDragController(engine), owner = Symbol("source");
+  const controller = layerDragController(engine),
+    owner = Symbol("source");
   const run = vi.fn((action: () => void) => action());
   const layer = (id: string) => page().layers.find((item) => item.id === id)!;
   return { engine, page, layer, controller, owner, run };
@@ -18,8 +27,15 @@ function fixture() {
 it("shares one semantic projection across views, commits once and preserves animation/undo", () => {
   const d = fixture();
   d.engine.execute({ type: "setCompositionMode", mode: "motion" });
-  d.engine.execute({ type: "upsertMotionKeyframe", target: { kind: "layer", layerId: "a", property: "x" }, time: { value: 1, rate: 1 }, value: 42 });
-  const before = d.engine.getSnapshot(), execute = vi.spyOn(d.engine, "execute"), updates = vi.fn();
+  d.engine.execute({
+    type: "upsertMotionKeyframe",
+    target: { kind: "layer", layerId: "a", property: "x" },
+    time: { value: 1, rate: 1 },
+    value: 42,
+  });
+  const before = d.engine.getSnapshot(),
+    execute = vi.spyOn(d.engine, "execute"),
+    updates = vi.fn();
   const stop = d.controller.subscribe(updates);
   expect(layerDragController(d.engine)).toBe(d.controller);
   expect(d.controller.begin(d.owner, d.page(), "a", d.run)).toBe(true);
@@ -32,7 +48,12 @@ it("shares one semantic projection across views, commits once and preserves anim
   expect(execute).not.toHaveBeenCalled();
   expect(d.controller.finish("a")).toBe(true);
   expect(d.controller.finish("a")).toBe(false);
-  expect(execute).toHaveBeenCalledExactlyOnceWith({ type: "reorderLayer", id: "a", index: 2, parentId: "group" });
+  expect(execute).toHaveBeenCalledExactlyOnceWith({
+    type: "reorderLayer",
+    id: "a",
+    index: 2,
+    parentId: "group",
+  });
   expect(d.page().layers.map((layer) => layer.id)).toEqual(["group", "b", "a"]);
   expect(d.page().motion).toEqual(before.project.pages[0]!.motion);
   expect(d.controller.read()).toBeNull();
@@ -42,7 +63,9 @@ it("shares one semantic projection across views, commits once and preserves anim
 });
 
 it("owner cleanup cannot cancel a replacement session, and foreign payloads never commit", () => {
-  const d = fixture(), next = Symbol("replacement"), execute = vi.spyOn(d.engine, "execute");
+  const d = fixture(),
+    next = Symbol("replacement"),
+    execute = vi.spyOn(d.engine, "execute");
   d.controller.begin(d.owner, d.page(), "a", d.run);
   d.controller.begin(next, d.page(), "b", d.run);
   const state = d.controller.read();
@@ -56,7 +79,9 @@ it("owner cleanup cannot cancel a replacement session, and foreign payloads neve
 });
 
 it("retires canonical ownership on loads and rejects deferred work with reused document IDs", () => {
-  const d = fixture(), execute = vi.spyOn(d.engine, "execute"), delayed: (() => void)[] = [];
+  const d = fixture(),
+    execute = vi.spyOn(d.engine, "execute"),
+    delayed: (() => void)[] = [];
   const before = d.engine.getSnapshot();
   d.controller.begin(d.owner, d.page(), "a", (action) => delayed.push(action));
   d.controller.preview(d.page(), d.layer("b"), "before");
@@ -75,7 +100,12 @@ it("retires canonical ownership on loads and rejects deferred work with reused d
 it("explains unsupported animated reparenting while leaving same-parent ordering available", () => {
   const d = fixture();
   d.engine.execute({ type: "setCompositionMode", mode: "motion" });
-  d.engine.execute({ type: "upsertMotionKeyframe", target: { kind: "layer", layerId: "a", property: "rotation" }, time: { value: 1, rate: 1 }, value: 20 });
+  d.engine.execute({
+    type: "upsertMotionKeyframe",
+    target: { kind: "layer", layerId: "a", property: "rotation" },
+    time: { value: 1, rate: 1 },
+    value: 20,
+  });
   const before = d.engine.getSnapshot();
   d.controller.begin(d.owner, d.page(), "a", d.run);
   expect(d.controller.preview(d.page(), d.layer("group"), "before")).toBe(false);
@@ -90,7 +120,10 @@ it("explains unsupported animated reparenting while leaving same-parent ordering
 
 it("rejects locked owners, cross-composition targets and invalid graphs without publishing per-pixel state", () => {
   const d = fixture();
-  d.engine.execute({ type: "addPage", page: createPage({ id: "other", layers: [createLayer("rectangle", { id: "foreign" })] }) });
+  d.engine.execute({
+    type: "addPage",
+    page: createPage({ id: "other", layers: [createLayer("rectangle", { id: "foreign" })] }),
+  });
   const source = d.page();
   d.engine.setPage(source.id);
   d.controller.begin(d.owner, source, "a", d.run);
@@ -108,7 +141,8 @@ it("rejects locked owners, cross-composition targets and invalid graphs without 
 });
 
 it("keeps an original insertion and an existing identical alpha mask out of history", () => {
-  const d = fixture(), before = d.engine.getSnapshot();
+  const d = fixture(),
+    before = d.engine.getSnapshot();
   d.controller.begin(d.owner, d.page(), "a", d.run);
   d.controller.preview(d.page(), d.layer("b"), "after");
   expect(d.controller.finish("a")).toBe(false);

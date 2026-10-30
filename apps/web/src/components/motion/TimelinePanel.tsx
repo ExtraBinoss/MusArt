@@ -202,7 +202,15 @@ export function TimelinePanel({
     window.addEventListener("resize", fit);
     return () => window.removeEventListener("resize", fit);
   }, [fitHeight]);
-  const layerDrag = useTimelineLayerDrag({ engine, page, collapsed, transport, gestures, active, onError: setInteractionError });
+  const layerDrag = useTimelineLayerDrag({
+    engine,
+    page,
+    collapsed,
+    transport,
+    gestures,
+    active,
+    onError: setInteractionError,
+  });
   const rows = layerDrag.rows;
   const selected = useMemo(() => new Set(snapshot.selection), [snapshot.selection]);
   const virtual = useVirtualList(rows.length, ROW_HEIGHT, viewport, 5);
@@ -400,7 +408,7 @@ export function TimelinePanel({
             ref={viewport}
             data-layer-drag-viewport
             data-layer-drag-top-inset="32"
-            onDragOver={layerDrag.native.overTree}
+            onDragOver={(event) => layerDrag.native.overTree(event)}
             onDrop={(event) => layerDrag.native.drop(event)}
             onScroll={(event) => {
               const node = event.currentTarget;

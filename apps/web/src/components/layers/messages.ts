@@ -20,7 +20,8 @@ export const messages = {
     dropRejected: {
       locked: "Unlock this layer and its parents before moving it.",
       cycle: "A layer cannot contain or mask itself through its children.",
-      animatedHierarchy: "Animated layers must stay in their current group. You can reorder them within it.",
+      animatedHierarchy:
+        "Animated layers must stay in their current group. You can reorder them within it.",
       crossComposition: "Move layers within the same composition.",
       property: "Drop on a layer row to change the stacking order.",
     },
@@ -52,7 +53,8 @@ export const messages = {
     dropRejected: {
       locked: "Déverrouillez ce calque et ses parents avant de le déplacer.",
       cycle: "Un calque ne peut pas se contenir ou se masquer à travers ses enfants.",
-      animatedHierarchy: "Les calques animés doivent garder leur groupe. Vous pouvez les réordonner dans ce groupe.",
+      animatedHierarchy:
+        "Les calques animés doivent garder leur groupe. Vous pouvez les réordonner dans ce groupe.",
       crossComposition: "Déplacez les calques dans la même composition.",
       property: "Déposez sur une ligne de calque pour changer l’ordre d’empilement.",
     },

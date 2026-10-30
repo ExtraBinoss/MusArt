@@ -247,7 +247,9 @@ export const LayerTree = memo(function LayerTree({
                     moving={!!drag.dragging}
                     dragging={drag.dragging === entry.layer.id}
                     drop={drag.target?.id === entry.layer.id ? drag.target.position : undefined}
-                    rejected={drag.rejected?.id === entry.layer.id ? drag.rejected.reason : undefined}
+                    rejected={
+                      drag.rejected?.id === entry.layer.id ? drag.rejected.reason : undefined
+                    }
                     reduced={reduced}
                     services={services}
                     previewKey={previewKeys.get(entry.layer.id)!}

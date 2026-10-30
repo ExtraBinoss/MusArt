@@ -16,8 +16,12 @@
   pointer-events: none;
   z-index: 5;
 }
-.motion-row[data-layer-reorder-target="before"]::before { top: 0; }
-.motion-row[data-layer-reorder-target="after"]::after { bottom: 0; }
+.motion-row[data-layer-reorder-target="before"]::before {
+  top: 0;
+}
+.motion-row[data-layer-reorder-target="after"]::after {
+  bottom: 0;
+}
 .motion-row[data-layer-reorder-target="inside"] .motion-row-label,
 .motion-row[data-layer-reorder-target="mask"] .motion-row-label {
   box-shadow: inset 0 0 0 1px var(--foreground);

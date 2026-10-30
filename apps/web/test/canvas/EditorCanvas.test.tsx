@@ -19,6 +19,7 @@ import { createLayer, createPage, createProject, EditorEngine, type Layer } from
 import { EditorCanvas } from "../../src/canvas/EditorCanvas";
 import { createViewportActions } from "../../src/canvas/session/viewport-actions";
 import { canvasPoint as point, pointerDrag } from "../support/canvas-pointer";
+import { fileDragEvent } from "../support/file-drag";
 const renderer = vi.hoisted(() => ({
   render: vi.fn(),
   controller: null as SceneController | null,
@@ -213,15 +214,11 @@ describe("canvas input and renderer integration", () => {
     expect(engine.getSnapshot().project.pages[0]!.layers[0]!.x).toBe(20);
     act(() => engine.undo());
     expect(engine.getSnapshot().project.pages[1]!.layers[0]!.x).toBe(20);
-    const dropEvent = new Event("drop", { bubbles: true });
-    Object.defineProperties(dropEvent, {
-      clientX: { value: 260 },
-      clientY: { value: 350 },
-      dataTransfer: { value: { files: [] } },
-    });
+    const droppedFile = new File(["image"], "image.png", { type: "image/png" });
+    const dropEvent = fileDragEvent("drop", { clientX: 260, clientY: 350, files: [droppedFile] });
     fireEvent(canvas(), dropEvent);
     expect(engine.getSnapshot().pageId).toBe(a.id);
-    expect(drop).toHaveBeenCalledWith([]);
+    expect(drop).toHaveBeenCalledWith([droppedFile]);
   });
   it("pans on normal trackpad, zooms only with Ctrl/Cmd, and recenters at 100%", async () => {
     const { engine } = setup();
@@ -492,14 +489,12 @@ describe("canvas input and renderer integration", () => {
     expect(renderer.render.mock.calls.at(-1)![0].background).toBe("#abcdef");
     expect(screen.queryByRole("button", { name: /Redimensionner/ })).not.toBeInTheDocument();
     const file = new File(["one"], "one.png", { type: "image/png" });
-    fireEvent.dragOver(canvas());
+    fireEvent.dragOver(canvas(), { dataTransfer: { types: ["Files"], files: [] } });
     expect(screen.getByText("Déposez vos images ici")).toBeInTheDocument();
-    const internalLeave = new Event("dragleave", { bubbles: true });
-    Object.defineProperty(internalLeave, "relatedTarget", { value: canvas() });
+    const internalLeave = fileDragEvent("dragleave", { relatedTarget: canvas() });
     fireEvent(canvas(), internalLeave);
     expect(screen.getByText("Déposez vos images ici")).toBeInTheDocument();
-    const externalLeave = new Event("dragleave", { bubbles: true });
-    Object.defineProperty(externalLeave, "relatedTarget", { value: document.body });
+    const externalLeave = fileDragEvent("dragleave", { relatedTarget: document.body });
     fireEvent(canvas(), externalLeave);
     expect(screen.queryByText("Déposez vos images ici")).not.toBeInTheDocument();
     fireEvent.drop(canvas(), { dataTransfer: { files: [file] } });

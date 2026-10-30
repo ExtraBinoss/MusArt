@@ -13,6 +13,7 @@ export type { EditorCanvasProps } from "./session/canvas-contracts";
 import { shapeChoiceAtom } from "../components/assets/selection";
 import { createArtworkLayer } from "./interaction/shapes";
 import { completeDrawing, resizeDrawing } from "./interaction/drawing";
+import { createCanvasFileDropHandlers } from "./interaction/file-drop";
 import { readReleasePoint } from "./interaction/release";
 import { useTranslation } from "react-i18next";
 import {
@@ -481,29 +482,23 @@ export function EditorCanvas({
         if (event.code === "Space") setSpace(false);
       }}
       onBlur={() => setSpace(false)}
-      onDragOver={(event) => {
-        event.preventDefault();
-        setDragOver(true);
-      }}
-      onDragLeave={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragOver(false);
-      }}
-      onDrop={(event) => {
-        event.preventDefault();
-        setDragOver(false);
-        const world = workspace.read();
-        const target = artboardAt(
-          world,
-          clientToPage(
-            { x: event.clientX, y: event.clientY },
-            event.currentTarget.getBoundingClientRect(),
-            motion.read(),
+      {...createCanvasFileDropHandlers({
+        onActive: setDragOver,
+        onFiles: (event, files) => {
+          const world = workspace.read();
+          const target = artboardAt(
             world,
-          ),
-        );
-        if (target) engine.setPage(target.id);
-        onDropFiles?.(Array.from(event.dataTransfer.files));
-      }}
+            clientToPage(
+              { x: event.clientX, y: event.clientY },
+              event.currentTarget.getBoundingClientRect(),
+              motion.read(),
+              world,
+            ),
+          );
+          if (target) engine.setPage(target.id);
+          onDropFiles?.(files);
+        },
+      })}
     >
       <div className="canvas-stage">
         <InactiveArtboards

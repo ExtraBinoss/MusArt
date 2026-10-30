@@ -112,28 +112,71 @@ it("wires visible track gestures to the real core and keeps pointer moves out of
 it("drags real timeline layer labels into the Layers view with one shared validated undoable command", () => {
   const d = setup();
   d.engine.execute({ type: "setCompositionMode", mode: "motion" });
-  d.engine.execute({ type: "upsertMotionKeyframe", target: { kind: "layer", layerId: d.rectangle.id, property: "x" }, time: { value: 1, rate: 1 }, value: 25 });
-  const before = d.engine.getSnapshot(), runtime = makeTransport(before.project.pages[0]!);
+  d.engine.execute({
+    type: "upsertMotionKeyframe",
+    target: { kind: "layer", layerId: d.rectangle.id, property: "x" },
+    time: { value: 1, rate: 1 },
+    value: 25,
+  });
+  const before = d.engine.getSnapshot(),
+    runtime = makeTransport(before.project.pages[0]!);
   function Live() {
     const snapshot = useSyncExternalStore(d.engine.subscribe, d.engine.getSnapshot);
     const page = snapshot.project.pages[0]!;
-    return <><TimelinePanel engine={d.engine} snapshot={snapshot} transport={runtime.transport} onClose={() => {}} /><LayerTree engine={d.engine} page={page} project={snapshot.project} selection={snapshot.selection} attachment={null} run={d.run} /></>;
+    return (
+      <>
+        <TimelinePanel
+          engine={d.engine}
+          snapshot={snapshot}
+          transport={runtime.transport}
+          onClose={() => {}}
+        />
+        <LayerTree
+          engine={d.engine}
+          page={page}
+          project={snapshot.project}
+          selection={snapshot.selection}
+          attachment={null}
+          run={d.run}
+        />
+      </>
+    );
   }
   const view = d.mount(<Live />);
-  const source = view.container.querySelector<HTMLElement>(`.motion-row:not(.is-property)[data-layer-id="${d.rectangle.id}"] .motion-row-label`)!;
-  const property = view.container.querySelector<HTMLElement>(".motion-row.is-property .motion-row-label")!;
-  const target = view.container.querySelector<HTMLElement>(`.layer-row[data-layer-id="${d.text.id}"]`)!;
+  const source = view.container.querySelector<HTMLElement>(
+    `.motion-row:not(.is-property)[data-layer-id="${d.rectangle.id}"] .motion-row-label`,
+  )!;
+  const property = view.container.querySelector<HTMLElement>(
+    ".motion-row.is-property .motion-row-label",
+  )!;
+  const target = view.container.querySelector<HTMLElement>(
+    `.layer-row[data-layer-id="${d.text.id}"]`,
+  )!;
   expect(source).toHaveAttribute("draggable", "true");
   expect(property).toHaveAttribute("draggable", "false");
   vi.spyOn(target, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 200, 36));
   const data = new Map<string, string>();
-  const transfer = { setData: (key: string, value: string) => data.set(key, value), getData: (key: string) => data.get(key) ?? "", setDragImage: vi.fn(), effectAllowed: "", dropEffect: "" };
+  const transfer = {
+    setData: (key: string, value: string) => data.set(key, value),
+    getData: (key: string) => data.get(key) ?? "",
+    setDragImage: vi.fn(),
+    effectAllowed: "",
+    dropEffect: "",
+  };
   function drag(node: HTMLElement, type: string) {
-    const event = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: 100, clientY: 3 });
+    const event = new MouseEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      clientX: 100,
+      clientY: 3,
+    });
     Object.defineProperty(event, "dataTransfer", { value: transfer });
-    act(() => node.dispatchEvent(event));
+    act(() => {
+      node.dispatchEvent(event);
+    });
   }
-  drag(source, "dragstart"); drag(target, "dragover");
+  drag(source, "dragstart");
+  drag(target, "dragover");
   expect(source.closest(".motion-row")).toHaveAttribute("data-layer-reorder-source", "true");
   expect(transfer.effectAllowed).toBe("move");
   expect(transfer.dropEffect).toBe("move");
@@ -141,7 +184,11 @@ it("drags real timeline layer labels into the Layers view with one shared valida
   drag(target, "drop");
   const after = d.engine.getSnapshot();
   expect(after.revision).toBe(before.revision + 1);
-  expect(after.project.pages[0]!.layers.map((layer) => layer.id)).toEqual([d.text.id, d.rectangle.id, d.image.id]);
+  expect(after.project.pages[0]!.layers.map((layer) => layer.id)).toEqual([
+    d.text.id,
+    d.rectangle.id,
+    d.image.id,
+  ]);
   expect(after.project.pages[0]!.motion).toEqual(before.project.pages[0]!.motion);
   expect(document.querySelector(".layer-drag-preview")).toBeNull();
   act(() => d.engine.undo());

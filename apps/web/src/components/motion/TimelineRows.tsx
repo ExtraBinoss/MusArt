@@ -93,7 +93,10 @@ export function TimelineRows({
   const hover = useMemo(() => (engine ? createTimelineHoverSource(engine) : null), [engine]);
   const reduced = !!useReducedMotion();
   const dragPage = drag?.page;
-  const geometry = useMemo(() => dragPage ? createLayerGeometryIndex(dragPage) : null, [dragPage]);
+  const geometry = useMemo(
+    () => (dragPage ? createLayerGeometryIndex(dragPage) : null),
+    [dragPage],
+  );
   const hovered = useRef<{ key: string; node: HTMLElement; clear(): void } | null>(null);
   const clearHover = useCallback((key?: string) => {
     const current = hovered.current;
@@ -130,7 +133,9 @@ export function TimelineRows({
     );
     return `${common(definition.nameKey)} · ${parameter ? common(parameter.labelKey) : t(target.property)}`;
   }
-  const visible = drag ? drag.window(first, last) : rows.slice(first, last).map((entry, offset) => ({ entry, at: first + offset }));
+  const visible = drag
+    ? drag.window(first, last)
+    : rows.slice(first, last).map((entry, offset) => ({ entry, at: first + offset }));
   return visible.map(({ entry: row, at }) => {
     const Icon = row.kind === "property" ? Diamond : (layerIcons[row.layer.kind] ?? Layers);
     const active = selected.has(row.layer.id);
@@ -167,12 +172,25 @@ export function TimelineRows({
             clearHover(row.key);
         }}
       >
-        <div className="motion-row-label" style={{ paddingLeft: 10 + row.depth * 14 }}
-          draggable={!!drag && interactive && row.kind === "layer" && !geometry?.isLocked(row.layer.id)}
-          onDragStartCapture={drag ? event => {
-            if (!interactive || row.kind !== "layer") { event.preventDefault(); return; }
-            clearHover(); transport.pause(); drag.native.start(event, row.layer, drag.page);
-          } : undefined}
+        <div
+          className="motion-row-label"
+          style={{ paddingLeft: 10 + row.depth * 14 }}
+          draggable={
+            !!drag && interactive && row.kind === "layer" && !geometry?.isLocked(row.layer.id)
+          }
+          onDragStartCapture={
+            drag
+              ? (event) => {
+                  if (!interactive || row.kind !== "layer") {
+                    event.preventDefault();
+                    return;
+                  }
+                  clearHover();
+                  transport.pause();
+                  drag.native.start(event, row.layer, drag.page);
+                }
+              : undefined
+          }
           onDragEndCapture={drag?.native.cancelOwned}
         >
           {row.kind === "layer" && row.expandable ? (
@@ -252,8 +270,10 @@ export function TimelineRows({
                 aria-label={t("track", { name })}
                 onPointerDown={(event) => {
                   if (!row.track) return;
-                  if (drag) { clearHover(); drag.pointer.begin(event, row.track); }
-                  else gestures?.beginTrack(event, row.track, "move");
+                  if (drag) {
+                    clearHover();
+                    drag.pointer.begin(event, row.track);
+                  } else gestures?.beginTrack(event, row.track, "move");
                 }}
                 onClick={(event) => {
                   if (gestures?.consumePointerClick(event.detail) || (gestures && event.detail > 0))

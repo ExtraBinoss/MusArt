@@ -321,7 +321,8 @@ test("two mounted surfaces share one native drag and either target commits its o
 });
 
 test("unmounting an old native surface cannot remove a replacement owner's preview", () => {
-  const d = fixture(), other = renderHook(() => useLayerDrag(d.page, d.engine, d.run));
+  const d = fixture(),
+    other = renderHook(() => useLayerDrag(d.page, d.engine, d.run));
   act(() => d.result.current.start(d.event, d.rectangle));
   act(() => other.result.current.start(d.event, d.text));
   d.unmount();
@@ -333,8 +334,12 @@ test("unmounting an old native surface cannot remove a replacement owner's previ
 
 test("a rejected native image releases the controller and surfaces the real platform error", () => {
   const d = fixture();
-  d.transfer.setDragImage.mockImplementation(() => { throw Error("Platform rejected drag image"); });
-  expect(() => act(() => d.result.current.start(d.event, d.rectangle))).toThrow("Platform rejected drag image");
+  d.transfer.setDragImage.mockImplementation(() => {
+    throw Error("Platform rejected drag image");
+  });
+  expect(() => act(() => d.result.current.start(d.event, d.rectangle))).toThrow(
+    "Platform rejected drag image",
+  );
   expect(d.result.current.dragging).toBeNull();
   expect(document.querySelector(".layer-drag-preview")).toBeNull();
 });

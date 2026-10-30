@@ -22,6 +22,9 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
+- Unify layer reordering across Layers, timeline labels and clip bars with one engine-scoped controller. Vertical drags update canonical stacking order; horizontal drags retain deterministic timing. Add owner-safe cancellation, explicit invalid-drop cues, cached geometry, virtualized source retention and shared edge scrolling.
+- Sample final timeline pointer-up coordinates and modifiers before committing, and restore gesture selection only while the gesture still owns it.
+
 - Restore each project's workspace/sidebar split, Motion panel height and timeline zoom from small, versioned local preferences. Completed resize gestures and debounced wheel zoom persist separately from documents and undo history; stale restores cannot overwrite newer gestures and project deletion removes preferences atomically.
 - Timeline row/property hover highlights evaluated artwork without changing selection or history. Selection and hover decorations remain at 20% opacity during playback, omit absent or hidden layers and disable editing targets; track trim grips appear on hover.
 - Portaled effect submenus and made sibling Effect/Adjustment hover switch reliably. Restored Select up/down controls while retaining predictable menu height, native vertical scrolling and themed scroll shadows.
@@ -62,6 +65,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 - Locked artwork remains inspectable on the canvas with a constant-size lock badge and no editing handles. Layer rows expose persistent protection indicators, while the inspector and effect/mask popovers identify blocking parent locks and unlock only that chain in one undoable transaction.
 
 ### Fixed
+
+- Ignore internal layer drags at the canvas file-import boundary, avoiding spurious import overlays and two EditorCanvas renders while crossing between layer lists. Empty file drops no longer switch artboards or invoke import.
 
 - Resolve canvas selection frames and resize starts from the evaluated Motion pose, including animated parent transforms. Clicks during authored playback can select visible artwork without starting edit gestures; historical replay remains protected.
 

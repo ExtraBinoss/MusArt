@@ -35,8 +35,18 @@ export function DropCue({
     };
   }, [anchor, position, reason]);
   return createPortal(
-    <div ref={cue} role="status" className="layer-drop-cue" data-drop-position={position} data-drop-rejected={reason}>
-      {reason ? t(`layerControls:dropRejected.${reason}`) : position ? t(`layerControls:drop${position[0]!.toUpperCase()}${position.slice(1)}`) : null}
+    <div
+      ref={cue}
+      role="status"
+      className="layer-drop-cue"
+      data-drop-position={position}
+      data-drop-rejected={reason}
+    >
+      {reason
+        ? t(`layerControls:dropRejected.${reason}`)
+        : position
+          ? t(`layerControls:drop${position[0]!.toUpperCase()}${position.slice(1)}`)
+          : null}
     </div>,
     document.body,
   );
