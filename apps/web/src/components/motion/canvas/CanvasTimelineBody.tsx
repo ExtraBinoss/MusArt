@@ -102,6 +102,8 @@ export const CanvasTimelineBody = memo(function CanvasTimelineBody(props: Canvas
       ? createTimelineCanvasWaveforms({
           engine,
           prepare: (asset) => session.preparation.waveform(asset),
+          overscan: 2,
+          cached: (asset) => session.preparation.cachedWaveform?.(asset),
           readModel: binding.host.readModel,
           publish: binding.waveforms,
           onError: onAudioError,
@@ -128,7 +130,8 @@ export const CanvasTimelineBody = memo(function CanvasTimelineBody(props: Canvas
       if (stopped) return;
       const paused = playing || interacting;
       waveforms?.setPaused(paused);
-      if (paused && !releaseHold && session) releaseHold = session.preparation.holdWaveforms();
+      if (paused && !releaseHold && session)
+        releaseHold = session.preparation.holdWaveforms({ interrupt: false });
       if (!paused && releaseHold) {
         const release = releaseHold;
         releaseHold = null;

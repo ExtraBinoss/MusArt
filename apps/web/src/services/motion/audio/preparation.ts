@@ -36,6 +36,10 @@ export class AudioPreparation {
       new Worker(new URL("./audio.worker.ts", import.meta.url), { type: "module" }),
   ) {}
 
+  cachedWaveform(asset: OriginalMediaAsset): Float32Array | undefined {
+    const reply = this.cache.get(`waveform:${assetOriginalIdentity(asset)}`);
+    return reply && "peaks" in reply ? reply.peaks : undefined;
+  }
   waveform(asset: OriginalMediaAsset): Promise<Float32Array<ArrayBuffer>> {
     return this.request(`waveform:${assetOriginalIdentity(asset)}`, { asset }).then((reply) => {
       if (!("peaks" in reply) || !reply.peaks) throw Error("Audio worker returned no waveform.");
@@ -136,13 +140,13 @@ export class AudioPreparation {
     this.waveformsPaused = false;
     void this.next();
   }
-  /** Independent UI owners cannot resume preparation while another interaction still holds it. */
-  holdWaveforms(): () => void {
+  /** Independent holds gate new work. Passive scroll can retain the active decode; other holds interrupt it. */
+  holdWaveforms(options?: { interrupt?: boolean }): () => void {
     if (this.closed) return () => {};
     const token = Symbol("waveform-hold");
     const first = this.waveformHolds.size === 0;
     this.waveformHolds.add(token);
-    if (first) this.yieldWaveform();
+    if (options?.interrupt !== false && (first || this.active?.asset)) this.yieldWaveform();
     void this.next();
     return () => {
       if (!this.waveformHolds.delete(token)) return;

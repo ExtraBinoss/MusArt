@@ -1,3 +1,4 @@
+import { waveformPoints, type TimelineWaveformPaths } from "./waveform-paths";
 import type {
   TimelineCanvasClip,
   TimelineCanvasHit,
@@ -22,34 +23,27 @@ function rounded(ctx: CanvasRenderingContext2D, box: TimelineCanvasRect, radius 
     Math.min(radius, box.width / 2, box.height / 2),
   );
 }
-function waveform(ctx: CanvasRenderingContext2D, item: TimelineCanvasClip, width: number) {
-  const peaks = item.peaks;
-  if (!peaks?.length || item.sourceDuration <= 0 || item.duration <= 0) return;
-  const { bounds } = item;
-  const start = Math.max(0, bounds.x),
-    end = Math.min(width, bounds.x + bounds.width);
-  if (end <= start) return;
-  const bottom = bounds.y + bounds.height - 0.5;
-  const amplitude = Math.max(1, bounds.height - 1.5);
-  const points: { x: number; amplitude: number }[] = [];
-  const sample = (pixel: number) =>
-    ((item.sourceIn + ((pixel - bounds.x) / bounds.width) * item.duration) / item.sourceDuration) *
-    peaks.length;
-  // One envelope point per two visible pixels; offscreen duration never creates path points.
-  for (let x = start; x <= end; x = Math.min(end, x + 2)) {
-    const first = Math.max(0, Math.floor(sample(x)));
-    const after = Math.min(
-      peaks.length,
-      Math.max(first + 1, Math.ceil(sample(Math.min(end, x + 2)))),
-    );
-    let peak = 0;
-    for (let index = first; index < after; index++) {
-      const value = peaks[index];
-      if (value !== undefined && Number.isFinite(value)) peak = Math.max(peak, Math.abs(value));
+function waveform(
+  ctx: CanvasRenderingContext2D,
+  item: TimelineCanvasClip,
+  width: number,
+  cache?: TimelineWaveformPaths,
+) {
+  const paths = cache?.read(item, width);
+  if (paths) {
+    const alpha = ctx.globalAlpha;
+    ctx.save();
+    ctx.translate(0, item.bounds.y);
+    for (let i = 0; i < paths.length; i++) {
+      ctx.globalAlpha = alpha * (i === 0 ? 0.38 : 0.72);
+      ctx.fill(paths[i]!);
     }
-    points.push({ x, amplitude: Math.max(0.6, Math.min(1, peak) * amplitude) });
-    if (x === end) break;
+    ctx.restore();
+    return;
   }
+  const points = waveformPoints(item, width);
+  if (!points.length) return;
+  const bottom = item.bounds.y + item.bounds.height - 0.5;
   const alpha = ctx.globalAlpha;
   for (const layer of [
     { scale: 1, opacity: 0.38 },
@@ -82,6 +76,7 @@ function clip(
   item: TimelineCanvasClip,
   scene: TimelineCanvasScene,
   palette: TimelineCanvasPalette,
+  waveforms?: TimelineWaveformPaths,
 ) {
   const hover = sameHit(scene.hoverHit, item.hit);
   const color = item.mediaKind === "other" ? palette.trackSelected : palette[item.mediaKind];
@@ -101,7 +96,7 @@ function clip(
   ctx.clip();
   if (item.kind === "audio") {
     ctx.fillStyle = item.selected ? palette.background : palette.muted;
-    waveform(ctx, item, scene.viewport.width);
+    waveform(ctx, item, scene.viewport.width, waveforms);
   }
   if (hover || item.selected) {
     ctx.globalAlpha *= 0.55;
@@ -122,6 +117,7 @@ export function paintTimelineCanvas(
   scene: TimelineCanvasScene,
   palette: TimelineCanvasPalette,
   glyphOpacity = 1,
+  waveforms?: TimelineWaveformPaths,
 ) {
   const { width, height } = scene.viewport;
   ctx.clearRect(0, 0, width, height);
@@ -144,7 +140,7 @@ export function paintTimelineCanvas(
     ctx.globalAlpha = 1;
     for (const item of row.items) {
       if (item.kind === "clip" || item.kind === "audio") {
-        clip(ctx, item, scene, palette);
+        clip(ctx, item, scene, palette, waveforms);
       } else if (item.kind === "easing") {
         const { x, y, width, height } = item.bounds;
         const hover = sameHit(scene.hoverHit, item.hit);

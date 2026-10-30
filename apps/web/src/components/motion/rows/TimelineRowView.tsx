@@ -29,6 +29,7 @@ import { KeyCluster } from "../KeyCluster";
 import { KeyframeMarker } from "../KeyframeMarker";
 import { TimelineLayerName } from "../TimelineLayerName";
 import { TrackClips } from "../occurrences/TrackClips";
+import { TimelineMotionAction } from "./TimelineMotionAction";
 import { TransitionPopover } from "../transitions/TransitionPopover";
 import { TimelineLayerRow } from "../layer-drag/TimelineLayerRow";
 import type { TimelineLayerDrag } from "../layer-drag/use-timeline-layer-drag";
@@ -122,6 +123,7 @@ export const TimelineRowView = memo(function TimelineRowView(props: TimelineRowV
     );
     return `${common(definition.nameKey)} · ${parameter ? common(parameter.labelKey) : t(target.property)}`;
   }
+  const MotionAction = labelsOnly ? TimelineMotionAction : TransitionPopover;
   const Icon = row.kind === "property" ? Diamond : (layerIcons[row.layer.kind] ?? Layers);
   const name = row.kind === "property" ? propertyName(row.property.target, row) : row.layer.name;
   const easingAvailable =
@@ -226,7 +228,7 @@ export const TimelineRowView = memo(function TimelineRowView(props: TimelineRowV
           </button>
         )}
         {row.kind === "layer" && engine && compositionId && (
-          <TransitionPopover
+          <MotionAction
             engine={engine}
             compositionId={compositionId}
             layerId={row.layer.id}

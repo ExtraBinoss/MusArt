@@ -507,3 +507,7 @@
 .layer-tree-scroll > .layer-tree {
   height: 100%;
 }
+
+.layer-tree {
+  overflow-anchor: none;
+}

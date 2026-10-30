@@ -6,6 +6,10 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Further reduced dense-audio scroll work by constructing volume popovers only on activation and caching bounded native waveform paths. The additional frozen 1,000-track pair reduced script time from 311.943 to 159.777 ms (48.8%); frame cadence remained similar, with residual stalls documented. Real volume editing, focus restoration and rendering fallback remain covered.
+
+- Preserved scrolled Layers, toolbar and Motion viewports across reorder/focus changes. Removed closed motion editors and tooltip trees from virtual-row admission; a frozen 1,000-row production scroll pair reduced script time from 501.479 to 233.023 ms (53.5%), with RAF-gap p95 50.0 to 33.3 ms. Passive waveform holds retain in-flight decoding, publish warm cached peaks immediately and prefetch two adjacent rows. See `docs/performance/motion-timeline.md` for workload, remaining stalls and measurement limits.
+
 - Restored visible insertion lines on toolbar drag targets and corrected nested scroll-height limits so the floating toolbar fits its content without an empty tail.
 
 - Successful toolbar, Layers and DOM/canvas timeline drops now show a shared green halo at the committed destination for one second. Reduced-motion users receive a static highlight; cancelled, rejected and stale drops never signal success.

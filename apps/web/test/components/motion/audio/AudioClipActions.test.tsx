@@ -6,6 +6,7 @@ import {
   AudioClipMenu,
   AudioGainControl,
 } from "../../../../src/components/motion/audio/AudioClipActions";
+import { TimelineControlTooltips } from "../../../../src/components/motion/control-tooltips";
 import { TooltipProvider } from "../../../../src/components/ui/tooltip";
 import { audioFixture } from "../../../support/audio";
 const audition = vi.hoisted(() => {
@@ -175,4 +176,23 @@ it("unmounting a virtualized row cannot stop another cue, while its owner still 
   expect(audition.stopPreview).toHaveBeenLastCalledWith(tracks[1]!.id);
   expect(audition.stop).toHaveBeenCalledOnce();
   expect(audition.owner).toBeNull();
+});
+
+it("virtual audio controls construct their popover only on activation and restore focus", async () => {
+  const d = audioFixture();
+  const select = vi.fn();
+  const view = render(
+    <TimelineControlTooltips value={false}>
+      <AudioGainControl engine={d.engine} track={d.track()} disabled={false} onSelect={select} />
+    </TimelineControlTooltips>,
+  );
+  const trigger = screen.getByRole("button", { name: "Volume" });
+  expect(trigger).not.toHaveAttribute("data-state");
+  fireEvent.click(trigger);
+  await screen.findByRole("slider", { name: "Volume" });
+  expect(select).toHaveBeenCalledOnce();
+  fireEvent.click(screen.getByRole("button", { name: "Volume" }));
+  expect(screen.queryByRole("slider")).toBeNull();
+  expect(screen.getByRole("button", { name: "Volume" })).toHaveFocus();
+  view.unmount();
 });

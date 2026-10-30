@@ -235,3 +235,7 @@
 .dock-pinned > [data-dock-drop-position="after"]::after {
   bottom: -3px;
 }
+
+.toolbar-contents {
+  overflow-anchor: none;
+}

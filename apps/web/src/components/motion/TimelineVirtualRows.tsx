@@ -2,6 +2,7 @@ import { memo, useSyncExternalStore, type ComponentProps, type RefObject } from 
 import { useTranslation } from "react-i18next";
 import type { Asset, EnginePort, MotionAudioTrack } from "@musart/core";
 import { useVirtualList } from "../shared/scroll/use-virtual-list";
+import { TimelineControlTooltips } from "./control-tooltips";
 import { TimelineRows } from "./TimelineRows";
 import { AudioRows } from "./audio/AudioRows";
 import { CanvasTimelineBody } from "./canvas/CanvasTimelineBody";
@@ -107,7 +108,7 @@ const LabelsVirtualRows = memo(function LabelsVirtualRows({
     host.readSelectedAudio,
   );
   return (
-    <>
+    <TimelineControlTooltips value={false}>
       <TimelineRows {...props} {...LABEL_TIME} first={first} last={last} labelsOnly />
       <AudioRows
         key={props.compositionId}
@@ -131,6 +132,6 @@ const LabelsVirtualRows = memo(function LabelsVirtualRows({
         selectedAudioId={selectedAudioId}
         onAudioSelect={host.selectAudio}
       />
-    </>
+    </TimelineControlTooltips>
   );
 });

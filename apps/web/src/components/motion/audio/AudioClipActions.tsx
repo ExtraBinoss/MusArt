@@ -1,4 +1,13 @@
-import { useEffect, useMemo, useState, type ReactElement, type ReactNode } from "react";
+import {
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import {
   Volume2,
   VolumeX,
@@ -18,6 +27,7 @@ import {
 } from "../../ui/context-menu";
 import { Popover, PopoverTrigger, PopoverAnchor } from "../../ui/popover";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../../ui/tooltip";
+import { TimelineControlTooltips } from "../control-tooltips";
 import { TimelineIconButton } from "../ControlButton";
 import { getMotionAudioSession } from "../../../services/motion/audio/session";
 import { AudioVolumeContent } from "./AudioVolumeContent";
@@ -217,40 +227,53 @@ export function AudioGainControl({
 }) {
   const { t } = useTranslation("motionAudio"),
     service = getMotionAudioSession(engine);
+  const richTooltip = useContext(TimelineControlTooltips);
   const [scope, setScope] = useState<AudioTrackScope | null>(null);
-  useEffect(
-    () =>
-      engine.subscribe(() => {
-        if (scope && !scope.read()) setScope(null);
-      }),
-    [engine, scope],
-  );
-  return (
-    <Popover
-      open={!!scope}
-      onOpenChange={(value) => {
-        if (!value) {
-          service?.stopPreview(track.id);
-          setScope(null);
-        } else {
-          const captured = captureAudioTrackScope(engine, track);
-          if (captured.read()) {
-            setScope(captured);
-            onSelect?.();
-          }
-        }
-      }}
+  const button = useRef<HTMLButtonElement>(null),
+    returnFocus = useRef(false);
+  useEffect(() => {
+    if (!scope) return;
+    return engine.subscribe(() => {
+      if (!scope.read()) setScope(null);
+    });
+  }, [engine, scope]);
+  useLayoutEffect(() => {
+    if (!scope && returnFocus.current) {
+      returnFocus.current = false;
+      button.current?.focus({ preventScroll: true });
+    }
+  }, [scope]);
+  function open() {
+    if (disabled) return;
+    const captured = captureAudioTrackScope(engine, track);
+    if (captured.read()) {
+      setScope(captured);
+      onSelect?.();
+    }
+  }
+  function close() {
+    service?.stopPreview(track.id);
+    returnFocus.current = !richTooltip;
+    setScope(null);
+  }
+  const trigger = (
+    <TimelineIconButton
+      ref={button}
+      className="motion-audio-gain"
+      disabled={disabled}
+      label={t("volume")}
+      aria-haspopup="dialog"
+      aria-expanded={!!scope}
+      onPointerDown={(event) => event.stopPropagation()}
+      onClick={!richTooltip && !scope ? open : undefined}
     >
-      <PopoverTrigger asChild>
-        <TimelineIconButton
-          className="motion-audio-gain"
-          disabled={disabled}
-          label={t("volume")}
-          onPointerDown={(event) => event.stopPropagation()}
-        >
-          {track.mute || track.volume === 0 ? <VolumeX size={12} /> : <Volume2 size={12} />}
-        </TimelineIconButton>
-      </PopoverTrigger>
+      {track.mute || track.volume === 0 ? <VolumeX size={12} /> : <Volume2 size={12} />}
+    </TimelineIconButton>
+  );
+  if (!richTooltip && !scope) return trigger;
+  return (
+    <Popover open={!!scope} onOpenChange={(value) => (value ? open() : close())}>
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       {scope && <AudioVolumeContent engine={engine} track={track} scope={scope} />}
     </Popover>
   );

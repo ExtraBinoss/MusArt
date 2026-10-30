@@ -91,3 +91,47 @@ test("scroll owns the bounded window while page replacement and empty artboards 
   expect(tree.querySelector(`[data-artboard-id="${empty.id}"]`)).toBeInTheDocument();
   expect(tree.querySelector(`[data-layer-tree-key="empty:${empty.id}"]`)).toBeInTheDocument();
 });
+
+test("reordering does not reveal the unchanged offscreen selection, while a new selection still does", () => {
+  vi.useFakeTimers();
+  const d = setup();
+  d.engine.execute({
+    type: "addLayers",
+    layers: Array.from({ length: 100 }, (_, i) => createLayer("rectangle", { id: `keep-${i}` })),
+  });
+  d.engine.select(["keep-99"]);
+  function Live() {
+    const snapshot = useEngine(d.engine);
+    return (
+      <LayerTree
+        engine={d.engine}
+        project={snapshot.project}
+        page={snapshot.project.pages[0]!}
+        selection={snapshot.selection}
+        attachment={null}
+        run={d.run}
+      />
+    );
+  }
+  const view = d.mount(<Live />);
+  act(() => {
+    vi.advanceTimersToNextFrame();
+    vi.advanceTimersToNextFrame();
+  });
+  const tree = screen.getByRole("tree");
+  fireEvent.scroll(tree, { target: { scrollTop: 360 } });
+  act(() => d.engine.execute({ type: "reorderLayer", id: "keep-80", index: 70 }));
+  act(() => {
+    vi.advanceTimersToNextFrame();
+    vi.advanceTimersToNextFrame();
+  });
+  expect(tree.scrollTop).toBe(360);
+  act(() => d.engine.select(["keep-0"]));
+  act(() => {
+    vi.advanceTimersToNextFrame();
+    vi.advanceTimersToNextFrame();
+  });
+  expect(tree.scrollTop).toBeGreaterThan(360);
+  view.unmount();
+  vi.useRealTimers();
+});

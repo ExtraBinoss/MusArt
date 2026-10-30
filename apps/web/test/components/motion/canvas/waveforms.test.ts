@@ -1,7 +1,7 @@
 import { expect, it, vi } from "vitest";
 import { createTimelineCanvasWaveforms } from "../../../../src/components/motion/canvas/waveforms";
 import type { TimelineCanvasModel } from "../../../../src/components/motion/canvas/model";
-import type { AudioAsset } from "@musart/core";
+import { createLayer, type AudioAsset } from "@musart/core";
 import { audioFixture } from "../../../support/audio";
 
 async function settle() {
@@ -244,4 +244,59 @@ it("bounds retained identities to 64 and reuses recent backscroll references bef
   d.controller.dispose();
   d.pending[65]!.resolve(new Float32Array([0]));
   await settle();
+});
+
+it("publishes cached originals during a scroll pause without starting another worker", () => {
+  const d = fixture();
+  d.controller.dispose();
+  const publish = vi.fn(),
+    prepare = vi.fn();
+  const peaks = new Float32Array([0.2, 0.8]);
+  const manager = createTimelineCanvasWaveforms({
+    engine: d.engine,
+    prepare,
+    cached: () => peaks,
+    readModel: d.read,
+    publish,
+    onError: vi.fn(),
+  });
+  manager.setPaused(true);
+  manager.update(0, 24, 0, 300);
+  expect(prepare).not.toHaveBeenCalled();
+  expect(publish).toHaveBeenCalledOnce();
+  expect([...publish.mock.calls[0]![0].values()][0]).toEqual([
+    expect.closeTo(0.2),
+    expect.closeTo(0.8),
+  ]);
+  manager.dispose();
+});
+
+it("prepares a bounded lookahead before adjacent audio rows enter the viewport", () => {
+  const d = fixture();
+  d.controller.dispose();
+  d.set({
+    ...d.read(),
+    rows: [
+      {
+        kind: "layer",
+        key: "visual",
+        layer: createLayer("rectangle"),
+        depth: 0,
+        expandable: false,
+        expanded: false,
+      },
+    ],
+  });
+  const prepare = vi.fn(() => new Promise<Float32Array>(() => {}));
+  const manager = createTimelineCanvasWaveforms({
+    engine: d.engine,
+    prepare,
+    overscan: 2,
+    readModel: d.read,
+    publish: vi.fn(),
+    onError: vi.fn(),
+  });
+  manager.update(0, 24, 0, 300);
+  expect(prepare).toHaveBeenCalledOnce();
+  manager.dispose();
 });

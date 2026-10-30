@@ -1,4 +1,5 @@
-import type { ComponentProps, ReactNode } from "react";
+import { useContext, type ComponentProps, type ReactNode } from "react";
+import { TimelineControlTooltips } from "./control-tooltips";
 import { Button } from "../ui/button";
 import { Kbd, KbdGroup } from "../ui/kbd";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
@@ -14,6 +15,20 @@ export function TimelineIconButton({
   shortcut?: readonly string[];
   children: ReactNode;
 }) {
+  const richTooltip = useContext(TimelineControlTooltips);
+  if (!richTooltip)
+    return (
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-xs"
+        aria-label={label}
+        title={label}
+        {...props}
+      >
+        {children}
+      </Button>
+    );
   return (
     <Tooltip>
       <TooltipTrigger asChild>

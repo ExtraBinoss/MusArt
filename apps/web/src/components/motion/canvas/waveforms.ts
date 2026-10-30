@@ -19,12 +19,16 @@ const MAX_ENTRIES = 64,
 export function createTimelineCanvasWaveforms({
   engine,
   prepare,
+  cached,
+  overscan = 0,
   readModel,
   publish,
   onError,
 }: {
   engine: EnginePort;
   prepare(this: void, asset: AudioAsset): Promise<Float32Array>;
+  cached?(this: void, asset: AudioAsset): Float32Array | undefined;
+  overscan?: number;
   readModel(this: void): TimelineCanvasModel;
   publish(this: void, peaks: ReadonlyMap<string, readonly number[]>): void;
   onError(this: void, error: unknown): void;
@@ -165,8 +169,8 @@ export function createTimelineCanvasWaveforms({
       if (closed) return;
       const model = readModel(),
         offset = model.rows.length,
-        first = Math.max(0, Math.floor(top / model.rowHeight) - offset),
-        after = Math.max(0, Math.ceil((top + height) / model.rowHeight) - offset),
+        first = Math.max(0, Math.floor(top / model.rowHeight) - offset - overscan),
+        after = Math.max(0, Math.ceil((top + height) / model.rowHeight) - offset + overscan),
         next = new Map<string, Wanted>();
       for (const track of model.audioTracks.slice(first, after)) {
         const start =
@@ -194,6 +198,13 @@ export function createTimelineCanvasWaveforms({
         next.size !== wanted.size ||
         [...next].some(([id, entry]) => wanted.get(id)?.identity !== entry.identity);
       wanted = next;
+      // Warm results are available even while new worker admission is held by scroll.
+      if (cached)
+        for (const entry of wanted.values()) {
+          if (ready.has(entry.identity)) continue;
+          const peaks = cached(entry.asset);
+          if (peaks?.length) remember(entry.identity, peaks);
+        }
       if (changed) attempted.clear();
       const identities = new Set([...wanted.values()].map((entry) => entry.identity));
       for (const id of failed) if (!identities.has(id)) failed.delete(id);

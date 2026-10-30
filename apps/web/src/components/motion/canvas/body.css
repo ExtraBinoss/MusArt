@@ -25,3 +25,8 @@
   display: block;
   pointer-events: none;
 }
+
+/* Positioned virtual rows own their scroll coordinates; native anchoring must not follow recycled nodes. */
+.motion-timeline-scroll {
+  overflow-anchor: none;
+}

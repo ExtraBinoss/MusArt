@@ -1,5 +1,6 @@
 import { createTimelineCanvasFrameQueue } from "./frame-queue";
 import { projectTimelineCanvas, hitTestTimelineCanvas } from "./projection";
+import { createTimelineWaveformPaths } from "./waveform-paths";
 import { paintTimelineCanvas } from "./paint";
 import { createTimelineCanvasRowPositions } from "./row-positions";
 import type {
@@ -112,6 +113,7 @@ export function createTimelineCanvasSurface(
     request: (callback) => window.requestAnimationFrame(callback),
     cancel: (id) => window.cancelAnimationFrame(id),
   });
+  const waveformPaths = createTimelineWaveformPaths();
   const rowReader = createTimelineCanvasRowPositions(frame);
   let rowPositions: TimelineCanvasModel["rowPositions"] = null,
     trackingRows = false,
@@ -212,7 +214,7 @@ export function createTimelineCanvasSurface(
         glyphOpacity =
           progress === 1 ? glyphTarget : glyphFrom + (glyphTarget - glyphFrom) * progress;
       }
-      paintTimelineCanvas(context, prepared, colors, glyphOpacity);
+      paintTimelineCanvas(context, prepared, colors, glyphOpacity, waveformPaths);
       Object.assign(canvas.dataset, {
         timelinePaints: String(++paints),
         timelineRows: String(prepared.rows.length),
@@ -352,6 +354,7 @@ export function createTimelineCanvasSurface(
       themeObserver.disconnect();
       reorderObserver.disconnect();
       rowReader.dispose();
+      waveformPaths.dispose();
       viewport.removeEventListener("scroll", scrolled);
       viewport.removeEventListener(TIMELINE_ZOOM_PRESENT, presentZoom);
       window.removeEventListener("resize", resized);

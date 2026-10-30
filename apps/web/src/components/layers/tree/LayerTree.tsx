@@ -134,7 +134,16 @@ export const LayerTree = memo(function LayerTree({
         );
     return result;
   }, [visibleEntries, project.id, project.assets, thumbnailIdentities]);
+  const revealedSelection = useRef<{ pageId: string; ids: readonly string[] } | null>(null);
   useLayoutEffect(() => {
+    const previous = revealedSelection.current;
+    revealedSelection.current = { pageId: page.id, ids: selection };
+    if (
+      previous?.pageId === page.id &&
+      previous.ids.length === selection.length &&
+      previous.ids.every((id, index) => id === selection[index])
+    )
+      return;
     const node = listViewport.current,
       at = selection[0] ? positions.get(selection[0]) : undefined;
     if (!node || at === undefined || drag.dragging) return;

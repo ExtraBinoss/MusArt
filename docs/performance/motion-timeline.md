@@ -324,3 +324,105 @@ not latency measurements. The 1,000-row first-frame and clip/trim/zero-marker
 cases completed before their three-case batch hit its 55-second process budget
 during the ruler case. That case was rerun alone and passed in 20.5 s. Captures and
 the interrupted batch are retained; the timeout was not hidden or increased.
+
+## October 30, 20:54 user trace and rapid-scroll follow-up
+
+`Trace-20261030T205418.json` is a 15.066 s development capture at localhost:6100,
+DPR 1. It contains 137 wheel and 139 scroll dispatches on renderer 1222275,
+thread 1. Scroll dispatches occupy 3,150.0 ms in total; the longest lasts
+723.771 ms. CPU chunks for the main-thread profile are emitted on a profiler
+thread and were associated by profile ID, rather than discarded by thread ID.
+The dominant application stack is `useVirtualList.scroll → publish → flushSync`
+with React/Radix construction for admitted labels. The initial 854.2 ms task
+includes 852.9 ms of profiler startup and is not attributed to scroll. React's
+development task instrumentation and the React DevTools extension are present.
+These trace costs are not production latency claims.
+
+The fixes retain synchronous label admission, preserving same-frame labels and
+canvas hit testing. Virtual label controls use named native-title shadcn buttons
+without constructing Radix tooltip trees per row. The motion authoring editor is
+constructed only on activation, capturing the same validated occurrence and
+returning focus on close; the actual editor still uses Radix. The first attempt,
+which removed only tooltip trees, did not improve overall script time and was
+not accepted as the performance result.
+
+Audio scroll holds previously retired an in-flight waveform worker, throwing away
+its decoding progress. Passive timeline holds now let that one request finish,
+while keeping new background admission paused. Explicit audition pauses and SFX
+priority retain interruption. Canonically cached peaks can publish immediately
+even during a held scroll, and a bounded two-row lookahead warms nearby originals.
+The worker remains serial, caches remain bounded, stale results remain rejected,
+and disposal retires the worker. Unit regressions verify one worker job across a
+scroll hold, synchronous warm-cache delivery, lookahead and existing cleanup/error
+paths. No numeric cold-audio decoding speedup is claimed.
+
+A matched production comparison freezes the initial dirty source, including the
+unrelated animations work already in progress, then overlays only this change's
+owned files. Both builds retain compiled JavaScript and source maps. The workload
+is 1,000 hidden rectangle layers with one occurrence each, in Keyframes view,
+and 18 real native vertical wheel packets alternating ±600/±1,200/±3,000 px with
+24 ms requested waits. It exercises virtual-window churn without adding a
+thousand-artwork GPU workload. Bootstrap and setup are outside the measured
+script interval.
+
+| Single matched production pair   |     Before |      Final |
+| -------------------------------- | ---------: | ---------: |
+| ScriptDuration delta             | 501.479 ms | 233.023 ms |
+| TaskDuration delta               | 873.832 ms | 685.412 ms |
+| Observed RAF-gap p95             |    50.0 ms |    33.3 ms |
+| Delivered wheel packets          |         18 |         18 |
+| Native HTML control RAF-gap p95  |    16.7 ms |    16.8 ms |
+| Native HTML control dispatch p95 |    33.4 ms |    33.3 ms |
+
+Script time decreases 53.5% in this pair. This is Chromium 156.0.8078.4 on the
+reported Intel Xe LPG WebGPU adapter, Linux, 1440 × 1000, DPR 1, nice 15,
+without a CPU quota, on a shared workstation. It is one pair, not a universal FPS
+guarantee. The broader observer window records a remaining 171 ms long task in
+Final; this window also includes setup/adapter observation and is not identified
+as a specific scroll callback. Native controls are separate cohorts and are not
+subtracted causally. Frames denote browser opportunities, not display timestamps.
+The unsuccessful tooltip-only run, setup failures, raw frame/dispatch arrays,
+exact driver, snapshots, maps and PNGs remain under ignored
+`artifacts/motion/perf/scroll-205418/`. Original-trace hash, streaming analysis and
+main-thread event/sample evidence remain in `user-trace-205418/` alongside it.
+
+Separately, reorder completion no longer reveals an unchanged offscreen Layers
+selection. Timeline pointer focus uses `preventScroll`, and virtual scroll
+surfaces disable native scroll anchoring so recycled rows cannot pull them to
+an old position. Native regressions cover layer/timeline reorders at nonzero
+scroll, canvas time dragging, and the lazy editor's real opening/focus behavior.
+
+### Additional dense-audio pass
+
+The follow-up removes the remaining closed volume-popover roots from admitted
+audio labels, with real validated scope capture and focus restoration on opening
+and closing. Canvas surfaces now own a native Path2D waveform-geometry cache:
+at most 32 envelopes (64 native paths) / 32,768 envelope points, keyed by immutable peak identity,
+source interval, scale, visible horizontal window and row height. Vertical row
+position is applied as a translation, so scrolling does not rebuild the same
+curves. Colors and opacity remain live; the existing direct path painter remains
+the fallback without Path2D. Surface disposal releases all retained paths.
+
+A separate frozen pair starts from the earlier visual/worker fix, loads the real
+Sound Playground originals, then repeats its authored audio clips to 1,000 unique
+track IDs. It warms genuine decoded peaks before the same 18 native wheel packets.
+The same Chromium/Intel Xe LPG, viewport/DPR, nice level and unbounded shared-host
+scheduling apply.
+
+| Additional audio pair            |     Before |      After |
+| -------------------------------- | ---------: | ---------: |
+| ScriptDuration delta             | 311.943 ms | 159.777 ms |
+| TaskDuration delta               | 611.145 ms | 469.861 ms |
+| Observed RAF-gap p95             |    33.3 ms |    33.5 ms |
+| Delivered wheel packets          |         18 |         18 |
+| Native HTML control RAF-gap p95  |    16.7 ms |    16.7 ms |
+| Native HTML control dispatch p95 |    32.6 ms |    32.9 ms |
+
+This is 48.8% less script in this additional pair; the frame cadence does not
+improve in this run. The broader long-task observer records 52 ms maximum before
+and 103 ms after, so this result establishes reduced CPU work, not elimination of
+every stall. The original three runs and their qualifiers remain available.
+`audio-before-source.tar.gz`, `audio-before-dist/`, final `after-src/`, build logs,
+`audio-{before,after}.json`, controls and screenshots preserve the executable and
+raw observations. The native regression also opens the actual volume editor,
+restores focus and inspects genuine painted envelopes after rapid reversal.

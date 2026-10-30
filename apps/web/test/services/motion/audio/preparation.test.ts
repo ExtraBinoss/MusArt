@@ -210,3 +210,21 @@ it("preserves current leases through resets and prevents an old release from unb
   await d.flush();
   expect(worker.postMessage).toHaveBeenCalledOnce();
 });
+
+it("lets an in-flight decode finish across scroll holds and serves its cached peaks synchronously", async () => {
+  const d = setup();
+  const pending = d.preparation.waveform(asset);
+  await d.flush();
+  const worker = d.workers[0]!;
+  const release = d.preparation.holdWaveforms({ interrupt: false });
+  expect(worker.terminate).not.toHaveBeenCalled();
+  const job = worker.postMessage.mock.calls[0]![0];
+  const peaks = new Float32Array([0.3, 0.7]);
+  worker.onmessage!({ data: { id: job.id, peaks } } as MessageEvent<AudioWorkerReply>);
+  expect(await pending).toBe(peaks);
+  expect(d.preparation.cachedWaveform(asset)).toBe(peaks);
+  release();
+  await d.flush();
+  expect(worker.postMessage).toHaveBeenCalledOnce();
+  d.preparation.dispose();
+});

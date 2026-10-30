@@ -135,7 +135,7 @@ export const TimelineRuler = memo(function TimelineRuler({
       onPointerDown={(event) => {
         if (!active || event.button !== 0) return;
         event.preventDefault();
-        event.currentTarget.focus();
+        event.currentTarget.focus({ preventScroll: true });
         gesture.current = {
           pointer: event.pointerId,
           origin: transport.read().time,

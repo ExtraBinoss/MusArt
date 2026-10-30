@@ -160,7 +160,7 @@ export function createTimelineMarquee(options: {
       options.onStart();
       event.preventDefault();
       event.stopPropagation();
-      event.currentTarget.focus();
+      event.currentTarget.focus({ preventScroll: true });
       const box = document.createElement("div");
       box.className = "motion-marquee";
       box.style.display = "none";

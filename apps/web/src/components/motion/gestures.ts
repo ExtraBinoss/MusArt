@@ -321,7 +321,7 @@ export function createTimelineGestures(options: {
       return;
     }
     options.onStart?.();
-    input.node.focus();
+    input.node.focus({ preventScroll: true });
     const focused = engine.getSnapshot();
     if (focused.project !== snapshot.project || focused.pageId !== page.id) {
       options.onError("changed");
