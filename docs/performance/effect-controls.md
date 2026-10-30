@@ -146,3 +146,5 @@ process requires `BASE_URL=/` when run outside Vite; the initial missing-base-UR
 setup failure is retained separately. Both WebGPU and WebGL live-phase handoff
 checks and both native portal-selection entry points also passed. This is a
 functional/load result, not an additional latency speedup.
+
+The October 30 [effect/adjustment/color opening audit](overlay-openings.md) records the current native timings and the shared dropdown presentation lease, separately from these earlier selector cohorts.

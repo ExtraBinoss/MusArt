@@ -6,6 +6,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Unified dropdown and popover entrance scheduling so optional GPU thumbnail work yields during effect/adjustment menu openings, preserving genuine Radix focus and `asChild` ownership. Added native opening measurements and bounded nested-lifetime regressions; see `docs/performance/overlay-openings.md`.
+
 - Clarified animation Details with localized property names, readable percentage units, labeled start/end/steps, explained endpoint locks, removable property channels and a blur reveal for newly inserted points. Moved the secondary action menu to the far right of each animation footer.
 
 - Simplified animation cards to a single compact Details/action footer, added named tooltips for duplicate/delete, moved Reverse and Save to a secondary menu with a plain-language reverse explanation, and matched easing select/menu density to the animation fields.
