@@ -8,7 +8,8 @@ import {
 import { getDropCommand, type LayerDropPosition } from "../drop-target";
 import { validateLayerDrop, type LayerDropRejection } from "./validation";
 import { layerDragDiagnostics } from "./diagnostics";
-import { DeferredDragSession } from "../../shared/dnd/session";
+import { layerPlacementTargets } from "./placement";
+import { DeferredDragSession, readDragCueAnchor } from "../../shared/dnd/session";
 
 export interface LayerDragTarget {
   id: string;
@@ -193,10 +194,25 @@ export class LayerDragController {
               layer.id !== origin.page.layers[index]!.id ||
               layer.parentId !== origin.page.layers[index]!.parentId,
           );
-    return this.session.finish(changed, () => {
+    const viewport = readDragCueAnchor()?.closest<HTMLElement>("[data-layer-drag-viewport]");
+    return this.session.finish(changed, (placed) => {
       origin.run(() => {
-        if (this.canonical(origin))
-          this.engine.execute(getDropCommand(id, destination, target.position, origin.page.layers));
+        if (!this.canonical(origin)) return;
+        this.engine.execute(getDropCommand(id, destination, target.position, origin.page.layers));
+        const committed = this.engine.getSnapshot();
+        placed({
+          targets: () =>
+            layerPlacementTargets(
+              origin.page.id,
+              target.position === "mask" ? target.id : id,
+              target.id,
+              viewport,
+            ),
+          isCurrent: () =>
+            this.engine.getSnapshot().project === committed.project &&
+            this.engine.getSnapshot().pageId === committed.pageId,
+          subscribe: this.engine.subscribe.bind(this.engine),
+        });
       });
     });
   }

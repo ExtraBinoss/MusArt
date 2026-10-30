@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { createLayer, createPage, createProject } from "@musart/core";
+import { assertDropPlacement } from "./support/drop-placement";
 import { installReadbackProbe } from "./support/readback-probe";
 import { installNativeDragProbe, assertNativeMove } from "./support/native-drag";
 
@@ -74,6 +75,7 @@ test("compact header and dock expose real commands, persist pins and support key
   const pinnedRecenter = page.locator('[data-dock-command="action:recenter"]');
   await installNativeDragProbe(page, "application/x-musart-dock-command");
   await pinnedPage.dragTo(pinnedRecenter, { targetPosition: { x: 16, y: 3 } });
+  await assertDropPlacement(page, pinnedPage, "artifacts/screenshots/dock-drop-halo.png");
   await assertNativeMove(page, "action:addPage");
   await expect
     .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("musart.dock.commands")!)))
@@ -133,6 +135,11 @@ test("native layer drag keeps rows stationary until one document commit and Esca
   await hoverDrag();
   await expect.poll(() => layerOrder(page)).toEqual(["c", "b", "a"]);
   await page.mouse.up();
+  await assertDropPlacement(
+    page,
+    page.locator('.layers-panel [data-layer-id="a"]'),
+    "artifacts/screenshots/layer-drop-halo.png",
+  );
   await expect.poll(() => snapshotOrder(page)).toEqual(["b", "c", "a"]);
   await assertNativeMove(page, "a");
   await page.keyboard.press("Control+z");
@@ -253,7 +260,7 @@ test("a short viewport scrolls all twelve pinned commands with bounded menus and
       .locator(".toolbar .tool-button")
       .first()
       .evaluate((element) => element.getBoundingClientRect().height),
-  ).toBe(33);
+  ).toBe(32);
   await viewport.hover();
   await page.mouse.wheel(0, 4000);
   await expect.poll(() => viewport.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
@@ -276,4 +283,51 @@ test("a short viewport scrolls all twelve pinned commands with bounded menus and
     .evaluate((element) => getComputedStyle(element).boxShadow);
   expect(ring).not.toContain("3px");
   await page.screenshot({ path: "artifacts/screenshots/dock-short-viewport-scroll.png" });
+});
+
+test("floating toolbar fits its content and shows an insertion line without moving pins", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.addInitScript(() =>
+    localStorage.setItem(
+      "musart.dock.commands",
+      JSON.stringify(["action:addPage", "action:recenter"]),
+    ),
+  );
+  await ready(page);
+  const sizes = await page.locator(".toolbar").evaluate((toolbar) => {
+    const viewport = toolbar.querySelector<HTMLElement>("[data-dock-scroll]")!;
+    const shell = toolbar.querySelector<HTMLElement>(".toolbar-scroll-shell")!;
+    return {
+      toolbar: toolbar.getBoundingClientRect().height,
+      viewport: viewport.clientHeight,
+      content: viewport.scrollHeight,
+      shell: shell.getBoundingClientRect().height,
+    };
+  });
+  expect(sizes.content - sizes.viewport).toBeLessThanOrEqual(1);
+  expect(sizes.toolbar - sizes.content).toBeLessThanOrEqual(12);
+  expect(sizes.shell - sizes.viewport).toBeLessThanOrEqual(1);
+  const source = page.locator('[data-dock-command="action:recenter"]');
+  const target = page.locator('[data-dock-command="action:addPage"]');
+  const a = (await source.boundingBox())!;
+  const b = (await target.boundingBox())!;
+  await page.mouse.move(a.x + 16, a.y + 16);
+  await page.mouse.down();
+  await page.mouse.move(a.x + 22, a.y + 16, { steps: 3 });
+  await page.mouse.move(b.x + 16, b.y + 3, { steps: 8 });
+  await page.mouse.move(b.x + 17, b.y + 3);
+  await expect(target).toHaveAttribute("data-dock-drop-position", "before");
+  const line = await target.evaluate((node) => {
+    const style = getComputedStyle(node, "::after");
+    return { height: style.height, top: style.top, content: style.content };
+  });
+  expect(line).toEqual({ height: "2px", top: "-3px", content: '""' });
+  expect(await source.boundingBox()).toEqual(a);
+  expect(await target.boundingBox()).toEqual(b);
+  await page.screenshot({ path: "artifacts/screenshots/dock-insertion-line.png" });
+  await page.mouse.up();
+  await assertDropPlacement(page, source);
+  await expect(target).not.toHaveAttribute("data-dock-drop-position");
 });

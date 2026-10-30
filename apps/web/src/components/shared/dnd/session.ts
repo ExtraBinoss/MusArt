@@ -1,3 +1,4 @@
+import { clearDropPlacement, showDropPlacement } from "./placement";
 /** All reorder adapters keep canonical content stationary and commit only after drop.
  * Domain adapters validate destinations; this engine owns exclusivity and publication.
  */
@@ -26,6 +27,7 @@ export class DeferredDragSession<State> {
     return () => this.listeners.delete(listener);
   };
   begin(cancel: () => void) {
+    clearDropPlacement();
     active?.();
     this.release = cancel;
     active = cancel;
@@ -36,11 +38,11 @@ export class DeferredDragSession<State> {
     this.state = state && Object.freeze(state);
     for (const listener of this.listeners) listener();
   }
-  finish(accepted: boolean, commit: () => void): boolean {
+  finish(accepted: boolean, commit: (placed: typeof showDropPlacement) => void): boolean {
     if (!this.state || !this.release) return false;
     const cancel = this.release;
     cancel();
-    if (accepted) commit();
+    if (accepted) commit(showDropPlacement);
     return accepted;
   }
   cancel() {

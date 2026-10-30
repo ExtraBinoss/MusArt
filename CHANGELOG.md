@@ -6,6 +6,10 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Restored visible insertion lines on toolbar drag targets and corrected nested scroll-height limits so the floating toolbar fits its content without an empty tail.
+
+- Successful toolbar, Layers and DOM/canvas timeline drops now show a shared green halo at the committed destination for one second. Reduced-motion users receive a static highlight; cancelled, rejected and stale drops never signal success.
+
 - Added a shared All/Static/Motion filter to Projects and Templates. All is the initial default, the latest choice is remembered as a user preference, and project filtering reuses bounded metadata pages without loading originals or history.
 
 - Unified toolbar, Layers and DOM/canvas timeline reorder drags on a shared deferred session engine. Rows stay in canonical order until drop, with one translated destination/error cue and deduplicated console errors for rejected targets. Cancellation, stale-source protection and single-command undo remain intact.
@@ -179,12 +183,9 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 - Urgent visible thumbnails can preempt canonical thumbnail preparation immediately before GPU admission, including after asynchronous renderer/source setup. Canonical saving resumes after urgent delivery instead of compiling a full artboard ahead of newly scrolled rows.
 - Layer scrolling updates only its bounded virtual tree instead of rerendering the whole panel and its footer/context controls. Decoded thumbnails remain owned by mounted rows across visibility-margin crossings, avoiding repeated preview requests, object URLs and image loads on small scroll reversals; identity changes, cancellation and unmount still reject stale work and release resources.
 
-
-
 ### Changed
 
 - Integrated the latest Motion/video branch with main, preserving the mobile editor, Melt branding, text-shaper preparation, bounded preview costs and contribution policy alongside Canvas timelines, linked gestures, audio and composition export. Fullscreen library dialogs override centered-dialog translation so project and template navigation remains inside the viewport.
-
 
 ## [0.2.0] - 2026-10-29
 

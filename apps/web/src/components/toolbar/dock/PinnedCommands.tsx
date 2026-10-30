@@ -78,6 +78,9 @@ export function PinnedCommands({
                 <div
                   data-dock-command={id}
                   data-dragging={drag.dragging === id || undefined}
+                  data-dock-drop-position={
+                    drag.target?.id === id ? drag.target.position : undefined
+                  }
                   tabIndex={command.disabled ? 0 : -1}
                   role="group"
                   aria-label={t("dock:options", { name: command.label })}

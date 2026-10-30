@@ -537,10 +537,10 @@
       var(--floating-size) + 16px
   );
   top: var(--toolbar-top);
-  bottom: var(--workspace-gap);
+  bottom: max(var(--workspace-gap), calc(100% - 100dvh + var(--workspace-gap)));
   left: calc(var(--workspace-gap) + var(--ruler-inset));
   height: fit-content;
-  max-height: calc(100% - var(--toolbar-top) - var(--workspace-gap));
+  max-height: calc(min(100%, 100dvh) - var(--toolbar-top) - var(--workspace-gap));
   margin-block: auto;
   transform: none;
   padding: var(--floating-padding);

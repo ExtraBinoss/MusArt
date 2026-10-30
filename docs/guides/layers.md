@@ -235,3 +235,8 @@ destination/error message and shared diagnostics for bounded, deduplicated
 `console.error` rejection evidence. Native and pointer adapters retain their
 input-specific capture and scrolling cleanup. Timeline time-edit gestures retain
 the separate validated preview/commit contract.
+
+Successful drops use the same session completion callback to show a green halo
+for one second at the committed destination. Canvas lanes and canonical DOM rows
+share this feedback. Reduced-motion mode keeps the halo static; a new drag, a
+changed document, an unmounted target or page exit releases the feedback.

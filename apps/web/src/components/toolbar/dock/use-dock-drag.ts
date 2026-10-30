@@ -145,7 +145,18 @@ export function useDockDrag(ids: readonly string[], commands: readonly SearchIte
         target + (origin.target.position === "after" ? 1 : 0),
       );
       const changed = next.some((id, at) => id !== ids[at]);
-      return session.finish(changed, () => store.set(dockCommandsAtom, next));
+      return session.finish(changed, (placed) => {
+        store.set(dockCommandsAtom, next);
+        const committed = store.get(dockCommandsAtom);
+        placed({
+          targets: () =>
+            [...document.querySelectorAll<HTMLElement>("[data-dock-command]")].filter(
+              (node) => node.dataset.dockCommand === origin.id,
+            ),
+          isCurrent: () => store.get(dockCommandsAtom) === committed,
+          subscribe: (listener) => store.sub(dockCommandsAtom, listener),
+        });
+      });
     },
   };
 }

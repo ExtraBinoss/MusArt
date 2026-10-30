@@ -1,5 +1,6 @@
 import { expect as baseExpect, type Page } from "@playwright/test";
 import { writeFile } from "node:fs/promises";
+import { assertDropPlacement } from "./drop-placement";
 import { installNativeDragProbe, assertNativeMove } from "./native-drag";
 import {
   output,
@@ -52,6 +53,11 @@ export async function verifyCanvasReorder(page: Page) {
     expect(await page.evaluate(() => window.musart!.snapshot().project)).toEqual(original);
     await page.screenshot({ path: `${output}/bar-${source}-reorder-draft.png` });
     await page.mouse.up();
+    await assertDropPlacement(
+      page,
+      page.locator(label(source)),
+      `${output}/drop-halo-${source}.png`,
+    );
     await expect.poll(() => revision(page)).toBe(before + 1);
     const committed = await page.evaluate(() => window.musart!.snapshot().project);
     expect(committed.pages[0]!.layers.map((layer) => layer.id)).toEqual(["card", "peer"]);
