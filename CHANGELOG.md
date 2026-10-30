@@ -90,6 +90,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
+- Kept the Inspector immediately ready between consecutive edits to the same selected object and assets. Selection/resource handoffs remain guarded, attachment editing retains secondary panels, and native rapid color gestures preserve exact values, one undo entry per gesture and zero Inspector renders during previews.
+
 - Fixed live canvas sharpness after zoom and device-density changes by observing DPR independently and estimating actual batched/clipped GPU targets and fixed effect references. Stable fractional tiers retain the existing preview/device limits, source reservations stay separate from target costs, and infeasible fixed content reports a real failure instead of degrading to one pixel. Native live/PNG comparisons and remaining high-zoom limits are documented in `docs/performance/preview-density.md`.
 
 - Stabilized analytical text at small sizes and low zoom with MVP/viewport glyph dilation, weighted Slug coverage and overlapping sorted bands. Coverage and gradients follow the same dilated point; native WebGPU/WebGL witnesses cover fractional glyphs and original outlines. Pinned MIT-licensed WGSL snapshots and a function-level TSL map record the exact sources and numerical adaptations.

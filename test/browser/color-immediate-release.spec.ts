@@ -60,6 +60,24 @@ test("immediate native color release preserves the last sample, next gesture and
   await expect(page.locator('.canvas-artboard canvas[data-renderer-ready="true"]')).toBeVisible();
   const native = await page.context().newCDPSession(page);
   const evidence: unknown[] = [];
+  const press = async (x: number, y: number) => {
+    // Keep native button state in this CDP session for every packet of the gesture.
+    await native.send("Input.dispatchMouseEvent", {
+      type: "mouseMoved",
+      x,
+      y,
+      button: "none",
+      buttons: 0,
+    });
+    await native.send("Input.dispatchMouseEvent", {
+      type: "mousePressed",
+      x,
+      y,
+      button: "left",
+      buttons: 1,
+      clickCount: 1,
+    });
+  };
   const bytes = (h: number, s: number, v: number, a: number) => {
     const hue = (((h % 360) + 360) % 360) / 60,
       c = ((v / 100) * s) / 100,
@@ -122,8 +140,7 @@ test("immediate native color release preserves the last sample, next gesture and
       });
       const x0 = box.x + box.width * 0.45,
         y0 = box.y + box.height * 0.25;
-      await page.mouse.move(x0, y0);
-      await page.mouse.down();
+      await press(x0, y0);
       const x = box.x + box.width * (channel === "sv" ? 0.83 : 0.5),
         y = box.y + box.height * 0.69;
       // Queue native packets together: no idle/render/state-read barrier between move and release.
@@ -180,8 +197,7 @@ test("immediate native color release preserves the last sample, next gesture and
       const committed = await page.evaluate(() => window.musart!.snapshot());
       expect(committed.revision).toBe(baseline.revision + 1);
       if (channel === "sv") {
-        await page.mouse.move(box.x + box.width * 0.35, box.y + box.height * 0.25);
-        await page.mouse.down();
+        await press(box.x + box.width * 0.35, box.y + box.height * 0.25);
         const x2 = box.x + box.width * 0.5,
           y2 = box.y + box.height * 0.5;
         const move2 = native.send("Input.dispatchMouseEvent", {
@@ -238,7 +254,6 @@ test("immediate native color release preserves the last sample, next gesture and
         "#FF000080",
       );
       expect((await page.evaluate(() => window.musart!.snapshot())).canUndo).toBe(false);
-      await page.mouse.up();
     }
   } finally {
     await native.detach();

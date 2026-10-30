@@ -95,6 +95,16 @@ export const EditorSidebar = memo(function EditorSidebar({
   );
 });
 
+interface InspectorProperties {
+  target: string;
+  page: Composition;
+  selection: string[];
+  assets: Project["assets"];
+}
+function sameInspectorOwner(before: InspectorProperties, after: InspectorProperties) {
+  return before.target === after.target && before.assets === after.assets;
+}
+
 /** Overlay ownership updates only this presentation boundary, not the sidebar's tabs and rows. */
 const InspectorPresentation = memo(function InspectorPresentation({
   engine,
@@ -102,10 +112,10 @@ const InspectorPresentation = memo(function InspectorPresentation({
   run,
 }: {
   engine: EnginePort;
-  properties: { target: string; page: Composition; selection: string[]; assets: Project["assets"] };
+  properties: InspectorProperties;
   run: (action: () => void) => void;
 }) {
-  const deferredProperties = useAttachmentPresentation(properties);
+  const deferredProperties = useAttachmentPresentation(properties, sameInspectorOwner);
   const [retained, setRetained] = useState(deferredProperties);
   const unchanged =
     retained.target === deferredProperties.target &&
