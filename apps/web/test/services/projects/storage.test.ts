@@ -28,11 +28,13 @@ describe("local project storage", () => {
       {
         id: project.id,
         name: "Poster",
+        mode: "static",
         pages: project.pages.map((page) => ({
           id: page.id,
           name: page.name,
           width: page.width,
           height: page.height,
+          mode: "static",
           thumbnailRevision: expect.any(String),
         })),
         updatedAt: project.updatedAt,

@@ -1,6 +1,6 @@
 import { it, expect } from "vitest";
 import { Blob as NodeBlob } from "node:buffer";
-import { createProject, createPage, createLayer } from "@musart/core";
+import { createProject, createPage, createLayer, EditorEngine } from "@musart/core";
 import {
   thumbnailInfo,
   thumbnailBytes,
@@ -92,4 +92,47 @@ it("accounts cached worker page sizes exactly through metadata and thumbnail cha
     record.bytes.pagePayloads = pagePayloads;
     expect(manifestBytes(record)).toBe(exact());
   }
+});
+
+it("derives mixed Static/Motion metadata without inspecting layers or original assets", () => {
+  const engine = new EditorEngine(createProject({ pages: [createPage({ id: "animated" })] }));
+  engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const project = createProject({
+    pages: [createPage({ id: "still" }), structuredClone(engine.getSnapshot().project.pages[0]!)],
+  });
+  Object.defineProperty(project, "assets", {
+    get: () => {
+      throw new Error("Original assets must not be read for listing");
+    },
+  });
+  for (const page of project.pages)
+    Object.defineProperty(page, "layers", {
+      get: () => {
+        throw new Error("Layer bodies must not be read for listing");
+      },
+    });
+  const summary = projectSummary({ id: project.id, project });
+  expect(summary.mode).toBe("motion");
+  expect(summary.pages.map((page) => ({ id: page.id, mode: page.mode }))).toEqual([
+    { id: "still", mode: "static" },
+    { id: "animated", mode: "motion" },
+  ]);
+  expect(summary).not.toHaveProperty("assets");
+  expect(summary.pages[1]).not.toHaveProperty("motion");
+  expect(summary.pages[1]).not.toHaveProperty("layers");
+});
+
+it("defaults legacy artboards to Static and honors a retained timeline switched back to Static", () => {
+  const legacy = createProject();
+  expect(projectSummary({ id: legacy.id, project: legacy })).toMatchObject({
+    mode: "static",
+    pages: [{ mode: "static" }],
+  });
+  const engine = new EditorEngine(legacy);
+  engine.execute({ type: "setCompositionMode", mode: "motion" });
+  engine.execute({ type: "setCompositionMode", mode: "static" });
+  expect(projectSummary({ id: legacy.id, project: engine.getSnapshot().project })).toMatchObject({
+    mode: "static",
+    pages: [{ mode: "static" }],
+  });
 });

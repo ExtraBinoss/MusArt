@@ -1,6 +1,6 @@
 import { beforeEach, afterEach, it, expect, vi } from "vitest";
 import { Blob as NodeBlob } from "node:buffer";
-import { createProject, createPage, evaluateReplay } from "@musart/core";
+import { createProject, createPage, evaluateReplay, EditorEngine } from "@musart/core";
 import { ProjectStore } from "../../../src/services/projects/storage";
 import { openStudioDatabase } from "../../../src/services/projects/database";
 beforeEach(() => {
@@ -61,10 +61,17 @@ it("renames through a valid command, preserves last-opened preference and journa
 it("paginates lightweight summaries on a compound index without duplicates or original hydration", async () => {
   const store = new ProjectStore(crypto.randomUUID());
   try {
-    for (const id of ["a", "b", "c"])
-      await store.save(
-        createProject({ id, updatedAt: `2026-01-0${id.charCodeAt(0) - 96}T00:00:00.000Z` }),
-      );
+    for (const id of ["a", "b", "c"]) {
+      const project = createProject({
+        id,
+        updatedAt: `2026-01-0${id.charCodeAt(0) - 96}T00:00:00.000Z`,
+      });
+      if (id === "b") {
+        const engine = new EditorEngine(project, { now: () => project.updatedAt });
+        engine.execute({ type: "setCompositionMode", mode: "motion" });
+        await store.save(engine.getSnapshot().project);
+      } else await store.save(project);
+    }
     const get = vi.spyOn(IDBObjectStore.prototype, "get"),
       first = await store.listPage({ limit: 2 }),
       second = await store.listPage({ limit: 2, before: first.before! });
@@ -72,6 +79,10 @@ it("paginates lightweight summaries on a compound index without duplicates or or
     expect(second.projects.map((item) => item.id)).toEqual(["a"]);
     expect(second.before).toBeNull();
     expect(first.projects.every((item) => item.pages.length === 1)).toBe(true);
+    expect(first.projects.map((item) => [item.mode, item.pages[0]!.mode])).toEqual([
+      ["static", "static"],
+      ["motion", "motion"],
+    ]);
     expect(get).not.toHaveBeenCalled();
     await expect(store.listPage({ limit: 0 })).rejects.toThrow("pagination");
   } finally {

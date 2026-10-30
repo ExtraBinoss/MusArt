@@ -36,6 +36,7 @@ export function projectSummary(record: StoredProject): ProjectSummary {
     id: project.id,
     name: project.name,
     updatedAt: project.updatedAt,
+    mode: project.pages.some((page) => page.motion?.mode === "motion") ? "motion" : "static",
     width: project.pages[0]!.width,
     height: project.pages[0]!.height,
     pages: project.pages.map((page) => ({
@@ -43,6 +44,7 @@ export function projectSummary(record: StoredProject): ProjectSummary {
       name: page.name,
       width: page.width,
       height: page.height,
+      mode: page.motion?.mode ?? "static",
       ...(record.pageRevisions?.[page.id]
         ? { thumbnailRevision: record.pageRevisions[page.id] }
         : {}),
