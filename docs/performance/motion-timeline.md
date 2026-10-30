@@ -531,3 +531,10 @@ after viewport changes, unchanged fractional-PTS/bin coverage, disposal/errors
 and cancellation after an awaited read. Sources, dependency snapshots, compiled
 JavaScript/maps, genuine WAV originals, all peak arrays and exact drivers are in
 ignored `artifacts/motion/perf/waveform-fourth/`.
+
+## Audio/video Play startup
+
+The separate [playback investigation](audio-playback.md) addresses late sound at
+Play, rather than waveform appearance or scrolling. It documents synchronized
+first-block startup, lazy originals, bounded source PCM reuse, obsolete-request
+skipping and a matched native AudioWorklet/video cohort with its limits.

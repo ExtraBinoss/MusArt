@@ -13,6 +13,7 @@ import { MotionExportError } from "../errors";
 import { motionAudioSampleCount } from "../timing";
 import type { MotionAudioPlan, MotionAudioSource } from "./model";
 import { openMotionAudioSource } from "./source";
+import { createMotionAudioWindows } from "./windows";
 import { sampleMotionPcm } from "./resample";
 import { createMotionAudioDsp, motionAudioDspSettings, motionAudioEnvelope } from "./dsp";
 
@@ -53,6 +54,9 @@ export async function createMotionAudioMixer(
     blockFrames?: number;
     /** Audition can apply a native GainNode after the shared floating-point DSP. */
     clampOutput?: boolean;
+    /** Live playback admits sources at their first intersecting block. Export validates eagerly. */
+    lazySources?: boolean;
+    sourceReadAhead?: number;
     signal?: AbortSignal;
   } = {},
 ) {
@@ -76,6 +80,7 @@ export async function createMotionAudioMixer(
       "Audio needs mono/stereo output and a bounded PCM block size.",
     );
   const sources = new Map<string, MotionAudioSource>();
+  const windows = createMotionAudioWindows(options.sourceReadAhead ?? 0);
   const lanes: AudioLane[] = [];
   const volumePreview = new Map<string, number>();
   const mixState = new Map<string, { volume: number; mute: boolean }>();
@@ -139,6 +144,7 @@ export async function createMotionAudioMixer(
       const oldest = sources.keys().next().value!;
       const removed = sources.get(oldest);
       sources.delete(oldest);
+      if (removed) windows.forget(removed);
       await removed?.dispose();
     }
     const source = await openMotionAudioSource(asset, resolver, options);
@@ -163,6 +169,7 @@ export async function createMotionAudioMixer(
   async function dispose() {
     if (closed) return;
     closed = true;
+    windows.dispose();
     for (const lane of processors.keys()) releaseProcessor(lane);
     volumePreview.clear();
     mixState.clear();
@@ -208,8 +215,9 @@ export async function createMotionAudioMixer(
           "Motion audio lane has no immutable media original.",
         );
       const identity = assetOriginalIdentity(asset);
-      const source = audible ? await sourceFor(identity, asset) : null;
-      if (source || (id !== undefined && !audible))
+      const deferred = audible && options.lazySources;
+      const source = audible && !deferred ? await sourceFor(identity, asset) : null;
+      if (source || deferred || (id !== undefined && !audible))
         lanes.push({
           id,
           identity,
@@ -238,7 +246,9 @@ export async function createMotionAudioMixer(
       blockFrames,
       samples,
       get hasAudio() {
-        return !closed && lanes.some((lane) => volumeFor(lane) > 0);
+        return (
+          !closed && lanes.some((lane) => volumeFor(lane) > 0 && !knownSilent.has(lane.identity))
+        );
       },
       setVolumePreview(trackId: string, volume: number | null) {
         if (closed) throw new MotionExportError("closed", "Audio mixer is closed.");
@@ -296,11 +306,12 @@ export async function createMotionAudioMixer(
             const volume = levels.get(lane)!;
             if (first >= after || volume === 0) continue;
             const source = await sourceFor(lane.identity, lane.asset);
-            if (!source)
+            if (!source && lane.asset.kind === "audio")
               throw new MotionExportError(
                 "unsupportedAudio",
                 "An audio source disappeared during mixing.",
               );
+            if (!source) continue;
             const state = processorFor(lane);
             let cursor = first;
             if (state && state.next !== first) {
@@ -311,7 +322,8 @@ export async function createMotionAudioMixer(
               // Seek reconstructs only the finite FIR horizon, in bounded decoder windows.
               while (cursor < after) {
                 const end = Math.min(after, cursor + blockFrames);
-                const chunks = await source.readWindow(
+                const chunks = await windows.read(
+                  source,
                   lane.offset + cursor / sampleRate,
                   lane.offset + end / sampleRate,
                   options,

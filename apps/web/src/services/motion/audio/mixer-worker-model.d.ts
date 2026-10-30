@@ -18,6 +18,8 @@ export type AudioMixerJob =
         channels?: 1 | 2;
         blockFrames?: number;
         clampOutput?: boolean;
+        lazySources?: boolean;
+        sourceReadAhead?: number;
       };
     }
   | { type: "read"; id: number; start: number; count: number }
@@ -27,7 +29,7 @@ export type AudioMixerJob =
   | { type: "close"; id: number };
 export type AudioMixerReply =
   | { type: "ready"; id: number; metadata: AudioMixerMetadata }
-  | { type: "pcm"; id: number; pcm: Float32Array<ArrayBuffer> }
+  | { type: "pcm"; id: number; pcm: Float32Array<ArrayBuffer>; hasAudio: boolean }
   | { type: "original"; id: number; assetId: string }
   | { type: "closed"; id: number }
   | { type: "updated"; id: number; hasAudio: boolean }

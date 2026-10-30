@@ -32,6 +32,8 @@ export async function createWorkerAudioMixer(
     channels?: 1 | 2;
     blockFrames?: number;
     clampOutput?: boolean;
+    lazySources?: boolean;
+    sourceReadAhead?: number;
     signal?: AbortSignal;
   } = {},
   createWorker: () => WorkerPort = () =>
@@ -205,6 +207,7 @@ export async function createWorkerAudioMixer(
         try {
           const result = await call({ type: "read", start, count });
           if (result.type !== "pcm") throw Error("Audio worker returned no PCM block.");
+          metadata.hasAudio = result.hasAudio;
           return result.pcm;
         } finally {
           reading = false;

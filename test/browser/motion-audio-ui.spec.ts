@@ -128,6 +128,7 @@ test("imports a real standalone WAV, prepares a bounded waveform and schedules a
   });
   const row = page.locator(".motion-audio-row:not(.motion-canvas-active-overlay)");
   await expect(row).toHaveCount(1);
+  await page.getByRole("button", { name: "Keyframes", exact: true }).click();
   await expect
     .poll(() =>
       page.locator("canvas[data-timeline-canvas]").getAttribute("data-timeline-waveforms"),

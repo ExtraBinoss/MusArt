@@ -47,7 +47,12 @@ function worker() {
       if (job.type === "read")
         queueMicrotask(() =>
           port.onmessage?.({
-            data: { type: "pcm", id: job.id, pcm: new Float32Array(job.count * 2).fill(0.2) },
+            data: {
+              type: "pcm",
+              id: job.id,
+              pcm: new Float32Array(job.count * 2).fill(0.2),
+              hasAudio: true,
+            },
           } as MessageEvent<AudioMixerReply>),
         );
       if (job.type === "close")
@@ -60,6 +65,27 @@ function worker() {
   };
   return { port, messages, create: () => port as unknown as Worker };
 }
+it("updates audio presence when a lazy video reader discovers that the original is silent", async () => {
+  const d = audioFixture(),
+    f = worker(),
+    project = d.engine.getSnapshot().project;
+  const mixer = await createWorkerAudioMixer(
+    compileMotion(project, { compositionId: d.engine.getSnapshot().pageId }),
+    project.assets,
+    undefined,
+    {},
+    f.create,
+  );
+  expect(mixer.hasAudio).toBe(true);
+  const read = mixer.readBlock(0, 4),
+    job = f.messages.at(-1)!;
+  f.port.onmessage!({
+    data: { type: "pcm", id: job.id, pcm: new Float32Array(8), hasAudio: false },
+  } as MessageEvent<AudioMixerReply>);
+  await read;
+  expect(mixer.hasAudio).toBe(false);
+  await mixer.dispose();
+});
 it("sends only a compact audio plan/original descriptions and exchanges bounded PCM with cleanup", async () => {
   const d = audioFixture();
   d.engine.execute({

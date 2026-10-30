@@ -147,7 +147,7 @@ export function createAudioMixerWorkerHost(
     reading = true;
     try {
       const pcm = await mixer.readBlock(job.start, job.count);
-      if (!closed) send({ type: "pcm", id: job.id, pcm }, [pcm.buffer]);
+      if (!closed) send({ type: "pcm", id: job.id, pcm, hasAudio: mixer.hasAudio }, [pcm.buffer]);
     } catch (failure) {
       if (!closed) error(job.id, failure);
     } finally {

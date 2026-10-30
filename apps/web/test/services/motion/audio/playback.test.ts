@@ -63,7 +63,17 @@ function setup() {
       ],
     }),
   );
-  const scheduler = { now: vi.fn(() => 0), request: vi.fn(() => 1), cancel: vi.fn() };
+  let tick: (() => void) | undefined;
+  const scheduler = {
+    now: vi.fn(() => 0),
+    request: vi.fn((callback: () => void) => {
+      tick = callback;
+      return 1;
+    }),
+    cancel: vi.fn(() => {
+      tick = undefined;
+    }),
+  };
   const transport = new MotionTransport(engine, scheduler),
     errors = vi.fn();
   const nodes: {
@@ -126,8 +136,91 @@ function setup() {
   const flush = async () => {
     for (let i = 0; i < 20; i++) await Promise.resolve();
   };
-  return { playback, engine, transport, errors, context, nodes, buffers, flush };
+  return {
+    playback,
+    engine,
+    transport,
+    errors,
+    context,
+    nodes,
+    buffers,
+    flush,
+    advance(ms: number) {
+      scheduler.now.mockReturnValue(ms);
+      context.currentTime = ms / 1000;
+      const callback = tick;
+      tick = undefined;
+      callback?.();
+    },
+  };
 }
+
+it("holds the video/presentation clock through cold PCM preparation and starts the complete attack together", async () => {
+  const d = setup();
+  let finish!: (pcm: Float32Array) => void;
+  state.read.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  d.transport.play();
+  await d.flush();
+  d.advance(500);
+  expect(d.transport.read().time.value).toBe(0);
+  expect(d.transport.read().playing).toBe(true);
+  expect(d.nodes).toHaveLength(0);
+  finish(new Float32Array(2048).fill(0.2));
+  await d.flush();
+  expect(d.nodes[0]!.start).toHaveBeenCalledWith(0.51, 0);
+  expect(state.read.mock.calls[0]![0]).toBe(0);
+  d.advance(530);
+  expect(d.transport.read().time).toEqual({ value: 20000, rate: 1000000 });
+  expect(state.mix).toHaveBeenCalledOnce();
+  await d.playback.dispose();
+  d.transport.dispose();
+});
+
+it("skips obsolete requests after a slow frame without restarting its decoder or accumulating a backlog", async () => {
+  const d = setup();
+  d.transport.setPlaybackMode("once");
+  d.transport.play();
+  await d.flush();
+  for (const node of d.nodes) node.onended?.();
+  state.read.mockClear();
+  d.advance(700);
+  await vi.advanceTimersByTimeAsync(10);
+  await d.flush();
+  expect(state.mix).toHaveBeenCalledOnce();
+  expect(state.read.mock.calls[0]![0]).toBeGreaterThan(33000);
+  expect(state.read.mock.calls[0]![0]).toBeLessThanOrEqual(33600);
+  expect(state.read.mock.calls.length).toBeLessThanOrEqual(4);
+  expect(d.errors).not.toHaveBeenCalled();
+  await d.playback.dispose();
+  d.transport.dispose();
+});
+
+it("retires an unresolved native resume and releases buffering without reviving paused playback", async () => {
+  const d = setup();
+  let resume!: () => void;
+  d.context.resume.mockImplementationOnce(
+    () =>
+      new Promise<void>((resolve) => {
+        resume = resolve;
+      }),
+  );
+  d.transport.play();
+  d.advance(500);
+  expect(d.transport.read().time.value).toBe(0);
+  d.transport.pause();
+  await d.playback.dispose();
+  resume();
+  await d.flush();
+  expect(state.mix).not.toHaveBeenCalled();
+  expect(d.nodes).toHaveLength(0);
+  expect(d.errors).not.toHaveBeenCalled();
+  d.transport.dispose();
+});
 it("schedules original PCM with the native clock without document commands or RAF work", async () => {
   const d = setup(),
     commands = vi.fn();

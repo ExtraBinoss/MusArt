@@ -6,6 +6,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Fixed cold Motion audio/video startup losing sound attacks while the timeline advanced before PCM was ready. Live playback now synchronizes its initial presentation clock with the first native audio block, admits originals on demand, caches bounded decoded windows and skips obsolete decode requests after slow frames. A matched 40-cue/video Chromium cohort reduced median native-graph onset 138.7 → 106.0 ms and original reads 42 → 2; this is not physical speaker latency. Offline export keeps eager validation. See `docs/performance/audio-playback.md`.
+
 - Prioritized visible timeline waveforms ahead of lookahead and removed per-window timer waits from the dedicated audio preparation worker. A frozen Chromium comparison of identical 30-second WAV originals reduced median preparation 440.6 → 271.3 ms (48 kHz stereo) and 577.0 → 446.3 ms (192 kHz mono); all 2,048 peaks remain exact across 20 runs. Cancellation, half-second decode windows, serial admission and cache budgets are preserved. See `docs/performance/motion-timeline.md` for measurement boundaries.
 
 - Further reduced Motion timeline work with bounded on-demand row indexes, sparse key/easing scans, geometry reuse on hover, cached overlay sizing and stable canvas bindings during horizontal scrolling. A separate frozen 1,000-layer/keyframed scroll pair reduced script time 139.597 → 119.943 ms (14.1%) while retaining 16.8 ms RAF-gap p95. Focused regressions and 2,000 seeded equivalence cases preserve key identities, dense clusters, signed previews and pixel-boundary behavior; full measurements and limits are documented in `docs/performance/motion-timeline.md`.

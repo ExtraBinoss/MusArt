@@ -1,6 +1,7 @@
 import { compileMotion, motionTimeToSeconds, type EnginePort } from "@musart/core";
 import type { MediaSourceResolver } from "@musart/render";
 import { createWorkerAudioMixer } from "./mixer-worker-client";
+import { abortableAudio } from "./abort";
 import type { AudioMixPublication } from "./commit-policy";
 import type { MotionTransport } from "../transport";
 type Mixer = Awaited<ReturnType<typeof createWorkerAudioMixer>>;
@@ -19,6 +20,8 @@ export class MotionAudioPlayback {
   private direction = 1;
   private firstTime = 0;
   private firstClock = 0;
+  private priming = false;
+  private readonly clockHolds = new Set<(delayMs?: number) => void>();
   private nextSample = 0;
   private stop: (() => void) | null;
   private closed = false;
@@ -102,9 +105,7 @@ export class MotionAudioPlayback {
           : this.direction;
     const discontinuity =
       this.playing &&
-      (direction !== this.direction ||
-        (state.playbackMode !== "pingPong" && delta < -0.05) ||
-        Math.abs(delta) > 0.5);
+      (direction !== this.direction || (state.playbackMode !== "pingPong" && delta < -0.05));
     this.lastTime = seconds;
     if (this.playing && !discontinuity) return;
     this.clear();
@@ -122,9 +123,10 @@ export class MotionAudioPlayback {
   private async start(generation: number) {
     const controller = new AbortController();
     this.controller = controller;
+    const releaseClock = this.holdClock();
     let mixer: Mixer | null = null;
     try {
-      await this.context!.resume();
+      await abortableAudio(this.context!.resume(), controller.signal);
       await this.retiring;
       if (this.closed || generation !== this.generation || controller.signal.aborted) return;
       const snapshot = this.engine.getSnapshot();
@@ -150,6 +152,8 @@ export class MotionAudioPlayback {
           sampleRate: this.context!.sampleRate,
           channels: 2,
           blockFrames: 1024,
+          lazySources: true,
+          sourceReadAhead: 0.08,
           signal: controller.signal,
         },
       );
@@ -172,16 +176,32 @@ export class MotionAudioPlayback {
     } catch (error) {
       if (mixer && this.mixer !== mixer) await mixer.dispose().catch(this.onError);
       if (generation === this.generation && !controller.signal.aborted) this.fail(error);
+    } finally {
+      releaseClock();
     }
+  }
+  private holdClock() {
+    const release = this.transport.holdPlayback();
+    this.clockHolds.add(release);
+    return () => {
+      this.clockHolds.delete(release);
+      release();
+    };
+  }
+  private resumeClock(delayMs = 0) {
+    for (const release of this.clockHolds) release(delayMs);
+    this.clockHolds.clear();
   }
   private async beginScheduling(generation: number) {
     const mixer = this.mixer;
     if (!mixer || this.busy || this.scheduling || this.closed || generation !== this.generation)
       return;
     this.scheduling = true;
+    const releaseClock = this.holdClock();
     try {
       this.firstTime = motionTimeToSeconds(this.transport.read().time);
       this.firstClock = this.context!.currentTime + 0.01;
+      this.priming = true;
       this.nextSample = Math.min(
         mixer.samples,
         Math.max(0, Math.floor(this.firstTime * mixer.sampleRate)),
@@ -192,6 +212,7 @@ export class MotionAudioPlayback {
         void this.pump(generation);
       }, 10);
     } finally {
+      releaseClock();
       if (generation === this.generation) this.scheduling = false;
     }
   }
@@ -201,7 +222,28 @@ export class MotionAudioPlayback {
     if (!mixer || !context || this.busy || this.closed || generation !== this.generation) return;
     this.busy = true;
     try {
-      while (generation === this.generation && this.nodes.size < 4) {
+      for (
+        let reads = 0;
+        reads < 4 && generation === this.generation && this.nodes.size < 4;
+        reads++
+      ) {
+        // Skip missed samples before requesting PCM instead of decoding an obsolete backlog.
+        if (!this.priming) {
+          const current = Math.min(
+            mixer.samples,
+            Math.max(
+              0,
+              Math.floor(
+                (this.firstTime + (context.currentTime - this.firstClock) * this.direction) *
+                  mixer.sampleRate,
+              ),
+            ),
+          );
+          this.nextSample =
+            this.direction > 0
+              ? Math.max(this.nextSample, current)
+              : Math.min(this.nextSample, current);
+        }
         const sample = this.nextSample;
         const at = this.firstClock + (sample / mixer.sampleRate - this.firstTime) * this.direction;
         if (at > context.currentTime + 0.04) break;
@@ -213,6 +255,11 @@ export class MotionAudioPlayback {
         const start = this.direction > 0 ? sample : sample - count;
         const pcm = await mixer.readBlock(start, count);
         if (generation !== this.generation || this.closed || !mixer.hasAudio) return;
+        if (this.priming) {
+          this.firstClock = context.currentTime + 0.01;
+          this.priming = false;
+          this.resumeClock(10);
+        }
         const when =
           this.firstClock + (sample / mixer.sampleRate - this.firstTime) * this.direction;
         if (when + count / mixer.sampleRate > context.currentTime) {
@@ -320,6 +367,8 @@ export class MotionAudioPlayback {
     this.generation++;
     this.controller?.abort();
     this.controller = null;
+    this.resumeClock();
+    this.priming = false;
     if (this.timer !== null) clearInterval(this.timer);
     this.timer = null;
     this.busy = false;

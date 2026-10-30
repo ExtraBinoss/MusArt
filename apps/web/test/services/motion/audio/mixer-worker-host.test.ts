@@ -38,7 +38,7 @@ it("resolves originals through the lazy platform port, transfers PCM and explici
   await init;
   expect(sends).toContainEqual(expect.objectContaining({ type: "ready", id: 1 }));
   await host.receive({ type: "read", id: 2, start: 0, count: 4 });
-  expect(send).toHaveBeenCalledWith({ type: "pcm", id: 2, pcm }, [pcm.buffer]);
+  expect(send).toHaveBeenCalledWith({ type: "pcm", id: 2, pcm, hasAudio: true }, [pcm.buffer]);
   await host.receive({ type: "close", id: 3 });
   expect(state.dispose).toHaveBeenCalledOnce();
   expect(sends.at(-1)).toEqual({ type: "closed", id: 3 });
