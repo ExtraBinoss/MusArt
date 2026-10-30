@@ -12,15 +12,14 @@ function file(path: string, text = "export const x=1;\n") {
   mkdirSync(full.slice(0, full.lastIndexOf("/")), { recursive: true });
   writeFileSync(full, text);
 }
-it("requires exact test mirror and rejects tests under nested src", () => {
+it("allows behavior tests to cover several sources and rejects tests under nested src", () => {
   file("packages/core/src/foo/bar.ts");
+  file("packages/core/src/foo/baz.ts");
+  file("packages/core/test/foo/behavior.test.ts");
+  expect(audit(root)).toEqual([]);
   file("packages/core/src/deep/a.test.ts");
   file("apps/web/src/__tests__/bad.ts");
-  expect(audit(root).map((v) => v.rule)).toEqual(
-    expect.arrayContaining(["missing-test", "test-in-src"]),
-  );
-  file("packages/core/test/foo/bar.test.ts");
-  expect(audit(root).filter((v) => v.file === "packages/core/src/foo/bar.ts")).toEqual([]);
+  expect(audit(root).map((v) => v.rule)).toEqual(["test-in-src", "test-in-src"]);
 });
 it("rejects 601 lines, allows 600, ignores dependencies and declarations", () => {
   file("scripts/long.ts", "x\n".repeat(601));
@@ -33,8 +32,8 @@ it("rejects 601 lines, allows 600, ignores dependencies and declarations", () =>
 });
 it("ignores only the local reference-clone tree, never third-party production sources", () => {
   file("third_party/clone/ts-slug/src/SlugGenerator.ts", "x\n".repeat(601));
-  file("third_party/runtime/src/owned.ts");
-  file("apps/web/src/third_party/clone/uncovered.ts");
+  file("third_party/runtime/src/owned.ts", "renderer.readPixels();");
+  file("apps/web/src/third_party/clone/uncovered.ts", "renderer.readPixels();");
   expect(audit(root).map((entry) => entry.file)).toEqual([
     "apps/web/src/third_party/clone/uncovered.ts",
     "third_party/runtime/src/owned.ts",
@@ -47,7 +46,6 @@ it("enforces pure core boundaries", () => {
 });
 it("requires real coverage for every source and all four thresholds", () => {
   file("apps/web/src/a.ts");
-  file("apps/web/test/a.test.ts");
   expect(audit(root, true)[0]?.rule).toBe("coverage-report");
   file(
     "coverage/coverage-summary.json",
@@ -89,7 +87,7 @@ it("rejects GPU readbacks and raw WebGPU rendering in production sources", () =>
 it("never ignores build/dist/cache directory names inside production source trees", () => {
   for (const directory of ["build", "dist", "artifacts", "coverage", "node_modules"]) {
     file(`apps/web/src/${directory}/nested/illegal.test.ts`, "x\n".repeat(601));
-    file(`apps/web/src/${directory}/uncovered.ts`);
+    file(`apps/web/src/${directory}/unsafe.ts`, "renderer.readPixels();");
   }
   const violations = audit(root);
   for (const directory of ["build", "dist", "artifacts", "coverage", "node_modules"]) {
@@ -104,26 +102,24 @@ it("never ignores build/dist/cache directory names inside production source tree
           rule: "max-lines",
         }),
         expect.objectContaining({
-          file: `apps/web/src/${directory}/uncovered.ts`,
-          rule: "missing-test",
+          file: `apps/web/src/${directory}/unsafe.ts`,
+          rule: "gpu-readback",
         }),
       ]),
     );
   }
 });
-it("covers all executable TypeScript/JavaScript extensions with exact mirrors, including mts and cts", () => {
+it("enforces source rules for every executable extension without requiring test mirrors", () => {
   for (const extension of ["ts", "tsx", "mts", "cts", "js", "jsx", "mjs", "cjs"]) {
-    file(`apps/web/src/modules/source.${extension}`);
+    file(`apps/web/src/modules/source.${extension}`, "renderer.readPixels();");
     file(`apps/web/src/modules/illegal.test.${extension}`);
   }
   const before = audit(root);
-  expect(before.filter((v) => v.rule === "missing-test")).toHaveLength(8);
+  expect(before.filter((v) => v.rule === "gpu-readback")).toHaveLength(8);
   expect(before.filter((v) => v.rule === "test-in-src")).toHaveLength(8);
-  for (const extension of ["ts", "tsx", "mts", "cts", "js", "jsx", "mjs", "cjs"])
-    file(`apps/web/test/modules/source.test.${extension}`);
-  expect(audit(root).filter((v) => v.rule === "missing-test")).toEqual([]);
-  file("apps/web/src/runtime.d.mts");
-  file("apps/web/src/runtime.d.cts");
+  expect(before).toHaveLength(16);
+  file("apps/web/src/runtime.d.mts", "// renderer.readPixels();");
+  file("apps/web/src/runtime.d.cts", "// renderer.readPixels();");
   expect(audit(root).filter((v) => v.file.includes("runtime.d."))).toEqual([]);
 });
 it.each([

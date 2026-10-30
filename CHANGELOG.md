@@ -4,6 +4,10 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ## [Unreleased]
 
+### Changed
+
+- Reduced agent coordination overhead with bounded implementation ownership, fresh contexts for independent tasks, concise handoffs and one integrated validation owner. Tests now protect behavior without requiring an exact mirror for every source file; focused coverage falls back to related tests when mirrors are absent, while full CI coverage thresholds remain unchanged.
+
 ### Added
 
 - Introduced the Melt identity with the original Maskot/Bloub SVG engine, a wide-eyed Dahlia mascot, reusable SVG morphing, a shared violet palette and operation-driven loading/preparation marks with on-demand, reduced-motion-aware playback. Existing local projects and `.musart` formats remain compatible.

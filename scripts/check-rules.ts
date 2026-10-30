@@ -145,20 +145,10 @@ export function audit(root: string, coverage = false): Violation[] {
       violations.push({
         file: rel,
         rule: "test-in-src",
-        detail: "Les tests appartiennent au dossier test/ miroir.",
+        detail: "Les tests appartiennent au dossier test/, hors de src/.",
       });
   }
   for (const file of sources.filter((file) => !isTest(file))) {
-    const parts = file.split(sep);
-    const position = parts.lastIndexOf("src");
-    parts[position] = "test";
-    const mirror = parts.join(sep).replace(/\.([cm]?[jt]sx?)$/, ".test.$1");
-    if (!existsSync(mirror))
-      violations.push({
-        file: relative(root, file),
-        rule: "missing-test",
-        detail: `Attendu: ${relative(root, mirror)}`,
-      });
     const sourceText = readFileSync(file, "utf8");
     if (/\.(?:readRenderTargetPixels(?:Async)?|readPixels|mapAsync)\s*\(/.test(sourceText)) {
       violations.push({

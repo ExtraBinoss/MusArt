@@ -2,11 +2,29 @@ import { expect, test } from "vitest";
 import { relatedCoverageArguments } from "../../scripts/test-related-coverage";
 
 test("direct coverage runs mirrored feature tests without expanding through shared barrels", () => {
-  const args = relatedCoverageArguments(["packages/core/src/layers/geometry.ts"], true);
+  const args = relatedCoverageArguments(["packages/core/src/layers/geometry.ts"], true, () => true);
   expect(args[0]).toBe("run");
   expect(args).not.toContain("related");
   expect(args.at(-1)).toBe("packages/core/test/layers/geometry.test.ts");
   expect(args).toContain("packages/core/src/layers/geometry.ts");
+});
+
+test("falls back to related tests for all selected sources when any mirror is absent", () => {
+  const first = "apps/web/src/components/Wrapper.tsx";
+  const second = "packages/core/src/layers/geometry.ts";
+  const hasFile = vi.fn((path: string) => path === "apps/web/test/components/Wrapper.test.tsx");
+  const args = relatedCoverageArguments([first, second], true, hasFile);
+  expect(hasFile.mock.calls).toEqual([
+    ["apps/web/test/components/Wrapper.test.tsx"],
+    ["packages/core/test/layers/geometry.test.ts"],
+  ]);
+  expect(args).toEqual(relatedCoverageArguments([first, second]));
+  expect(args.slice(-2)).toEqual([first, second]);
+});
+
+test("uses the filesystem to detect an absent mirror instead of silently omitting its source", () => {
+  const source = "apps/web/src/no-mirror-for-coverage.ts";
+  expect(relatedCoverageArguments([source], true)).toEqual(relatedCoverageArguments([source]));
 });
 
 test("selects related tests and only requested source coverage in a separate report", () => {
