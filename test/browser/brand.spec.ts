@@ -42,7 +42,7 @@ test("Melt shares its SVG identity, violet actions and real install artwork on m
         .locator(".landing-cta")
         .first()
         .evaluate((node) => getComputedStyle(node).backgroundColor),
-    ).toBe("rgb(179, 154, 219)");
+    ).toBe("rgb(139, 92, 246)");
     await page.screenshot({ path: info.outputPath(`melt-${colorScheme}.png`) });
   }
   await page.evaluate(

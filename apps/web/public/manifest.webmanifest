@@ -5,7 +5,7 @@
   "start_url": "./",
   "display": "standalone",
   "background_color": "#fbfbfc",
-  "theme_color": "#B39ADB",
+  "theme_color": "#8B5CF6",
   "icons": [
     {
       "src": "branding/melt-icon-192.png",

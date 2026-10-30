@@ -3,8 +3,8 @@ export const brand = {
   name: "Melt",
   description: "A little wonder. A lot to create.",
   colors: {
-    primary: "#B39ADB",
-    action: "#8763C8",
+    primary: "#8B5CF6",
+    action: "#7C3AED",
     foreground: "#FFFFFF",
     onPrimary: "#FFFFFF",
     soft: "#F2E9FF",

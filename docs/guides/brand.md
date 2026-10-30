@@ -1,11 +1,11 @@
 # Melt brand and SVG animation API
 
 The interface identity lives in `apps/web/src/ui/brand/`. `config.ts` supplies
-`brand.name`, the pastel primary `#B39ADB` and action fill `#8763C8`, the palette, mascot and asset paths.
+`brand.name`, the saturated violet primary `#8B5CF6` and deeper action fill `#7C3AED`, the palette, mascot and asset paths.
 The generated palette.css takes its values from config.ts; regenerate with the asset script.
 Global CSS variables apply the same palette to both themes and Radix portals.
 Primary actions and dark-theme switch thumbs use white. The slightly deeper
-action fill keeps white labels legible while accent lines and the mascot stay pastel. Translated product copy uses `brand.name`, not separate hardcoded names.
+action fill keeps white labels legible while accent lines and the mascot use the same saturated violet primary. Translated product copy uses `brand.name`, not separate hardcoded names.
 
 Existing local projects, `.musart` imports/exports, clipboard payloads, database
 keys, automation methods, package names and GitHub URLs keep their established

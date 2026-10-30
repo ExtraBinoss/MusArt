@@ -2,10 +2,10 @@
   "generator": "bun scripts/brand-assets.ts --png",
   "source": "melt.svg; melt-maskable.svg for Apple Touch",
   "files": {
-    "favicon.ico": "acdf2bf6cbf4877e6f94bce55bf2098e4180800567c59d1aeae92193359aa2fa",
-    "melt-icon-32.png": "a07390d7682fc2df69f273597935901fd7c668b38086d8b3fd968e3d1a218346",
-    "melt-icon-180.png": "1a6135ca9940ca19a9bd2d943d91629d31cb99aec9898ec95fabd773a2b2a730",
-    "melt-icon-192.png": "4c436814dfa155b45511f83cbcb20c4f65546750978a4c0fd4dadecd33bd7b25",
-    "melt-icon-512.png": "970189986885d192e4fc9ec061c0f49c7ae2fdcc5aac8a181d6546e4ce114ff9"
+    "favicon.ico": "f41838e8a5c0722619b6e746a30b3aedba77456a79fe7b46bf50226c7716a0b3",
+    "melt-icon-32.png": "0838242ef9ec8d446a6fd7a17644c962987c780c4731481b111fee2b2551553e",
+    "melt-icon-180.png": "306b84b69c170ebd788db50762d153e9450c3f5d03a8df59c4dd317adf02015f",
+    "melt-icon-192.png": "3e9feff5b6000a5d1e0b061e8e4753cc14bef18f8c246f629de0bc5fb01b4b00",
+    "melt-icon-512.png": "e1246bbf4f7179df01a108cd58136c350d590cc9b1389c746849178e3b7f4a5f"
   }
 }
