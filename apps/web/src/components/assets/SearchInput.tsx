@@ -142,7 +142,7 @@ export function SearchInput({
       {hints.some((hint) => hint.preview) && !props.value && (
         <span ref={previews} className={styles.previews} aria-hidden>
           {hints.slice(0, 6).map((hint, index) => (
-            <span key={hint.label} hidden={index !== 0}>
+            <span key={index} hidden={index !== 0}>
               {hint.preview}
             </span>
           ))}

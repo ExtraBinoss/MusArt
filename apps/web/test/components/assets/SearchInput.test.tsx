@@ -97,3 +97,26 @@ test("exposes an optional search button which focuses the real search field", ()
   fireEvent.click(screen.getByRole("button", { name: "Search fonts" }));
   expect(screen.getByRole("searchbox", { name: "Search fonts" })).toHaveFocus();
 });
+
+test("keeps separate preview slots when projects or templates have identical names", () => {
+  const error = vi.spyOn(console, "error").mockImplementation(() => {});
+  try {
+    const view = render(
+      <SearchInput
+        aria-label="Search"
+        hints={[
+          { label: "Share Your Work", preview: <img alt="First project" src="/first.webp" /> },
+          { label: "Share Your Work", preview: <img alt="Second project" src="/second.webp" /> },
+        ]}
+      />,
+    );
+    expect(screen.getByAltText("First project")).toHaveAttribute("src", "/first.webp");
+    expect(screen.getByAltText("Second project")).toHaveAttribute("src", "/second.webp");
+    expect(
+      error.mock.calls.some((args) => args.some((value) => String(value).includes("same key"))),
+    ).toBe(false);
+    view.unmount();
+  } finally {
+    error.mockRestore();
+  }
+});

@@ -6,6 +6,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Fixed duplicate React keys in typewriter search hints when distinct projects or templates share the same display name.
+
 - Replaced the pastel brand primary with saturated violet `#8B5CF6` and deeper `#7C3AED` action fills across both themes, the shared mascot gradient and generated browser/install icons.
 
 - Made the mascot gradient visible at toolbar/favicon sizes by shading from the shared primary into the shared action violet, with a brighter highlight. Regenerated browser/install icons from the same stops and refreshed the favicon revision.
