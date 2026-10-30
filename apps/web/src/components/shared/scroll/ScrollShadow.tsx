@@ -8,6 +8,7 @@ export function ScrollShadow({
   style,
   surface,
   axis = "vertical",
+  viewportSelector,
 }: {
   children: ReactElement;
   className?: string;
@@ -16,11 +17,15 @@ export function ScrollShadow({
   surface?: string;
   /** Keep vertical behavior by default; horizontal fades also support two-axis viewports. */
   axis?: "vertical" | "horizontal" | "both";
+  /** Locate a viewport inside a component that emits sibling metadata (for example Radix Select). */
+  viewportSelector?: string;
 }) {
   const root = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const wrapper = root.current,
-      viewport = wrapper?.firstElementChild;
+      viewport = viewportSelector
+        ? wrapper?.querySelector(viewportSelector)
+        : wrapper?.firstElementChild;
     if (!(viewport instanceof HTMLElement) || !wrapper) return;
     let maximumTop = 0,
       maximumLeft = 0,
@@ -75,7 +80,7 @@ export function ScrollShadow({
       resize.disconnect();
       childrenObserver.disconnect();
     };
-  }, [children.type, children.key, axis]);
+  }, [children.type, children.key, axis, viewportSelector]);
   return (
     <div
       className={cn("scroll-shadow", className)}

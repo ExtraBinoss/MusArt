@@ -99,9 +99,32 @@ it("represents ten thousand selected layers with one accurate collective frame a
   expect(frame.style.borderWidth).toBe("0.5px");
   expect(frame.querySelector("span")).toHaveStyle({ transform: "translateX(-50%) scale(0.5)" });
   act(() => createPlaybackSource(d.engine).set({ page: d.page, assets: {} }));
-  expect(frame).toHaveStyle({ display: "none" });
+  expect(frame.style.display).toBe("");
+  expect(frame.style.opacity).toBe("0.2");
   act(() => createPlaybackSource(d.engine).set(null));
   expect(frame.style.display).toBe("");
   unmount();
   expect(d.listeners.size).toBe(0);
+});
+
+it("fades selected handles during playback, removes their editing targets and restores them on pause", () => {
+  const d = source(1),
+    onHandle = vi.fn();
+  const mount = render(
+    <SelectionOverlays {...d} selected={d.page.layers} zoom={1} onHandle={onHandle} />,
+  );
+  const handle = screen.getAllByRole("button")[0]!;
+  act(() => createPlaybackSource(d.engine).set({ page: d.page, assets: {} }));
+  const overlays = mount.container.querySelector<HTMLElement>(".canvas-selection-overlays")!;
+  expect(overlays).toHaveAttribute("data-playback", "true");
+  expect(overlays.inert).toBe(true);
+  expect(handle).toBeDisabled();
+  fireEvent.pointerDown(handle);
+  expect(onHandle).not.toHaveBeenCalled();
+  act(() => createPlaybackSource(d.engine).set(null));
+  expect(overlays.inert).toBe(false);
+  expect(handle).toBeEnabled();
+  fireEvent.pointerDown(handle);
+  expect(onHandle).toHaveBeenCalledOnce();
+  mount.unmount();
 });

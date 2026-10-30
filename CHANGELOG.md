@@ -17,7 +17,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 - Checkpointed the internal authored-Motion export and audio-mixing modules with focused lifecycle tests; native encoded-output verification and editor wiring remain unfinished.
 
-- Added a per-composition Motion timeline with virtualized layer/property rows, trimming and movement, key selection, property diamonds, automatic subsequent keys and easing editors. Playback, scrubbing and continuous edits use imperative presentation subscriptions; hidden timeline state is retained with React Activity.
+- Added a per-composition Motion timeline with virtualized layer/property rows, trimming and movement, key selection, property diamonds, automatic subsequent keys and easing editors. Playback, scrubbing and continuous edits use imperative presentation subscriptions; a retained dock keeps the complete transport/ruler header usable when the body is folded.
 - Added headless-built In Bloom and Motion Stress Lab templates with grouped imagery/video, masks, animated text/effects and every easing family. The gallery filters Static/Motion templates, validates original-media hashes and opens each as an independent project.
 - Added a split Export action for editing-history Timelapse, with a dedicated replay dialog and a 1–30-second output duration. Authored Motion export remains a separate unfinished milestone.
 - Added pure TypeScript video asset descriptions, source in-points and per-track audio settings to Motion frame plans. Prepared engine transactions validate before persistence, reject stale publication and publish one undoable change only after a successful commit.
@@ -32,15 +32,31 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 - Matched saved-project captions to template cards with a title and resolution on the left, the actual Static/Motion mode on the right, and theme-aware fading. Lightweight per-artboard mode metadata comes from existing bounded manifest reads; legacy artboards remain Static and listing never hydrates originals or history.
 
 - The canvas logo now opens the shared creation dialog directly over the editor. Cancelling returns to the same canvas without mounting the project library or changing the document. The project-name menu keeps an always-available Projects action on desktop and touch layouts.
+
+- Integrated the verified Motion UI checkpoint (`88675a9`) with the mobile editor, keeping project-scoped layout/zoom preferences, dock Pin and hover behavior, compact mobile controls and horizontal scroll shadows. Mobile single-panel layouts suspend desktop split restoration and never overwrite the saved desktop proportions. Later Motion work-in-progress checkpoints remain outside this integration.
+
 - Reorganized the compact mobile timeline with a smaller label gutter, touch-sized rows, a full-width transport toolbar and a separate zoom control. Shared scroll shadows now cover horizontal overflow while keeping sticky labels and native scrollbar controls clear.
 - Kept the desktop tool dock inside the available canvas height below the project controls, added hover-to-scroll overflow arrows with the shared scroll shadows, and animated floating controls away from visible rulers. Unified floating-control sizes and moved zoom tooltips below their buttons.
+- Restore each project's workspace/sidebar split, Motion panel height and timeline zoom from small, versioned local preferences. Completed resize gestures and debounced wheel zoom persist separately from documents and undo history; stale restores cannot overwrite newer gestures and project deletion removes preferences atomically.
+- Timeline row/property hover highlights evaluated artwork without changing selection or history. Selection and hover decorations remain at 20% opacity during playback, omit absent or hidden layers and disable editing targets; track trim grips appear on hover.
+- Portaled effect submenus and made sibling Effect/Adjustment hover switch reliably. Restored Select up/down controls while retaining predictable menu height, native vertical scrolling and themed scroll shadows.
+
+- Added a live timeline peek with hover intent, a single Pin control, an overlay above the inspector and critically damped spring transitions. Switching an artboard from Static to Motion pins it automatically; leaving slowly near its resize handle preserves access, while a fast exit dismisses the unpinned body.
+- Fade the timeline resize grip out when a panel transition begins and back in after all dock/layout animation settles, while keeping it available during manual resizing.
+- Used the supplied Static/Motion SVGs with larger, thicker strokes and made only the timeline's bottom scrollbar thinner at rest, expanding its painted thumb on hover without changing scroll geometry.
+- Kept the compact Layers appearance row permanently visible and moved creation/management actions into its header, removing the repeated footer.
+- Keyframe drags fade interpolation glyphs, redraw bounded neighboring links from the shared timing draft and temporarily show the key's live time in the transport counter. Exact numeric values update immediately with lightweight reduced-motion-aware feedback and no React animation-frame commits.
+
+- Restored the existing MusArt blue and made the timeline zoom slider’s filled portion primary while keeping its remaining rail neutral.
+
+- Matched the supplied Figma Motion selection references: tracks and keyframe connectors stay neutral at rest, selected tracks use their media color, selected keys are filled and unselected keys remain outlined. Playback controls retain the reference order and a discoverable time-format action.
 
 - Rebuilt the gradient picker with shared Solid/Gradient segmented controls, draggable color stops and compact position, hex and opacity rows, preserving imperative previews, cancellation and one-step undo.
 - Refined Motion easing editors with hover curve previews, shared glass control points and reliable nested-select ownership. Ordinary controls use neutral theme states, tracks distinguish image/video media colors, and scroll shadows clear the scrollbars without layout reads on every scroll event.
 - Added themed keyframe tooltips after 500 ms and live composition previews while retiming keys. The headless retiming draft reuses unaffected compiled layers and interpolation segments; the editor coalesces evaluation per frame, cancels stale work and commits one undoable edit on release.
 
 - Prepare the same Three.js compositing/effect/text pipelines asynchronously before drawing, including bounded Motion sources that first appear from zero opacity. Reuse analytical text outlines, materials and placement buffers across continuous layout animation when glyph identity is unchanged. WebGPU/WebGL pixel-equivalence witnesses pass; full-template performance acceptance remains unfinished.
-- Updated shared Radix sliders and switches with the compact glass controls adapted from Converta, preserving keyboard interaction, disabled states, reduced motion and component provenance. Sliders can subscribe directly to presentation values; timeline zoom uses a neutral track. Primary controls now consistently use MusArt's action color, and tooltips use the active popover theme.
+- Updated shared Radix sliders and switches with the compact glass controls adapted from Converta, preserving keyboard interaction, disabled states, reduced motion and component provenance. Sliders can subscribe directly to presentation values; timeline zoom uses a primary fill and neutral remaining rail. Primary controls consistently use MusArt's action color, and tooltips use the active popover theme.
 - Moved the Static/Motion control below the active artboard with screen-sized captions and compact icon tooltips when zoomed out. Canvas zoom controls sit at the upper right; timeline visibility is isolated in a Jotai/Motion dock with transform-only entrance and exit animation.
 - Prepared the isolated Motion/video workstream with a verbatim request record, supplied Figma references, primary-source UX research, traceable requirements and dependency-ordered agent checklists. The proposed architecture preserves per-artboard layers and deterministic time, requires a generic headless-capable animation engine and Mediabunny export, and separates the simplified 1–30-second Timelapse workflow. The referenced checklists distinguish implemented domains from the remaining media and performance gates.
 - Renamed the effect to "Noise" in English and "Bruit" in French, with matching documentation names.
@@ -61,6 +77,15 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 - Locked artwork remains inspectable on the canvas with a constant-size lock badge and no editing handles. Layer rows expose persistent protection indicators, while the inspector and effect/mask popovers identify blocking parent locks and unlock only that chain in one undoable transaction.
 
 ### Fixed
+
+- Rejected colliding keyframe drag candidates before moving their markers, and retired all pending marker/link/tooltip previews when playback or another presentation replaces the timing draft. The last valid preview remains coherent and invalid releases never add history.
+- Allowed the persistent canvas timeline button to dismiss an already pinned panel, returning to the live header without a layout jump or a duplicate expand button.
+
+- Horizontal keyframe links now resize and reconnect from the same frame-coalesced headless timing draft as the artwork, including reversed movement and reordered keys; cancellation restores the original controls without adding history.
+
+- Kept unselected keyframes and easing connectors neutral even on selected layers, strengthened connector contrast and adapted selected-key accents to the current theme. Expanded the compact opacity field so its percentage remains readable beside a Motion diamond.
+
+- Keyframe tooltips now show the live snapped time during dragging and restore their original value on cancellation, without publishing pointer movement through React.
 
 - Integrated the latest main selection, effect-control and popover performance fixes into the Motion branch, preserving timed authoring, the simplified Timelapse export flow and prepared-transaction safety.
 

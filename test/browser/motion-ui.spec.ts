@@ -83,6 +83,8 @@ async function load(page: Page, empty = false, project = fixture(empty)) {
   await expect(page.locator('.canvas-artboard canvas[data-renderer-ready="true"]')).toBeVisible({
     timeout: 20000,
   });
+  await page.getByRole("button", { name: "Épingler la timeline", exact: true }).click();
+  await expect(page.locator(".motion-timeline-dock")).toHaveAttribute("data-motion-pinned", "true");
 }
 
 test("dark Motion ruler stays clipped, follows playback at high zoom, and keeps canvas roots quiet", async ({
@@ -171,11 +173,17 @@ test("dark Motion ruler stays clipped, follows playback at high zoom, and keeps 
   expect(clipHeight).toBeGreaterThan(initial.height - 40);
 
   const beforeToggle = await commits(page);
-  await page.getByRole("button", { name: "Fermer la timeline", exact: true }).click();
-  await expect(page.locator(".motion-timeline-dock")).toBeHidden();
+  await page.locator(".canvas-timeline-toggle").click();
+  await expect(page.locator(".motion-timeline-dock")).toHaveAttribute(
+    "data-motion-presence",
+    "peek",
+  );
   await expect(page.locator(".canvas-timeline-toggle")).toBeFocused();
   await page.locator(".canvas-timeline-toggle").click();
-  await expect(page.locator(".motion-timeline-dock")).toHaveCSS("opacity", "1");
+  await expect(page.locator(".motion-timeline-dock")).toHaveAttribute(
+    "data-motion-expanded",
+    "true",
+  );
   expect(await commits(page)).toEqual(beforeToggle);
   expect(errors).toEqual([]);
   const reads = await page.evaluate(() => window.__musartVideoReadbacks);
@@ -211,8 +219,12 @@ test("empty timeline and artboard controls remain legible at compact viewports a
   await expect(ruler).toHaveCSS("box-shadow", "none");
   const panel = page.getByRole("region", { name: "Timeline", exact: true });
   const before = await commits(page);
-  await page.getByRole("button", { name: "Fermer la timeline", exact: true }).click();
-  await expect(panel).toBeHidden();
+  await page.locator(".canvas-timeline-toggle").click();
+  await expect(page.locator(".motion-timeline-dock")).toHaveAttribute(
+    "data-motion-presence",
+    "peek",
+  );
+  await expect(page.getByRole("button", { name: "Lire", exact: true })).toBeVisible();
   await page.locator(".canvas-timeline-toggle").click();
   await expect(panel).toBeVisible();
   await expect(page.locator(".motion-timeline-dock")).toHaveCSS("opacity", "1");
@@ -345,13 +357,34 @@ test("easing editors keep portal ownership, preview presets and use neutral time
   }
   await load(page, false, project);
   await expect(page.locator('.canvas-artboard canvas[data-renderer-ready="true"]')).toBeVisible();
+  // Layer order is reversed; reach the actual property row through the virtual viewport.
+  await page.locator(".motion-timeline-scroll").evaluate((node) => {
+    node.scrollTop = node.scrollHeight;
+  });
+  const cardTrack = page.getByRole("button", {
+    name: "Intervalle actif de Motion card",
+    exact: true,
+  });
+  const neutralColor = await cardTrack.evaluate((node) => getComputedStyle(node).backgroundColor);
+  const neutralChannels = neutralColor
+    .match(/[\d.]+/g)!
+    .slice(0, 3)
+    .map(Number);
+  expect(neutralChannels[0]).toBe(neutralChannels[1]);
+  expect(neutralChannels[1]).toBe(neutralChannels[2]);
+  await page.getByRole("button", { name: "Sélectionner Motion card", exact: true }).click();
+  const selectedColor = await cardTrack.evaluate((node) => getComputedStyle(node).backgroundColor);
+  expect(selectedColor).not.toBe(neutralColor);
   await page.locator(".motion-easing-segment").first().click();
-  const editor = page.getByRole("dialog", { name: "Interpolation", exact: true });
+  // A nested modal Select intentionally hides the parent from the accessibility tree.
+  const editor = page.locator(".motion-easing-popover");
+  await expect(editor).toHaveAttribute("aria-label", "Interpolation");
   await editor.getByText("Contrôle la transition vers cette image clé.").click();
   await expect(editor).toBeVisible();
   await expect(page.locator(".motion-marquee")).toHaveCount(0);
   const before = await page.evaluate(() => window.musart!.snapshot().revision);
-  const select = editor.getByRole("combobox", { name: "Courbe d’interpolation" });
+  const select = editor.locator('[role="combobox"]');
+  await expect(select).toHaveAccessibleName("Courbe d’interpolation");
   const originalLabel = await select.innerText();
   const curve = editor.locator(".motion-easing-curve"),
     originalCurve = await curve.getAttribute("d");
@@ -422,6 +455,9 @@ test("easing editors keep portal ownership, preview presets and use neutral time
   await expect(track).toHaveCSS("cursor", "grabbing");
   await page.mouse.up();
   await expect(track).not.toHaveAttribute("data-dragging");
+  await page.locator(".motion-timeline-scroll").evaluate((node) => {
+    node.scrollTop = 0;
+  });
   const zoom = page.getByRole("slider", { name: "Zoom de la timeline", exact: true });
   await zoom.focus();
   await page.keyboard.press("End");

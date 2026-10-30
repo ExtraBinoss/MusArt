@@ -2,6 +2,10 @@ import { registerFeatureTranslations } from "../feature-resources";
 
 export const messages = {
   en: {
+    projectPreferencesLoadFailed:
+      "Panel sizes and timeline zoom could not be restored for this project. Your document is still available.",
+    projectPreferencesSaveFailed:
+      "Panel sizes and timeline zoom could not be saved for this project. Check local storage before reopening it.",
     gpuUnavailable: "GPU rendering is unavailable. Reload to try again.",
     gpuError: "GPU rendering unavailable: {{message}}",
     staleProjectWrite: "This project changed while saving. Reload it before retrying your changes.",
@@ -38,6 +42,10 @@ export const messages = {
     videoBusy: "The video decoder is still finishing another request. Wait a moment, then retry.",
   },
   fr: {
+    projectPreferencesLoadFailed:
+      "Les tailles des panneaux et le zoom de la timeline n’ont pas pu être restaurés pour ce projet. Votre document reste disponible.",
+    projectPreferencesSaveFailed:
+      "Les tailles des panneaux et le zoom de la timeline n’ont pas pu être enregistrés pour ce projet. Vérifiez le stockage local avant de le rouvrir.",
     gpuUnavailable: "Le rendu GPU est indisponible. Rechargez pour réessayer.",
     gpuError: "Rendu GPU indisponible : {{message}}",
     staleProjectWrite:

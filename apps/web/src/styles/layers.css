@@ -17,6 +17,11 @@
   font-weight: 600;
   margin: 0;
 }
+.layers-panel > .panel-heading {
+  height: 36px;
+  padding: 0 8px 0 12px;
+  border-bottom: 1px solid var(--border);
+}
 .small-count {
   color: var(--muted-foreground);
   font-size: 10px;
@@ -86,29 +91,17 @@
 .layers-footer {
   --layer-action-size: 30px;
   --layer-action-padding: 7px;
-  height: 48px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  padding: 8px;
-  gap: 8px;
+  margin-left: auto;
+  gap: 2px;
   color: var(--muted-foreground);
-  border-top: 1px solid var(--border);
-}
-.layers-footer > span {
-  font-size: 10px;
 }
 .layers-footer > div {
   display: flex;
   align-items: center;
-  gap: 6px;
-}
-.layers-footer > div:last-child {
-  margin-left: auto;
-}
-.layers-footer > .layer-create-actions {
-  padding-right: 10px;
-  border-right: 1px solid var(--border);
+  gap: 2px;
 }
 .layers-footer .icon-button {
   width: var(--layer-action-size);
@@ -205,13 +198,21 @@
 
 .layer-compositing {
   display: grid;
-  grid-template-columns: 96px minmax(0, 1fr);
+  grid-template-columns: 132px minmax(0, 1fr);
   gap: 8px;
-  padding: 3px 12px 10px;
+  padding: 1px 12px 0;
   border-bottom: 1px solid var(--border);
 }
 .layer-compositing .number-field {
   height: 30px;
+}
+.layer-compositing .number-scrub {
+  min-width: 24px;
+  padding-inline: 5px;
+}
+.layer-compositing .number-unit {
+  min-width: 20px;
+  padding-inline: 3px;
 }
 .layer-compositing [data-slot="select-trigger"] {
   height: 30px;

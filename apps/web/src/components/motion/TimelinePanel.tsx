@@ -8,7 +8,15 @@ import {
   useState,
   type PointerEvent,
 } from "react";
-import { ChevronsDownUp, ChevronsUpDown, PanelBottom, PanelBottomClose } from "lucide-react";
+import {
+  ChevronsDownUp,
+  ChevronsUpDown,
+  PanelBottom,
+  PanelBottomClose,
+  PanelBottomOpen,
+  Pin,
+  PinOff,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   compareMotionTime,
@@ -17,9 +25,8 @@ import {
   type SessionSnapshot,
 } from "@musart/core";
 import { TimelineIconButton } from "./ControlButton";
-import { Slider } from "../ui/slider";
-import { Kbd, KbdGroup } from "../ui/kbd";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import { TooltipProvider } from "../ui/tooltip";
+import { TimelineZoomControl } from "./TimelineZoomControl";
 import { useVirtualList } from "../shared/scroll/use-virtual-list";
 import { ScrollShadow } from "../shared/scroll/ScrollShadow";
 import { useRenderMetrics } from "../../state/session/render-metrics";
@@ -29,7 +36,8 @@ import { TimelineRuler } from "./TimelineRuler";
 import { projectTimelineRows } from "./tree";
 import type { TimelineTransport, TimelineUnit } from "./model";
 import { createTimelineGestures } from "./gestures";
-import { clampTimelineHeight, readTimelineHeight, rememberTimelineHeight } from "./height";
+import { clampTimelineHeight } from "./height";
+import { useTimelinePreferences } from "./preferences";
 import "./messages";
 import "./timeline.css";
 import "./timeline-compact.css";
@@ -41,6 +49,9 @@ export function TimelinePanel({
   snapshot,
   transport,
   onClose,
+  onPin,
+  pinned = false,
+  expanded = true,
   active = true,
   compact = false,
 }: {
@@ -48,12 +59,14 @@ export function TimelinePanel({
   snapshot: SessionSnapshot;
   transport: TimelineTransport;
   onClose: () => void;
+  onPin?: () => void;
+  pinned?: boolean;
+  expanded?: boolean;
   active?: boolean;
   compact?: boolean;
 }) {
   const GUTTER = compact ? 120 : 244;
   const rowHeight = compact ? 32 : 24;
-  const actionWidth = compact ? 0 : ACTION_WIDTH;
   const { t } = useTranslation("motion");
   const panel = useRef<HTMLElement>(null),
     viewport = useRef<HTMLDivElement>(null),
@@ -67,15 +80,25 @@ export function TimelinePanel({
   const [, refreshSelection] = useReducer((value: number) => value + 1, 0);
   const [interactionError, setInteractionError] = useState("");
   const [unit, setUnit] = useState<TimelineUnit>("ms");
-  const [zoom, setZoom] = useState(120);
+  const {
+    zoom,
+    setZoom,
+    height,
+    setHeight,
+    protectZoom,
+    protectHeight,
+    saveZoom,
+    saveHeight,
+    fitHeight,
+  } = useTimelinePreferences(engine);
   const committedZoom = useRef(120),
     desiredZoom = useRef(120);
   const zoomAnchor = useRef<{ time: number; x: number } | null>(null);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const [view, setView] = useState({ left: 0, width: 900 });
-  const [height, setHeight] = useState(() => readTimelineHeight(engine, window.innerHeight));
   const resize = useRef<{ pointer: number; y: number; height: number } | null>(null);
   const page = snapshot.project.pages.find((item) => item.id === snapshot.pageId)!;
+  const actionWidth = compact ? 0 : onPin ? 80 : ACTION_WIDTH;
   const duration = page.motion ? motionTimeToSeconds(page.motion.duration) : 2;
   const width = Math.max(view.width, Math.min(1_000_000, duration * zoom + actionWidth + 64));
   const scale = zoom;
@@ -98,6 +121,7 @@ export function TimelinePanel({
     const wheel = (event: WheelEvent) => {
       if (!event.ctrlKey && !event.metaKey) return;
       event.preventDefault();
+      protectZoom();
       const x = Math.max(0, event.clientX - node.getBoundingClientRect().left - GUTTER);
       zoomAnchor.current = { time: (horizontalScroll.current + x) / committedZoom.current, x };
       const next = Math.max(
@@ -117,6 +141,7 @@ export function TimelinePanel({
         frame = requestAnimationFrame(() => {
           frame = null;
           setZoom(desiredZoom.current);
+          saveZoom(desiredZoom.current, 600);
         });
     };
     node.addEventListener("wheel", wheel, { passive: false });
@@ -124,7 +149,7 @@ export function TimelinePanel({
       node.removeEventListener("wheel", wheel);
       if (frame !== null) cancelAnimationFrame(frame);
     };
-  }, [active, GUTTER]);
+  }, [active, GUTTER, protectZoom, saveZoom, setZoom]);
   const gestures = useMemo(
     () =>
       createTimelineGestures({
@@ -145,9 +170,10 @@ export function TimelinePanel({
         feedback: feedback.current,
         scale,
         gutter: GUTTER,
+        timeWidth: view.width,
       });
     else gestures.dispose();
-  }, [gestures, scale, active, GUTTER]);
+  }, [gestures, scale, active, GUTTER, view.width]);
   useLayoutEffect(() => {
     if (active) return;
     const origin = resize.current;
@@ -173,11 +199,11 @@ export function TimelinePanel({
       if (active && separator?.hasPointerCapture(active.pointer))
         separator.releasePointerCapture(active.pointer);
       if (separator) delete separator.dataset.separator;
-      setHeight(readTimelineHeight(engine, window.innerHeight));
+      fitHeight();
     };
     window.addEventListener("resize", fit);
     return () => window.removeEventListener("resize", fit);
-  }, [engine]);
+  }, [fitHeight]);
   const rows = useMemo(() => projectTimelineRows(page, collapsed), [page, collapsed]);
   const selected = useMemo(() => new Set(snapshot.selection), [snapshot.selection]);
   const virtual = useVirtualList(rows.length, rowHeight, viewport, 5);
@@ -277,7 +303,7 @@ export function TimelinePanel({
       : parseFloat(panel.current?.style.height ?? String(height));
     resize.current = null;
     delete event.currentTarget.dataset.separator;
-    if (!cancel) rememberTimelineHeight(engine, value, window.innerHeight);
+    if (!cancel) saveHeight(value);
     setHeight(value);
     if (panel.current) panel.current.style.height = `${value}px`;
     if (event.currentTarget.hasPointerCapture(event.pointerId))
@@ -295,32 +321,17 @@ export function TimelinePanel({
     />
   );
   const zoomControl = (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Slider
-          className="motion-zoom"
-          tone="neutral"
-          disabled={!active}
-          min={20}
-          max={640}
-          step={10}
-          value={[zoom]}
-          aria-label={t("zoom")}
-          onValueChange={(values) => {
-            zoomAnchor.current = null;
-            desiredZoom.current = values[0] ?? 120;
-            setZoom(values[0] ?? 120);
-          }}
-        />
-      </TooltipTrigger>
-      <TooltipContent side="top" className="motion-control-tooltip">
-        <span>{t("zoom")}</span>
-        <KbdGroup>
-          <Kbd>Ctrl / ⌘</Kbd>
-          <Kbd>{t("wheel")}</Kbd>
-        </KbdGroup>
-      </TooltipContent>
-    </Tooltip>
+    <TimelineZoomControl
+      zoom={zoom}
+      disabled={!active}
+      onChange={(next) => {
+        protectZoom();
+        zoomAnchor.current = null;
+        desiredZoom.current = next;
+        setZoom(next);
+      }}
+      onCommit={saveZoom}
+    />
   );
   return (
     <TooltipProvider delayDuration={250}>
@@ -380,6 +391,7 @@ export function TimelinePanel({
           onPointerDown={(event) => {
             if (!active || event.button !== 0) return;
             event.preventDefault();
+            protectHeight();
             event.currentTarget.setPointerCapture(event.pointerId);
             resize.current = { pointer: event.pointerId, y: event.clientY, height };
             event.currentTarget.dataset.separator = "active";
@@ -407,7 +419,7 @@ export function TimelinePanel({
             if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
             event.preventDefault();
             const next = size(height + (event.key === "ArrowUp" ? 20 : -20));
-            rememberTimelineHeight(engine, next, window.innerHeight);
+            saveHeight(next);
             setHeight(next);
           }}
         >
@@ -459,11 +471,25 @@ export function TimelinePanel({
                   unit={unit}
                 />
                 {!compact && (
-                  <div className="motion-timeline-actions">
+                  <div className="motion-timeline-actions" data-has-pin={Boolean(onPin)}>
                     {zoomControl}
-                    <TimelineIconButton label={t("close")} onClick={onClose}>
-                      <PanelBottomClose size={14} />
-                    </TimelineIconButton>
+                    {onPin ? (
+                      <TimelineIconButton
+                        label={t(pinned ? "unpin" : "pin")}
+                        onClick={onPin}
+                        aria-pressed={pinned}
+                      >
+                        {pinned ? <PinOff size={14} /> : <Pin size={14} />}
+                      </TimelineIconButton>
+                    ) : (
+                      <TimelineIconButton
+                        label={t(expanded ? "close" : "open")}
+                        onClick={onClose}
+                        aria-expanded={expanded}
+                      >
+                        {expanded ? <PanelBottomClose size={14} /> : <PanelBottomOpen size={14} />}
+                      </TimelineIconButton>
+                    )}
                   </div>
                 )}
               </div>
@@ -518,6 +544,8 @@ export function TimelinePanel({
                         (view.width - actionWidth - 48) / Math.max(0.001, end - start),
                       ),
                     );
+                    protectZoom();
+                    saveZoom(next);
                     if (next === scale && viewport.current) {
                       horizontalScroll.current = Math.max(0, start * next - 24);
                       viewport.current.scrollLeft = horizontalScroll.current;

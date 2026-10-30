@@ -4,6 +4,7 @@ import { createLayerGeometryIndex, type Composition, type Layer } from "@musart/
 import { LockKeyhole } from "lucide-react";
 import type { SceneController } from "../session/scene-controller";
 import type { ViewSource } from "../viewport/motion";
+import "./selection-presentation.css";
 
 interface Props {
   page: Composition;
@@ -43,7 +44,16 @@ function CollectiveFrame({
       if (!element) return;
       if (previous !== current.page) {
         const index = createLayerGeometryIndex(current.page);
-        const bounds = index.collectiveBounds(selected.map((layer) => layer.id));
+        const bounds = index.collectiveBounds(
+          selected
+            .filter(
+              (layer) =>
+                index.byId.has(layer.id) &&
+                index.isVisible(layer.id) &&
+                !index.get(layer.id).maskSource,
+            )
+            .map((layer) => layer.id),
+        );
         left = bounds?.x ?? Infinity;
         top = bounds?.y ?? Infinity;
         right = bounds ? bounds.x + bounds.width : -Infinity;
@@ -52,7 +62,8 @@ function CollectiveFrame({
       previous = current.page;
       previousZoom = scale;
       previousPlayback = current.playback;
-      element.style.display = current.playback || !Number.isFinite(left) ? "none" : "";
+      element.style.display = !Number.isFinite(left) ? "none" : "";
+      element.style.opacity = current.playback ? ".2" : "1";
       if (!Number.isFinite(left)) return;
       Object.assign(element.style, {
         left: `${left}px`,
@@ -98,9 +109,25 @@ export function SelectionOverlays({
   onHandle,
 }: Props) {
   const { t } = useTranslation();
+  const root = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    let previous: boolean | undefined;
+    const paint = () => {
+      const node = root.current,
+        playback = Boolean(controller.read().playback);
+      if (!node || previous === playback) return;
+      previous = playback;
+      node.dataset.playback = String(playback);
+      node.inert = playback;
+      for (const handle of node.querySelectorAll<HTMLButtonElement>(".canvas-handle"))
+        handle.disabled = playback;
+    };
+    paint();
+    return controller.subscribe(paint);
+  }, [controller, selected]);
   const index = createLayerGeometryIndex(page);
   return (
-    <div className="canvas-selection-overlays" data-selection-size={selected.length}>
+    <div ref={root} className="canvas-selection-overlays" data-selection-size={selected.length}>
       {selected.length > MAX_INDIVIDUAL_FRAMES ? (
         <CollectiveFrame
           selected={selected}
@@ -116,6 +143,7 @@ export function SelectionOverlays({
             data-layer-id={layer.id}
             data-locked={layer.locked || index.isLocked(layer.id) || undefined}
             style={{
+              display: index.isVisible(layer.id) && !layer.maskSource ? undefined : "none",
               width: layer.width,
               height: layer.height,
               transform: `matrix(${index.worldMatrix(layer.id).join(",")})`,
@@ -143,7 +171,9 @@ export function SelectionOverlays({
                   style={{ transform: `scale(${1 / zoom})` }}
                   data-layer-id={layer.id}
                   data-handle={handle}
-                  onPointerDown={onHandle}
+                  onPointerDown={(event) => {
+                    if (!controller.read().playback) onHandle(event);
+                  }}
                 />
               ))}
             {selected.length === 1 && (

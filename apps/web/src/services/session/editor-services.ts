@@ -119,6 +119,7 @@ export function createEditorServices(
     engine.load(project);
   };
   return {
+    projectPreferences: store.preferences,
     pixelSelection,
     mediaResolverFor,
     openMediaProject: createMediaProjectOpener(engine, {

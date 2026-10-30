@@ -96,8 +96,16 @@ export function CompositionMode({
           label={t("mode")}
           onValueChange={choose}
           items={[
-            { value: "static", label: t("static"), icon: <ModeIcon mode="static" size={15} /> },
-            { value: "motion", label: t("motion"), icon: <ModeIcon mode="motion" size={15} /> },
+            {
+              value: "static",
+              label: t("static"),
+              icon: <ModeIcon mode="static" size={18} data-mode-icon="static" />,
+            },
+            {
+              value: "motion",
+              label: t("motion"),
+              icon: <ModeIcon mode="motion" size={18} data-mode-icon="motion" />,
+            },
           ]}
         />
       )}

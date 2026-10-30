@@ -71,7 +71,17 @@ export function KeyframeMarker({
             <Diamond size={8} aria-hidden />
           </button>
         </TooltipTrigger>
-        <TooltipContent side="top">{label}</TooltipContent>
+        <TooltipContent side="top">
+          <span>{name}</span>
+          {" · "}
+          <span
+            data-motion-key-tooltip={marker.key.id}
+            data-time-unit={unit}
+            className="inline-block min-w-[7ch] tabular-nums"
+          >
+            {formatTimelineTime(marker.key.time, unit)} {unit}
+          </span>
+        </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

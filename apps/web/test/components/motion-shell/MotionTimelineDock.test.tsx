@@ -7,99 +7,112 @@ import { timelineOpenAtom } from "../../../src/state/motion/timeline-state";
 import { createMotionTransport } from "../../../src/services/motion/transport";
 import { setup } from "../../support/ui";
 
-let reduced = false;
+let reduced = true;
 vi.mock("motion/react", async (original) => ({
   ...(await original<typeof import("motion/react")>()),
   useReducedMotion: () => reduced,
 }));
 afterEach(() => {
-  reduced = false;
+  reduced = true;
   vi.unstubAllGlobals();
 });
+const dock = () => document.querySelector(".motion-timeline-dock")!;
 
-test("keeps visibility in the isolated Dock and changes neither its parent nor Canvas/Inspector React commits", async () => {
+test("opens existing Motion in live peek, retains header/DOM and isolates toggle/pin from editor roots", () => {
   const d = setup(),
     app = vi.fn(),
     canvas = vi.fn(),
-    inspector = vi.fn(),
-    dock = vi.fn();
+    inspector = vi.fn();
   d.engine.execute({ type: "setCompositionMode", mode: "motion" });
   function Host() {
     app();
     return (
       <>
         <Profiler id="Canvas" onRender={canvas}>
-          <div data-canvas />
+          <div />
         </Profiler>
         <Profiler id="Inspector" onRender={inspector}>
-          <div data-inspector />
+          <div />
         </Profiler>
-        <Profiler id="Dock" onRender={dock}>
-          <MotionTimelineDock engine={d.engine} />
-        </Profiler>
+        <MotionTimelineDock engine={d.engine} />
       </>
     );
   }
   const view = d.mount(<Host />);
-  await waitFor(() => expect(screen.getByRole("region", { name: "Timeline" })).toBeVisible());
-  const parent = app.mock.calls.length,
-    canvasCount = canvas.mock.calls.length,
-    inspectorCount = inspector.mock.calls.length;
-  act(() => d.store.set(timelineOpenAtom, false));
-  const exiting = document.querySelector(".motion-timeline-dock")!;
-  expect(exiting).toHaveAttribute("inert");
-  expect(exiting).toHaveAttribute("aria-hidden", "true");
-  expect(exiting).toHaveStyle({ pointerEvents: "none" });
-  expect(exiting).toHaveAttribute("data-motion-presence", "exiting");
-  await waitFor(() => expect(exiting).toHaveStyle({ display: "none" }));
+  expect(dock()).toHaveAttribute("data-motion-presence", "peek");
+  expect(dock()).toHaveAttribute("data-motion-pinned", "false");
+  expect(dock()).toHaveAttribute("data-motion-grip-ready", "false");
+  expect(screen.getByRole("button", { name: /^Lire$/ })).toBeEnabled();
+  expect(screen.getByRole("slider", { name: "Se déplacer dans la timeline" })).toBeEnabled();
+  const panel = screen.getByRole("region", { name: "Timeline" }),
+    zoom = screen.getByRole("slider", { name: "Zoom de la timeline" }),
+    counts = [app.mock.calls.length, canvas.mock.calls.length, inspector.mock.calls.length];
   act(() => d.store.set(timelineOpenAtom, true));
-  await waitFor(() => expect(screen.getByRole("region", { name: "Timeline" })).toBeVisible());
-  expect(app).toHaveBeenCalledTimes(parent);
-  expect(canvas).toHaveBeenCalledTimes(canvasCount);
-  expect(inspector).toHaveBeenCalledTimes(inspectorCount);
-  await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 250));
-  });
-  const count = dock.mock.calls.length;
+  expect(dock()).toHaveAttribute("data-motion-expanded", "true");
+  expect(dock()).toHaveAttribute("data-motion-pinned", "false");
+  fireEvent.keyDown(zoom, { key: "ArrowRight" });
+  expect(zoom).toHaveAttribute("aria-valuenow", "130");
+  fireEvent.click(screen.getByRole("button", { name: "Épingler la timeline" }));
+  expect(dock()).toHaveAttribute("data-motion-pinned", "true");
+  fireEvent.click(screen.getByRole("button", { name: "Désépingler la timeline" }));
+  expect(dock()).toHaveAttribute("data-motion-pinned", "false");
+  act(() => d.store.set(timelineOpenAtom, false));
+  expect(dock()).toHaveAttribute("data-motion-presence", "peek");
+  expect(screen.getByRole("region", { name: "Timeline" })).toBe(panel);
+  expect(screen.getByRole("slider", { name: "Zoom de la timeline" })).toBe(zoom);
+  expect(zoom).toHaveAttribute("aria-valuenow", "130");
+  expect([app.mock.calls.length, canvas.mock.calls.length, inspector.mock.calls.length]).toEqual(
+    counts,
+  );
+  view.unmount();
+});
+
+test("clock ticks keep the peek controls live without React commits in the shell", () => {
+  const d = setup(),
+    commits = vi.fn();
+  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const view = d.mount(
+    <Profiler id="Dock" onRender={commits}>
+      <MotionTimelineDock engine={d.engine} />
+    </Profiler>,
+  );
+  const before = commits.mock.calls.length;
   const transport = createMotionTransport(d.engine);
   act(() => {
     for (let value = 1; value <= 60; value++) transport.seek({ value, rate: 60 });
   });
-  expect(dock).toHaveBeenCalledTimes(count);
+  expect(commits).toHaveBeenCalledTimes(before);
+  expect(dock()).toHaveAttribute("data-motion-presence", "peek");
   view.unmount();
 });
 
-test("keeps at most one retained scope and purges it on project/artboard change", () => {
-  reduced = true;
+test("only a successful canonical Static to Motion switch auto-pins, and each later switch repeats it", () => {
   const d = setup();
-  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
-  d.engine.execute({
-    type: "addPage",
-    page: createPage({ id: "second", layers: [createLayer("rectangle", { id: "second-item" })] }),
-  });
-  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
-  d.engine.setPage(d.page.id);
-  const before = d.engine.getSnapshot().project;
   d.mount(<MotionTimelineDock engine={d.engine} />);
-  const surface = document.querySelector(".motion-timeline-dock"),
-    panel = screen.getByRole("region", { name: "Timeline" });
-  act(() => d.engine.setPage("second"));
-  expect(document.querySelectorAll(".motion-timeline-dock")).toHaveLength(1);
-  expect(document.querySelector(".motion-timeline-dock")).not.toBe(surface);
-  expect(screen.getByRole("region", { name: "Timeline" })).not.toBe(panel);
-  expect(document.querySelector(".motion-timeline-dock")).toHaveAttribute(
-    "data-motion-scope",
-    JSON.stringify([before.id, "second"]),
+  expect(document.querySelector(".motion-timeline-dock")).toBeNull();
+  const before = d.engine.getSnapshot();
+  act(() =>
+    expect(() =>
+      d.engine.execute({ type: "setMotionDuration", duration: { value: 0, rate: 1 } }),
+    ).toThrow(),
   );
-  expect(surface?.isConnected).toBe(false);
-  expect(d.engine.getSnapshot().project).toBe(before);
-  const replacement = createProject({ id: "replacement", pages: [createPage({ id: "second" })] });
-  act(() => d.engine.load(replacement));
-  expect(document.querySelectorAll(".motion-timeline-dock").length).toBeLessThanOrEqual(1);
+  expect(d.engine.getSnapshot()).toBe(before);
+  expect(document.querySelector(".motion-timeline-dock")).toBeNull();
+  act(() => d.engine.execute({ type: "setCompositionMode", mode: "motion" }));
+  expect(dock()).toHaveAttribute("data-motion-pinned", "true");
+  expect(dock()).toHaveAttribute("data-motion-expanded", "true");
+  fireEvent.click(screen.getByRole("button", { name: "Désépingler la timeline" }));
+  const motion = d.engine.getSnapshot().project.pages[0]!.motion!;
+  const pause = vi.spyOn(createMotionTransport(d.engine), "pause");
+  act(() => d.engine.execute({ type: "setCompositionMode", mode: "static" }));
+  expect(pause).toHaveBeenCalled();
+  expect(document.querySelector(".motion-timeline-dock")).toBeNull();
+  expect(d.engine.getSnapshot().project.pages[0]!.motion!.tracks).toEqual(motion.tracks);
+  act(() => d.engine.execute({ type: "setCompositionMode", mode: "motion" }));
+  expect(dock()).toHaveAttribute("data-motion-pinned", "true");
 });
 
-test("close restores canvas-toggle focus, reduced motion stays immediate and Static pauses playback without deleting keys", async () => {
-  reduced = true;
+test("keeps only Pin in the header and lets the persistent canvas toggle dismiss a pinned dock", () => {
   const d = setup();
   d.engine.execute({ type: "setCompositionMode", mode: "motion" });
   d.mount(
@@ -108,92 +121,75 @@ test("close restores canvas-toggle focus, reduced motion stays immediate and Sta
       <MotionTimelineDock engine={d.engine} />
     </>,
   );
-  fireEvent.click(screen.getByRole("button", { name: "Fermer la timeline" }));
+  expect(screen.queryByRole("button", { name: "Ouvrir la timeline" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Fermer la timeline" })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Épingler la timeline" }));
+  act(() => d.store.set(timelineOpenAtom, false));
   expect(d.store.get(timelineOpenAtom)).toBe(false);
+  expect(dock()).toHaveAttribute("data-motion-presence", "peek");
+  expect(dock()).toHaveAttribute("data-motion-pinned", "false");
   expect(screen.getByRole("button", { name: "Timeline toggle" })).toHaveFocus();
-  await waitFor(() =>
-    expect(document.querySelector(".motion-timeline-dock")).toHaveStyle({ display: "none" }),
-  );
   act(() => d.store.set(timelineOpenAtom, true));
-  const transport = createMotionTransport(d.engine),
-    pause = vi.spyOn(transport, "pause");
-  const motion = d.engine.getSnapshot().project.pages[0]!.motion!;
-  act(() => d.engine.execute({ type: "setCompositionMode", mode: "static" }));
-  expect(pause).toHaveBeenCalled();
-  expect(d.engine.getSnapshot().project.pages[0]!.motion!.tracks).toEqual(motion.tracks);
-  await waitFor(() =>
-    expect(document.querySelector(".motion-timeline-dock")).toHaveStyle({ display: "none" }),
-  );
-  act(() => d.engine.execute({ type: "setCompositionMode", mode: "motion" }));
-  expect(screen.getByRole("region", { name: "Timeline" })).toBeVisible();
+  expect(dock()).toHaveAttribute("data-motion-expanded", "true");
 });
 
-test("lazy-mounts once, retains DOM/zoom across hide/reveal and disconnects hidden subscriptions/observers", async () => {
-  reduced = true;
+test("retains at most one scope, remembers its pin choice and cleans subscriptions/observers on unmount", () => {
   const d = setup();
   d.engine.execute({ type: "setCompositionMode", mode: "motion" });
-  d.store.set(timelineOpenAtom, false);
+  d.engine.execute({
+    type: "addPage",
+    page: createPage({ id: "second", layers: [createLayer("rectangle", { id: "second-item" })] }),
+  });
+  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  d.engine.setPage(d.page.id);
   const source = createMotionTransport(d.engine),
     subscribe = source.subscribe;
-  let activeSubscriptions = 0;
+  let subscriptions = 0;
   vi.spyOn(source, "subscribe").mockImplementation((listener) => {
-    activeSubscriptions++;
+    subscriptions++;
     const stop = subscribe(listener);
     return () => {
-      activeSubscriptions--;
+      subscriptions--;
       stop();
     };
   });
-  const observers = new Set<ResizeObserver>();
-  class TrackedResizeObserver extends ResizeObserver {
-    private readonly targets = new Set<Element>();
-    override observe(target: Element) {
-      this.targets.add(target);
-      observers.add(this);
-      super.observe(target);
-    }
-    override unobserve(target: Element) {
-      this.targets.delete(target);
-      if (!this.targets.size) observers.delete(this);
-      super.unobserve(target);
-    }
-    override disconnect() {
-      this.targets.clear();
-      observers.delete(this);
-      super.disconnect();
-    }
-  }
-  vi.stubGlobal("ResizeObserver", TrackedResizeObserver);
+  const disconnect = vi.spyOn(ResizeObserver.prototype, "disconnect");
   const view = d.mount(<MotionTimelineDock engine={d.engine} />);
-  expect(document.querySelector(".motion-timeline-dock")).toBeNull();
-  act(() => d.store.set(timelineOpenAtom, true));
-  const panel = screen.getByRole("region", { name: "Timeline" }),
-    surface = panel.parentElement!;
-  const slider = screen.getByRole("slider", { name: "Zoom de la timeline" });
-  fireEvent.keyDown(slider, { key: "ArrowRight" });
-  expect(slider).toHaveAttribute("aria-valuenow", "130");
-  expect(activeSubscriptions).toBeGreaterThan(0);
-  expect(observers.size).toBeGreaterThan(0);
-  act(() => d.store.set(timelineOpenAtom, false));
-  await waitFor(() => expect(surface).toHaveStyle({ display: "none" }));
-  expect(activeSubscriptions).toBe(0);
-  expect(observers.size).toBe(0);
-  act(() => d.engine.execute({ type: "renameProject", name: "Edit while hidden" }));
-  expect(activeSubscriptions).toBe(0);
-  act(() => d.store.set(timelineOpenAtom, true));
-  expect(screen.getByRole("region", { name: "Timeline" })).toBe(panel);
-  expect(screen.getByRole("slider", { name: "Zoom de la timeline" })).toBe(slider);
-  expect(slider).toHaveAttribute("aria-valuenow", "130");
-  expect(activeSubscriptions).toBeGreaterThan(0);
-  act(() => d.store.set(timelineOpenAtom, false));
-  await waitFor(() => expect(surface).toHaveStyle({ display: "none" }));
+  const first = dock();
+  fireEvent.click(screen.getByRole("button", { name: "Épingler la timeline" }));
+  const project = d.engine.getSnapshot().project;
+  act(() => d.engine.setPage("second"));
+  expect(document.querySelectorAll(".motion-timeline-dock")).toHaveLength(1);
+  expect(first.isConnected).toBe(false);
+  expect(dock()).toHaveAttribute("data-motion-presence", "peek");
+  act(() => d.engine.setPage(d.page.id));
+  expect(dock()).toHaveAttribute("data-motion-pinned", "true");
+  expect(d.engine.getSnapshot().project).toBe(project);
+  expect(subscriptions).toBeGreaterThan(0);
   act(() =>
-    d.engine.load(
-      createProject({ id: "replacement-hidden", pages: [createPage({ id: "different" })] }),
-    ),
+    d.engine.load(createProject({ id: "replacement", pages: [createPage({ id: "different" })] })),
   );
   expect(document.querySelector(".motion-timeline-dock")).toBeNull();
+  expect(subscriptions).toBe(0);
+  expect(disconnect).toHaveBeenCalled();
   view.unmount();
-  expect(activeSubscriptions).toBe(0);
-  expect(observers.size).toBe(0);
+});
+
+test("reverses animated entry/exit without removing the interactive header", async () => {
+  reduced = false;
+  const d = setup();
+  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const view = d.mount(<MotionTimelineDock engine={d.engine} />);
+  const panel = screen.getByRole("region", { name: "Timeline" });
+  act(() => d.store.set(timelineOpenAtom, true));
+  act(() => d.store.set(timelineOpenAtom, false));
+  act(() => d.store.set(timelineOpenAtom, true));
+  await waitFor(() => expect(dock()).toHaveAttribute("data-motion-body-hidden", "false"));
+  expect(dock()).toHaveAttribute("data-motion-animating", "true");
+  expect(dock()).toHaveAttribute("data-motion-grip-ready", "false");
+  expect(screen.getByRole("region", { name: "Timeline" })).toBe(panel);
+  expect(dock()).not.toHaveAttribute("inert");
+  await waitFor(() => expect(dock()).not.toHaveAttribute("data-motion-animating"));
+  expect(dock()).toHaveAttribute("data-motion-grip-ready", "true");
+  view.unmount();
 });

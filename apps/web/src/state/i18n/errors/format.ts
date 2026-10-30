@@ -2,6 +2,8 @@ import { i18n } from "..";
 import "./messages";
 
 const platformCodes = {
+  PROJECT_PREFERENCES_LOAD_FAILED: "projectPreferencesLoadFailed",
+  PROJECT_PREFERENCES_SAVE_FAILED: "projectPreferencesSaveFailed",
   STALE_PROJECT_WRITE: "staleProjectWrite",
   UNCERTAIN_JOURNAL_INITIALIZATION: "uncertainJournalInitialization",
   UNCERTAIN_PROJECT_WRITE: "uncertainProjectWrite",

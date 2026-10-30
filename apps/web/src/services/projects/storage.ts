@@ -31,6 +31,8 @@ import {
   StaleProjectWriteError,
 } from "./writes/revision";
 import { isProjectDeleted, retireProject } from "./lifecycle";
+import { ProjectPreferencesStore } from "./preferences/store";
+import { projectPreferencesKey } from "./preferences/schema";
 import {
   validateProject,
   isVideoAsset,
@@ -98,6 +100,7 @@ export class ProjectStore {
     () => this.db(),
     (state) => this.hash({ kind: "history", state }),
   );
+  readonly preferences = new ProjectPreferencesStore(() => this.db());
   constructor(private readonly name = "musart-studio") {}
   private db() {
     this.connection ??= openStudioDatabase(this.name).catch((error) => {
@@ -476,6 +479,7 @@ export class ProjectStore {
         for (const key of await store.index("by-project").getAllKeys(id)) await store.delete(key);
       }
       await tx.objectStore("preferences").delete(`media-original-bytes:${id}`);
+      await tx.objectStore("preferences").delete(projectPreferencesKey(id));
       if ((await tx.objectStore("preferences").get("last-project")) === id)
         await tx.objectStore("preferences").delete("last-project");
       await done;

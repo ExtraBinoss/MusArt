@@ -68,7 +68,22 @@ it("paints live CSS poses without reconstructing unchanged selection geometry on
   act(() =>
     createPlaybackSource(engine).set({ page: engine.getSnapshot().project.pages[0]!, assets: {} }),
   );
-  expect(overlay).toHaveStyle({ display: "none" });
+  expect(overlay.style.display).toBe("");
+  expect(overlay.style.opacity).toBe("0.2");
+  expect(overlay.inert).toBe(true);
+  expect(overlay.querySelector("button")).toBeDisabled();
+  act(() =>
+    createPlaybackSource(engine).set({
+      page: { ...engine.getSnapshot().project.pages[0]!, layers: [{ ...layer, visible: false }] },
+      assets: {},
+    }),
+  );
+  expect(overlay.style.display).toBe("none");
+  act(() => createPlaybackSource(engine).set(null));
+  expect(overlay.style.display).toBe("");
+  expect(overlay.style.opacity).toBe("1");
+  expect(overlay.inert).toBe(false);
+  expect(overlay.querySelector("button")).toBeEnabled();
   unmount();
   motion.dispose();
   expect(beforePaint).toHaveBeenCalled();

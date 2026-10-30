@@ -105,6 +105,7 @@ export interface ExportPreview {
   height: number;
 }
 export interface EditorServices {
+  projectPreferences?: import("../services/projects/preferences/model").ProjectPreferencesPort;
   mediaResolverFor?(this: void, projectId: string): import("@musart/render").MediaSourceResolver;
   segmentationModel?: import("../services/selection/model/contract").LocalModelPort;
   pixelSelection?: PixelSelectionPort;

@@ -17,7 +17,9 @@ import { formatUiError } from "./state/i18n/errors/format";
 import "./state/i18n";
 import "./styles/global.css";
 import { TooltipProvider } from "./components/ui/tooltip";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "./components/ui/resizable";
+import { ResizablePanel, ResizableHandle } from "./components/ui/resizable";
+import { ProjectPanelGroup } from "./components/workspace/ProjectPanelGroup";
+import { ProjectPreferencesProvider } from "./components/workspace/preferences/context";
 import { Button } from "./components/ui/button";
 import { Toolbar } from "./components/toolbar/Toolbar";
 import { MobileEditor } from "./components/workspace/mobile/MobileEditor";
@@ -92,6 +94,14 @@ export function App({ engine, services, welcome = false }: AppProps) {
     },
     [onTask],
   );
+  const onPreferencesError = useCallback(
+    (error: unknown) => {
+      void onTask(() => {
+        throw error;
+      });
+    },
+    [onTask],
+  );
   const onDropFiles = useCallback(
     (files: File[]) => {
       void onTask(() => services.importFiles(files));
@@ -129,99 +139,54 @@ export function App({ engine, services, welcome = false }: AppProps) {
     <FontLibraryProvider library={services.fonts ?? bundledFontLibrary}>
       <MobileControlsContext value={mobile}>
         <TooltipProvider delayDuration={350}>
-          <main className="musart-app" ref={element}>
-            <MotionImportConfirmation engine={engine} />
-            {!choosingProject && (
-              <>
-                <ResizablePanelGroup orientation="horizontal" className="workspace-panels">
-                  <ResizablePanel
-                    id="workspace"
-                    minSize="35%"
-                    defaultSize="77%"
-                    className="workspace"
+          <ProjectPreferencesProvider
+            projectId={projectId}
+            port={services.projectPreferences}
+            onError={onPreferencesError}
+          >
+            <main className="musart-app" ref={element}>
+              <MotionImportConfirmation engine={engine} />
+              {!choosingProject && (
+                <>
+                  <ProjectPanelGroup
+                    preference="workspaceLayout"
+                    enabled={!mobile}
+                    orientation="horizontal"
+                    className="workspace-panels"
                   >
-                    <CanvasArea
-                      services={services}
-                      engine={engine}
-                      onError={onError}
-                      onDropFiles={onDropFiles}
-                      onImagePoint={onImagePoint}
-                      fontResolver={services.fonts?.resolve}
-                    />
-                    <div className="project-trigger">
-                      <Button
-                        variant="ghost"
-                        className="brand-button floating-panel"
-                        aria-label={t("newProject")}
-                        onClick={() => setProjectMenu("newProject")}
-                      >
-                        <MusArtLogo />
-                      </Button>
-                      <ProjectPill
-                        key={projectId}
-                        engine={engine}
+                    <ResizablePanel
+                      id="workspace"
+                      minSize="35%"
+                      defaultSize="77%"
+                      className="workspace"
+                    >
+                      <CanvasArea
                         services={services}
-                        name={projectName}
-                        onTask={onTask}
-                        onProjects={() => setProjectMenu("projects")}
-                      />
-                    </div>
-                    {!mobile && (
-                      <Toolbar
                         engine={engine}
-                        services={services}
-                        onTask={onTask}
-                        onProjects={setProjectMenu}
-                        onExport={() => showExport(true)}
-                        onPanelMode={(mode) => {
-                          if (mode === "animate") showTimelapse(true);
-                        }}
-                        onImport={onImport}
+                        onError={onError}
+                        onDropFiles={onDropFiles}
+                        onImagePoint={onImagePoint}
+                        fontResolver={services.fonts?.resolve}
                       />
-                    )}
-                    {!mobile && <ToolSettings services={services} onTask={onTask} />}
-                    {processing && (
-                      <div className="processing-notice floating-panel" role="status">
-                        {t("processing")}
-                      </div>
-                    )}
-                  </ResizablePanel>
-                  {!mobile && (
-                    <>
-                      <ResizableHandle aria-label={t("panelResize")} className="sidebar-resize" />
-                      <ResizablePanel
-                        id="inspector"
-                        minSize="260px"
-                        maxSize="480px"
-                        defaultSize="320px"
-                        className="sidebar"
-                      >
-                        <EditorSidebar
+                      <div className="project-trigger">
+                        <Button
+                          variant="ghost"
+                          className="brand-button floating-panel"
+                          aria-label={t("newProject")}
+                          onClick={() => setProjectMenu("newProject")}
+                        >
+                          <MusArtLogo />
+                        </Button>
+                        <ProjectPill
+                          key={projectId}
                           engine={engine}
                           services={services}
-                          run={run}
+                          name={projectName}
                           onTask={onTask}
-                          exportOpen={exportMenu}
-                          onExportOpenChange={showExport}
-                          timelapseOpen={timelapseMenu}
-                          onTimelapseOpenChange={showTimelapse}
+                          onProjects={() => setProjectMenu("projects")}
                         />
-                      </ResizablePanel>
-                    </>
-                  )}
-                </ResizablePanelGroup>
-                {mobile ? (
-                  <MobileEditor
-                    engine={engine}
-                    services={services}
-                    run={run}
-                    onTask={onTask}
-                    exportOpen={exportMenu}
-                    onExportOpenChange={showExport}
-                    timelapseOpen={timelapseMenu}
-                    onTimelapseOpenChange={showTimelapse}
-                    tools={
-                      <>
+                      </div>
+                      {!mobile && (
                         <Toolbar
                           engine={engine}
                           services={services}
@@ -233,42 +198,98 @@ export function App({ engine, services, welcome = false }: AppProps) {
                           }}
                           onImport={onImport}
                         />
-                        <ToolSettings services={services} onTask={onTask} />
+                      )}
+                      {!mobile && <ToolSettings services={services} onTask={onTask} />}
+                      {processing && (
+                        <div className="processing-notice floating-panel" role="status">
+                          {t("processing")}
+                        </div>
+                      )}
+                    </ResizablePanel>
+                    {!mobile && (
+                      <>
+                        <ResizableHandle aria-label={t("panelResize")} className="sidebar-resize" />
+                        <ResizablePanel
+                          id="inspector"
+                          minSize="260px"
+                          maxSize="480px"
+                          defaultSize="320px"
+                          className="sidebar"
+                        >
+                          <EditorSidebar
+                            engine={engine}
+                            services={services}
+                            run={run}
+                            onTask={onTask}
+                            exportOpen={exportMenu}
+                            onExportOpenChange={showExport}
+                            timelapseOpen={timelapseMenu}
+                            onTimelapseOpenChange={showTimelapse}
+                          />
+                        </ResizablePanel>
                       </>
-                    }
+                    )}
+                  </ProjectPanelGroup>
+                  {mobile ? (
+                    <MobileEditor
+                      engine={engine}
+                      services={services}
+                      run={run}
+                      onTask={onTask}
+                      exportOpen={exportMenu}
+                      onExportOpenChange={showExport}
+                      timelapseOpen={timelapseMenu}
+                      onTimelapseOpenChange={showTimelapse}
+                      tools={
+                        <>
+                          <Toolbar
+                            engine={engine}
+                            services={services}
+                            onTask={onTask}
+                            onProjects={setProjectMenu}
+                            onExport={() => showExport(true)}
+                            onPanelMode={(mode) => {
+                              if (mode === "animate") showTimelapse(true);
+                            }}
+                            onImport={onImport}
+                          />
+                          <ToolSettings services={services} onTask={onTask} />
+                        </>
+                      }
+                    />
+                  ) : (
+                    <MotionTimelineDock engine={engine} />
+                  )}
+                  <input
+                    ref={input}
+                    type="file"
+                    multiple
+                    accept="image/*,video/*,.svg"
+                    className="sr-only"
+                    aria-label={t("import")}
+                    onChange={(event) => {
+                      if (event.target.files?.length) onDropFiles(Array.from(event.target.files));
+                      event.target.value = "";
+                    }}
                   />
-                ) : (
-                  <MotionTimelineDock engine={engine} />
-                )}
-                <input
-                  ref={input}
-                  type="file"
-                  multiple
-                  accept="image/*,video/*,.svg"
-                  className="sr-only"
-                  aria-label={t("import")}
-                  onChange={(event) => {
-                    if (event.target.files?.length) onDropFiles(Array.from(event.target.files));
-                    event.target.value = "";
+                </>
+              )}
+              <EditorNotice notice={notice} onClose={dismissNotice} />
+              {projectMenu && (
+                <ProjectMenu
+                  engine={engine}
+                  services={services}
+                  {...(choosingProject ? { welcome: true } : { projectName, projectId })}
+                  initialView={projectMenu}
+                  onClose={() => {
+                    setChoosingProject(false);
+                    setProjectMenu(null);
                   }}
+                  onTask={onTask}
                 />
-              </>
-            )}
-            <EditorNotice notice={notice} onClose={dismissNotice} />
-            {projectMenu && (
-              <ProjectMenu
-                engine={engine}
-                services={services}
-                {...(choosingProject ? { welcome: true } : { projectName, projectId })}
-                initialView={projectMenu}
-                onClose={() => {
-                  setChoosingProject(false);
-                  setProjectMenu(null);
-                }}
-                onTask={onTask}
-              />
-            )}
-          </main>
+              )}
+            </main>
+          </ProjectPreferencesProvider>
         </TooltipProvider>
       </MobileControlsContext>
     </FontLibraryProvider>

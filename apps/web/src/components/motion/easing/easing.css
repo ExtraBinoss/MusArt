@@ -151,8 +151,8 @@
   right: 2px;
   top: 12px;
   height: 1px;
-  background: currentColor;
-  opacity: 0.35;
+  background: var(--foreground);
+  opacity: 0.6;
 }
 .motion-easing-segment > svg {
   position: relative;
@@ -163,6 +163,21 @@
   border-radius: 3px;
   background: var(--background);
   stroke-width: 1.4;
+  transition: opacity 100ms ease-out;
+}
+.motion-easing-segment[data-motion-link-source] {
+  pointer-events: none;
+}
+.motion-easing-segment[data-motion-link-source]::before {
+  opacity: 0;
+}
+.motion-easing-segment[data-motion-link-source] > svg {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-easing-segment > svg {
+    transition: none;
+  }
 }
 .motion-easing-segment:hover,
 .motion-easing-segment:focus-visible {
