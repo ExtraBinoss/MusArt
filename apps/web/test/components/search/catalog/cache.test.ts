@@ -8,8 +8,10 @@ test("reuses indexed document rows across selection/binding updates and invalida
     cache = new SearchCatalog(),
     t = vi.fn((key: string) => key),
     defaults = bindingSnapshot();
+  expect(cache.size).toBe(0);
   const first = cache.read(engine.getSnapshot(), t, defaults, "fr"),
     row = first.find((item) => item.target.kind === "layer");
+  expect(cache.size).toBe(first.length);
   engine.select([layer.id]);
   expect(
     cache

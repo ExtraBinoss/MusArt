@@ -1,12 +1,14 @@
 .magic-search-trigger {
   flex-shrink: 0;
 }
-.magic-search-dialog[data-slot="dialog-content"] {
+.magic-search-dialog.floating-panel[data-slot="dialog-content"] {
   position: fixed;
   left: 50%;
   display: grid;
   border: 1px solid var(--border);
   background: var(--popover);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   outline: none;
   z-index: 51;
   top: min(15vh, 125px);
@@ -150,24 +152,41 @@
   min-width: 19px;
   height: 20px;
 }
-.magic-search-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
-  border-top: 1px solid var(--border);
-  font-size: 10px;
-  color: var(--muted-foreground);
+@keyframes search-result-enter {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.magic-search-key-hint {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  flex-shrink: 0;
+.magic-search-item-content {
+  animation: search-result-enter 130ms ease-out both;
 }
-.magic-search-key-hint [data-slot="kbd"] {
-  height: 18px;
+.magic-search-command [cmdk-item]:nth-child(2) .magic-search-item-content {
+  animation-delay: 8ms;
+}
+.magic-search-command [cmdk-item]:nth-child(3) .magic-search-item-content {
+  animation-delay: 16ms;
+}
+.magic-search-command [cmdk-item]:nth-child(4) .magic-search-item-content {
+  animation-delay: 24ms;
+}
+.magic-search-command [cmdk-item]:nth-child(5) .magic-search-item-content {
+  animation-delay: 32ms;
+}
+.magic-search-command [cmdk-item]:nth-child(n + 6) .magic-search-item-content {
+  animation-delay: 40ms;
+}
+.magic-search-surface[data-reduced-motion] .magic-search-item-content {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .magic-search-item-content {
+    animation: none;
+  }
 }
 .shortcuts-dialog[data-slot="dialog-content"] {
   max-width: 680px;

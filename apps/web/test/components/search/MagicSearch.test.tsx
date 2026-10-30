@@ -235,7 +235,8 @@ test("opens from the top-left trigger and Cmd/Ctrl K, searches localized tools a
 test("browses categories, reports empty searches and disables commands requiring a selection", async () => {
   const d = fixture(),
     input = await d.open();
-  expect(screen.getByText("Choisissez une catégorie pour en voir plus.")).toBeInTheDocument();
+  expect(screen.queryByText("Choisissez une catégorie pour en voir plus.")).not.toBeInTheDocument();
+  expect(document.querySelector(".magic-search-footer")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Édition" }));
   const duplicate = screen.getByRole("option", { name: /Dupliquer/ });
   expect(duplicate).toHaveAttribute("aria-disabled", "true");
@@ -311,7 +312,7 @@ test("hands off image imports and dialogs after closing", async () => {
   expect(d.onExport).toHaveBeenCalledOnce();
   await d.choose("new project", /Nouveau projet/);
   expect(d.onProjects).toHaveBeenLastCalledWith("newProject");
-  await d.choose("animate", /Ouvrir Animate/);
+  await d.choose("animate", /Exporter un timelapse de création/);
   expect(d.onPanelMode).toHaveBeenLastCalledWith("animate");
   await d.choose("import images", /Importer des images/);
   expect(d.onImport).toHaveBeenCalledOnce();

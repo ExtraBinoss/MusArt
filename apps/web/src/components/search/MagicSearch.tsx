@@ -1,4 +1,3 @@
-import { ScrollShadow } from "../shared/scroll/ScrollShadow";
 import {
   useCallback,
   useLayoutEffect,
@@ -12,40 +11,22 @@ import {
 import { useSetAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 import { Ellipsis } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { useReducedMotion } from "motion/react";
 import type { EnginePort } from "@musart/core";
 import type { EditorServices } from "../../state/contracts";
-import { themeAtom, toolAtom, useEngineValue } from "../../state/session/editor";
+import { themeAtom, toolAtom } from "../../state/session/editor";
 import { changeLanguage } from "../../state/i18n";
 import { importVectorFiles, VectorImportError } from "../../services/assets/vector/import-files";
 import type { TaskRunner } from "../projects/ProjectDialog";
-import { Button } from "../ui/button";
-import { DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
 import { SearchDialog } from "./SearchDialog";
 import { IconButton } from "../shared/IconButton";
-import {
-  Command,
-  CommandInput,
-  CommandList,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "../ui/command";
-import { Kbd, KbdGroup } from "../ui/kbd";
+import { SearchPalette } from "./SearchPalette";
 import { SearchCatalog } from "./catalog/cache";
 import { browserSearchTiming } from "./open-timing";
-import {
-  SEARCH_CATEGORIES,
-  type SearchCategory,
-  type SearchFilter,
-  type SearchItem,
-} from "./catalog/model";
-import { searchItems } from "./catalog/search";
+import type { SearchItem } from "./catalog/model";
 import { captureSearchItem, type PanelMode, type ProjectView, type SearchActions } from "./actions";
-import { modifierLabel } from "./shortcuts";
 import { ShortcutsDialog } from "./ShortcutsDialog";
 import { useSearchShortcuts } from "./use-search-shortcuts";
-import { getSearchIcon } from "./icons";
 import { useKeybindings } from "../../state/keybindings/use-keybindings";
 import { createCommandPort } from "../../state/keybindings/command-port";
 import {
@@ -73,7 +54,6 @@ export interface SearchSurface {
   commands: readonly SearchItem[];
   run: (id: string) => void;
 }
-const CLOSED_ITEMS: SearchItem[] = [];
 export function MagicSearch({
   engine,
   services,
@@ -94,9 +74,7 @@ export function MagicSearch({
     setTheme = useSetAtom(themeAtom);
   const [open, setOpenState] = useState(false),
     [help, setHelp] = useState(false);
-  const [query, setQuery] = useState(""),
-    [category, setCategory] = useState<SearchFilter>("all");
-  const [activeId, setActiveId] = useState("");
+  const [cycle, setCycle] = useState(0);
   const triggerId = useId();
   const searchInput = useRef<HTMLInputElement>(null),
     svgInput = useRef<HTMLInputElement>(null),
@@ -117,19 +95,16 @@ export function MagicSearch({
   const setOpen = useCallback(
     (value: boolean) => {
       if (value && pending.current) return;
-      if (value && !openRef.current)
+      if (value && !openRef.current) {
         returnFocus.current =
           document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        setCycle((current) => current + 1);
+      }
       openRef.current = value;
       if (value) timing.request();
       else timing.cancel();
       if (value && dialogRef.current) delete dialogRef.current.dataset.openPaintUpperBoundMs;
       setOpenState(value);
-      if (value) {
-        setQuery("");
-        setCategory("all");
-        setActiveId("");
-      }
     },
     [timing],
   );
@@ -138,19 +113,15 @@ export function MagicSearch({
   }, [setOpen]);
   const openShortcuts = useCallback(() => setHelp(true), []);
   useSearchShortcuts(toggle, openShortcuts);
-  // The closed shell keeps one stable projection; command surfaces subscribe independently.
-  const items = useEngineValue(engine, (snapshot) =>
-    open ? catalog.read(snapshot, t, bindings, locale) : CLOSED_ITEMS,
-  );
   const recordOpen = useCallback(
     (milliseconds: number) => {
       const dialog = dialogRef.current;
       if (!dialog) return;
       dialog.dataset.openPaintUpperBoundMs = milliseconds.toFixed(2);
-      dialog.dataset.catalogSize = String(items.length);
+      dialog.dataset.catalogSize = String(catalog.size);
       dialog.dataset.initialOptionCount = String(dialog.querySelectorAll('[role="option"]').length);
     },
-    [items.length],
+    [catalog],
   );
   useLayoutEffect(() => {
     if (open && dialogRef.current) {
@@ -158,18 +129,6 @@ export function MagicSearch({
       timing.mounted(recordOpen);
     }
   }, [open, timing, recordOpen]);
-  const results = useMemo(
-    () =>
-      open
-        ? searchItems(items, query, category)
-        : { items: [] as SearchItem[], total: items.length, browsing: true, limited: false },
-    [items, query, category, open],
-  );
-  const available = catalog.categories;
-  const activeItem =
-    results.items.find((item) => item.id === activeId && !item.disabled) ??
-    results.items.find((item) => !item.disabled);
-  const resultCategories = [...new Set(results.items.map((item) => item.category))];
   const actions: SearchActions = {
     engine,
     services,
@@ -189,21 +148,26 @@ export function MagicSearch({
   useLayoutEffect(() => {
     commandContext.current = { actions, t, bindings, locale, onTask };
   });
-  function choose(item: SearchItem) {
-    if (item.disabled || !openRef.current) return;
-    const origin = captureGestureOrigin(engine);
-    const execute = captureSearchItem(item, actions);
-    pending.current = () => {
-      if (
-        !scope.current.alive ||
-        scope.current.engine !== engine ||
-        !isGestureOriginCurrent(engine, origin)
-      )
-        throw new Error(t("keybindings:stale"));
-      return execute();
-    };
-    setOpen(false);
-  }
+  const choose = useCallback(
+    (item: SearchItem) => {
+      if (item.disabled || !openRef.current) return;
+      const current = commandContext.current;
+      const origin = captureGestureOrigin(engine);
+      const execute = captureSearchItem(item, current.actions);
+      pending.current = () => {
+        if (
+          !scope.current.alive ||
+          scope.current.engine !== engine ||
+          !isGestureOriginCurrent(engine, origin)
+        )
+          throw new Error(current.t("keybindings:stale"));
+        return execute();
+      };
+      setOpen(false);
+    },
+    [engine, setOpen],
+  );
+  const close = useCallback(() => setOpen(false), [setOpen]);
   const runCommand = useCallback(
     (id: string) => {
       const current = commandContext.current;
@@ -238,66 +202,6 @@ export function MagicSearch({
       }),
     [engine, toggle, runCommand],
   );
-  function categoryButton(value: SearchFilter) {
-    return (
-      <Button
-        key={value}
-        variant={category === value ? "secondary" : "ghost"}
-        size="sm"
-        aria-pressed={category === value}
-        onClick={() => {
-          setCategory(value);
-          setActiveId("");
-          searchInput.current?.focus();
-        }}
-      >
-        {t(`search:${value}`)}
-      </Button>
-    );
-  }
-  function renderGroup(value: SearchCategory) {
-    const group = results.items.filter((item) => item.category === value);
-    if (!group.length) return null;
-    return (
-      <CommandGroup key={value} heading={t(`search:${value}`)}>
-        {group.map((item, index) => {
-          const Icon = getSearchIcon(item);
-          return (
-            <CommandItem
-              key={item.id}
-              value={item.id}
-              disabled={Boolean(item.disabled)}
-              aria-description={item.disabled}
-              onSelect={() => choose(item)}
-            >
-              <motion.span
-                className="magic-search-item-content"
-                initial={reducedMotion ? false : { opacity: 0, y: 3, filter: "blur(3px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                transition={{
-                  duration: reducedMotion ? 0 : 0.13,
-                  delay: reducedMotion ? 0 : Math.min(index, 7) * 0.008,
-                }}
-              >
-                <Icon size={16} strokeWidth={1.6} />
-                <span className="magic-search-item-copy">
-                  <span>{item.label}</span>
-                  {(item.disabled || item.detail) && <small>{item.disabled || item.detail}</small>}
-                </span>
-                {item.shortcut && (
-                  <KbdGroup>
-                    {item.shortcut.map((key) => (
-                      <Kbd key={key}>{key === "Mod" ? modifierLabel() : key}</Kbd>
-                    ))}
-                  </KbdGroup>
-                )}
-              </motion.span>
-            </CommandItem>
-          );
-        })}
-      </CommandGroup>
-    );
-  }
   const Content = children;
   const triggerNode = useMemo(
     () => (
@@ -361,74 +265,18 @@ export function MagicSearch({
             });
         }}
       >
-        <motion.div
-          className="magic-search-surface"
-          initial={reducedMotion ? false : { opacity: 0, y: 6, scale: 0.985 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: reducedMotion ? 0 : 0.16, ease: [0.2, 0.8, 0.2, 1] }}
-        >
-          <DialogHeader className="sr-only">
-            <DialogTitle>{t("search:title")}</DialogTitle>
-            <DialogDescription>{t("search:description")}</DialogDescription>
-          </DialogHeader>
-          <Command
-            shouldFilter={false}
-            loop
-            value={activeItem?.id ?? ""}
-            onValueChange={setActiveId}
-            className="magic-search-command"
-            label={t("search:title")}
-          >
-            <div className="magic-search-input-row">
-              <CommandInput
-                ref={searchInput}
-                value={query}
-                onValueChange={(value) => {
-                  setQuery(value);
-                  setActiveId("");
-                }}
-                placeholder={t("search:search")}
-              />
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={t("close")}
-                onClick={() => setOpen(false)}
-              >
-                <Kbd>Esc</Kbd>
-              </Button>
-            </div>
-            <div
-              className="magic-search-categories"
-              role="group"
-              aria-label={t("search:categories")}
-            >
-              {categoryButton("all")}
-              {SEARCH_CATEGORIES.filter((value) => available.has(value)).map(categoryButton)}
-            </div>
-            <ScrollShadow>
-              <CommandList label={t("search:title")}>
-                <CommandEmpty>{t("search:empty")}</CommandEmpty>
-                {resultCategories.map(renderGroup)}
-              </CommandList>
-            </ScrollShadow>
-            <footer className="magic-search-footer">
-              <span aria-live="polite">
-                {results.limited
-                  ? t(results.browsing ? "search:browse" : "search:limited", {
-                      count: results.items.length,
-                    })
-                  : t("search:resultCount", { count: results.total })}
-              </span>
-              <span className="magic-search-key-hint">
-                <Kbd>↑↓</Kbd>
-                {t("search:navigate")}
-                <Kbd>↵</Kbd>
-                {t("search:choose")}
-              </span>
-            </footer>
-          </Command>
-        </motion.div>
+        <SearchPalette
+          key={cycle}
+          engine={engine}
+          catalog={catalog}
+          t={t}
+          bindings={bindings}
+          locale={locale}
+          inputRef={searchInput}
+          reduced={!!reducedMotion}
+          onChoose={choose}
+          onClose={close}
+        />
       </SearchDialog>
       {help && <ShortcutsDialog onClose={() => setHelp(false)} />}
       <input

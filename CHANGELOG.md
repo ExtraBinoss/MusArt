@@ -80,6 +80,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
+- Cmd/Ctrl+K search now keeps typing, native keyboard selection and result updates inside a retained palette, ranks only the best 80 cached matches, and preserves existing command guards. The palette uses one panel entrance and lightweight individual result animations, removes footer instructions, and types real translated effect/settings examples without React updates or idle work while hidden.
+
 - Mobile Layers sheets now use one shared header for the title, live count and existing layer actions, without a duplicate panel heading. Blend selectors stay vertically centered against the opacity slider for empty, single and multiple selections; desktop panels and Motion keyframe controls retain their behavior.
 
 - Rejected colliding keyframe drag candidates before moving their markers, and retired all pending marker/link/tooltip previews when playback or another presentation replaces the timing draft. The last valid preview remains coherent and invalid releases never add history.

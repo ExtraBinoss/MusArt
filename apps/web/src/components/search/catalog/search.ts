@@ -37,34 +37,79 @@ function wordScore(text: string, word: string): number {
   }
   return 0;
 }
+const RESULT_LIMIT = 80;
+interface RankedItem {
+  item: SearchItem;
+  order: number;
+  score: number;
+}
+// The root is the worst retained match, including stable catalog order for equal scores.
+function worse(a: RankedItem, b: RankedItem): boolean {
+  return a.score < b.score || (a.score === b.score && a.order > b.order);
+}
+function retain(heap: RankedItem[], entry: RankedItem) {
+  if (heap.length < RESULT_LIMIT) {
+    heap.push(entry);
+    let index = heap.length - 1;
+    while (index > 0) {
+      const parent = (index - 1) >> 1;
+      if (!worse(entry, heap[parent]!)) break;
+      heap[index] = heap[parent]!;
+      index = parent;
+    }
+    heap[index] = entry;
+    return;
+  }
+  if (!worse(heap[0]!, entry)) return;
+  let index = 0;
+  while (index * 2 + 1 < heap.length) {
+    let child = index * 2 + 1;
+    if (child + 1 < heap.length && worse(heap[child + 1]!, heap[child]!)) child++;
+    if (!worse(heap[child]!, entry)) break;
+    heap[index] = heap[child]!;
+    index = child;
+  }
+  heap[index] = entry;
+}
+/** Score cached normalized terms once; only the best 80 rows are retained/sorted, regardless of project size. */
 export function searchItems(items: readonly SearchItem[], query: string, category: SearchFilter) {
   const words = normalizeSearch(query).split(" ").filter(Boolean);
-  const scored = items
-    .flatMap((item, order) => {
-      if (category !== "all" && item.category !== category) return [];
-      const { label, terms } = prepareItem(item);
-      const scores = words.map((word) => wordScore(terms, word));
-      if (scores.some((score) => score === 0)) return [];
-      const score =
-        scores.reduce((sum, value) => sum + value, 0) +
-        words.reduce((sum, word) => sum + wordScore(label, word), 0);
-      return [{ item, order, score }];
-    })
-    .sort((a, b) => b.score - a.score || a.order - b.order);
-  const counts = new Map<string, number>();
-  const browsing = words.length === 0 && category === "all";
-  const visible = scored
-    .filter(({ item }) => {
+  const browsing = !words.length && category === "all";
+  const counts = new Map<SearchItem["category"], number>();
+  const visible: SearchItem[] = [],
+    heap: RankedItem[] = [];
+  let total = 0;
+  for (let order = 0; order < items.length; order++) {
+    const item = items[order]!;
+    if (category !== "all" && item.category !== category) continue;
+    if (!words.length) {
+      total++;
       const count = counts.get(item.category) ?? 0;
       counts.set(item.category, count + 1);
-      return !browsing || count < 2;
-    })
-    .slice(0, 80)
-    .map(({ item }) => item);
-  return {
-    items: visible,
-    total: scored.length,
-    browsing,
-    limited: visible.length < scored.length,
-  };
+      if (visible.length < RESULT_LIMIT && (!browsing || count < 2)) visible.push(item);
+      continue;
+    }
+    const { label, terms } = prepareItem(item);
+    let score = 0,
+      matches = true;
+    for (const word of words) {
+      const match = wordScore(terms, word);
+      if (!match) {
+        matches = false;
+        break;
+      }
+      score += match + wordScore(label, word);
+    }
+    if (!matches) continue;
+    total++;
+    // Avoid allocating a ranking entry for rows that cannot enter the bounded heap.
+    const worst = heap[0];
+    if (heap.length === RESULT_LIMIT && worst && score <= worst.score) continue;
+    retain(heap, { item, order, score });
+  }
+  if (words.length) {
+    heap.sort((a, b) => b.score - a.score || a.order - b.order);
+    for (const entry of heap) visible.push(entry.item);
+  }
+  return { items: visible, total, browsing, limited: visible.length < total };
 }
