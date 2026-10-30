@@ -4,30 +4,6 @@
   bottom: 0;
   left: 0;
   right: 0;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 3px;
-  padding: 7px 8px calc(9px + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--border);
-  background: color-mix(in srgb, var(--background) 88%, transparent);
-  backdrop-filter: blur(24px);
-}
-.mobile-nav-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  height: 49px;
-  padding: 5px 2px;
-  color: var(--muted-foreground);
-  border-radius: 12px;
-}
-.mobile-nav-item span {
-  font-size: 9px;
-  font-weight: 500;
-}
-.mobile-nav-item[aria-expanded="true"] {
-  background: var(--secondary);
-  color: var(--foreground);
 }
 .mobile-sheet {
   position: fixed;
@@ -391,21 +367,6 @@ body:has(.layer-attachment-popover [data-mobile-adjusting]) .mobile-sheet {
   min-height: 86px;
 }
 
-.mobile-nav-item {
-  position: relative;
-  isolation: isolate;
-}
-.mobile-nav-item[aria-expanded="true"] {
-  background: transparent;
-}
-.mobile-nav-indicator {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  background: var(--secondary);
-  pointer-events: none;
-}
 :is(.mobile-sheet-properties, .mobile-sheet-layers, .mobile-sheet-motion) {
   height: min(56dvh, 560px);
 }

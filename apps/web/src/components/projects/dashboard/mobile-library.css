@@ -1,0 +1,12 @@
+.mobile-library-nav {
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 767px) {
+  .project-dashboard .dashboard-main {
+    touch-action: pan-y;
+  }
+  .project-dashboard .dashboard-pane-content {
+    padding-bottom: 24px;
+  }
+}

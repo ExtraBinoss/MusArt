@@ -6,6 +6,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Added
 
+- Shared the editor's mobile bottom navigation with the project library: Projects, Templates, disabled upcoming Community and Preferences. Cancellable native swipes move the content and indicator imperatively, preserve search drafts and vertical scrolling, handle pointer-capture transfers, and select once on release. Safe areas, keyboard controls and reduced motion remain supported.
+
 - Added a shared horizontal viewport with themed scroll shadows, mouse-hover edge controls, native touch scrolling, mouse panning and wheel/keyboard navigation. It hides the scrollbar, propagates wheel input at its limits and cleans up every observer, pointer capture and animation frame.
 
 - Added reusable, one-shot `BlurReveal` and `BlurTextAnimation` UI primitives adapted from the supplied example, with inherited styling, optional child ownership, configurable CSS blur/transform/opacity, reduced motion and temporary compositor hints. Command search uses a short top-to-bottom reveal while retaining existing result elements during typing.

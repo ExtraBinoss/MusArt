@@ -1,6 +1,5 @@
 import {
   memo,
-  useId,
   useEffect,
   useMemo,
   useRef,
@@ -8,7 +7,8 @@ import {
   type ComponentProps,
   type ReactNode,
 } from "react";
-import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence } from "motion/react";
+import { MobileNavigation } from "../../shared/navigation/MobileNavigation";
 import { useAtom } from "jotai";
 import { timelineOpenAtom } from "../../../state/motion/timeline-state";
 import { Layers, SlidersHorizontal, Download, MousePointer2 } from "lucide-react";
@@ -21,7 +21,6 @@ import { ModeIcon } from "../../motion/ModeIcon";
 import { CompositionMode } from "../../motion/CompositionMode";
 import { TimelinePanel } from "../../motion/TimelinePanel";
 import { createMotionTransport } from "../../../services/motion/transport";
-import { Button } from "../../ui/button";
 import "./messages";
 import "./mobile.css";
 
@@ -37,8 +36,6 @@ const icons = {
 
 export const MobileEditor = memo(function MobileEditor({ tools, ...props }: Props) {
   const { t } = useTranslation("mobile");
-  const id = useId();
-  const reduced = useReducedMotion();
   const [exportBusy, setExportBusy] = useState(false);
   const [timelineOpen, setTimelineOpen] = useAtom(timelineOpenAtom);
   const [panel, setPanel] = useState<Panel | null>(null);
@@ -62,51 +59,40 @@ export const MobileEditor = memo(function MobileEditor({ tools, ...props }: Prop
     trigger.current?.focus({ preventScroll: true });
   }
   return (
-    <LayoutGroup id={id}>
-      <nav className="mobile-editor-nav" aria-label={t("navigation")} data-canvas-control>
-        {entries.map((item) => {
+    <>
+      <MobileNavigation
+        className="mobile-editor-nav"
+        label={t("navigation")}
+        value={shown}
+        disabled={exportBusy}
+        selection="expanded"
+        items={entries.map((item) => {
           const Icon = item === "motion" ? null : icons[item];
-          return (
-            <Button
-              key={item}
-              type="button"
-              variant="ghost"
-              className="mobile-nav-item"
-              disabled={exportBusy}
-              aria-expanded={item !== "export" ? shown === item : props.exportOpen}
-              onClick={(event) => {
-                if (exportBusy) return;
-                trigger.current = event.currentTarget;
-                if (item !== "export" && props.exportOpen) props.onExportOpenChange(false);
-                if (item !== "motion") setTimelineOpen(false);
-                if (item === "export") {
-                  setPanel(null);
-                  props.onExportOpenChange(!props.exportOpen);
-                } else if (item === "motion") {
-                  setPanel(shown === "motion" ? null : "motion");
-                  setTimelineOpen(shown !== "motion");
-                } else setPanel(panel === item ? null : item);
-              }}
-            >
-              {shown === item && (
-                <motion.span
-                  aria-hidden
-                  className="mobile-nav-indicator"
-                  layoutId="mobile-nav-selection"
-                  initial={false}
-                  transition={
-                    reduced
-                      ? { duration: 0 }
-                      : { type: "spring", stiffness: 460, damping: 38, mass: 0.7 }
-                  }
-                />
-              )}
-              {Icon ? <Icon size={20} strokeWidth={1.6} /> : <ModeIcon mode="motion" size={23} />}
-              <span>{t(item)}</span>
-            </Button>
-          );
+          return {
+            value: item,
+            label: t(item),
+            icon: Icon ? (
+              <Icon size={20} strokeWidth={1.6} />
+            ) : (
+              <ModeIcon mode="motion" size={23} />
+            ),
+          };
         })}
-      </nav>
+        onSelect={(value, event) => {
+          const item = entries.find((entry) => entry === value);
+          if (!item || exportBusy) return;
+          trigger.current = event.currentTarget;
+          if (item !== "export" && props.exportOpen) props.onExportOpenChange(false);
+          if (item !== "motion") setTimelineOpen(false);
+          if (item === "export") {
+            setPanel(null);
+            props.onExportOpenChange(!props.exportOpen);
+          } else if (item === "motion") {
+            setPanel(shown === "motion" ? null : "motion");
+            setTimelineOpen(shown !== "motion");
+          } else setPanel(panel === item ? null : item);
+        }}
+      />
       <AnimatePresence initial={false}>
         {shown === "export" ? (
           <MobileExport
@@ -143,7 +129,7 @@ export const MobileEditor = memo(function MobileEditor({ tools, ...props }: Prop
           )
         )}
       </AnimatePresence>
-    </LayoutGroup>
+    </>
   );
 });
 

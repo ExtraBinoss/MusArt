@@ -68,11 +68,13 @@ test("mobile landing, project library, presets and creation lead to the full-wid
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
   await page.screenshot({ path: info.outputPath("mobile-landing.png") });
   await page.getByRole("button", { name: "Commencer à créer" }).first().click();
-  await expect(page.getByRole("tab", { name: "Projets", exact: true })).toHaveAttribute(
-    "aria-selected",
-    "true",
-  );
-  await page.getByRole("tab", { name: "Templates", exact: true }).click();
+  await expect(
+    page.locator(".mobile-library-nav").getByRole("button", { name: "Projets", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
+  await page
+    .locator(".mobile-library-nav")
+    .getByRole("button", { name: "Templates", exact: true })
+    .click();
   await expect(page.locator(".template-card").first()).toBeVisible();
   await expect
     .poll(() =>
@@ -88,7 +90,10 @@ test("mobile landing, project library, presets and creation lead to the full-wid
     .toBe(true);
   await page.getByRole("searchbox", { name: "Rechercher un modèle" }).fill("instagram");
   await expect(page.locator(".template-card")).toHaveCount(4);
-  await page.getByRole("tab", { name: "Projets", exact: true }).click();
+  await page
+    .locator(".mobile-library-nav")
+    .getByRole("button", { name: "Projets", exact: true })
+    .click();
   await page.getByRole("button", { name: "Nouveau projet", exact: true }).click();
   const creation = page.getByRole("dialog", { name: "Un nouvel espace pour vos idées." });
   await expect(creation.getByLabel("Fond", { exact: true })).toHaveCount(0);

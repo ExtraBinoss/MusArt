@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, Settings2 } from "lucide-react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { AnimatePresence } from "motion/react";
 import { useMobileLayout } from "../workspace/mobile/use-mobile";
 import { ScrollShadow } from "../shared/scroll/ScrollShadow";
@@ -9,11 +9,9 @@ import { ProjectCreateActions } from "./dashboard/ProjectCreateActions";
 import { useTranslation } from "react-i18next";
 import type { EditorServices, ProjectSummary } from "../../state/contracts";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
-import { Tabs, TabsContent } from "../ui/tabs";
 import { Button } from "../ui/button";
-import { IconButton } from "../shared/IconButton";
 import { LibrarySidebar } from "./dashboard/LibrarySidebar";
-import { DashboardTabs } from "./dashboard/DashboardTabs";
+import { MobileLibraryNavigation } from "./dashboard/MobileLibraryNavigation";
 import { MusArtLogo } from "../branding/MusArtLogo";
 import { NewProjectForm } from "./creation/NewProjectForm";
 import { PreferencesDialog } from "./preferences/PreferencesDialog";
@@ -60,6 +58,7 @@ function ProjectDashboard({
 }: ProjectDialogProps) {
   const { t } = useTranslation();
   const mobile = useMobileLayout();
+  const headingId = useId();
   const [landing, setLanding] = useState(Boolean(welcome && initialView !== "newProject"));
   const [view, setView] = useState<"projects" | "templates">(
     initialView === "templates" ? "templates" : "projects",
@@ -72,6 +71,8 @@ function ProjectDashboard({
   const [templateLoading, setTemplateLoading] = useState(false);
   const [preferences, setPreferences] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const librarySurface = useRef<HTMLDivElement>(null);
+  const libraryContent = useRef<HTMLDivElement>(null);
   const scope = useRef({ alive: true, pending: false });
   const templateRequest = useRef<AbortController | null>(null);
   useEffect(() => {
@@ -222,7 +223,7 @@ function ProjectDashboard({
             onPreferences={() => setPreferences(true)}
           />
         </div>
-        <div className="dashboard-main">
+        <div ref={librarySurface} className="dashboard-main">
           <DialogHeader className="dashboard-header">
             <div className="dashboard-header-line">
               <Button
@@ -235,32 +236,17 @@ function ProjectDashboard({
                 <ArrowLeft size={15} />
                 {t("dashboard:backHome")}
               </Button>
-              <div className="dashboard-header-actions">
-                {mobile && (
-                  <IconButton
-                    label={t("settings")}
-                    className="dashboard-settings dashboard-mobile-settings"
-                    disabled={busy}
-                    onClick={() => setPreferences(true)}
-                  >
-                    <Settings2 size={16} />
-                  </IconButton>
-                )}
-              </div>
             </div>
             <DialogTitle className="sr-only">{t("dashboard:title")}</DialogTitle>
             <DialogDescription className="sr-only">{t("dashboard:description")}</DialogDescription>
           </DialogHeader>
-          <Tabs value={view} onValueChange={changeView} className="dashboard-body">
-            <div className="dashboard-navigation">
-              <DashboardTabs value={view} disabled={busy} />
-            </div>
+          <div className="dashboard-body">
             <ScrollShadow className="dashboard-list-scroll" surface="var(--background)">
-              <TabsContent value={view} forceMount className="dashboard-pane scrollable-panel">
+              <section aria-labelledby={headingId} className="dashboard-pane scrollable-panel">
                 <div className="dashboard-pane-content">
                   <div className="dashboard-intro">
                     <div>
-                      <h2>
+                      <h2 id={headingId}>
                         {t(
                           view === "projects" && projectName && !welcome
                             ? "dashboard:projectHeading"
@@ -291,7 +277,7 @@ function ProjectDashboard({
                     projects={projectHints}
                     disabled={busy}
                   />
-                  <div className="dashboard-grid-stage">
+                  <div ref={libraryContent} className="dashboard-grid-stage">
                     <AnimatePresence initial={false}>
                       <LibraryTransition key={view}>
                         {view === "projects" ? (
@@ -325,9 +311,20 @@ function ProjectDashboard({
                     </AnimatePresence>
                   </div>
                 </div>
-              </TabsContent>
+              </section>
             </ScrollShadow>
-          </Tabs>
+          </div>
+          {mobile && (
+            <MobileLibraryNavigation
+              view={view}
+              busy={busy}
+              preferences={preferences}
+              surface={librarySurface}
+              content={libraryContent}
+              onViewChange={changeView}
+              onPreferences={() => setPreferences(true)}
+            />
+          )}
         </div>
         {creationDialog}
         {preferences && <PreferencesDialog onClose={() => setPreferences(false)} />}

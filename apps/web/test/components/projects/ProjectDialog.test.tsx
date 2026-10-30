@@ -23,7 +23,7 @@ test("editor creation Escape closes without mounting the library or editing the 
   expect(screen.queryByRole("dialog", { name: "Tableau de bord MusArt" })).toBeNull();
   expect(d.services.createProject).not.toHaveBeenCalled();
 });
-test("shares a clean two-tab dashboard between welcome and open-project states", async () => {
+test("shares a clean two-section dashboard between welcome and open-project states", async () => {
   const d = setup(),
     close = vi.fn();
   d.mount(
@@ -31,15 +31,16 @@ test("shares a clean two-tab dashboard between welcome and open-project states",
   );
   const dialog = screen.getByRole("dialog", { name: "Tableau de bord MusArt" });
   await screen.findByText("Aucun projet enregistré.");
-  expect(
-    within(dialog)
-      .getAllByRole("tab")
-      .map((tab) => tab.textContent),
-  ).toEqual(["Projets", "Templates"]);
+  const navigation = within(dialog).getByRole("navigation", { name: "Navigation de l’atelier" });
+  expect(within(navigation).getByRole("button", { name: "Projets" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  expect(within(navigation).getByRole("button", { name: "Templates" })).toBeEnabled();
   expect(within(dialog).getByRole("heading", { name: "Vos projets" })).toBeVisible();
   for (const name of ["Enregistrer", "Télécharger le projet", "Importer des images"])
     expect(within(dialog).queryByRole("button", { name })).not.toBeInTheDocument();
-  fireEvent.mouseDown(screen.getByRole("tab", { name: "Templates" }), { button: 0 });
+  fireEvent.click(screen.getByRole("button", { name: "Templates" }));
   await waitFor(() =>
     expect(screen.getByRole("heading", { name: "Quel projet voulez-vous créer ?" })).toBeVisible(),
   );
@@ -172,7 +173,7 @@ test("captures template origin before download, prevents duplicate opening, and 
   expect(options.expectedOrigin).toBe(first);
   expect(options.signal!.aborted).toBe(false);
   expect(
-    within(screen.getByRole("tabpanel", { name: "Templates" }))
+    within(screen.getByRole("region", { name: "Quel projet voulez-vous créer ?" }))
       .getByText("Préparation du modèle…")
       .closest('[role="status"]'),
   ).toHaveTextContent("Préparation du modèle");
@@ -242,13 +243,16 @@ test("one shared import/open gate disables tabs and card mutations until the rea
   const file = new File(["{}"], "import.musart"),
     input = screen.getByLabelText("Importer .musart", { selector: "input" });
   fireEvent.change(input, { target: { files: [file] } });
-  for (const tab of screen.getAllByRole("tab")) expect(tab).toBeDisabled();
+  for (const button of within(
+    screen.getByRole("navigation", { name: "Navigation de l’atelier" }),
+  ).getAllByRole("button"))
+    expect(button).toBeDisabled();
   expect(screen.getByRole("button", { name: "Second" })).toBeDisabled();
   expect(screen.getByRole("button", { name: "Préférences" })).toBeDisabled();
-  fireEvent.mouseDown(screen.getByRole("tab", { name: "Templates" }), { button: 0 });
+  fireEvent.click(screen.getByRole("button", { name: "Templates" }));
   fireEvent.click(screen.getByRole("button", { name: "Second" }));
   fireEvent.change(input, { target: { files: [file] } });
-  expect(screen.getByRole("tab", { name: "Projets" })).toHaveAttribute("aria-selected", "true");
+  expect(screen.getByRole("button", { name: "Projets" })).toHaveAttribute("aria-current", "page");
   expect(d.services.openProject).not.toHaveBeenCalled();
   expect(d.services.openPortable).toHaveBeenCalledOnce();
   expect(screen.queryByRole("button", { name: "Fermer" })).not.toBeInTheDocument();
@@ -282,7 +286,7 @@ test("a pending gallery open cannot race a second open or import, and cannot clo
   await act(async () => finish());
   expect(close).not.toHaveBeenCalled();
 });
-test("dashboard settings are an accessory that returns to the same two-tab workspace", async () => {
+test("dashboard settings are an accessory that returns to the same two-section workspace", async () => {
   const d = setup(),
     close = vi.fn();
   d.mount(<ProjectDialog services={d.services} onClose={close} onTask={d.onTask} />);
@@ -295,7 +299,7 @@ test("dashboard settings are an accessory that returns to the same two-tab works
   expect(within(settings).getByPlaceholderText("Rechercher un raccourci…")).toBeVisible();
   fireEvent.click(within(settings).getByRole("button", { name: "Fermer" }));
   expect(screen.getByRole("dialog", { name: "Tableau de bord MusArt" })).toBeVisible();
-  expect(screen.getAllByRole("tab")).toHaveLength(2);
+  expect(screen.queryAllByRole("tab")).toHaveLength(0);
   expect(close).not.toHaveBeenCalled();
 });
 
