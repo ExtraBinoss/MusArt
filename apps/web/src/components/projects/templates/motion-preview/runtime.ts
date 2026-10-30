@@ -17,6 +17,8 @@ import {
   type PreparedMotionTemplate,
 } from "../../../../services/projects/templates/motion/loader";
 import type { MotionTemplateId } from "../../../../services/projects/templates/motion/model";
+import { PreviewSessionPool } from "./session-pool";
+import { PreviewSourceCache } from "./source-cache";
 
 export type PreviewStatus = "idle" | "loading" | "playing" | "failed";
 type Session = Pick<ReturnType<typeof createRenderSession>, "withCanvasFrame" | "dispose">;
@@ -27,12 +29,18 @@ export interface PreviewDependencies {
   requestFrame: (callback: FrameRequestCallback) => number;
   cancelFrame: (handle: number) => void;
 }
-const native: PreviewDependencies = {
-  prepare: (id, signal) => prepareMotionTemplate(id, { signal }),
-  createSession: async (options) => {
+const sources = new PreviewSourceCache();
+const sessions = new PreviewSessionPool(
+  async (options) => {
     const { createRenderSession } = await import("@musart/render");
     return createRenderSession(options);
   },
+  () => sources.clear(),
+);
+const native: PreviewDependencies = {
+  prepare: (id, signal) =>
+    sources.template(id, signal, () => prepareMotionTemplate(id, { signal })),
+  createSession: (options) => sessions.acquire(options),
   now: () => performance.now(),
   requestFrame: (callback) => requestAnimationFrame(callback),
   cancelFrame: (handle) => cancelAnimationFrame(handle),
@@ -41,6 +49,25 @@ export interface PreviewOwner {
   release: () => Promise<void>;
 }
 let active: PreviewOwner | null = null;
+async function clearPreviews() {
+  await active?.release();
+  await sessions.clear();
+}
+if (typeof document !== "undefined") {
+  const hide = () => {
+    if (document.hidden) void clearPreviews().catch((error: unknown) => console.error(error));
+  };
+  const unload = () => {
+    void clearPreviews().catch((error: unknown) => console.error(error));
+  };
+  document.addEventListener("visibilitychange", hide);
+  window.addEventListener("pagehide", unload);
+  import.meta.hot?.dispose(() => {
+    document.removeEventListener("visibilitychange", hide);
+    window.removeEventListener("pagehide", unload);
+    unload();
+  });
+}
 
 export interface MotionPreviewSource {
   readonly project: Project;
@@ -105,7 +132,10 @@ export function startMotionPreview(
       await previous?.release();
       abort.signal.throwIfAborted();
       timing?.stage("Read + validate preview source");
-      const prepared = await options.prepare(abort.signal);
+      const source = await options.prepare(abort.signal);
+      abort.signal.throwIfAborted();
+      const prepared =
+        dependencies === native ? { ...source, project: sources.retain(source.project) } : source;
       timing?.identify(prepared.project.name);
       abort.signal.throwIfAborted();
       const page = prepared.compositionId
@@ -113,7 +143,10 @@ export function startMotionPreview(
         : prepared.project.pages[0];
       if (!page) throw new Error("The saved Motion preview artboard is no longer available.");
       timing?.stage("Compile animation");
-      const program = compileMotion(prepared.project, { compositionId: page.id });
+      const program =
+        dependencies === native
+          ? sources.compile(prepared.project, page.id)
+          : compileMotion(prepared.project, { compositionId: page.id });
       if (program.mode !== "motion" || !program.duration)
         throw new Error("The preview does not contain a Motion composition.");
       const duration = motionTimeToSeconds(program.duration);
@@ -130,7 +163,7 @@ export function startMotionPreview(
           return original.blob;
         },
       };
-      timing?.stage("Create GPU preview session");
+      timing?.stage("Acquire GPU preview session (reuse when compatible)");
       session = await dependencies.createSession({
         maxBytes: 128 * 1024 * 1024,
         fontResolver: prepared.fontResolver,

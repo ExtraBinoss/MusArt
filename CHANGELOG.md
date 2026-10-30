@@ -6,6 +6,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Retained one bounded Motion library preview renderer and a four-entry source/compiled-program LRU across hovers, with exact saved-content invalidation, per-frame cancellation, idle expiry and visibility cleanup. Local repeated Morph template hover fell from 1,424.6 ms to 7.5 ms; saved-project hover fell from 1,323.8 ms to 421.4 ms.
+
 - Added development-only `[Melt perf]` console groups for project/template opening and Motion hover previews, with stage milliseconds, true first-frame acknowledgements, cancellation and failure results. Production builds do not enable these logs.
 
 - Fixed Motion library previews that sent designed templates to the media-bundle loader. Hover and installation now share validated preparation for designed projects, and the complete registered Motion catalogue includes the Morphing Type bundle within an explicit 8 MiB manifest limit.
