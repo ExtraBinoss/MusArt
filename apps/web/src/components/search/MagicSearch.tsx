@@ -125,7 +125,8 @@ export function MagicSearch({
   );
   useLayoutEffect(() => {
     if (open && dialogRef.current) {
-      searchInput.current?.focus();
+      const input = searchInput.current;
+      if (input && document.activeElement !== input) input.focus({ preventScroll: true });
       timing.mounted(recordOpen);
     }
   }, [open, timing, recordOpen]);
@@ -244,7 +245,8 @@ export function MagicSearch({
         className="floating-panel magic-search-dialog"
         onOpenAutoFocus={(event) => {
           event.preventDefault();
-          searchInput.current?.focus();
+          const input = searchInput.current;
+          if (input && document.activeElement !== input) input.focus({ preventScroll: true });
           timing.mounted(recordOpen);
         }}
         onCloseAutoFocus={(event) => {

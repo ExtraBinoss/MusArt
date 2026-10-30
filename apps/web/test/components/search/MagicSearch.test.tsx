@@ -390,3 +390,14 @@ test("closed selection updates never build or normalize the document catalog", a
   expect(read).toHaveBeenCalled();
   expect(prepare).toHaveBeenCalled();
 });
+
+test("opening focuses the input once without scrolling its surrounding viewport", async () => {
+  const focus = vi.spyOn(HTMLElement.prototype, "focus"),
+    d = fixture();
+  const input = await d.open();
+  const calls = focus.mock.contexts.flatMap((context, index) =>
+    context === input ? [focus.mock.calls[index]] : [],
+  );
+  expect(calls).toEqual([[{ preventScroll: true }]]);
+  expect(input).toHaveFocus();
+});

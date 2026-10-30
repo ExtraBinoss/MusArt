@@ -71,8 +71,17 @@ const PaletteContent = memo(function PaletteContent({
   available: ReadonlySet<SearchItem["category"]>;
 }) {
   const [query, setQuery] = useState(""),
-    [category, setCategory] = useState<SearchFilter>("all");
+    [category, setCategory] = useState<SearchFilter>("all"),
+    [activeId, setActiveId] = useState("");
   const results = useMemo(() => searchItems(items, query, category), [items, query, category]);
+  // Supply the enabled selection before cmdk mounts, and synchronously when query results change.
+  const activeItem =
+    results.items.find((item) => item.id === activeId && !item.disabled) ??
+    results.items.find((item) => !item.disabled);
+  const changeQuery = useCallback((value: string) => {
+    setQuery(value);
+    setActiveId("");
+  }, []);
   const groups = useMemo(() => {
     const grouped = new Map<SearchItem["category"], SearchItem[]>();
     for (const item of results.items) {
@@ -85,7 +94,8 @@ const PaletteContent = memo(function PaletteContent({
   const changeCategory = useCallback(
     (value: SearchFilter) => {
       setCategory(value);
-      inputRef.current?.focus();
+      setActiveId("");
+      inputRef.current?.focus({ preventScroll: true });
     },
     [inputRef],
   );
@@ -100,6 +110,8 @@ const PaletteContent = memo(function PaletteContent({
         shouldFilter={false}
         filter={alreadyRanked}
         loop
+        value={activeItem?.id ?? ""}
+        onValueChange={setActiveId}
         className="magic-search-command"
         label={t("search:title")}
       >
@@ -107,7 +119,7 @@ const PaletteContent = memo(function PaletteContent({
           <CommandInput
             ref={inputRef}
             value={query}
-            onValueChange={setQuery}
+            onValueChange={changeQuery}
             placeholder={t("search:search")}
           />
           <Button variant="ghost" size="icon-sm" aria-label={t("close")} onClick={onClose}>

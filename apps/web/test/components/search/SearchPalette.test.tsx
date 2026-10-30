@@ -108,3 +108,17 @@ test("large result sets retain the 80-row bound, search accurately, and browse r
     screen.getByText("Aucun résultat. Essayez un autre mot ou une autre catégorie."),
   ).toBeVisible();
 });
+
+test("query followed immediately by Enter dispatches the new enabled match without a timer or animation wait", () => {
+  const d = fixture();
+  fireEvent.change(d.input, { target: { value: "baguette" } });
+  expect(screen.getByRole("option", { name: /Baguette magique/ })).toHaveAttribute(
+    "data-selected",
+    "true",
+  );
+  fireEvent.change(d.input, { target: { value: "flou" } });
+  fireEvent.keyDown(d.input, { key: "Enter" });
+  expect(d.onChoose).toHaveBeenCalledOnce();
+  expect(d.onChoose.mock.lastCall![0].target).toMatchObject({ kind: "effect" });
+  expect(d.onChoose.mock.lastCall![0].label).toMatch(/Flou/);
+});
