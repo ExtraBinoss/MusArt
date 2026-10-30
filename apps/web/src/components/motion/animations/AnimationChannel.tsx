@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { LockKeyhole, Plus, Trash2 } from "lucide-react";
+import { LockKeyhole, Minus, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type {
   AnimationChannel as Channel,
@@ -58,31 +58,31 @@ export function AnimationChannel({
         <div className="animation-channel-title">
           <strong>{name}</strong>
           <InfoTooltip label={t("aboutProperty", { name })}>{hint}</InfoTooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span tabIndex={lastChannel ? 0 : undefined}>
-                <Button
-                  type="button"
-                  size="icon-xs"
-                  variant="ghost"
-                  className="animation-delete-action"
-                  aria-label={t("removeProperty", { name })}
-                  disabled={lastChannel}
-                  onClick={() =>
-                    edit((preset) => {
-                      preset.channels.splice(index, 1);
-                    })
-                  }
-                >
-                  <Trash2 size={12} />
-                </Button>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              {lastChannel ? t("lastPropertyHint") : t("removeProperty", { name })}
-            </TooltipContent>
-          </Tooltip>
         </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span tabIndex={lastChannel ? 0 : undefined}>
+              <Button
+                type="button"
+                size="icon-xs"
+                variant="ghost"
+                className="animation-remove-action"
+                aria-label={t("removeProperty", { name })}
+                disabled={lastChannel}
+                onClick={() =>
+                  edit((preset) => {
+                    preset.channels.splice(index, 1);
+                  })
+                }
+              >
+                <Minus size={12} />
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            {lastChannel ? t("lastPropertyHint") : t("removeProperty", { name })}
+          </TooltipContent>
+        </Tooltip>
       </div>
       <div className="animation-channel-points">
         {points.map((point, pi) => {
@@ -122,7 +122,7 @@ export function AnimationChannel({
                         type="button"
                         size="icon-xs"
                         variant="ghost"
-                        className="animation-delete-action"
+                        className="animation-remove-action"
                         aria-label={t("deleteStep", { index: pi })}
                         onClick={() =>
                           edit((preset) => {
@@ -130,7 +130,7 @@ export function AnimationChannel({
                           })
                         }
                       >
-                        <Trash2 size={11} />
+                        <Minus size={11} />
                       </Button>
                     )}
                   </TooltipTrigger>

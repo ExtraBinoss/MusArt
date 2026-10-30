@@ -6,6 +6,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Replaced repeated property/point trash icons in animation Details with quiet right-aligned minus controls, retaining one trash icon at the far right for deleting the complete animation.
+
 - Placed each animation property's delete control beside its name and contextual info, keeping property ownership clear within Details.
 
 - Moved animation Details and property explanations into compact info tooltips, using a reusable contextual-help component with hover, keyboard-focus and tap access.

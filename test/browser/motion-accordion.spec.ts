@@ -91,7 +91,7 @@ for (const reduced of [false, true])
     ).toBeVisible();
     await page.keyboard.press("Escape");
     const actionButtons = instance.locator(".animation-instance-actions button");
-    await expect(actionButtons.last()).toHaveAccessibleName("More animation actions");
+    await expect(actionButtons.last()).toHaveAccessibleName("Delete animation");
     const details = instance.locator(".animation-details-disclosure"),
       detailsTrigger = details.getByRole("button", { name: "Details", exact: true });
     await expect(details.locator(".animation-details")).toHaveCount(0);
@@ -131,17 +131,20 @@ for (const reduced of [false, true])
     const explanation = "100% = original size. Smaller shrinks; larger grows.";
     await expect(page.getByText(explanation, { exact: true })).toHaveCount(0);
     const info = channel.getByRole("button", { name: "About Horizontal scale", exact: true });
-    const propertyName = channel.locator(".animation-channel-title strong");
     const removeProperty = channel.getByRole("button", {
       name: "Remove Horizontal scale animation",
       exact: true,
     });
-    const nameBox = await propertyName.boundingBox(),
+    const channelBox = await channel.boundingBox(),
       removeBox = await removeProperty.boundingBox();
-    expect(removeBox!.x - (nameBox!.x + nameBox!.width)).toBeLessThan(40);
     expect(
-      Math.abs(removeBox!.y + removeBox!.height / 2 - nameBox!.y - nameBox!.height / 2),
-    ).toBeLessThan(3);
+      channelBox!.x + channelBox!.width - removeBox!.x - removeBox!.width,
+    ).toBeGreaterThanOrEqual(0);
+    expect(channelBox!.x + channelBox!.width - removeBox!.x - removeBox!.width).toBeLessThanOrEqual(
+      10,
+    );
+    await expect(channel.locator(".lucide-minus")).toHaveCount(1);
+    await expect(channel.locator(".lucide-trash-2")).toHaveCount(0);
     await info.focus();
     await expect(page.getByRole("tooltip", { name: explanation, exact: true })).toBeVisible();
     await page.keyboard.press("Escape");
@@ -177,6 +180,13 @@ for (const reduced of [false, true])
     await expect(point).toHaveCSS("filter", "blur(0px)");
     await expect(point.getByRole("textbox", { name: "Value", exact: true })).toHaveValue("52.5");
     await expect(point.getByText("Step 1", { exact: true })).toBeVisible();
+    await expect(point.locator(".lucide-minus")).toHaveCount(1);
+    const stepRemoveBox = await point
+      .getByRole("button", { name: "Remove step 1", exact: true })
+      .boundingBox();
+    expect(
+      Math.abs(stepRemoveBox!.x + stepRemoveBox!.width - removeBox!.x - removeBox!.width),
+    ).toBeLessThan(1.5);
     if (!reduced)
       await channel.screenshot({ path: test.info().outputPath("readable-details.png") });
     await point.getByRole("button", { name: "Remove step 1", exact: true }).click();

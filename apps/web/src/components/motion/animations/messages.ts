@@ -80,7 +80,7 @@ export const messages = {
       "Keep at least one property. To remove everything, delete the animation from its footer.",
     fixedEndpoint: "Fixed start or end time",
     endpointHint:
-      "Start stays at 0% and end at 100%. Edit their values, or remove the whole property with its trash button.",
+      "Start stays at 0% and end at 100%. Edit their values, or remove the whole property with its − button.",
     category: {
       move: "Move",
       scale: "Scale",
@@ -171,7 +171,7 @@ export const messages = {
       "Garde au moins une propriété. Pour tout retirer, supprime l’animation depuis ses actions.",
     fixedEndpoint: "Temps de départ ou d’arrivée fixe",
     endpointHint:
-      "Le départ reste à 0 % et l’arrivée à 100 %. Modifie leurs valeurs, ou retire toute la propriété avec sa poubelle.",
+      "Le départ reste à 0 % et l’arrivée à 100 %. Modifie leurs valeurs, ou retire toute la propriété avec son bouton −.",
     category: {
       move: "Déplacement",
       scale: "Scale",

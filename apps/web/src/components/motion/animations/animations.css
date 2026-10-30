@@ -405,6 +405,12 @@
 .animation-delete-action {
   color: var(--destructive);
 }
+.animation-remove-action {
+  color: var(--muted-foreground);
+}
+.animation-remove-action:hover {
+  color: var(--foreground);
+}
 .animation-action-menu {
   max-width: min(260px, calc(100vw - 24px));
   font-size: 12px;
