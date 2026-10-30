@@ -43,7 +43,8 @@ export type EffectType =
   | "datamosh"
   | "bit-dither"
   | "receipt"
-  | "pink-phosphor";
+  | "pink-phosphor"
+  | "transition";
 /** Effect-owned scalar settings are validated against that effect's definition. */
 export type EffectSettings = Partial<Record<string, number | boolean | string>>;
 export interface Effect {

@@ -352,3 +352,51 @@ it.each([
   expect(d.backend.render).not.toHaveBeenCalled();
   d.dispose();
 });
+
+it("runs one selected Transition pass and reuses its material throughout progress animation", () => {
+  const f = setup();
+  const effect = createEffect("transition", { settings: { style: "defocus", progress: 0.2 } });
+  expect(f.gpu.projectedBytes(8, 6, [effect])).toBe(0);
+  f.gpu.apply(f.source, 8, 6, [effect], f.output);
+  expect(f.gpu.stats()).toMatchObject({ passes: 1, targets: 0, materials: 1, bytes: 0 });
+  f.gpu.apply(
+    f.source,
+    8,
+    6,
+    [{ ...effect, settings: { ...effect.settings, progress: 0.8 } }],
+    f.output,
+  );
+  expect(f.gpu.stats()).toMatchObject({ passes: 2, targets: 0, materials: 1 });
+  f.gpu.apply(
+    f.source,
+    8,
+    6,
+    [{ ...effect, settings: { style: "wipe", progress: 0.5 } }],
+    f.output,
+  );
+  expect(f.gpu.stats()).toMatchObject({ passes: 3, targets: 0, materials: 2 });
+  expect(f.backend.readRenderTargetPixelsAsync).not.toHaveBeenCalled();
+  expect(f.backend.readRenderTargetPixels).not.toHaveBeenCalled();
+  f.dispose();
+});
+
+it("warms only the selected Transition shader and keeps numeric progress on its compiled pass", async () => {
+  const f = setup(),
+    compileAsync = vi.fn(async () => undefined);
+  Object.assign(f.backend, { compileAsync });
+  const effect = createEffect("transition", { settings: { style: "ink", progress: 0.3 } });
+  await f.gpu.prepare([effect], f.output, 8, 6);
+  await f.gpu.prepare(
+    [{ ...effect, settings: { ...effect.settings, progress: 0.7 } }],
+    f.output,
+    8,
+    6,
+  );
+  expect(compileAsync).toHaveBeenCalledOnce();
+  expect(f.gpu.stats()).toMatchObject({ passes: 0, materials: 1, targets: 0 });
+  expect(f.backend.render).not.toHaveBeenCalled();
+  await f.gpu.prepare([{ ...effect, settings: { style: "slide", progress: 0.7 } }], f.output, 8, 6);
+  expect(compileAsync).toHaveBeenCalledTimes(2);
+  expect(f.gpu.stats().materials).toBe(2);
+  f.dispose();
+});

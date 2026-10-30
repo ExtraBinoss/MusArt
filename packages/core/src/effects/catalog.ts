@@ -23,6 +23,7 @@ import { DATAMOSH_DEFINITION } from "./datamosh/definition";
 import { BIT_DITHER_DEFINITION } from "./bit-dither/definition";
 import { RECEIPT_DEFINITION } from "./receipt/definition";
 import { PINK_PHOSPHOR_DEFINITION } from "./pink-phosphor/definition";
+import { TRANSITION_DEFINITION } from "./transition/definition";
 /** Portable effect metadata shared by factories, validation and client controls. */
 export const EFFECT_CATALOG: Readonly<Record<EffectType, EffectDefinition>> = Object.freeze({
   dither: defineEffect("dither", {}, [AMOUNT, SCALE, LEVELS, COLOR, SEED]),
@@ -60,6 +61,7 @@ export const EFFECT_CATALOG: Readonly<Record<EffectType, EffectDefinition>> = Ob
   "bit-dither": BIT_DITHER_DEFINITION,
   receipt: RECEIPT_DEFINITION,
   "pink-phosphor": PINK_PHOSPHOR_DEFINITION,
+  transition: TRANSITION_DEFINITION,
 });
 
 export function getEffectDefinition(type: EffectType): EffectDefinition {

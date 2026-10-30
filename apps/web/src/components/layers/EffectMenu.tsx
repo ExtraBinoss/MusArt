@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useMemo, useState } from "react";
 import { EFFECT_CATALOG, type EffectType } from "@musart/core";
 import "../properties/effects/library-messages";
+import "../motion/transitions/messages";
 import {
   DropdownMenuSub,
   DropdownMenuSubContent,

@@ -187,3 +187,14 @@ export { createLayerGeometryIndex, LayerGeometryIndex } from "./layers/geometry-
 export { copyContent, parseClipboard, MAX_CLIPBOARD_CHARACTERS } from "./clipboard/content";
 export { pasteContent } from "./clipboard/paste";
 export type { ClipboardContent } from "./clipboard/model";
+
+export {
+  TRANSITION_CATALOG,
+  TRANSITION_CATEGORIES,
+  getTransitionDefinition,
+} from "./effects/transition/catalog";
+export type {
+  TransitionStyle,
+  TransitionCategory,
+  TransitionDefinition,
+} from "./effects/transition/catalog";

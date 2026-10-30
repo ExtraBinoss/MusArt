@@ -2,17 +2,12 @@ import { resolveGradientSettings, type Effect, type GradientTreatment } from "@m
 import { asciiNode } from "../ascii/node";
 import { ditherNode } from "../dither/node";
 import type { EffectNodeBuilder } from "../shared/context";
+import type { EffectStage } from "../shared/stages";
 import { gradientFieldNode } from "./field";
 import { gradientFinishNode } from "./finish";
 import { blocksNode } from "./treatments/blocks/node";
 import { foldsNode } from "./treatments/folds/node";
 import { glassNode } from "./treatments/glass/node";
-export interface EffectStage {
-  readonly key: string;
-  readonly builder: EffectNodeBuilder;
-  readonly final: boolean;
-  readonly treatment?: boolean;
-}
 const TREATMENTS: Readonly<Record<Exclude<GradientTreatment, "none">, EffectNodeBuilder>> =
   Object.freeze({
     ascii: asciiNode,

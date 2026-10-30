@@ -6,6 +6,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Added
 
+- Add 30 deterministic GPU transition operators with exact progress endpoints, source-alpha coverage, bounded sampling and per-style shader reuse shared by preview and export. All operators pass native Chromium pixel checks on WebGPU and WebGL with zero production GPU readbacks.
+
 - Checkpointed unfinished shared layer dragging, evaluated Motion transforms, stable Pin framing and adaptive handle styling for the next session. The resume guide records validated checks, pending integration/optical tests, known gesture guards and the approved composition-export, audio and GPU-transition scope.
 
 - Checkpointed the internal authored-Motion export and audio-mixing modules with focused lifecycle tests; native encoded-output verification and editor wiring remain unfinished.
