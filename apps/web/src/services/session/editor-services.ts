@@ -132,6 +132,7 @@ export function createEditorServices(
         }
       : {}),
     ...(dependencies.fonts ? { fonts: dependencies.fonts } : {}),
+    loadProjectPreview: (id, options) => store.loadPreview(id, options),
     listProjects: () => store.list(),
     listProjectPage: (options) => store.listPage(options),
     loadProjectThumbnails: async (id, pageIds, options) =>

@@ -52,6 +52,7 @@ import type {
   SaveProjectOptions,
 } from "./writes/prepared";
 import type { MediaOriginalInput } from "./media/model";
+import { readProjectPreview } from "./previews/read";
 import { readMediaOriginal } from "./media/read";
 
 /** Original bytes are persisted independently from small, frequently changing manifests. */
@@ -210,6 +211,12 @@ export class ProjectStore {
     const blob = await readMediaOriginal(await this.db(), projectId, asset, options.signal);
     this.assertGeneration(generation);
     return blob;
+  }
+  async loadPreview(id: string, options: { signal?: AbortSignal } = {}): Promise<Project> {
+    const generation = this.generation;
+    const project = await readProjectPreview(await this.db(), id, options.signal);
+    this.assertGeneration(generation);
+    return project;
   }
   async load(
     id: string,

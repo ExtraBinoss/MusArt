@@ -6,6 +6,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Added
 
+- Saved Motion project cards now play their actual authored artboard on hover through the same bounded GPU preview owner as templates. Readonly, abortable snapshots leave project persistence, current selection and document history untouched; video originals stay lazy, while Static pages retain their cached page carousel.
+
 - Replaced the first-visit tour with a theme-aware landing page, an animated headline, a draggable carousel of real editable templates and four video placeholders in `public/videos`. The Projects/Templates library now has a desktop sidebar with five cached recent previews and Preferences, a compact mobile navigation, animated search, Static/Motion filtering and matching preview cards. Project loading remains bounded and asynchronous import/template creation keeps its stale-result guards.
 - Simplified project creation into a separate dialog with visual presets, linked dimensions, a live aspect-ratio preview and a split import action. Library page/card transitions respect reduced motion and keep the scroll gutter at the outer edge.
 - Added live Motion template hover previews through the real validated engine/render graph, with silent native video, one GPU owner, coalesced exact-rational frames, cancellation, bounded resources and zero image encoding or GPU readbacks. Previews leave the current document and editor React tree untouched.

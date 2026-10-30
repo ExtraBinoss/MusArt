@@ -1,8 +1,10 @@
 import { expect, test, vi } from "vitest";
+import { createPage, type Composition } from "@musart/core";
 import { createBloomTemplate } from "../../../../../src/services/projects/templates/motion/showcase";
 import { templateMedia } from "../../../../support/motion-template-media";
 import {
   startMotionTemplatePreview,
+  startMotionPreview,
   type PreviewDependencies,
 } from "../../../../../src/components/projects/templates/motion-preview/runtime";
 
@@ -22,12 +24,14 @@ function fixture() {
   const callbacks = new Map<number, FrameRequestCallback>();
   let sequence = 0;
   const times: number[] = [];
+  const rendered: Composition[] = [];
   const host = document.createElement("span"),
     canvas = document.createElement("canvas");
   let gate: ReturnType<typeof deferred> | null = null;
   const dispose = vi.fn(async (): Promise<void> => undefined);
   const session: Awaited<ReturnType<PreviewDependencies["createSession"]>> = {
-    withCanvasFrame: async (_page, _assets, consume, options) => {
+    withCanvasFrame: async (page, _assets, consume, options) => {
+      rendered.push(page);
       times.push(
         options?.motionFrame ? options.motionFrame.time.value / options.motionFrame.time.rate : -1,
       );
@@ -65,6 +69,7 @@ function fixture() {
     host,
     canvas,
     times,
+    rendered,
     callbacks,
     dependencies,
     dispose,
@@ -212,4 +217,33 @@ test("leaving a card retains the disposal fence before another card may create i
   await flush();
   expect(second.status).toHaveBeenLastCalledWith("playing");
   await next.release();
+});
+
+test("saved projects and authored templates share one GPU owner and evaluate the requested artboard’s real values", async () => {
+  const template = fixture(),
+    saved = fixture(),
+    original = await saved.dependencies.prepare("in-bloom", new AbortController().signal);
+  const source = {
+    ...original,
+    project: { ...original.project, pages: [createPage(), ...original.project.pages] },
+    compositionId: original.project.pages[0]!.id,
+  };
+  const first = template.start();
+  await flush();
+  const before = structuredClone(source.project);
+  const next = startMotionPreview(
+    { host: saved.host, onStatus: saved.status, prepare: async () => source },
+    saved.dependencies,
+  );
+  await flush();
+  expect(template.dispose).toHaveBeenCalledOnce();
+  expect(template.callbacks.size).toBe(0);
+  expect(saved.rendered[0]!.id).toBe(source.compositionId);
+  saved.tick(2000);
+  await flush();
+  expect(saved.times.at(-1)).toBe(1);
+  expect(saved.rendered.at(-1)).not.toEqual(saved.rendered[0]);
+  expect(source.project).toEqual(before);
+  await next.release();
+  await first.release();
 });

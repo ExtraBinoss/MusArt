@@ -1,5 +1,16 @@
-import { applyMotionFrame, compileMotion, evaluateMotion, motionTimeToSeconds } from "@musart/core";
-import type { createRenderSession, MediaSourceResolver, RenderOptions } from "@musart/render";
+import {
+  applyMotionFrame,
+  compileMotion,
+  evaluateMotion,
+  motionTimeToSeconds,
+  type Project,
+} from "@musart/core";
+import type {
+  createRenderSession,
+  FontResolver,
+  MediaSourceResolver,
+  RenderOptions,
+} from "@musart/render";
 import {
   prepareMotionTemplate,
   type PreparedMotionTemplate,
@@ -25,20 +36,28 @@ const native: PreviewDependencies = {
   requestFrame: (callback) => requestAnimationFrame(callback),
   cancelFrame: (handle) => cancelAnimationFrame(handle),
 };
-interface Owner {
+export interface PreviewOwner {
   release: () => Promise<void>;
 }
-let active: Owner | null = null;
+let active: PreviewOwner | null = null;
 
-/** One global GPU owner, one in-flight frame, one latest request; nothing is encoded or read back. */
-export function startMotionTemplatePreview(
+export interface MotionPreviewSource {
+  readonly project: Project;
+  readonly compositionId?: string;
+  readonly originals?: PreparedMotionTemplate["originals"];
+  readonly mediaResolver?: MediaSourceResolver;
+  readonly fontResolver?: FontResolver;
+}
+
+/** One owner shared by saved projects and templates; one active frame plus one latest request. */
+export function startMotionPreview(
   options: {
-    templateId: MotionTemplateId;
+    prepare: (signal: AbortSignal) => Promise<MotionPreviewSource>;
     host: HTMLElement;
     onStatus: (status: PreviewStatus, error?: unknown) => void;
   },
-  dependencies: PreviewDependencies = native,
-): Owner {
+  dependencies: Omit<PreviewDependencies, "prepare"> = native,
+): PreviewOwner {
   const previous = active;
   const abort = new AbortController();
   let stopped = false;
@@ -73,25 +92,28 @@ export function startMotionTemplatePreview(
     })();
     return disposal;
   }
-  const owner: Owner = { release: () => stop(true) };
+  const owner: PreviewOwner = { release: () => stop(true) };
   active = owner;
   options.onStatus("loading");
   bootstrap = (async () => {
     try {
       await previous?.release();
       abort.signal.throwIfAborted();
-      const prepared = await dependencies.prepare(options.templateId, abort.signal);
+      const prepared = await options.prepare(abort.signal);
       abort.signal.throwIfAborted();
-      const page = prepared.project.pages[0]!;
+      const page = prepared.compositionId
+        ? prepared.project.pages.find((item) => item.id === prepared.compositionId)
+        : prepared.project.pages[0];
+      if (!page) throw new Error("The saved Motion preview artboard is no longer available.");
       const program = compileMotion(prepared.project, { compositionId: page.id });
       if (program.mode !== "motion" || !program.duration)
         throw new Error("The preview does not contain a Motion composition.");
-      const duration = Math.min(5, motionTimeToSeconds(program.duration));
-      const mediaResolver: MediaSourceResolver = {
+      const duration = motionTimeToSeconds(program.duration);
+      const mediaResolver: MediaSourceResolver = prepared.mediaResolver ?? {
         resolveOriginal: async (asset, request) => {
           abort.signal.throwIfAborted();
           request?.signal?.throwIfAborted();
-          const original = prepared.originals.find(
+          const original = prepared.originals?.find(
             (item) =>
               item.originalId === asset.originalId &&
               item.contentRevision === asset.contentRevision,
@@ -102,6 +124,7 @@ export function startMotionTemplatePreview(
       };
       session = await dependencies.createSession({
         maxBytes: 128 * 1024 * 1024,
+        fontResolver: prepared.fontResolver,
         mediaResolver,
         mediaMode: "exact",
         signal: abort.signal,
@@ -174,4 +197,19 @@ export function startMotionTemplatePreview(
     }
   })();
   return owner;
+}
+
+/** Authored templates use the same global GPU admission as saved-project previews. */
+export function startMotionTemplatePreview(
+  options: {
+    templateId: MotionTemplateId;
+    host: HTMLElement;
+    onStatus: (status: PreviewStatus, error?: unknown) => void;
+  },
+  dependencies: PreviewDependencies = native,
+): PreviewOwner {
+  return startMotionPreview(
+    { ...options, prepare: (signal) => dependencies.prepare(options.templateId, signal) },
+    dependencies,
+  );
 }

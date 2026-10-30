@@ -218,3 +218,30 @@ test("defers invisible cards, refreshes only its project and releases URLs when 
   view.unmount();
   expect(disconnect).toHaveBeenCalledOnce();
 });
+
+test("mixed projects start on a real Motion page while pure Static projects keep the cached carousel", async () => {
+  const d = setup(),
+    summary = projectSummary();
+  summary.mode = "motion";
+  summary.pages[0]!.mode = "static";
+  summary.pages[1]!.mode = "motion";
+  d.services.loadProjectPreview = vi.fn(async () => d.project);
+  vi.mocked(d.services.loadProjectThumbnails).mockImplementation(async () => lease());
+  const view = d.mount(<ProjectPreview project={summary} services={d.services} onOpen={vi.fn()} />);
+  await act(async () => {
+    await Promise.resolve();
+  });
+  expect(document.querySelector(".motion-project-preview")).not.toBeNull();
+  expect(document.querySelector(".project-preview")).toHaveAttribute("data-preview-page", "2");
+  expect(document.querySelector(".preview-page-caption")).toHaveTextContent("Page two");
+  expect(d.services.loadProjectPreview).not.toHaveBeenCalled();
+  view.rerender(
+    <ProjectPreview
+      project={{ ...summary, pages: summary.pages.map((page) => ({ ...page, mode: "static" })) }}
+      services={d.services}
+      onOpen={vi.fn()}
+    />,
+  );
+  expect(document.querySelector(".motion-project-preview")).toBeNull();
+  expect(screen.getByRole("img", { name: "Page one" })).toBeVisible();
+});
