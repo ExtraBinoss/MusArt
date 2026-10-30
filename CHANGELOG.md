@@ -84,6 +84,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
+- Kept color and gradient gestures stable across callback refreshes and normal Radix capture release. Gradient thumbs preserve their grab offset and final release position; interrupted drags and abandoned previews restore the original value. Native GPU checks verify one undo entry and exact saved/reopened solid and gradient values.
+
 - Command search uses native inertness during its closing animation without hiding a still-focused input through `aria-hidden`. Its opening animation starts on the first available frame after mounting, keeping initial results and the panel entrance coordinated while focus remains immediate.
 
 - Kept native Enter/Space activation on command-search category and close buttons, including while results are pending. Escape preserves IME composition, and queued selection-dependent commands reject changed targets before touching another layer or the clipboard.

@@ -16,11 +16,13 @@ interface Props {
   onCancel: () => void;
 }
 interface Gesture {
+  kind: "pointer" | "keyboard";
   index: number;
   next: FillGradient;
   button: HTMLButtonElement;
   pointerId?: number;
-  left: number;
+  startX: number;
+  offset: number;
   width: number;
 }
 
@@ -54,7 +56,7 @@ export function GradientBar(props: Props) {
   );
   useLayoutEffect(() => {
     const cancel = () => {
-      if (active.current?.pointerId === undefined && active.current) blockedKey.current = true;
+      if (active.current?.kind === "keyboard") blockedKey.current = true;
       finish(true);
     };
     window.addEventListener("blur", cancel);
@@ -87,20 +89,35 @@ export function GradientBar(props: Props) {
     if (min === max || !ramp.current) return;
     const bounds = ramp.current.getBoundingClientRect();
     active.current = {
+      kind: "pointer",
       index,
       next: gradient,
       button: event.currentTarget,
       pointerId: event.pointerId,
-      left: bounds.left,
+      startX: event.clientX,
+      offset: gradient.stops[index]!.offset,
       width: bounds.width,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
   }
   function move(event: PointerEvent<HTMLButtonElement>) {
     const gesture = active.current;
-    if (!gesture || gesture.pointerId !== event.pointerId || gesture.width <= 0) return;
+    if (
+      !gesture ||
+      gesture.kind !== "pointer" ||
+      gesture.pointerId !== event.pointerId ||
+      gesture.width <= 0
+    )
+      return;
     event.currentTarget.setAttribute("data-dragging", "true");
-    preview(gesture.index, (event.clientX - gesture.left) / gesture.width);
+    preview(gesture.index, gesture.offset + (event.clientX - gesture.startX) / gesture.width);
+  }
+  function release(event: PointerEvent<HTMLButtonElement>, cancel = false) {
+    const gesture = active.current;
+    if (!gesture || gesture.kind !== "pointer" || gesture.pointerId !== event.pointerId) return;
+    // Release can carry a newer coordinate than the final delivered pointermove.
+    if (!cancel) move(event);
+    finish(cancel);
   }
   function key(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     if (event.key === "Escape") {
@@ -112,12 +129,21 @@ export function GradientBar(props: Props) {
     if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(event.key))
       return;
     event.preventDefault();
-    if (disabled || (blockedKey.current && event.repeat)) return;
+    if (disabled || active.current?.kind === "pointer" || (blockedKey.current && event.repeat))
+      return;
     blockedKey.current = false;
     const [min, max] = stopBounds(gradient, index);
     if (min === max) return;
     onSelect(index);
-    active.current ??= { index, next: gradient, button: event.currentTarget, left: 0, width: 0 };
+    active.current ??= {
+      kind: "keyboard",
+      index,
+      next: gradient,
+      button: event.currentTarget,
+      startX: 0,
+      offset: 0,
+      width: 0,
+    };
     const offset = active.current.next.stops[index]!.offset;
     const direction = event.key === "ArrowLeft" || event.key === "ArrowDown" ? -1 : 1;
     preview(
@@ -161,9 +187,9 @@ export function GradientBar(props: Props) {
             onClick={() => onSelect(index)}
             onPointerDown={(event) => start(event, index)}
             onPointerMove={move}
-            onPointerUp={() => finish(false)}
-            onPointerCancel={() => finish(true)}
-            onLostPointerCapture={() => finish(true)}
+            onPointerUp={(event) => release(event)}
+            onPointerCancel={(event) => release(event, true)}
+            onLostPointerCapture={(event) => release(event, true)}
             onKeyDown={(event) => key(event, index)}
             onKeyUp={(event) => {
               if (event.key.startsWith("Arrow") || event.key === "Home" || event.key === "End") {
@@ -171,7 +197,7 @@ export function GradientBar(props: Props) {
                 finish(false);
               }
             }}
-            onBlur={() => finish(false)}
+            onBlur={() => finish(active.current?.kind === "pointer")}
           />
         );
       })}

@@ -62,7 +62,7 @@ test("drags a stop imperatively, bounds it to neighbors and commits only on poin
   expect(data.onCommit).not.toHaveBeenCalled();
   fireEvent.pointerMove(thumb, { clientX: 900 });
   expect(data.onPreview.mock.lastCall?.[0].stops[1].offset).toBe(1);
-  fireEvent.pointerUp(thumb);
+  fireEvent.pointerUp(thumb, { clientX: 900 });
   fireEvent.lostPointerCapture(thumb);
   expect(data.onCommit).toHaveBeenCalledTimes(1);
   expect(data.onCommit.mock.lastCall?.[0].stops[1].offset).toBe(1);
@@ -133,4 +133,35 @@ test("keeps endpoints selectable and cancels stale edits when authored time chan
   fireEvent.pointerDown(thumb, { button: 0 });
   fireEvent.keyDown(thumb, { key: "ArrowRight" });
   expect(data.onPreview).toHaveBeenCalledTimes(1);
+});
+
+test("flushes the release coordinate and preserves where the pointer grabbed the thumb", () => {
+  const data = mount(),
+    thumb = screen.getByRole("slider", { name: "Point 2" });
+  // The stop center is110px, but the user grabs its right edge at118px.
+  fireEvent.pointerDown(thumb, { button: 0, clientX: 118 });
+  fireEvent.pointerMove(thumb, { clientX: 120 });
+  expect(data.onPreview.mock.lastCall?.[0].stops[1].offset).toBe(0.51);
+  fireEvent.pointerUp(thumb, { clientX: 168 });
+  expect(data.onPreview.mock.lastCall?.[0].stops[1].offset).toBe(0.75);
+  expect(data.onCommit).toHaveBeenCalledExactlyOnceWith({
+    ...gradient,
+    stops: [gradient.stops[0], { ...gradient.stops[1], offset: 0.75 }, gradient.stops[2]],
+  });
+  fireEvent.lostPointerCapture(thumb);
+  expect(data.onCancel).not.toHaveBeenCalled();
+});
+
+test("a click without travel never changes the stop, while pointer blur restores rather than commits", () => {
+  const data = mount(),
+    thumb = screen.getByRole("slider", { name: "Point 2" });
+  fireEvent.pointerDown(thumb, { button: 0, clientX: 118 });
+  fireEvent.pointerUp(thumb, { clientX: 118 });
+  expect(data.onCommit).not.toHaveBeenCalled();
+  fireEvent.pointerDown(thumb, { button: 0, clientX: 118 });
+  fireEvent.pointerMove(thumb, { clientX: 160 });
+  fireEvent.blur(thumb);
+  fireEvent.pointerUp(thumb, { clientX: 170 });
+  expect(data.onCommit).not.toHaveBeenCalled();
+  expect(data.onCancel).toHaveBeenCalledTimes(2);
 });

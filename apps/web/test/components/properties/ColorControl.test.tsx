@@ -281,3 +281,102 @@ test("selection/value changes retain genuine slider elements, reset drafts and c
   expect(screen.getByRole("slider", { name: "Teinte" })).toBe(hue);
   expect(hue).toHaveAttribute("aria-valuenow", "225");
 });
+
+test("fresh callbacks for the same owner preserve a held draft and commit through the latest handler", () => {
+  const d = setup(),
+    previousCommit = vi.fn(),
+    latestCommit = vi.fn(),
+    cancel = vi.fn();
+  const view = d.mount(
+    <ColorControl
+      identity="paint"
+      value="#3366ff"
+      onPreview={vi.fn()}
+      onCommit={previousCommit}
+      onCancel={cancel}
+    />,
+  );
+  const hue = screen.getByRole("slider", { name: "Teinte" }),
+    input = screen.getByLabelText("Couleur hexadécimale");
+  fireEvent.pointerDown(hue, { button: 0 });
+  fireEvent.change(input, { target: { value: "#abcdef" } });
+  view.rerender(
+    <ColorControl
+      identity="paint"
+      value="#3366ff"
+      onPreview={vi.fn()}
+      onCommit={latestCommit}
+      onCancel={cancel}
+    />,
+  );
+  expect(input).toHaveValue("#ABCDEF");
+  expect(cancel).not.toHaveBeenCalled();
+  fireEvent.pointerUp(hue);
+  expect(previousCommit).not.toHaveBeenCalled();
+  expect(latestCommit).toHaveBeenCalledExactlyOnceWith("#abcdef");
+});
+
+test("normal slider capture release before bubbling pointerup preserves the final draft", () => {
+  const d = setup(),
+    commit = vi.fn(),
+    cancel = vi.fn();
+  d.mount(<ColorControl value="#3366ff" onPreview={vi.fn()} onCommit={commit} onCancel={cancel} />);
+  const hue = screen.getByRole("slider", { name: "Teinte" }),
+    input = screen.getByLabelText("Couleur hexadécimale");
+  hue.addEventListener("pointerup", () => {
+    // Mirrors Radix's releasePointerCapture before the parent's bubble handler.
+    hue.dispatchEvent(new Event("lostpointercapture", { bubbles: true }));
+  });
+  fireEvent.pointerDown(hue, { button: 0 });
+  fireEvent.change(input, { target: { value: "#aabbcc80" } });
+  fireEvent.pointerUp(hue);
+  expect(commit).toHaveBeenCalledExactlyOnceWith("#aabbcc80");
+  expect(cancel).not.toHaveBeenCalled();
+});
+
+test("unexpected capture loss cancels without committing a later release", () => {
+  const d = setup(),
+    commit = vi.fn(),
+    cancel = vi.fn();
+  d.mount(<ColorControl value="#3366ff" onPreview={vi.fn()} onCommit={commit} onCancel={cancel} />);
+  const hue = screen.getByRole("slider", { name: "Teinte" }),
+    input = screen.getByLabelText("Couleur hexadécimale");
+  fireEvent.pointerDown(hue, { button: 0 });
+  fireEvent.change(input, { target: { value: "#aabbcc" } });
+  fireEvent.lostPointerCapture(hue);
+  expect(input).toHaveValue("#3366FF");
+  expect(cancel).toHaveBeenCalledOnce();
+  fireEvent.pointerUp(hue);
+  expect(commit).not.toHaveBeenCalled();
+});
+
+test("unmounting an unfinished typed color restores its preview without saving it", () => {
+  const d = setup(),
+    commit = vi.fn(),
+    preview = vi.fn(),
+    cancel = vi.fn();
+  const view = d.mount(
+    <ColorControl value="#3366ff" onPreview={preview} onCommit={commit} onCancel={cancel} />,
+  );
+  fireEvent.change(screen.getByLabelText("Couleur hexadécimale"), { target: { value: "#abcdef" } });
+  expect(preview).toHaveBeenCalledExactlyOnceWith("#abcdef");
+  view.unmount();
+  expect(cancel).toHaveBeenCalledOnce();
+  expect(commit).not.toHaveBeenCalled();
+});
+
+test("window blur cancels an active thumb drag and its later release cannot save it", () => {
+  const d = setup(),
+    commit = vi.fn(),
+    cancel = vi.fn();
+  d.mount(<ColorControl value="#3366ff" onPreview={vi.fn()} onCommit={commit} onCancel={cancel} />);
+  const hue = screen.getByRole("slider", { name: "Teinte" }),
+    input = screen.getByLabelText("Couleur hexadécimale");
+  fireEvent.pointerDown(hue, { button: 0 });
+  fireEvent.change(input, { target: { value: "#abcdef" } });
+  fireEvent(window, new Event("blur"));
+  expect(input).toHaveValue("#3366FF");
+  expect(cancel).toHaveBeenCalledOnce();
+  fireEvent.pointerUp(hue);
+  expect(commit).not.toHaveBeenCalled();
+});
