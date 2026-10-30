@@ -90,7 +90,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Fixed
 
-- Restored CI verification by provisioning FFprobe for source-backed Motion templates and aligning integration tests with the complete 33-command registry, retained selection overlays, shared zoom controls, timeline state and metadata-stable attachment previews. Assertions still verify real values, identity, stale-input guards and cancellation.
+- Restored CI verification by provisioning FFprobe for source-backed Motion templates and aligning integration tests with the complete 33-command registry, retained selection overlays, shared zoom controls, button-based library navigation, timeline state and metadata-stable attachment previews. Assertions still verify real values, identity, stale-input guards and cancellation.
 
 - Kept the Inspector immediately ready between consecutive edits to the same selected object and assets. Selection/resource handoffs remain guarded, attachment editing retains secondary panels, and native rapid color gestures preserve exact values, one undo entry per gesture and zero Inspector renders during previews.
 

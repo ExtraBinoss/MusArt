@@ -241,10 +241,9 @@ test("starts with the shared empty dashboard and mounts the editor only after ch
   expect(screen.queryByRole("combobox", { name: "Rechercher dans MusArt" })).toBeNull();
   fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
   expect(screen.getByRole("dialog")).toBeVisible();
-  fireEvent.mouseDown(screen.getByRole("tab", { name: "Templates" }), {
-    button: 0,
-    ctrlKey: false,
-  });
+  const templates = screen.getByRole("button", { name: "Templates" });
+  fireEvent.click(templates);
+  expect(templates).toHaveAttribute("aria-current", "page");
   fireEvent.click(screen.getByRole("button", { name: "Créer depuis Vidéo TikTok" }));
   await screen.findByTestId("canvas");
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
