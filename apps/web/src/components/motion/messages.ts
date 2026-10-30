@@ -2,6 +2,13 @@ import { registerFeatureTranslations } from "../../state/i18n/feature-resources"
 
 export const messages = {
   en: {
+    clipDuration: "Clip duration",
+    deleteKeyframes_one: "Delete keyframe",
+    deleteKeyframes_other: "Delete {{count}} keyframes",
+    addOccurrence: "Add a clip of {{name}} here",
+    duplicateOccurrence: "Duplicate clip at playhead",
+    deleteOccurrence: "Remove this clip",
+    occurrenceTransition: "Add clip transition",
     space: "Space",
     wheel: "Scroll",
     autoKey: "Auto-keyframe",
@@ -94,6 +101,13 @@ export const messages = {
     time: "Time",
   },
   fr: {
+    clipDuration: "Durée du clip",
+    deleteKeyframes_one: "Supprimer l’image clé",
+    deleteKeyframes_other: "Supprimer {{count}} images clés",
+    addOccurrence: "Ajouter un clip de {{name}} ici",
+    duplicateOccurrence: "Dupliquer le clip à la tête de lecture",
+    deleteOccurrence: "Retirer ce clip",
+    occurrenceTransition: "Ajouter une transition au clip",
     space: "Espace",
     wheel: "Molette",
     autoKey: "Images clés automatiques",

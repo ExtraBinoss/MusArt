@@ -1,3 +1,4 @@
+import { audioFixture } from "../../support/audio";
 import { describe, expect, it, vi } from "vitest";
 import { EditorEngine, createProject, createPage, createLayer } from "@musart/core";
 import {
@@ -290,4 +291,63 @@ describe("imperative Motion transport", () => {
     expect(replacement).not.toBe(shared);
     replacement.dispose();
   });
+});
+
+it("keeps the exact Play clock/tick across audio volume and mute commits, undo and redo", () => {
+  const { engine, track } = audioFixture(),
+    timer = clock(),
+    source = new MotionTransport(engine, timer.scheduler);
+  const stop = source.subscribe(() => {});
+  source.play();
+  timer.advance(500);
+  const frame = source.readFrame(),
+    state = source.read(),
+    tick = [...timer.pending.keys()];
+  engine.execute({ type: "updateMotionAudioTrack", trackId: track().id, patch: { volume: 0.4 } });
+  expect(source.read()).toBe(state);
+  expect(source.read().playing).toBe(true);
+  expect([...timer.pending.keys()]).toEqual(tick);
+  expect(source.readFrame()!.layers).toBe(frame!.layers);
+  expect(source.readAudioMixPublication()!.changes[0]).toMatchObject({ volume: 0.4, mute: false });
+  engine.execute({ type: "updateMotionAudioTrack", trackId: track().id, patch: { mute: true } });
+  expect(source.read().playing).toBe(true);
+  engine.undo();
+  expect(source.read().playing).toBe(true);
+  engine.redo();
+  expect(source.read().playing).toBe(true);
+  timer.advance(500);
+  expect(source.read().time.value / source.read().time.rate).toBe(1);
+  engine.execute({
+    type: "updateMotionAudioTrack",
+    trackId: track().id,
+    patch: { name: "Another name" },
+  });
+  expect(source.read().playing).toBe(false);
+  expect(timer.pending.size).toBe(0);
+  stop();
+  source.dispose();
+});
+it("still pauses for reloads and source/processing edits even if audio identities match", () => {
+  const d = audioFixture(),
+    timer = clock(),
+    source = new MotionTransport(d.engine, timer.scheduler),
+    stop = source.subscribe(() => {});
+  source.play();
+  d.engine.load(d.engine.getSnapshot().project);
+  expect(source.read().playing).toBe(false);
+  source.play();
+  d.engine.execute({
+    type: "updateMotionAudioTrack",
+    trackId: d.track().id,
+    patch: {
+      processing: {
+        fadeIn: { value: 1, rate: 4 },
+        fadeOut: { value: 0, rate: 1 },
+        reverb: { mix: 0, decay: 0.8 },
+      },
+    },
+  });
+  expect(source.read().playing).toBe(false);
+  stop();
+  source.dispose();
 });

@@ -1,5 +1,9 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { createKeyframeTooltipPreview } from "../../../../src/components/motion/gestures/tooltip";
+import {
+  createKeyframeTooltipPreview,
+  createClipDurationTooltipPreview,
+  renderTimelineGestureTooltip,
+} from "../../../../src/components/motion/gestures/tooltip";
 
 afterEach(() => {
   document.body.replaceChildren();
@@ -47,4 +51,66 @@ it("respects seconds and ignores absent or other-owner tooltip hosts", () => {
   const empty = createKeyframeTooltipPreview(key);
   empty.set({ value: 3, rate: 1 });
   empty.dispose();
+});
+
+it("discovers cold-down portals asynchronously, publishes the latest exact duration and never rescans on move", async () => {
+  const wrap = document.createElement("div"),
+    handle = document.createElement("button");
+  wrap.dataset.motionClipId = "clip";
+  wrap.append(handle);
+  document.body.append(wrap);
+  const query = vi.spyOn(document, "querySelectorAll");
+  const preview = createClipDurationTooltipPreview(handle);
+  preview.set({ value: 12345, rate: 1000 });
+  const ms = document.createElement("span"),
+    seconds = document.createElement("span"),
+    portal = document.createElement("div");
+  ms.dataset.motionClipTooltip = seconds.dataset.motionClipTooltip = "clip";
+  ms.dataset.timeUnit = "ms";
+  seconds.dataset.timeUnit = "s";
+  ms.textContent = "4000 ms";
+  seconds.textContent = "4 s";
+  portal.append(ms, seconds);
+  document.body.append(portal);
+  await Promise.resolve();
+  expect(ms).toHaveTextContent("12345 ms");
+  expect(seconds).toHaveTextContent("12.345 s");
+  for (let value = 0; value < 20; value++) preview.set({ value, rate: 3 });
+  expect(query).toHaveBeenCalledOnce();
+  preview.dispose();
+  preview.dispose();
+  expect(ms).toHaveTextContent("4000 ms");
+  expect(seconds).toHaveTextContent("4 s");
+  query.mockRestore();
+});
+
+it("reports clip duration during both trims and movement while key tooltips retain absolute time", () => {
+  const tooltip = { set: vi.fn() },
+    feedback = document.createElement("output");
+  const base = {
+    anchor: { value: 1, rate: 1 },
+    delta: { value: 1, rate: 2 },
+    snapped: null,
+    page: { motion: { duration: { value: 5, rate: 1 } } },
+    tooltip,
+    track: {
+      id: "clip",
+      layerId: "layer",
+      start: { value: 1, rate: 1 },
+      end: { value: 5, rate: 1 },
+      properties: [],
+    },
+  };
+  for (const [action, duration] of [
+    ["trimStart", 3.5],
+    ["trimEnd", 4.5],
+    ["move", 4],
+  ] as const) {
+    renderTimelineGestureTooltip(feedback, { ...base, action });
+    const time = tooltip.set.mock.calls.at(-1)![0];
+    expect(time.value / time.rate).toBe(duration);
+  }
+  renderTimelineGestureTooltip(feedback, { ...base, track: undefined, action: "keys" });
+  expect(tooltip.set).toHaveBeenLastCalledWith({ value: 3, rate: 2 });
+  expect(feedback).toHaveTextContent("1.500 s");
 });

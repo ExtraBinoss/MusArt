@@ -1,0 +1,277 @@
+.motion-timeline-actions:has(.motion-audio-add) {
+  width: 144px;
+}
+.motion-audio-row:is(:hover, .is-selected) .motion-row-label > svg {
+  color: color-mix(in srgb, var(--media-audio) 38%, var(--muted-foreground));
+}
+.motion-audio-row.is-selected .motion-row-label > svg {
+  color: var(--media-audio);
+}
+.motion-audio-row .motion-track-wrap {
+  overflow: hidden;
+}
+.motion-audio-row .motion-trim-handle {
+  z-index: 2;
+}
+.motion-audio-row[data-muted="true"] .motion-audio-track {
+  opacity: 0.45;
+}
+.motion-audio-waveform {
+  position: absolute;
+  top: 0;
+  pointer-events: none;
+  color: var(--muted-foreground);
+}
+.motion-audio-envelope {
+  fill: currentColor;
+  opacity: 0.38;
+}
+.motion-audio-envelope-core {
+  fill: currentColor;
+  opacity: 0.72;
+}
+.motion-audio-row.is-selected .motion-audio-waveform {
+  color: var(--background);
+}
+.motion-audio-row [data-audio-dragging] {
+  cursor: grabbing;
+}
+.motion-audio-gain[data-slot] {
+  flex: 0 0 20px;
+  width: 20px;
+  opacity: 0;
+}
+.motion-audio-row:is(:hover, :focus-within, .is-selected) .motion-audio-gain {
+  opacity: 1;
+}
+.motion-audio-volume[data-slot] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-direction: column;
+  align-items: stretch;
+  width: 260px;
+  padding: 12px;
+  font-size: 11px;
+}
+.motion-audio-volume-main,
+.motion-audio-volume-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.motion-audio-volume-main output {
+  flex: 0 0 36px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.motion-audio-volume-actions input {
+  width: 66px;
+  height: 28px;
+  margin-right: auto;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.motion-audio-volume [data-slot="slider"] {
+  flex: 1;
+  min-width: 0;
+}
+.motion-audio-library[data-slot] {
+  width: min(370px, calc(100vw - 24px));
+  padding: 10px;
+}
+.motion-sfx-bank-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.motion-audio-library-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+}
+.motion-audio-library-header > span {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.motion-sfx-info[data-slot] {
+  width: 220px;
+  padding: 10px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.motion-sfx-scroll,
+.motion-sfx-list {
+  max-height: min(360px, 50vh);
+}
+.motion-sfx-list {
+  overflow: auto;
+  padding-right: 4px;
+  overflow-anchor: none;
+}
+.motion-sfx-virtual {
+  position: relative;
+}
+.motion-sfx-slot,
+.motion-sfx-category {
+  position: absolute;
+  inset-inline: 0;
+}
+.motion-sfx-category {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  border-top: 1px solid var(--border);
+  padding-inline: 3px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 18px;
+}
+.motion-sfx-category[data-sfx-category="whoosh"] {
+  border-top-color: transparent;
+}
+.motion-sfx-item {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) minmax(48px, 128px) 20px;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: 38px;
+  border-radius: 6px;
+  padding: 3px;
+}
+.motion-sfx-item:is(:hover, :focus-within),
+.motion-sfx-item[data-preview-active="true"] {
+  background: var(--accent);
+}
+.motion-sfx-name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  line-height: 15px;
+}
+.motion-sfx-name small {
+  display: block;
+  color: var(--muted-foreground);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.motion-sfx-waveform {
+  display: block;
+  width: 100%;
+  height: 16px;
+  color: var(--muted-foreground);
+  outline-style: none;
+  outline-color: var(--media-audio);
+  pointer-events: none;
+}
+.motion-sfx-status {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 10px;
+  line-height: 1.4;
+}
+.motion-sfx-status:empty {
+  display: none;
+}
+.motion-audio-fade-trigger {
+  position: absolute;
+  top: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 10px;
+  border: 0;
+  border-radius: 2px;
+  padding: 0;
+  background: color-mix(in srgb, var(--foreground) 16%, var(--background));
+  color: var(--foreground);
+  opacity: 0;
+}
+.motion-audio-fade-trigger.is-start {
+  left: 7px;
+}
+.motion-audio-fade-trigger.is-end {
+  right: 7px;
+}
+.motion-audio-row:is(:hover, :focus-within, .is-selected) .motion-audio-fade-trigger {
+  opacity: 1;
+}
+.motion-audio-fade-trigger:hover {
+  background: var(--accent);
+}
+.motion-audio-processing[data-slot] {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(360px, calc(100vw - 24px));
+  padding: 16px;
+  font-size: 12px;
+}
+.motion-audio-processing header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.motion-audio-processing header > span {
+  overflow: hidden;
+  max-width: 160px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+.motion-audio-fade-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.motion-audio-fade-fields > label {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 7px;
+}
+.motion-audio-fade-fields input {
+  padding-right: 26px;
+  font-variant-numeric: tabular-nums;
+}
+.motion-audio-fade-fields small {
+  position: absolute;
+  right: 8px;
+  bottom: 9px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.motion-audio-processing-slider {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 42px;
+  gap: 10px;
+  font-size: 11px;
+}
+.motion-audio-processing-slider output {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
+}
+.motion-audio-processing > p {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.motion-audio-processing footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}

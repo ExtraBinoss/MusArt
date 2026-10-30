@@ -151,6 +151,14 @@ it("rejects transparent output before touching audio, encoding, targets or rende
     expect(untouched).not.toHaveBeenCalled();
 });
 
+it("explicitly muted output never opens source audio", async () => {
+  state.hasAudio = true;
+  const result = await exportMotionVideo(fixture(), { compositionId: "comp", audio: false });
+  expect(state.mixerCreate).not.toHaveBeenCalled();
+  expect(state.audioAdd).not.toHaveBeenCalled();
+  expect(result.audio).toBeNull();
+});
+
 it("exports half-open rational frames and a shortened final sample from one frozen snapshot", async () => {
   const project = fixture(),
     progress: number[] = [];
@@ -169,10 +177,12 @@ it("exports half-open rational frames and a shortened final sample from one froz
     { value: 1, rate: 10 },
   ]);
   expect(state.frames.map((frame) => frame.x)).toEqual([0, 100 / 3, 200 / 3, 100]);
-  expect(state.videoAdd.mock.calls.at(-1)!.slice(0, 2)).toEqual([0.1, 0.001]);
+  expect(state.videoAdd.mock.calls.at(-1)!.slice(0, 2)).toEqual([0.1, 58 / 57600]);
   expect(result).toMatchObject({
     frameCount: 4,
     duration: { value: 101, rate: 1000 },
+    encodedDuration: { value: 2909, rate: 28800 },
+    timestampResolution: 57600,
     width: 64,
     height: 32,
     bytes: 7,

@@ -13,6 +13,12 @@ import {
   type MotionFrameRate,
   type MotionProgram,
 } from "@musart/core";
+import {
+  classifyAudioMixChange,
+  rebaseAudioMixFrame,
+  rebaseAudioMixProgram,
+  type AudioMixPublication,
+} from "./audio/commit-policy";
 
 export type MotionPlaybackMode = "once" | "loop" | "pingPong";
 export interface MotionTransportState {
@@ -57,6 +63,8 @@ export class MotionTransport {
   private draft: MotionProgram | null = null;
   private stopDraft: (() => void) | null = null;
   private editingTime: MotionTime | null = null;
+  private snapshot: ReturnType<EnginePort["getSnapshot"]> | null = null;
+  private audioMixPublication: AudioMixPublication | null = null;
 
   constructor(
     private readonly engine: EnginePort,
@@ -74,6 +82,27 @@ export class MotionTransport {
     if (this.disposed) return;
     const snapshot = this.engine.getSnapshot();
     if (this.project === snapshot.project && this.state?.compositionId === snapshot.pageId) return;
+    const mix =
+      this.snapshot && this.program && !this.draft
+        ? classifyAudioMixChange(this.snapshot, snapshot)
+        : null;
+    if (mix && this.program) {
+      const changes = new Map(
+        this.audioMixPublication?.changes.map((change) => [change.trackId, change]) ?? [],
+      );
+      for (const change of mix.changes) changes.set(change.trackId, change);
+      this.audioMixPublication = Object.freeze({
+        ...mix,
+        changes: Object.freeze([...changes.values()]),
+      });
+      this.project = snapshot.project;
+      this.snapshot = snapshot;
+      this.program = rebaseAudioMixProgram(this.program, this.audioMixPublication);
+      this.frame = rebaseAudioMixFrame(this.frame, this.program);
+      return;
+    }
+    this.snapshot = snapshot;
+    this.audioMixPublication = null;
     this.stopDraft?.();
     if (this.state)
       this.retained.set(this.state.compositionId, {
@@ -135,6 +164,10 @@ export class MotionTransport {
   };
   isPreviewing = (): boolean => this.draft !== null;
   readEditingTime = (): MotionTime | null => this.editingTime;
+  readAudioMixPublication = (): AudioMixPublication | null => {
+    this.sync();
+    return this.audioMixPublication;
+  };
 
   /** One latest-only presentation update per frame; no document/history publication. */
   beginKeyframePreview = (
@@ -321,6 +354,8 @@ export class MotionTransport {
     this.frame = null;
     this.framePlan = null;
     this.project = null;
+    this.snapshot = null;
+    this.audioMixPublication = null;
     if (sources.get(this.engine) === this) sources.delete(this.engine);
   };
 }

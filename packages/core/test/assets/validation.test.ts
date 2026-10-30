@@ -2,7 +2,7 @@ import { expect, it } from "vitest";
 import { validateAssetDescription } from "../../src/assets/validation";
 import { validateProject } from "../../src/document/validation";
 import { createLayer, createPage, createProject } from "../../src/document/factories";
-import { image, video } from "./fixtures";
+import { image, video, audio } from "./fixtures";
 it("validates small video metadata while excluding native binary and data URL payloads", () => {
   expect(() => validateAssetDescription({ ...video() })).not.toThrow();
   expect(() => validateAssetDescription({ ...image() })).not.toThrow();
@@ -59,7 +59,34 @@ it("binds timed video masks through a layer interval rather than an untimed orig
     assets: { [asset.id]: asset },
     pages: [createPage({ layers: [owner, clip] })],
   });
-  expect(() => validateProject(project)).toThrow("video layer");
+  expect(() => validateProject(project)).toThrow("mask asset must be an image");
   owner.mask = { layerId: clip.id, enabled: true, inverted: false };
   expect(() => validateProject(project)).not.toThrow();
+});
+
+it("keeps standalone audio nonvisual and validates immutable original metadata", () => {
+  expect(() => validateAssetDescription({ ...audio() })).not.toThrow();
+  for (const patch of [
+    { width: 2 },
+    { height: 2 },
+    { dataUrl: "data:audio/wav;base64,AA" },
+    { blob: {} },
+    { mime: "video/mp4" },
+    { byteLength: 0 },
+    { sampleRate: 44100.5 },
+    { sampleRate: 192001 },
+    { channels: 6 },
+    { duration: { value: 0, rate: 1 } },
+    { timeResolution: 0 },
+  ])
+    expect(() => validateAssetDescription({ ...audio(), ...patch })).toThrow();
+  const asset = audio();
+  expect(() =>
+    validateProject(
+      createProject({
+        assets: { [asset.id]: asset },
+        pages: [createPage({ layers: [createLayer("image", { assetId: asset.id })] })],
+      }),
+    ),
+  ).toThrow();
 });

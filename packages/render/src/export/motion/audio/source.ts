@@ -1,4 +1,4 @@
-import type { VideoAsset } from "@musart/core";
+import type { OriginalMediaAsset } from "@musart/core";
 import { ALL_FORMATS, AudioSampleSink, BlobSource, Input, type AudioSample } from "mediabunny";
 import type { MediaSourceResolver } from "../../../sources/media/model";
 import { MotionExportError } from "../errors";
@@ -39,7 +39,7 @@ function copySample(sample: AudioSample): MotionPcmChunk {
 
 /** Browser/native audio decoding is reusable without the editor or an AudioContext. */
 export async function openMotionAudioSource(
-  asset: VideoAsset,
+  asset: OriginalMediaAsset,
   resolver: MediaSourceResolver,
   options: { signal?: AbortSignal } = {},
 ): Promise<MotionAudioSource | null> {
@@ -49,7 +49,7 @@ export async function openMotionAudioSource(
   if (!(original instanceof Blob) || original.size !== asset.byteLength)
     throw new MotionExportError(
       "missingOriginal",
-      "Audio original does not match its immutable video description.",
+      "Audio original does not match its immutable media description.",
     );
   const input = new Input({
     source: new BlobSource(original, { maxCacheSize: 2 * 1024 * 1024 }),
@@ -80,6 +80,11 @@ export async function openMotionAudioSource(
     options.signal?.throwIfAborted();
     if (!tracks.length) {
       await close();
+      if (asset.kind === "audio")
+        throw new MotionExportError(
+          "unsupportedAudio",
+          "The imported audio original has no decodable audio track.",
+        );
       return null;
     }
     if (tracks.length !== 1)

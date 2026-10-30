@@ -13,17 +13,55 @@
   left: 0;
   top: 0;
   transform-origin: 0 0;
-  border: 1px solid var(--primary);
+  border: 1px solid var(--canvas-selection-accent, var(--media-image));
   box-sizing: border-box;
   pointer-events: none;
 }
+.canvas-handle,
 .canvas-timeline-hover-handle {
   position: absolute;
   width: 8px;
   height: 8px;
-  border: 1px solid var(--primary);
-  background: var(--background);
+  padding: 0;
+  border: 1px solid #fff;
+  background: #fff;
+  box-shadow: 0 0 0 1px #000;
+}
+.canvas-handle:focus-visible {
+  outline: 2px solid var(--canvas-selection-accent, var(--media-image));
+  outline-offset: 3px;
+}
+.canvas-selection[data-layer-kind="video"],
+.canvas-timeline-hover[data-layer-kind="video"] {
+  --canvas-selection-accent: var(--media-video);
+}
+.canvas-timeline-hover-handle {
   pointer-events: none;
+}
+/* Contrast is computed by the compositor from the actual painted canvas. Bound
+   backdrop work to one selected frame and one hover frame, never all 320 thumbs. */
+@media (forced-colors: none) {
+  @supports ((backdrop-filter: invert(1)) or (-webkit-backdrop-filter: invert(1))) {
+    .canvas-selection-overlays[data-selection-count="1"][data-playback="false"] .canvas-handle,
+    .canvas-selection-overlays:is(
+        [data-selection-count="0"],
+        [data-selection-count="1"]
+      )[data-playback="false"]
+      ~ .canvas-timeline-hover[data-playback="false"]:not([data-selected="true"])
+      .canvas-timeline-hover-handle {
+      background: transparent;
+      -webkit-backdrop-filter: blur(2px) grayscale(1) contrast(1000) invert(1);
+      backdrop-filter: blur(2px) grayscale(1) contrast(1000) invert(1);
+    }
+  }
+}
+@media (forced-colors: active) {
+  .canvas-handle,
+  .canvas-timeline-hover-handle {
+    background: Canvas;
+    border-color: CanvasText;
+    box-shadow: none;
+  }
 }
 .canvas-timeline-hover-handle.is-nw {
   left: -4px;

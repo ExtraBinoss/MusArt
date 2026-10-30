@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import {
   createLayerGeometryIndex,
+  isAudioAsset,
   type Composition,
   type EnginePort,
   type Layer,
@@ -193,9 +194,10 @@ export const Inspector = memo(
         />
       );
     }
-    const asset = layer?.assetId
+    const original = layer?.assetId
       ? (assets ?? engine.getSnapshot().project.assets)[layer.assetId]
       : undefined;
+    const asset = original && !isAudioAsset(original) ? original : undefined;
     return (
       <MotionFieldProvider editor={edit}>
         <ScrollShadow className="inspector-scroll">

@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./audio": "./src/audio.ts",
     "./preview-cost": "./src/compositing/preview-cost.ts"
   },
   "dependencies": {

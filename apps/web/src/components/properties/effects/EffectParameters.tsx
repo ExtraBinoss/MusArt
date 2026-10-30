@@ -1,6 +1,7 @@
 import "./gradient-messages";
 import "./messages";
 import "./library-messages";
+import "./parameter-layout.css";
 import { memo, useCallback, useRef, useState, useSyncExternalStore } from "react";
 import { RotateCcw } from "lucide-react";
 import {
@@ -180,6 +181,7 @@ export function EffectParameters({
               key={`${parameter.key}:${resetVersion}`}
               className="effect-parameter-row"
               data-parameter-index={index}
+              data-parameter-kind={parameter.kind}
               style={window.virtual ? { top: window.rowTop(index) } : undefined}
             >
               <ParameterField

@@ -6,8 +6,46 @@ import {
 } from "../../../src/components/motion-shell/dock-interaction";
 
 afterEach(() => {
+  delete document.documentElement.dataset.layerReorderActive;
   vi.useRealTimers();
   document.body.replaceChildren();
+});
+
+test("native dragging retains the unpinned dock after browser pointer cancellation", () => {
+  const d = fixture(true);
+  fireEvent.pointerOver(d.button);
+  fireEvent.pointerDown(d.button, { pointerId: 7 });
+  fireEvent.dragStart(d.button);
+  fireEvent.pointerCancel(d.button, { pointerId: 7 });
+  fireEvent.pointerOut(d.button, { relatedTarget: document.body });
+  vi.advanceTimersByTime(1000);
+  expect(d.watcher.dragging()).toBe(true);
+  expect(d.actions.close).not.toHaveBeenCalled();
+  fireEvent.dragEnd(d.button);
+  vi.advanceTimersByTime(280);
+  expect(d.actions.close).toHaveBeenCalledOnce();
+  expect(d.watcher.dragging()).toBe(false);
+  d.watcher.dispose();
+});
+
+test("a shared Layers drag retains an open dock and a native drag can reveal its peek", async () => {
+  const d = fixture(true);
+  fireEvent.pointerOver(d.button);
+  document.documentElement.dataset.layerReorderActive = "true";
+  await Promise.resolve();
+  fireEvent.pointerOut(d.button, { relatedTarget: document.body });
+  vi.advanceTimersByTime(1000);
+  expect(d.actions.close).not.toHaveBeenCalled();
+  delete document.documentElement.dataset.layerReorderActive;
+  await Promise.resolve();
+  vi.advanceTimersByTime(280);
+  expect(d.actions.close).toHaveBeenCalledOnce();
+  fireEvent.dragOver(d.button);
+  expect(d.actions.open).toHaveBeenCalledOnce();
+  vi.advanceTimersByTime(1000);
+  expect(d.actions.close).toHaveBeenCalledOnce();
+  d.watcher.dispose();
+  expect(vi.getTimerCount()).toBe(0);
 });
 function fixture(expanded = false, geometry = false) {
   vi.useFakeTimers();

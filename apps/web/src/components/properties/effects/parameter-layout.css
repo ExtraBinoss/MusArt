@@ -1,0 +1,75 @@
+/* One shared label/value/keyframe grid for every catalog-defined parameter kind. */
+.effect-parameter-row,
+.motion-property-field.effect-property-row {
+  --effect-label-width: 44%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24px;
+  column-gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+.effect-parameter-row > .motion-property-field {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  gap: inherit;
+}
+.effect-parameter-row > :not(.motion-property-field),
+.effect-property-row > .motion-property-input {
+  grid-column: 1;
+}
+.effect-parameter-row .motion-property-diamond,
+.effect-property-row > .motion-property-diamond {
+  grid-column: 2;
+  width: 24px;
+  padding-inline: 3px;
+  justify-self: center;
+}
+:is(.effect-parameter-row, .effect-property-row) .number-field {
+  display: grid;
+  grid-template-columns: var(--effect-label-width) minmax(0, 1fr) 27px;
+  height: var(--effect-control-height, 30px);
+}
+:is(.effect-parameter-row, .effect-property-row) .number-scrub {
+  min-width: 0;
+  max-width: none;
+  justify-content: flex-start;
+  gap: 4px;
+  font-size: 11px;
+}
+:is(.effect-parameter-row, .effect-property-row) .number-field input[data-slot="input"] {
+  width: 100%;
+}
+:is(.effect-parameter-row, .effect-property-row)
+  :is(.effect-select-field, .effect-color-field, .switch-row) {
+  display: grid;
+  grid-template-columns: var(--effect-label-width) minmax(0, 1fr);
+  align-items: center;
+  gap: 0;
+  height: var(--effect-control-height, 30px);
+  min-width: 0;
+}
+:is(.effect-parameter-row, .effect-property-row)
+  :is(.effect-select-field, .effect-color-field, .switch-row)
+  > :first-child {
+  min-width: 0;
+  padding-right: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+:is(.effect-parameter-row, .effect-property-row)
+  :is(.effect-select-field, .effect-color-field)
+  > button:not(.effect-color-label) {
+  width: 100%;
+  min-width: 0;
+  padding-inline: 7px;
+  height: var(--effect-control-height, 30px);
+}
+:is(.effect-parameter-row, .effect-property-row) .switch-row > [data-slot="switch"] {
+  justify-self: start;
+}
+.layer-effect-details .effect-compositing {
+  grid-template-columns: minmax(0, 1fr);
+}

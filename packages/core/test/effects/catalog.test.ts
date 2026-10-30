@@ -40,6 +40,7 @@ describe("portable effect definitions", () => {
       "bit-dither",
       "receipt",
       "pink-phosphor",
+      "transition",
     ]);
     expect(getEffectDefinition("dither")).toMatchObject({
       type: "dither",
@@ -59,6 +60,7 @@ describe("portable effect definitions", () => {
   });
   it("provides typed controls in document units and meaningful display metadata", () => {
     const expected: Record<EffectType, string[]> = {
+      transition: ["amount", "style", "progress", "softness", "strength", "detail", "direction"],
       dither: ["amount", "scale", "levels", "color", "seed"],
       ascii: ["amount", "scale", "color"],
       brightness: ["amount"],
@@ -327,7 +329,7 @@ describe("portable effect definitions", () => {
       );
       expect(getEffectDefinition(definition.type)).toBe(definition);
       expect(definition.coverage).toBe(
-        ["gradient", "circle", "shatter", "crt", "receipt"].includes(definition.type)
+        ["gradient", "circle", "shatter", "crt", "receipt", "transition"].includes(definition.type)
           ? "reduce"
           : "preserve",
       );
@@ -351,6 +353,7 @@ describe("portable effect definitions", () => {
           "bit-dither",
           "receipt",
           "pink-phosphor",
+          "transition",
         ].includes(definition.type)
           ? "effect"
           : "adjustment",

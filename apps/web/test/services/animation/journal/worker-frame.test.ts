@@ -6,6 +6,8 @@ import {
   snapshotJournalFrame,
 } from "../../../../src/services/animation/journal/worker-frame";
 import { frameAt } from "./fixtures";
+import { audioFixture } from "../../../support/audio";
+import { captureJournalFrame } from "../../../../src/services/animation/journal/frame";
 it("owns immutable detached metadata and rejects nested originals or incomplete descriptions", () => {
   const frame = frameAt(),
     snapshot = snapshotJournalFrame(frame);
@@ -86,4 +88,50 @@ it("validates the exact clone when a source getter changes metadata during captu
   expect(captured.state).not.toHaveProperty("assets");
   expect(captured.descriptions[0]!.id).toBe("photo");
   expect(Object.isFrozen(captured.state)).toBe(true);
+});
+
+it("resolves standalone audio from its immutable original header through commits and undo, never an image URL", async () => {
+  const d = audioFixture(),
+    db = await openStudioDatabase(crypto.randomUUID()),
+    before = d.engine.getSnapshot(),
+    asset = d.asset;
+  const frame = () =>
+    snapshotJournalFrame(captureJournalFrame(d.engine.getSnapshot(), before.project.assets));
+  const header = {
+    projectId: before.project.id,
+    originalId: asset.originalId,
+    contentRevision: asset.contentRevision,
+    byteLength: asset.byteLength,
+  };
+  try {
+    await expect(projectForJournal(db, frame())).rejects.toThrow(
+      `Journal audio original is missing: ${asset.id}`,
+    );
+    await db.put("mediaOriginalMeta", { ...header, contentRevision: "wrong" });
+    await expect(projectForJournal(db, frame())).rejects.toThrow("audio original is missing");
+    await db.put("mediaOriginalMeta", header);
+    const original = await projectForJournal(db, frame());
+    expect(original.assets[asset.id]).toEqual(asset);
+    expect("dataUrl" in original.assets[asset.id]!).toBe(false);
+    d.engine.transaction([
+      { type: "updateMotionAudioTrack", trackId: d.track().id, patch: { volume: 0.4 } },
+      { type: "updateMotionAudioTrack", trackId: d.track().id, patch: { mute: true } },
+    ]);
+    const committed = frame();
+    expect(committed.assets).toEqual([]);
+    expect(
+      (await projectForJournal(db, committed)).pages[0]!.motion!.audioTracks![0],
+    ).toMatchObject({ volume: 0.4, mute: true });
+    d.engine.undo();
+    expect((await projectForJournal(db, frame())).pages[0]!.motion!.audioTracks![0]).toMatchObject({
+      volume: 1,
+      mute: false,
+    });
+    await db.delete("mediaOriginalMeta", [before.project.id, asset.originalId]);
+    await expect(
+      projectForJournal(db, snapshotJournalFrame(captureJournalFrame(d.engine.getSnapshot()))),
+    ).rejects.toThrow("audio original is missing");
+  } finally {
+    db.close();
+  }
 });

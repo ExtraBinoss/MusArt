@@ -44,16 +44,16 @@ export async function persistMediaOriginals(
   incoming: readonly StoredMediaOriginal[],
 ): Promise<{ bytes: number; changed: boolean }> {
   if (!Array.isArray(incoming) || incoming.length > 100) throw Error("Invalid binary media batch.");
-  const required = new Map<string, Extract<AssetMetadata, { kind: "video" }>>();
+  const required = new Map<string, Extract<AssetMetadata, { kind: "video" | "audio" }>>();
   for (const asset of descriptions) {
-    if (asset.kind !== "video") continue;
+    if (asset.kind !== "video" && asset.kind !== "audio") continue;
     const previous = required.get(asset.originalId);
     if (
       previous &&
       (previous.contentRevision !== asset.contentRevision ||
         previous.byteLength !== asset.byteLength)
     )
-      throw Error("Conflicting immutable video original references.");
+      throw Error("Conflicting immutable media original references.");
     required.set(asset.originalId, asset);
   }
   const staged = new Map<string, StoredMediaOriginal>();
@@ -74,8 +74,8 @@ export async function persistMediaOriginals(
       (stagedBytes += original.blob.size) > 1024 * 1024 * 1024
     )
       throw new MediaStorageError(
-        "VIDEO_STORAGE_LIMIT",
-        "Video import exceeds the 512 MiB file or 1 GiB batch limit.",
+        asset.kind === "audio" ? "AUDIO_STORAGE_LIMIT" : "VIDEO_STORAGE_LIMIT",
+        "Media import exceeds the 512 MiB file or 1 GiB batch limit.",
       );
     staged.set(original.originalId, original);
   }
@@ -90,14 +90,14 @@ export async function persistMediaOriginals(
         previous.contentRevision !== asset.contentRevision ||
         previous.byteLength !== asset.byteLength
       )
-        throw Error("An immutable video original cannot be replaced.");
+        throw Error("An immutable media original cannot be replaced.");
       continue;
     }
     const original = staged.get(asset.originalId);
     if (!original)
       throw new MediaStorageError(
-        "VIDEO_ORIGINAL_MISSING",
-        `Video original is missing: ${asset.originalId}`,
+        asset.kind === "audio" ? "AUDIO_ORIGINAL_MISSING" : "VIDEO_ORIGINAL_MISSING",
+        `Media original is missing: ${asset.originalId}`,
       );
     const header: StoredMediaHeader = {
       projectId,
@@ -114,8 +114,8 @@ export async function persistMediaOriginals(
     const projected = retained + bytes + mediaOriginalBytes(header);
     if (!Number.isSafeInteger(projected) || projected > 2 * 1024 * 1024 * 1024)
       throw new MediaStorageError(
-        "VIDEO_STORAGE_LIMIT",
-        "This project's retained video originals exceed the 2 GiB storage limit.",
+        asset.kind === "audio" ? "AUDIO_STORAGE_LIMIT" : "VIDEO_STORAGE_LIMIT",
+        "This project's retained media originals exceed the 2 GiB storage limit.",
       );
     await tx.objectStore("mediaOriginals").add(original);
     await tx.objectStore("mediaOriginalMeta").add(header);

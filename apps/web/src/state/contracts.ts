@@ -77,6 +77,7 @@ export interface NewProjectOptions {
   background: string;
 }
 export interface ExportOptions {
+  signal?: AbortSignal;
   scale: number;
   format: "png" | "jpeg" | "webp";
   quality: number;
@@ -105,6 +106,11 @@ export interface ExportPreview {
   height: number;
 }
 export interface EditorServices {
+  exportComposition?(
+    this: void,
+    options: import("../services/export/model").CompositionExportOptions,
+    scope: import("../services/export/model").CompositionExportScope,
+  ): Promise<import("../services/export/model").CompositionExportResult>;
   projectPreferences?: import("../services/projects/preferences/model").ProjectPreferencesPort;
   mediaResolverFor?(this: void, projectId: string): import("@musart/render").MediaSourceResolver;
   segmentationModel?: import("../services/selection/model/contract").LocalModelPort;

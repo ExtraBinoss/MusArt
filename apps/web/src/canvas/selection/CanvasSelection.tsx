@@ -78,28 +78,38 @@ function TimelineHoverOutline({
     let previousPage: unknown = null,
       previousTarget: unknown = null,
       previousZoom = 0,
-      previousPlayback: boolean | undefined;
+      previousPlayback: boolean | undefined,
+      previousSelection: readonly string[] | null = null;
+    let selected = new Set<string>();
     const paint = () => {
       const node = element.current,
         target = hover.read(),
         frame = controller.read(),
-        scale = viewSource.read().zoom;
+        scale = viewSource.read().zoom,
+        snapshot = engine.getSnapshot(),
+        selection = snapshot.selection;
       if (
         !node ||
         (previousPage === frame.page &&
           previousTarget === target &&
           previousZoom === scale &&
-          previousPlayback === frame.playback)
+          previousPlayback === frame.playback &&
+          previousSelection === selection)
       )
         return;
       previousPage = frame.page;
       previousTarget = target;
       previousZoom = scale;
       previousPlayback = frame.playback;
+      if (previousSelection !== selection) {
+        previousSelection = selection;
+        selected = new Set(selection);
+      }
       if (
         !target ||
-        target.projectId !== engine.getSnapshot().project.id ||
-        target.compositionId !== frame.page.id
+        target.projectId !== snapshot.project.id ||
+        target.compositionId !== frame.page.id ||
+        selected.has(target.layerId)
       ) {
         if (node.style.display !== "none") node.style.display = "none";
         delete node.dataset.layerId;
@@ -114,6 +124,7 @@ function TimelineHoverOutline({
         return;
       }
       node.dataset.layerId = layer.id;
+      node.dataset.layerKind = layer.kind;
       node.dataset.playback = String(Boolean(frame.playback));
       Object.assign(node.style, {
         width: `${layer.width}px`,
@@ -128,11 +139,13 @@ function TimelineHoverOutline({
     paint();
     const stopHover = hover.subscribe(paint),
       stopScene = controller.subscribe(paint),
-      stopView = viewSource.subscribe(paint);
+      stopView = viewSource.subscribe(paint),
+      stopSelection = engine.subscribe(paint);
     return () => {
       stopHover();
       stopScene();
       stopView();
+      stopSelection();
     };
   }, [controller, engine, hover, viewSource]);
   return (

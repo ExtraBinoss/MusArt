@@ -5,6 +5,7 @@ import type { Composition } from "../document/model";
 import type { MotionPropertyTarget } from "./properties/model";
 import { resolveMotionProperty, validateMotionValue } from "./properties/registry";
 import { addMotionTime, subtractMotionTime, compareMotionTime, validateMotionTime } from "./time";
+import { resolveMotionOccurrence } from "./occurrences";
 import { createMotionLayerTrack } from "./initialization";
 import { assertEditable, getLayer } from "../layers/access";
 
@@ -147,10 +148,18 @@ export const upsertMotionKeyframe: CommandHandler<"upsertMotionKeyframe"> = (
   ensure(descriptor, "INVALID_COMMAND", "Unknown Motion property");
   validateMotionValue(descriptor, command.value);
   validateMotionTime(command.time);
-  ensure(command.time.value >= 0, "INVALID_COMMAND", "Negative keyframe time");
+  ensure(
+    motion.version === 2 || command.time.value >= 0,
+    "INVALID_COMMAND",
+    "Negative keyframe time",
+  );
   assertEditable(page, getLayer(page, command.target.layerId));
-  const track = motion.tracks.find((item) => item.layerId === command.target.layerId);
-  ensure(track, "NOT_FOUND", "Layer has no Motion track");
+  const track = resolveMotionOccurrence(
+    page,
+    command.target.layerId,
+    command.trackId,
+    command.time,
+  );
   let property = track.properties.find((item) => sameTarget(item.target, command.target));
   if (!property) {
     property = { id: nextId("property"), target: command.target, keyframes: [] };
@@ -181,7 +190,7 @@ export const moveMotionKeyframe: CommandHandler<"moveMotionKeyframe"> = (
   const { property, index } = findKey(page, command.keyframeId);
   validateMotionTime(command.time);
   ensure(
-    command.time.value >= 0 &&
+    (page.motion!.version === 2 || command.time.value >= 0) &&
       !property.keyframes.some(
         (key, i) => i !== index && compareMotionTime(key.time, command.time) === 0,
       ),

@@ -1,4 +1,4 @@
-import type { ImageAsset, VideoAsset } from "../../src/assets/model";
+import type { ImageAsset, VideoAsset, AudioAsset } from "../../src/assets/model";
 export const image = (): ImageAsset => ({
   id: "photo",
   name: "Photo",
@@ -21,4 +21,19 @@ export const video = (): VideoAsset => ({
   firstTimestamp: { value: -1, rate: 2 },
   timeResolution: 30000,
   orientation: { rotation: 0, flip: false, pixelAspectRatio: { numerator: 1, denominator: 1 } },
+});
+
+export const audio = (): AudioAsset => ({
+  id: "audio",
+  kind: "audio",
+  name: "Pop",
+  mime: "audio/wav",
+  originalId: "audio-original",
+  contentRevision: "audio-r1",
+  byteLength: 16044,
+  duration: { value: 4, rate: 1 },
+  firstTimestamp: { value: 0, rate: 1 },
+  timeResolution: 48000,
+  sampleRate: 48000,
+  channels: 1,
 });

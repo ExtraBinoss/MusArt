@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { createLayer, createPage, createProject } from "@musart/core";
+import { createLayer, createPage, createProject, type AudioAsset } from "@musart/core";
 import { openStudioDatabase } from "../../../../src/services/projects/database";
 import { ProjectStore } from "../../../../src/services/projects/storage";
 import { readProjectPreview } from "../../../../src/services/projects/previews/read";
@@ -94,5 +94,38 @@ test("hovering a concurrently changed project never adopts its write revision fo
   } finally {
     await active.close();
     await other.close();
+  }
+});
+
+test("saved previews keep audio metadata without reading a nonexistent inline original", async () => {
+  const name = crypto.randomUUID(),
+    store = new ProjectStore(name),
+    input = project();
+  await store.save(input);
+  const db = await openStudioDatabase(name);
+  try {
+    const audio = {
+      kind: "audio",
+      id: "audio",
+      name: "Sound",
+      mime: "audio/wav",
+      originalId: "sound-original",
+      contentRevision: `sha256:${"a".repeat(64)}`,
+      byteLength: 100,
+      duration: { value: 1, rate: 1 },
+      firstTimestamp: { value: 0, rate: 1 },
+      timeResolution: 48000,
+      sampleRate: 48000,
+      channels: 1,
+    } satisfies AudioAsset;
+    const record = (await db.get("projects", input.id))!;
+    record.project.assets.audio = audio;
+    await db.put("projects", record);
+    const result = await readProjectPreview(db, input.id);
+    expect(result.assets.audio).toEqual(audio);
+    expect(result.assets.image).toEqual(input.assets.image);
+  } finally {
+    db.close();
+    await store.close();
   }
 });

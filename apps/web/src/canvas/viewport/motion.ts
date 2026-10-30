@@ -106,6 +106,17 @@ export class ViewMotion implements ViewSource {
     this.publish(this.options.constrain(next), moving);
     if (commit) this.settle();
   }
+  /** Rebase a changed viewport origin before paint, preserving the old screen pose.
+   * The owning resize adapter alone may start outside the new bounds and spring back.
+   */
+  reframe(next: View, commit = true): void {
+    if (this.closed) return;
+    const moving = this.isMoving();
+    this.clearFrame();
+    this.transition = null;
+    this.publish(next, moving);
+    if (commit) this.settle();
+  }
   animateTo(next: View): void {
     if (this.closed) return;
     this.sample();

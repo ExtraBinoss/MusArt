@@ -156,7 +156,7 @@ test("FX avatars expose actual blend/opacity and parameters; previews cancel or 
   expect(scrubs).toHaveLength(2);
   for (const scrub of scrubs) {
     expect(scrub.querySelector("svg.lucide-sun")).toHaveAttribute("aria-hidden", "true");
-    expect(scrub.textContent).toBe("");
+    expect(scrub.textContent).toBe("Opacité");
   }
   fireEvent.change(amount, { target: { value: "60" } });
   expect(d.store.get(previewAtom)).toMatchObject({

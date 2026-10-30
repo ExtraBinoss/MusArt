@@ -8,6 +8,7 @@ import { MotionExportError } from "./errors";
 import type { MotionVideoExportOptions, MotionVideoExportResult } from "./model";
 import { createMotionOutputTarget } from "./target";
 import { motionExportFrame, motionExportTiming } from "./timing";
+import { motionEncodedFrame, motionEncodedTiming } from "./container-time";
 
 /** Headless browser export: one frozen program, one retained Three session, native encoding. */
 export async function exportMotionVideo(
@@ -32,10 +33,21 @@ export async function exportMotionVideo(
   assertRenderSize(program.composition, scale);
   const width = rasterExtent(program.composition.width, scale),
     height = rasterExtent(program.composition.height, scale);
-  const mixer = await createMotionAudioMixer(program, assets, options.mediaResolver, {
-    ...options.audio,
-    signal: options.signal,
-  });
+  const mixer =
+    options.audio === false
+      ? {
+          hasAudio: false,
+          sampleRate: 48000,
+          channels: 2 as const,
+          blockFrames: 4096,
+          samples: 0,
+          readBlock: async () => new Float32Array(0),
+          dispose: async () => {},
+        }
+      : await createMotionAudioMixer(program, assets, options.mediaResolver, {
+          ...options.audio,
+          signal: options.signal,
+        });
   let session: ReturnType<typeof createRenderSession> | undefined;
   let target: ReturnType<typeof createMotionOutputTarget> | undefined;
   let output: Output | undefined,
@@ -67,9 +79,12 @@ export async function exportMotionVideo(
       width,
       height,
       frameRate: timing.frameRate.numerator / timing.frameRate.denominator,
+      videoBitrate: options.videoBitrate,
+      audioBitrate: options.audioBitrate,
       audio: mixer.hasAudio ? mixer : null,
       signal: options.signal,
     });
+    const encodedTiming = motionEncodedTiming(timing, encoding.mimeType);
     options.signal?.throwIfAborted();
     target = createMotionOutputTarget({
       maxBytes: options.maxOutputBytes,
@@ -86,7 +101,7 @@ export async function exportMotionVideo(
       signal: options.signal,
     });
     if (mixer.hasAudio)
-      audio = new AudioSampleSource({ codec: encoding.audioCodec, quality: encoding.quality });
+      audio = new AudioSampleSource({ codec: encoding.audioCodec, quality: encoding.audioQuality });
     options.signal?.addEventListener("abort", onAbort, { once: true });
     let index = 0,
       cursor = 0,
@@ -102,6 +117,7 @@ export async function exportMotionVideo(
         (!audio || cursor === mixer.samples || cursor / mixer.sampleRate >= lastVideoTimestamp)
       ) {
         const frame = motionExportFrame(timing, index);
+        const encoded = motionEncodedFrame(timing, index, encodedTiming.resolution);
         const plan = evaluateMotion(program, frame.time);
         await session.withCanvasFrame(
           applyMotionFrame(program, plan),
@@ -120,7 +136,7 @@ export async function exportMotionVideo(
               // Do not supply frameRate metadata: it would resnap a shortened final sample.
               await output!.start();
             }
-            await video.add(frame.timestamp, frame.seconds, {
+            await video.add(encoded.timestamp, encoded.seconds, {
               keyFrame:
                 index === 0 || Math.floor(frame.timestamp / 2) > Math.floor(lastVideoTimestamp / 2),
             });
@@ -184,6 +200,8 @@ export async function exportMotionVideo(
       frameRate: timing.frameRate,
       frameCount: timing.count,
       duration: timing.duration,
+      encodedDuration: encodedTiming.duration,
+      timestampResolution: encodedTiming.resolution,
       bytes: target.bytes(),
       audio: mixer.hasAudio
         ? { sampleRate: mixer.sampleRate, channels: mixer.channels, samples: mixer.samples }

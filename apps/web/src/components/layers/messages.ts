@@ -1,6 +1,8 @@
 import { registerFeatureTranslations } from "../../state/i18n/feature-resources";
 export const messages = {
   en: {
+    renameChanged: "The layer changed. Start renaming it again.",
+    renameFailed: "The layer could not be renamed.",
     mixed: "Mixed",
     actions: "Layer actions",
     createActions: "Add effects and adjustments",
@@ -17,6 +19,14 @@ export const messages = {
     dropAfter: "Insert below",
     dropInside: "Move into group",
     dropMask: "Add as mask",
+    dropRejected: {
+      locked: "Unlock this layer and its parents before moving it.",
+      cycle: "A layer cannot contain or mask itself through its children.",
+      animatedHierarchy:
+        "Animated layers must stay in their current group. You can reorder them within it.",
+      crossComposition: "Move layers within the same composition.",
+      property: "Drop on a layer row to change the stacking order.",
+    },
     projectTree: "Project layers",
     artboardLayers: "{{name}} · {{count}} layers",
     selectMaskSource: "Select mask source",
@@ -26,6 +36,8 @@ export const messages = {
     lockedByParent: "Locked by {{name}}",
   },
   fr: {
+    renameChanged: "Le calque a changé. Relancez le renommage.",
+    renameFailed: "Le calque n’a pas pu être renommé.",
     mixed: "Mixte",
     actions: "Actions des calques",
     createActions: "Ajouter des effets et corrections",
@@ -42,6 +54,14 @@ export const messages = {
     dropAfter: "Insérer en dessous",
     dropInside: "Déplacer dans le groupe",
     dropMask: "Ajouter comme masque",
+    dropRejected: {
+      locked: "Déverrouillez ce calque et ses parents avant de le déplacer.",
+      cycle: "Un calque ne peut pas se contenir ou se masquer à travers ses enfants.",
+      animatedHierarchy:
+        "Les calques animés doivent garder leur groupe. Vous pouvez les réordonner dans ce groupe.",
+      crossComposition: "Déplacez les calques dans la même composition.",
+      property: "Déposez sur une ligne de calque pour changer l’ordre d’empilement.",
+    },
     projectTree: "Calques du projet",
     artboardLayers: "{{name}} · {{count}} calques",
     selectMaskSource: "Sélectionner la source du masque",

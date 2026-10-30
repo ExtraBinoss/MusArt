@@ -94,7 +94,7 @@ export function estimatePreviewCost(
     else {
       const asset = l.assetId ? assets[l.assetId] : undefined;
       const sourceKey = l.kind === "video" ? `video:${l.id}` : `image:${asset?.id}`;
-      if (asset && !originals.has(sourceKey)) {
+      if (asset && asset.kind !== "audio" && !originals.has(sourceKey)) {
         originals.add(sourceKey);
         originalBytes += asset.width * asset.height * 4 * (l.kind === "video" ? 4 : 1);
         maxDimension = Math.max(maxDimension, asset.width, asset.height);
@@ -117,7 +117,7 @@ export function estimatePreviewCost(
       target(w, h, fixed);
       if (l.mask.assetId) {
         const asset = assets[l.mask.assetId];
-        if (asset && !originals.has(`image:${asset.id}`)) {
+        if (asset && asset.kind !== "audio" && !originals.has(`image:${asset.id}`)) {
           originals.add(`image:${asset.id}`);
           originalBytes += asset.width * asset.height * 4;
           maxDimension = Math.max(maxDimension, asset.width, asset.height);

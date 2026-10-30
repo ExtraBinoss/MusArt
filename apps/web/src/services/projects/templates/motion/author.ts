@@ -1,5 +1,6 @@
 import {
   createLayer,
+  addMotionTime,
   createPage,
   createProject,
   EditorEngine,
@@ -11,7 +12,7 @@ import {
   type MotionPropertyTarget,
   type MotionValue,
 } from "@musart/core";
-import type { BuiltMotionTemplate, MotionTemplateId, MotionTemplateMedia } from "./model";
+import type { BuiltMotionTemplate, MotionTemplateMedia } from "./model";
 
 const CREATED_AT = "2026-10-29T00:00:00.000Z";
 export const seconds = (value: number) => ({ value: Math.round(value * 1000), rate: 1000 });
@@ -22,7 +23,7 @@ export class TemplateAuthor {
   readonly engine;
   private readonly batches: Command[][] = [];
 
-  constructor(id: MotionTemplateId, name: string, width: number, height: number) {
+  constructor(id: string, name: string, width: number, height: number) {
     this.initial = createProject({
       id: `template-${id}`,
       name,
@@ -45,7 +46,11 @@ export class TemplateAuthor {
 
   add(layers: Layer[], media?: MotionTemplateMedia): void {
     this.commit([
-      { type: "addLayers", layers, ...(media ? { assets: [...media.photos, media.video] } : {}) },
+      {
+        type: "addLayers",
+        layers,
+        ...(media ? { assets: [...media.photos, media.video, ...(media.sounds ?? [])] } : {}),
+      },
     ]);
   }
 
@@ -88,6 +93,34 @@ export class TemplateAuthor {
     values: readonly (readonly [number, MotionValue, MotionEasing?])[],
   ): Command[] {
     return this.keys({ kind: "layer", layerId, property }, values);
+  }
+
+  sounds(
+    media: MotionTemplateMedia,
+    placements: readonly { sound: number; start: number; volume: number }[],
+  ): void {
+    this.commit(
+      placements.flatMap((placement, index): Command[] => {
+        const asset = media.sounds?.[placement.sound];
+        if (!asset) return [];
+        const start = seconds(placement.start);
+        return [
+          {
+            type: "addMotionAudioTrack",
+            track: {
+              id: `${this.initial.id}-sound-${index}`,
+              assetId: asset.id,
+              name: asset.name,
+              start,
+              end: addMotionTime(start, asset.duration),
+              sourceIn: { value: 0, rate: 1 },
+              mute: false,
+              volume: placement.volume,
+            },
+          },
+        ];
+      }),
+    );
   }
 
   finish(): BuiltMotionTemplate {

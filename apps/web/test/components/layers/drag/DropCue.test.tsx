@@ -8,6 +8,7 @@ test("portals the translated drag intent above the tree and cleans viewport list
     bounds = vi.spyOn(anchor.current, "getBoundingClientRect"),
     remove = vi.spyOn(window, "removeEventListener");
   bounds.mockReturnValue(new DOMRect(10, 80, 100, 36));
+  anchor.current.dataset.layerDropCueTarget = "true";
   const view = d.mount(<DropCue anchor={anchor} position="mask" />),
     cue = screen.getByRole("status");
   expect(cue.parentElement).toBe(document.body);
@@ -20,5 +21,27 @@ test("portals the translated drag intent above the tree and cleans viewport list
   view.unmount();
   expect(remove).toHaveBeenCalledWith("resize", expect.any(Function));
   expect(remove).toHaveBeenCalledWith("scroll", expect.any(Function), true);
+  expect(screen.queryByRole("status")).toBeNull();
+});
+
+test("shows one cue on the actual target when the same layer is visible in two surfaces", async () => {
+  const d = setup(),
+    first = { current: document.createElement("div") },
+    second = { current: document.createElement("div") };
+  first.current.dataset.layerDropCueTarget = "true";
+  const view = d.mount(
+    <>
+      <DropCue anchor={first} position="before" />
+      <DropCue anchor={second} position="after" />
+    </>,
+  );
+  expect(screen.getAllByRole("status")).toHaveLength(1);
+  expect(screen.getByRole("status")).toHaveTextContent("Insérer au-dessus");
+  delete first.current.dataset.layerDropCueTarget;
+  second.current.dataset.layerDropCueTarget = "true";
+  await Promise.resolve();
+  expect(screen.getAllByRole("status")).toHaveLength(1);
+  expect(screen.getByRole("status")).toHaveTextContent("Insérer en dessous");
+  view.unmount();
   expect(screen.queryByRole("status")).toBeNull();
 });

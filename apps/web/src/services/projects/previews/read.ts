@@ -1,4 +1,4 @@
-import { validateProject, type Asset, type Project } from "@musart/core";
+import { isImageAsset, validateProject, type Asset, type Project } from "@musart/core";
 import type { IDBPDatabase } from "idb";
 import type { StudioDatabase } from "../database";
 import { readProjectWriteRevision } from "../writes/revision";
@@ -32,15 +32,15 @@ export async function readProjectPreview(
       let bytes = 0;
       for (const [assetId, metadata] of Object.entries(record.project.assets)) {
         signal?.throwIfAborted();
-        const original =
-          metadata.kind === "video" ? undefined : await tx.objectStore("assets").get([id, assetId]);
-        if (metadata.kind !== "video" && !original)
+        const media = metadata.kind === "video" || metadata.kind === "audio";
+        const original = media ? undefined : await tx.objectStore("assets").get([id, assetId]);
+        if (!media && !original)
           throw new Error(`Saved preview original is missing: ${metadata.name}`);
         bytes += original ? original.dataUrl.length * 2 : 0;
         if (bytes > MAX_PREVIEW_ORIGINAL_BYTES)
           throw new Error("The saved preview exceeds its original-data budget.");
         Object.defineProperty(assets, assetId, {
-          value: metadata.kind === "video" ? metadata : { ...metadata, dataUrl: original!.dataUrl },
+          value: media ? metadata : { ...metadata, dataUrl: original!.dataUrl },
           enumerable: true,
           writable: true,
           configurable: true,
@@ -51,7 +51,7 @@ export async function readProjectPreview(
       project = record.project;
       let bytes = 0;
       for (const asset of Object.values(project.assets)) {
-        if (asset.kind !== "video") bytes += asset.dataUrl.length * 2;
+        if (isImageAsset(asset)) bytes += asset.dataUrl.length * 2;
         if (bytes > MAX_PREVIEW_ORIGINAL_BYTES)
           throw new Error("The saved preview exceeds its original-data budget.");
       }

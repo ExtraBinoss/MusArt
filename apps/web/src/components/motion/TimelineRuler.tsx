@@ -14,6 +14,12 @@ import "./messages";
 import { FlagTriangleRight } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
+interface ScrubBounds {
+  origin: number;
+  left: number;
+  right: number;
+}
+
 export const TimelineRuler = memo(function TimelineRuler({
   transport,
   duration,
@@ -37,7 +43,11 @@ export const TimelineRuler = memo(function TimelineRuler({
   const ruler = useRef<HTMLDivElement>(null);
   const playhead = useRef<HTMLDivElement>(null);
   const endMarker = useRef<HTMLButtonElement>(null);
-  const gesture = useRef<{ pointer: number; origin: MotionTime } | null>(null);
+  const gesture = useRef<{
+    pointer: number;
+    origin: MotionTime;
+    bounds: ScrubBounds | null;
+  } | null>(null);
   const cancel = useCallback(
     (node: HTMLDivElement) => {
       const pointerGesture = gesture.current;
@@ -67,14 +77,47 @@ export const TimelineRuler = memo(function TimelineRuler({
     sync();
     const unsubscribe = transport.subscribe(sync);
     const node = ruler.current;
+    const viewport = node?.closest(".motion-timeline-scroll");
+    const invalidateBounds = () => {
+      if (gesture.current) gesture.current.bounds = null;
+    };
+    viewport?.addEventListener("scroll", invalidateBounds, { passive: true });
+    window.addEventListener("resize", invalidateBounds);
     return () => {
       unsubscribe();
+      viewport?.removeEventListener("scroll", invalidateBounds);
+      window.removeEventListener("resize", invalidateBounds);
       if (node) cancel(node);
     };
   }, [transport, unit, pixelsPerSecond, active, cancel]);
+  function measureBounds(node: HTMLDivElement): ScrubBounds {
+    const rect = node.getBoundingClientRect();
+    const viewport = node.closest(".motion-timeline-scroll")?.getBoundingClientRect();
+    const header = node.closest(".motion-ruler-line");
+    const gutter = header?.querySelector(".motion-ruler-label")?.getBoundingClientRect();
+    const actions = header?.querySelector(".motion-timeline-actions")?.getBoundingClientRect();
+    const left = Math.max(rect.left, viewport?.left ?? 0, gutter?.right ?? 0);
+    return {
+      origin: rect.left,
+      left,
+      // Keep the six-pixel playhead cap out of the sticky action buttons.
+      right: Math.max(
+        left,
+        Math.min(
+          rect.left + rect.width,
+          viewport?.right ?? Infinity,
+          actions ? actions.left - 6 : Infinity,
+          window.innerWidth,
+        ),
+      ),
+    };
+  }
   function seek(event: PointerEvent<HTMLDivElement>) {
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const seconds = Math.max(0, (event.clientX - bounds.left) / pixelsPerSecond);
+    const current = gesture.current;
+    if (!current) return;
+    const bounds = current.bounds ?? (current.bounds = measureBounds(event.currentTarget));
+    const x = Math.max(bounds.left, Math.min(bounds.right, event.clientX));
+    const seconds = Math.max(0, (x - bounds.origin) / pixelsPerSecond);
     const end = transport.read().duration;
     // Preserve exact rational endpoints, including durations below the UI's microsecond grid.
     transport.seek(seconds >= motionTimeToSeconds(end) ? end : timelineTime(seconds));
@@ -93,7 +136,11 @@ export const TimelineRuler = memo(function TimelineRuler({
         if (!active || event.button !== 0) return;
         event.preventDefault();
         event.currentTarget.focus();
-        gesture.current = { pointer: event.pointerId, origin: transport.read().time };
+        gesture.current = {
+          pointer: event.pointerId,
+          origin: transport.read().time,
+          bounds: measureBounds(event.currentTarget),
+        };
         event.currentTarget.dataset.scrubbing = "true";
         event.currentTarget.dataset.pointerFocus = "true";
         event.currentTarget.setPointerCapture(event.pointerId);
@@ -101,7 +148,11 @@ export const TimelineRuler = memo(function TimelineRuler({
         seek(event);
       }}
       onPointerMove={(event) => {
-        if (gesture.current && gesture.current.pointer === event.pointerId) seek(event);
+        if (gesture.current && gesture.current.pointer === event.pointerId) {
+          // This captured gesture owns the move before document resize hit testing.
+          event.preventDefault();
+          seek(event);
+        }
       }}
       onPointerUp={(event) => {
         if (gesture.current?.pointer !== event.pointerId) return;
@@ -164,7 +215,7 @@ export const TimelineRuler = memo(function TimelineRuler({
         )
         .map((tick) => (
           <span
-            key={tick.x}
+            key={tick.time}
             className={tick.time > duration ? "is-after-end" : undefined}
             style={{ left: tick.x }}
             aria-hidden

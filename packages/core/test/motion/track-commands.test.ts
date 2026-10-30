@@ -131,3 +131,90 @@ it("deletes a key selection in one transaction and rolls back missing/duplicate 
   engine.undo();
   expect(engine.getSnapshot().project).toBe(before.project);
 });
+it("moves every v2 group descendant and its keys together, keeping parent siblings and unrelated tracks independent", () => {
+  const t = (value: number) => ({ value, rate: 1 });
+  const engine = new EditorEngine(
+    createProject({
+      pages: [
+        createPage({
+          layers: [
+            createLayer("group", { id: "parent" }),
+            createLayer("group", { id: "nested", parentId: "parent" }),
+            createLayer("rectangle", { id: "child", parentId: "nested" }),
+            createLayer("ellipse", { id: "other" }),
+          ],
+          motion: {
+            version: 2,
+            mode: "motion",
+            initialized: true,
+            duration: t(8),
+            frameRate: { numerator: 30, denominator: 1 },
+            tracks: [
+              { id: "parent-a", layerId: "parent", start: t(1), end: t(3), properties: [] },
+              { id: "parent-b", layerId: "parent", start: t(6), end: t(8), properties: [] },
+              { id: "nested-track", layerId: "nested", start: t(1), end: t(4), properties: [] },
+              {
+                id: "child-a",
+                layerId: "child",
+                start: t(1),
+                end: t(2),
+                properties: [
+                  {
+                    id: "x",
+                    target: { kind: "layer", layerId: "child", property: "x" },
+                    keyframes: [
+                      { id: "preroll", time: t(-1), value: 0 },
+                      { id: "pose", time: t(1), value: 100 },
+                    ],
+                  },
+                ],
+              },
+              { id: "child-b", layerId: "child", start: t(4), end: t(5), properties: [] },
+              { id: "unrelated", layerId: "other", start: t(0), end: null, properties: [] },
+            ],
+          },
+        }),
+      ],
+    }),
+  );
+  const before = engine.getSnapshot().project;
+  engine.transaction([{ type: "moveMotionTrack", trackId: "parent-a", delta: t(1) }]);
+  const motion = engine.getSnapshot().project.pages[0]!.motion!;
+  expect(
+    motion.tracks.map((track) => [track.id, track.start.value, track.end?.value ?? null]),
+  ).toEqual([
+    ["parent-a", 2, 4],
+    ["parent-b", 6, 8],
+    ["nested-track", 2, 5],
+    ["child-a", 2, 3],
+    ["child-b", 5, 6],
+    ["unrelated", 0, null],
+  ]);
+  expect(motion.tracks[3]!.properties[0]!.keyframes.map((key) => key.time.value)).toEqual([0, 2]);
+  expect(motion.duration).toEqual(t(8));
+  engine.undo();
+  expect(engine.getSnapshot().project).toBe(before);
+  engine.redo();
+  expect(engine.getSnapshot().project.pages[0]!.motion!.tracks[3]!.start).toEqual(t(2));
+});
+it("keeps explicit v2 API extension available and rolls back a negative grouped interval atomically", () => {
+  const { engine, page } = setup();
+  const first = page().motion!.tracks[0]!.id;
+  engine.execute({
+    type: "addMotionOccurrence",
+    layerId: "other",
+    start: { value: 3, rate: 1 },
+    end: { value: 4, rate: 1 },
+  });
+  const before = engine.getSnapshot();
+  expect(() =>
+    engine.execute({ type: "moveMotionTrack", trackId: first, delta: { value: -1, rate: 1 } }),
+  ).toThrow("before zero");
+  expect(engine.getSnapshot()).toBe(before);
+  engine.execute({ type: "moveMotionTrack", trackId: first, delta: { value: 2, rate: 1 } });
+  expect(page().motion!.duration).toEqual({ value: 6, rate: 1 });
+  expect(page().motion!.tracks.find((track) => track.layerId === "child")!.start).toEqual({
+    value: 2,
+    rate: 1,
+  });
+});

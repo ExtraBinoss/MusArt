@@ -37,6 +37,15 @@ const commandTypes = [
   "moveMotionTrack",
   "moveMotionKeyframes",
   "deleteMotionKeyframes",
+  "addMotionAudioTrack",
+  "addMotionOccurrence",
+  "applyMotionTransition",
+  "deleteMotionAudioTrack",
+  "deleteMotionOccurrence",
+  "duplicateMotionOccurrence",
+  "moveMotionAudioTrack",
+  "setMotionAudioTrackRange",
+  "updateMotionAudioTrack",
 ] as const satisfies readonly Command["type"][];
 
 it("dispatches every domain through an immutable own-key registry", () => {

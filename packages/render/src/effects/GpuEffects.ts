@@ -19,10 +19,9 @@ import {
 import { texture, uv } from "three/tsl";
 import { createGlyphAtlas } from "./ascii/atlas";
 import { assertTextureSize, gpuTextureLimit } from "../cache/texture-limits";
-import { gradientStages, type EffectStage } from "./gradient/pipeline";
+import { effectStages, type EffectStage } from "./pipeline";
 import { compositeEffect } from "./shared/compositing/node";
 import { sampleEffect, type EffectDimensions } from "./shared/context";
-import { EFFECT_NODES } from "./registry";
 import { createEffectUniforms, updateEffectUniforms, type EffectUniforms } from "./shared/uniforms";
 
 function effectPassKey(effect: Effect, stage: EffectStage): string {
@@ -91,6 +90,7 @@ export class GpuEffects {
         blending: NoBlending,
         toneMapped: false,
       });
+      material.name = passKey;
       material.fragmentNode = stage.final
         ? compositeEffect(
             sampleEffect(backdrop, { ...controls, sourceFlipY: controls.backdropFlipY }, uv()),
@@ -121,10 +121,7 @@ export class GpuEffects {
     canContinue?: () => boolean,
   ): Promise<void> {
     for (const effect of effects) {
-      const stages =
-        effect.type === "gradient"
-          ? gradientStages(effect)
-          : [{ key: effect.type, builder: EFFECT_NODES[effect.type], final: true }];
+      const stages = effectStages(effect);
       for (const stage of stages) {
         const existing = this.passes.get(effectPassKey(effect, stage));
         if (existing && this.compiled.has(existing)) continue;
@@ -154,10 +151,7 @@ export class GpuEffects {
   /** Allocation high-water mark remains accounted for until explicit disposal. */
   projectedBytes(width: number, height: number, effects: readonly Effect[]): number {
     const enabled = effects.filter((effect) => effect.enabled);
-    const stages = enabled.reduce(
-      (sum, effect) => sum + (effect.type === "gradient" ? gradientStages(effect).length : 1),
-      0,
-    );
+    const stages = enabled.reduce((sum, effect) => sum + effectStages(effect).length, 0);
     if (stages) assertTextureSize(width, height, gpuTextureLimit(this.renderer));
     const scratch =
       stages > 1
@@ -223,17 +217,7 @@ export class GpuEffects {
       throw new Error("La source et la cible GPU doivent être distinctes.");
     assertTextureSize(width, height, gpuTextureLimit(this.renderer));
     output.setSize(width, height);
-    const blocks = enabled.map((effect) => {
-      if (effect.type === "gradient") return { effect, stages: gradientStages(effect) };
-      if (!Object.hasOwn(EFFECT_NODES, effect.type))
-        throw new Error(`Effet GPU inconnu : ${effect.type}`);
-      return {
-        effect,
-        stages: [
-          { key: effect.type, builder: EFFECT_NODES[effect.type], final: true },
-        ] as readonly EffectStage[],
-      };
-    });
+    const blocks = enabled.map((effect) => ({ effect, stages: effectStages(effect) }));
     const total = blocks.reduce((sum, block) => sum + block.stages.length, 0);
     const scratch = total > 1 ? this.getScratch(width, height) : null;
     const previous = this.renderer.getRenderTarget();

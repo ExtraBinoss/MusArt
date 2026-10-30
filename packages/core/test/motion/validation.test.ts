@@ -58,6 +58,9 @@ it("validates portable Motion and rejects invalid identities, targets, ranges an
       p.pages[0]!.motion!.tracks[0]!.properties[0]!.keyframes[0]!.time = { value: 0, rate: -1 };
     },
     (p: typeof valid) => {
+      p.pages[0]!.motion!.tracks[0]!.properties[0]!.keyframes[0]!.time = { value: -1, rate: 1 };
+    },
+    (p: typeof valid) => {
       p.pages[0]!.motion!.tracks[0]!.properties[0]!.keyframes[0]!.easing = { type: "bad" } as never;
     },
     (p: typeof valid) => {
@@ -70,4 +73,28 @@ it("validates portable Motion and rejects invalid identities, targets, ranges an
     mutate(invalid);
     expect(() => validateProject(invalid)).toThrow();
   }
+});
+
+it("accepts disjoint v2 occurrences with independent properties while rejecting overlaps and legacy duplicates", () => {
+  const valid = projectWithKeys(),
+    motion = valid.pages[0]!.motion!;
+  const original = motion.tracks[0]!;
+  original.end = { value: 1, rate: 1 };
+  const copy = structuredClone(original);
+  copy.id = "second-track";
+  copy.start = { value: 3, rate: 2 };
+  copy.end = { value: 2, rate: 1 };
+  copy.properties[0]!.id = "second-property";
+  copy.properties[0]!.keyframes[0]!.id = "second-key";
+  motion.tracks.push(copy);
+  expect(() => validateProject(valid)).toThrow("layer track");
+  motion.version = 2;
+  expect(() => validateProject(valid)).not.toThrow();
+  copy.start = { value: 2, rate: 2 };
+  expect(() => validateProject(valid)).not.toThrow();
+  copy.start = { value: 999, rate: 1000 };
+  expect(() => validateProject(valid)).toThrow("overlap");
+  copy.start = { value: 1, rate: 1 };
+  copy.properties[0]!.keyframes[0]!.id = original.properties[0]!.keyframes[0]!.id;
+  expect(() => validateProject(valid)).toThrow();
 });

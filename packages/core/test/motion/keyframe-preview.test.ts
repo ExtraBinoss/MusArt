@@ -116,3 +116,27 @@ test("rejects negative times, collisions, missing/duplicate selections and locke
   ).toThrow();
   expect(d.program.layers[0]!.properties[0]!.keys[0]!.time).toEqual({ value: 0, rate: 1 });
 });
+
+test("v2 drafts and committed retiming preserve signed pre-roll keys while sampling only the authored time", () => {
+  const d = setup();
+  const track = d.project.pages[0]!.motion!.tracks[0]!;
+  d.engine.execute({
+    type: "duplicateMotionOccurrence",
+    trackId: track.id,
+    start: { value: 3, rate: 1 },
+  });
+  const program = compileMotion(d.engine.getSnapshot().project, { compositionId: "page" });
+  const keyId = track.properties[0]!.keyframes[0]!.id;
+  const preview = createMotionKeyframePreview(program, [keyId]);
+  const delta = { value: -1, rate: 2 };
+  expect(preview.accepts(delta)).toBe(true);
+  const draft = preview.sample(delta);
+  expect(draft.composition.motion!.tracks[0]!.properties[0]!.keyframes[0]!.time).toEqual(delta);
+  d.engine.execute({ type: "moveMotionKeyframes", keyframeIds: [keyId], delta });
+  const committed = compileMotion(d.engine.getSnapshot().project, { compositionId: "page" });
+  for (const value of [0, 1, 2, 7])
+    expect(evaluateMotion(draft, { value, rate: 2 })).toEqual(
+      evaluateMotion(committed, { value, rate: 2 }),
+    );
+  expect(program.composition.motion!.tracks[0]!.properties[0]!.keyframes[0]!.time.value).toBe(0);
+});

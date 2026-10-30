@@ -63,3 +63,26 @@ test("cancels on Escape/unmount and rejects stale conversion without accepting o
   await expect(result).resolves.toBe(false);
   expect(d.engine.getSnapshot().project.pages[0]!.motion).toBeUndefined();
 });
+
+test("transition conversion uses honest generic copy while keeping import wording unchanged elsewhere", async () => {
+  const d = setup(),
+    port = getMotionConfirmation(d.engine);
+  const mount = d.mount(<MotionImportConfirmation engine={d.engine} />);
+  const plan = {
+    ...planMotionInitialization(d.engine.getSnapshot()),
+    layerIds: ["one", "two", "three", "four"],
+    requiresConfirmation: true,
+  };
+  let result!: Promise<boolean>;
+  act(() => {
+    result = port.request(plan, { reason: "transition" });
+  });
+  expect(screen.getByRole("alertdialog")).toHaveTextContent(
+    "4 éléments seront ajoutés à la timeline avant de choisir une transition",
+  );
+  expect(screen.getByRole("alertdialog")).not.toHaveTextContent("vidéo importée");
+  fireEvent.click(screen.getByRole("button", { name: "Non, garder statique" }));
+  await expect(result).resolves.toBe(false);
+  expect(d.engine.getSnapshot().project.pages[0]!.motion).toBeUndefined();
+  mount.unmount();
+});

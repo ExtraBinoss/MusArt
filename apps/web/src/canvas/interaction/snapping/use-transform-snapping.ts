@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, type RefObject } from "react";
-import type { EnginePort, Layer, Point } from "@musart/core";
+import type { Composition, EnginePort, Layer, Point } from "@musart/core";
 import type { SceneController } from "../../session/scene-controller";
 import type { ViewSource } from "../../viewport/motion";
-import { isGestureOriginCurrent, type GestureOrigin } from "../gesture-origin";
+import { isTransformAuthoringCurrent, type TransformAuthoring } from "../transform-authoring";
 import type { Handle, LayerPatch } from "../gestures";
 import { snappingPreferences } from "../../../state/snapping/preferences";
 import { SnapFeedback } from "./source";
 import { TransformSnapping } from "./transform";
-export interface TransformGesture {
-  origin: GestureOrigin;
+export interface TransformGesture extends TransformAuthoring {
+  presentation?: Composition;
   mode: string;
   from: Point;
   current: Point;
@@ -34,7 +34,9 @@ export function useTransformSnapping({
   const feedback = useMemo(() => new SnapFeedback(engine), [engine]);
   const update = useCallback(
     (active: TransformGesture, point: Point, alt: boolean, shift: boolean) => {
-      const page = active.origin.project.pages.find((item) => item.id === active.origin.pageId)!;
+      const page =
+        active.presentation ??
+        active.origin.project.pages.find((item) => item.id === active.origin.pageId)!;
       const session = (active.snapping ??= new TransformSnapping(page, active.layers));
       const preferences = snappingPreferences.read(),
         threshold = preferences.threshold / view.read().zoom;
@@ -56,7 +58,7 @@ export function useTransformSnapping({
       if (
         active &&
         (active.mode === "move" || active.mode === "resize") &&
-        isGestureOriginCurrent(engine, active.origin)
+        isTransformAuthoringCurrent(engine, active)
       )
         update(
           active,
@@ -78,7 +80,7 @@ export function useTransformSnapping({
         (event.key !== "Alt" && event.key !== "Shift") ||
         !active?.modifiers ||
         (active.mode !== "move" && active.mode !== "resize") ||
-        !isGestureOriginCurrent(engine, active.origin)
+        !isTransformAuthoringCurrent(engine, active)
       )
         return;
       if (active.modifiers.alt !== event.altKey || active.modifiers.shift !== event.shiftKey)

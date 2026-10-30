@@ -18,11 +18,11 @@ test("generates checked-in source-backed bundles and auditable reproducible publ
       mediaDirectory: resolve("apps/web/public/templates/motion/media"),
     };
     const paths = await generateMotionTemplates(options);
-    expect(paths).toHaveLength(6);
+    expect(paths).toHaveLength(9);
     const first = await Promise.all(paths.map((path) => readFile(path, "utf8")));
     await generateMotionTemplates(options);
     expect(await Promise.all(paths.map((path) => readFile(path, "utf8")))).toEqual(first);
-    for (const id of ["in-bloom", "motion-stress-lab"]) {
+    for (const id of ["in-bloom", "motion-stress-lab", "sound-playground"]) {
       const commands = JSON.parse(
         await readFile(join(outputDirectory, `${id}.commands.json`), "utf8"),
       ) as { initial: Project; batches: Command[][] };
@@ -32,8 +32,12 @@ test("generates checked-in source-backed bundles and auditable reproducible publ
       expect(engine.getSnapshot().project).toEqual(expected);
       const bundle = JSON.parse(await readFile(join(outputDirectory, `${id}.json`), "utf8"));
       expect(bundle.project).toEqual(expected);
-      expect(bundle.originals).toHaveLength(1);
-      expect(bundle.originals[0].file).toBe("media/flower.mp4");
+      expect(bundle.originals).toHaveLength(id === "sound-playground" ? 3 : 4);
+      if (id === "sound-playground")
+        expect(
+          bundle.originals.every((entry: { mime: string }) => entry.mime === "audio/wav"),
+        ).toBe(true);
+      else expect(bundle.originals[0].file).toBe("media/flower.mp4");
     }
   } finally {
     await rm(outputDirectory, { recursive: true, force: true });

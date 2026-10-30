@@ -94,6 +94,7 @@
   },
   "packageManager": "bun@1.4.2",
   "patchedDependencies": {
+    "mediabunny@1.62.1": "patches/mediabunny@1.62.1.patch",
     "text-shaper@0.1.28": "patches/text-shaper@0.1.28.patch"
   }
 }

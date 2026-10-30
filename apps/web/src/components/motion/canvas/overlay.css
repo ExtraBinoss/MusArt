@@ -1,0 +1,36 @@
+.motion-canvas-overlays {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+.motion-row.motion-canvas-active-overlay {
+  pointer-events: none;
+  background: transparent !important;
+  grid-template-columns: 0 minmax(0, 1fr);
+}
+.motion-canvas-active-overlay .motion-row-time {
+  pointer-events: none;
+}
+.motion-canvas-active-overlay
+  :is(.motion-track-wrap, .motion-occurrence-surface, .motion-key, .motion-easing-segment) {
+  pointer-events: auto;
+}
+.motion-canvas-active-overlay
+  :is(.motion-track, .motion-trim-handle, .motion-key, .motion-easing-segment) {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+.motion-canvas-active-overlay .motion-trim-handle::after,
+.motion-canvas-active-overlay .motion-easing-segment::before,
+.motion-canvas-active-overlay .motion-key > svg,
+.motion-canvas-active-overlay .motion-easing-segment > svg {
+  opacity: 0 !important;
+}
+.motion-canvas-active-overlay .motion-track {
+  cursor: default;
+}
+.motion-canvas-active-overlay [data-dragging="true"] {
+  cursor: grabbing;
+}

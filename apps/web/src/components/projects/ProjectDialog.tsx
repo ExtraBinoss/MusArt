@@ -201,7 +201,7 @@ function ProjectDashboard({
           if (welcome || busy || preferences || creating) event.preventDefault();
         }}
         data-welcome={welcome || undefined}
-        className="floating-panel project-dashboard"
+        className="floating-panel project-dashboard translate-x-0 translate-y-0"
       >
         <div className="dashboard-sidebar">
           <Button

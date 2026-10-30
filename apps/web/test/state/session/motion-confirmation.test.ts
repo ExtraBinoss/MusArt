@@ -44,6 +44,7 @@ test("bounds one pending request, captures the staged count immutably and resolv
   plan.layerIds.push("incoming-video");
   const result = port.request(plan);
   const token = port.read()!;
+  expect(port.readReason()).toBe("import");
   plan.layerIds.push("later-mutation");
   expect(token.layerIds).toHaveLength(5);
   expect(Object.isFrozen(token.layerIds)).toBe(true);
@@ -52,6 +53,7 @@ test("bounds one pending request, captures the staged count immutably and resolv
   expect(port.respond(token, true)).toBe(true);
   await expect(result).resolves.toBe(true);
   expect(port.read()).toBeNull();
+  expect(port.readReason()).toBeNull();
   expect(engine.getSnapshot()).toBe(before);
   expect(changed).toHaveBeenCalledTimes(2);
   expect(port.respond(token, false)).toBe(false);

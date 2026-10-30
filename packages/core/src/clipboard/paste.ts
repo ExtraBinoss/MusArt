@@ -2,6 +2,7 @@ import { sameAssetOriginal } from "../assets/identity";
 import type { Asset, Command, Composition, Project } from "../document/model";
 import type { Point } from "../layers/geometry";
 import type { ClipboardContent } from "./model";
+import type { MotionPropertyTarget } from "../motion/properties/model";
 import { cloneValue } from "../document/immutable";
 
 function reservedIds(project: Project): Set<string> {
@@ -9,6 +10,14 @@ function reservedIds(project: Project): Set<string> {
   for (const page of project.pages) {
     result.add(page.id);
     for (const guide of page.guides) result.add(guide.id);
+    for (const track of page.motion?.audioTracks ?? []) result.add(track.id);
+    for (const track of page.motion?.tracks ?? []) {
+      result.add(track.id);
+      for (const property of track.properties) {
+        result.add(property.id);
+        for (const key of property.keyframes) result.add(key.id);
+      }
+    }
     for (const layer of page.layers) {
       result.add(layer.id);
       for (const effect of layer.effects) result.add(effect.id);
@@ -63,11 +72,51 @@ export function pasteContent(
     for (const effect of layer.effects) ids.set(effect.id, allocate());
     for (const guide of layer.guides ?? []) ids.set(guide.id, allocate());
   }
+  for (const track of page.motion?.audioTracks ?? []) ids.set(track.id, allocate());
+  for (const track of page.motion?.tracks ?? []) {
+    ids.set(track.id, allocate());
+    for (const property of track.properties) {
+      ids.set(property.id, allocate());
+      for (const key of property.keyframes) ids.set(key.id, allocate());
+    }
+  }
   const dx = content.kind === "selection" ? point.x - page.width / 2 : 0;
   const dy = content.kind === "selection" ? point.y - page.height / 2 : 0;
+  function remapTarget(target: MotionPropertyTarget): MotionPropertyTarget {
+    return target.kind === "layer"
+      ? { ...target, layerId: ids.get(target.layerId)! }
+      : { ...target, layerId: ids.get(target.layerId)!, effectId: ids.get(target.effectId)! };
+  }
   const cloned: Composition = {
     ...page,
     id: ids.get(page.id)!,
+    ...(page.motion
+      ? {
+          motion: {
+            ...page.motion,
+            ...(page.motion.audioTracks
+              ? {
+                  audioTracks: page.motion.audioTracks.map((track) => ({
+                    ...track,
+                    id: ids.get(track.id)!,
+                    assetId: ids.get(track.assetId)!,
+                  })),
+                }
+              : {}),
+            tracks: page.motion.tracks.map((track) => ({
+              ...track,
+              id: ids.get(track.id)!,
+              layerId: ids.get(track.layerId)!,
+              properties: track.properties.map((property) => ({
+                ...property,
+                id: ids.get(property.id)!,
+                target: remapTarget(property.target),
+                keyframes: property.keyframes.map((key) => ({ ...key, id: ids.get(key.id)! })),
+              })),
+            })),
+          },
+        }
+      : {}),
     guides: page.guides.map((guide) => ({ ...guide, id: ids.get(guide.id)! })),
     layers: page.layers.map((layer) => ({
       ...layer,

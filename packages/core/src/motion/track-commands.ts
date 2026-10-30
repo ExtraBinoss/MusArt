@@ -1,6 +1,6 @@
 import { ensure } from "../errors";
 import { assertEditable, getLayer } from "../layers/access";
-import { getDescendants } from "../layers/geometry";
+import { planMotionTrackMove } from "./track-move";
 import type { CommandHandler } from "../session/context";
 import { addMotionTime, compareMotionTime, validateMotionTime } from "./time";
 
@@ -12,21 +12,34 @@ export const moveMotionTrack: CommandHandler<"moveMotionTrack"> = ({ page, pageI
   ensure(track, "NOT_FOUND", "Track not found");
   const layer = getLayer(page, track.layerId);
   assertEditable(page, layer);
-  const affected = new Set(getDescendants(page, [layer.id]).map((item) => item.id));
-  affected.add(layer.id);
+  const affected = new Set(planMotionTrackMove(page, track.id).trackIds);
   const duration = page.motion.duration;
   for (const current of page.motion.tracks) {
-    if (!affected.has(current.layerId)) continue;
+    if (!affected.has(current.id)) continue;
     current.start = addMotionTime(current.start, command.delta);
+    ensure(
+      current.start.value >= 0,
+      "INVALID_COMMAND",
+      "Moving this track would place its interval before zero",
+    );
     current.end = addMotionTime(current.end ?? duration, command.delta);
     ensure(current.end.value > 0, "INVALID_COMMAND", "Track lies before the composition");
-    if (compareMotionTime(current.end, page.motion.duration) > 0)
+    if (compareMotionTime(current.end, page.motion.duration) > 0) {
+      if (page.motion.version === 2)
+        for (const sibling of page.motion.tracks)
+          if (
+            sibling.layerId === current.layerId &&
+            sibling.id !== current.id &&
+            sibling.end === null
+          )
+            sibling.end = { ...page.motion.duration };
       page.motion.duration = current.end;
+    }
     for (const property of current.properties)
       for (const key of property.keyframes) {
         key.time = addMotionTime(key.time, command.delta);
         ensure(
-          key.time.value >= 0,
+          page.motion.version === 2 || key.time.value >= 0,
           "INVALID_COMMAND",
           "Moving this track would place keys before zero",
         );
@@ -59,7 +72,11 @@ export const moveMotionKeyframes: CommandHandler<"moveMotionKeyframes"> = (
         if (ids.has(key.id)) {
           if (!changed) assertEditable(page, getLayer(page, track.layerId));
           key.time = addMotionTime(key.time, command.delta);
-          ensure(key.time.value >= 0, "INVALID_COMMAND", "Negative keyframe time");
+          ensure(
+            page.motion.version === 2 || key.time.value >= 0,
+            "INVALID_COMMAND",
+            "Negative keyframe time",
+          );
           found++;
           changed = true;
         }

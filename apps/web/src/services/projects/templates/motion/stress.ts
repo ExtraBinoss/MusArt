@@ -177,5 +177,11 @@ export function createStressTemplate(media: MotionTemplateMedia): BuiltMotionTem
   // Keep each validated engine transaction below its 1000-command admission limit.
   for (let offset = 0; offset < commands.length; offset += 500)
     a.commit(commands.slice(offset, offset + 500));
+  a.sounds(media, [
+    { sound: 0, start: 0, volume: 0.4 },
+    { sound: 1, start: 0.8, volume: 0.5 },
+    { sound: 1, start: 2, volume: 0.45 },
+    { sound: 2, start: 3.2, volume: 0.3 },
+  ]);
   return a.finish();
 }

@@ -1,274 +1,213 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
-import type { Composition, EnginePort, Layer, Project } from "@musart/core";
-import { getDropCommand, getDropPosition, type LayerDropPosition } from "../drop-target";
-import { projectLayerDrop } from "./projection";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useSyncExternalStore,
+  type DragEvent,
+} from "react";
+import type { Composition, EnginePort, Layer } from "@musart/core";
+import { layerDragController } from "./controller";
+import { layerDragPresentation } from "./presentation";
 import { layerDragImage } from "./drag-image";
+import { layerDragDiagnostics } from "./diagnostics";
 
 const MIME = "application/x-musart-layer";
+/** Native HTML input for the same engine-scoped controller used by pointer-driven clips. */
 export function useLayerDrag(
   page: Composition,
   engine: EnginePort,
   run: (action: () => void) => void,
 ) {
-  const [visual, setVisual] = useState<{
-    pageId: string;
-    base: Layer[];
-    id: string;
-    layers: Layer[];
-    target: { id: string; position: LayerDropPosition } | null;
-  } | null>(null);
-  const visualPage =
+  const owner = useRef(Symbol("native-layer-drag")).current;
+  const controller = useMemo(() => layerDragController(engine), [engine]);
+  const presentation = useMemo(() => layerDragPresentation(engine), [engine]);
+  const diagnostics = useMemo(() => layerDragDiagnostics(engine), [engine]);
+  const visual = useSyncExternalStore(controller.subscribe, controller.read, controller.read);
+  const canonical =
     visual && engine.getSnapshot().project.pages.find((item) => item.id === visual.pageId);
   const active =
     visual &&
-    visual.base === visualPage?.layers &&
+    visual.base === canonical?.layers &&
     (visual.pageId !== page.id || visual.base === page.layers)
       ? visual
       : null;
-  const source = useRef<{
-    id: string;
-    layers: Layer[];
-    page: Composition;
-    project: Project;
-  } | null>(null);
-  const candidate = useRef<{ id: string; position: LayerDropPosition } | null>(null);
-  const pointer = useRef<{
-    x: number;
-    y: number;
-    alt: boolean;
-    scrollTop: number;
-    scrollLeft: number;
-  } | null>(null);
   const image = useRef<(() => void) | null>(null);
   const cancel = useCallback(() => {
-    image.current?.();
-    image.current = null;
-    source.current = null;
-    candidate.current = null;
-    pointer.current = null;
-    setVisual(null);
-  }, []);
-  const clearTarget = useCallback((event: DragEvent<HTMLElement>) => {
-    candidate.current = null;
-    pointer.current = null;
-    event.dataTransfer.dropEffect = "none";
-    const current = source.current;
-    if (current)
-      setVisual({
-        pageId: current.page.id,
-        base: current.layers,
-        id: current.id,
-        layers: current.layers,
-        target: null,
-      });
-  }, []);
+    if (controller.read()) diagnostics.refuse("cancel", "explicitCancellation");
+    controller.cancel();
+  }, [controller, diagnostics]);
+  const cancelOwned = useCallback(() => {
+    if (controller.owns(owner)) diagnostics.refuse("cancel", "nativeOwnerReleased");
+    controller.cancel(owner);
+  }, [controller, diagnostics, owner]);
   useEffect(() => {
+    const state = controller.read();
+    if (
+      controller.owns(owner) &&
+      state?.pageId === page.id &&
+      engine.getSnapshot().project.pages.find((item) => item.id === page.id) !== page
+    ) {
+      diagnostics.refuse("cancel", "renderedCompositionReplaced");
+      controller.cancel(owner);
+    }
+  }, [page, controller, engine, diagnostics, owner]);
+  useEffect(() => {
+    const release = () => {
+      image.current?.();
+      image.current = null;
+    };
+    const stop = controller.subscribe(() => {
+      if (!controller.owns(owner)) release();
+    });
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") cancel();
     };
-    window.addEventListener("keydown", onKey);
-    window.addEventListener("dragend", cancel);
-    window.addEventListener("blur", cancel);
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      window.removeEventListener("dragend", cancel);
-      window.removeEventListener("blur", cancel);
-      image.current?.();
-      image.current = null;
+    const onDrag = (event: globalThis.DragEvent) => {
+      if (controller.owns(owner))
+        presentation.move({ x: event.clientX, y: event.clientY, alt: event.altKey });
     };
-  }, [cancel]);
-  // The canonical engine invalidates a drag before stale DOM can deliver its drop.
-  useEffect(() => {
-    return engine.subscribe(() => {
-      const origin = source.current,
-        snapshot = engine.getSnapshot();
-      if (origin && (snapshot.project !== origin.project || snapshot.pageId !== origin.page.id))
-        cancel();
-    });
-  }, [engine, cancel]);
-  useEffect(() => {
-    if (source.current?.page.id === page.id && source.current.page !== page) {
-      image.current?.();
-      image.current = null;
-      source.current = null;
-      candidate.current = null;
-      pointer.current = null;
-    }
-  }, [page]);
-  const handlers = useMemo(() => {
-    function position(event: DragEvent<HTMLElement>, layer: Layer) {
-      return getDropPosition(
-        layer,
-        event.clientY,
-        event.currentTarget.getBoundingClientRect(),
-        event.altKey,
-        {
-          clientX: event.clientX,
-          thumbnail: event.currentTarget
-            .querySelector?.("[data-thumbnail-layer-id]")
-            ?.getBoundingClientRect(),
-        },
-      );
-    }
-    function canonicalOrigin(origin: NonNullable<typeof source.current>) {
-      const snapshot = engine.getSnapshot();
-      return (
-        snapshot.project === origin.project &&
-        snapshot.pageId === origin.page.id &&
-        snapshot.project.pages.find((item) => item.id === origin.page.id) === origin.page
-      );
-    }
-    return {
+    // Native HTML drags may transfer window focus. Their dragend/drop lifecycle owns
+    // termination; blur must not destroy the session before its next dragover.
+    const onPageHide = () => {
+      if (controller.owns(owner)) diagnostics.refuse("cancel", "pageHidden");
+      controller.cancel(owner);
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") onPageHide();
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("dragend", cancelOwned);
+    window.addEventListener("pagehide", onPageHide);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("dragover", onDrag);
+    return () => {
+      stop();
+      release();
+      if (controller.owns(owner)) diagnostics.refuse("cancel", "nativeAdapterDisposed");
+      controller.cancel(owner);
+      presentation.release(owner);
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("dragend", cancelOwned);
+      window.removeEventListener("pagehide", onPageHide);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("dragover", onDrag);
+    };
+  }, [controller, presentation, diagnostics, owner, cancel, cancelOwned]);
+  const clearTarget = useCallback(
+    (event: DragEvent<HTMLElement>) => {
+      controller.clear();
+      event.dataTransfer.dropEffect = "none";
+      if (controller.read())
+        diagnostics.refuse("nativeDragover", "nonLayerTarget", undefined, event);
+    },
+    [controller, diagnostics],
+  );
+  const handlers = useMemo(
+    () => ({
       start(event: DragEvent<HTMLElement>, layer: Layer, originPage = page) {
-        const before = engine.getSnapshot();
-        if (before.project.pages.find((item) => item.id === originPage.id) !== originPage) {
-          cancel();
+        if (!controller.begin(owner, originPage, layer.id, run)) {
+          event.preventDefault();
+          diagnostics.refuse("nativeDragstart", "sourceRejected", layer.id, event);
           return;
         }
-        engine.setPage(originPage.id);
-        source.current = {
-          id: layer.id,
-          layers: originPage.layers,
-          page: originPage,
-          project: before.project,
-        };
-        setVisual({
-          pageId: originPage.id,
-          base: originPage.layers,
-          id: layer.id,
-          layers: originPage.layers,
-          target: null,
-        });
-        event.dataTransfer.setData(MIME, layer.id);
-        event.dataTransfer.effectAllowed = "move";
         image.current?.();
-        const releaseImage = layerDragImage(event.currentTarget, event.dataTransfer, layer.name),
-          nativeEvent = event.nativeEvent;
-        image.current = releaseImage;
-        // A later listener can reject dragstart without the browser ever sending dragend.
+        let release: () => void;
+        try {
+          event.dataTransfer.setData(MIME, layer.id);
+          event.dataTransfer.effectAllowed = "move";
+          release = layerDragImage(event.currentTarget, event.dataTransfer, layer.name);
+          image.current = release;
+          presentation.start(owner, event.currentTarget, layer.name, {
+            x: event.clientX,
+            y: event.clientY,
+            alt: event.altKey,
+          });
+        } catch (error) {
+          controller.cancel(owner);
+          event.preventDefault();
+          run(() => {
+            throw error;
+          });
+          return;
+        }
+        const nativeEvent = event.nativeEvent;
         queueMicrotask(() => {
-          if (image.current === releaseImage && nativeEvent.defaultPrevented) cancel();
+          if (image.current === release && nativeEvent.defaultPrevented) {
+            diagnostics.refuse("nativeDragstart", "cancelledByEventHandler", layer.id, {
+              defaultPrevented: nativeEvent.defaultPrevented,
+              dataTransfer: event.dataTransfer,
+            });
+            controller.cancel(owner);
+          }
         });
       },
       over(event: DragEvent<HTMLElement>, layer: Layer, targetPage = page) {
-        const current = source.current;
-        if (!current) return;
-        if (!canonicalOrigin(current)) {
-          cancel();
-          return;
-        }
-        if (targetPage !== current.page) {
-          clearTarget(event);
-          return;
-        }
-        // Layout motion can change the row under a stationary pointer. Keep the
-        // user's last insertion intent until the pointer, modifier or tree scroll moves.
-        const tree = event.currentTarget.closest?.('[role="tree"]');
-        const scrollTop = tree?.scrollTop ?? 0,
-          scrollLeft = tree?.scrollLeft ?? 0;
-        if (
-          candidate.current &&
-          pointer.current?.x === event.clientX &&
-          pointer.current.y === event.clientY &&
-          pointer.current.alt === event.altKey &&
-          pointer.current.scrollTop === scrollTop &&
-          pointer.current.scrollLeft === scrollLeft
-        ) {
-          event.preventDefault();
-          event.dataTransfer.dropEffect = "move";
-          return;
-        }
-        if (layer.id === current.id) {
-          event.preventDefault();
-          event.dataTransfer.dropEffect = "move";
-          return;
-        }
-        pointer.current = {
+        const accepted = presentation.over(event.currentTarget, layer, targetPage, {
           x: event.clientX,
           y: event.clientY,
           alt: event.altKey,
-          scrollTop,
-          scrollLeft,
-        };
-        const drop = position(event, layer);
-        const next = projectLayerDrop(current.layers, current.id, layer.id, drop);
-        event.dataTransfer.dropEffect = next ? "move" : "none";
-        if (!next) {
-          candidate.current = null;
-          setVisual({
-            pageId: current.page.id,
-            base: current.layers,
-            id: current.id,
-            layers: current.layers,
-            target: null,
-          });
-          return;
-        }
-        event.preventDefault();
-        if (candidate.current?.id === layer.id && candidate.current.position === drop) return;
-        candidate.current = { id: layer.id, position: drop };
-        setVisual({
-          pageId: current.page.id,
-          base: current.layers,
-          id: current.id,
-          layers: next,
-          target: candidate.current,
         });
+        event.dataTransfer.dropEffect = accepted ? "move" : "none";
+        if (accepted) event.preventDefault();
+        else if (controller.read() || Array.from(event.dataTransfer.types ?? []).includes(MIME))
+          diagnostics.refuse(
+            "nativeDragover",
+            controller.read()?.rejected?.reason ?? "inactiveDrag",
+            layer.id,
+            event,
+          );
       },
       overTree(event: DragEvent<HTMLElement>) {
-        if (source.current && candidate.current && canonicalOrigin(source.current)) {
+        presentation.move({ x: event.clientX, y: event.clientY, alt: event.altKey });
+        const state = controller.read();
+        if (state?.target) {
           event.preventDefault();
           event.dataTransfer.dropEffect = "move";
-        }
+        } else if (
+          !event.defaultPrevented &&
+          Array.from(event.dataTransfer.types ?? []).includes(MIME)
+        )
+          diagnostics.refuse(
+            "nativeDragover",
+            state?.rejected?.reason ?? (state ? "noAcceptedLayerTarget" : "inactiveDrag"),
+            state?.rejected?.id,
+            event,
+          );
       },
       drop(event: DragEvent<HTMLElement>, layer?: Layer, targetPage?: Composition) {
         event.preventDefault();
-        const id = event.dataTransfer.getData(MIME);
-        const current = source.current;
-        if (!current || (targetPage && targetPage !== current.page)) {
-          cancel();
+        const current = controller.read();
+        if (
+          !current ||
+          (targetPage &&
+            (targetPage.id !== current.pageId ||
+              engine.getSnapshot().project.pages.find((item) => item.id === current.pageId) !==
+                targetPage))
+        ) {
+          controller.cancel();
           return;
         }
-        const destination = candidate.current
-          ? (current.layers.find((item) => item.id === candidate.current!.id) ?? layer)
-          : layer;
-        if (!destination) {
-          cancel();
-          return;
-        }
-        const drop = candidate.current?.position ?? position(event, destination);
-        const valid =
-          current?.id === id &&
-          canonicalOrigin(current) &&
-          projectLayerDrop(current.layers, id, destination.id, drop);
-        cancel();
-        const mask = destination.mask,
-          sameMask =
-            mask?.layerId === id && mask.mode === "alpha" && mask.enabled && !mask.inverted;
-        const changed =
-          valid &&
-          (drop === "mask"
-            ? !sameMask
-            : valid.some(
-                (item, index) =>
-                  item.id !== current.layers[index]!.id ||
-                  item.parentId !== current.layers[index]!.parentId,
-              ));
-        if (changed)
-          run(() => {
-            // Task runners may defer execution beyond the drop event and React render.
-            if (canonicalOrigin(current))
-              engine.execute(getDropCommand(id, destination, drop, current.layers));
+        if (!current.target && !current.rejected && layer) {
+          presentation.over(event.currentTarget, layer, targetPage ?? page, {
+            x: event.clientX,
+            y: event.clientY,
+            alt: event.altKey,
           });
+        }
+        controller.finish(event.dataTransfer.getData(MIME));
       },
-    };
-  }, [page, engine, run, cancel, clearTarget]);
+    }),
+    [controller, presentation, owner, page, run, engine, diagnostics],
+  );
   return {
     layers: active?.layers ?? page.layers,
     pageId: active?.pageId ?? page.id,
     target: active?.target ?? null,
+    rejected: active?.rejected ?? null,
     dragging: active?.id ?? null,
     cancel,
+    cancelOwned,
     clearTarget,
     handlers,
     ...handlers,

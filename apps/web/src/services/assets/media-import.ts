@@ -1,6 +1,9 @@
 import { MediaStorageError } from "../projects/media/errors";
 import {
   compareMotionTime,
+  addMotionTime,
+  isAudioAsset,
+  type AudioAsset,
   createLayer,
   planMotionInitialization,
   type Asset,
@@ -12,13 +15,14 @@ import {
   type MotionTime,
   type VideoAsset,
 } from "@musart/core";
-import type { VideoOriginalProbe } from "@musart/render";
+import type { AudioOriginalProbe, VideoOriginalProbe } from "@musart/render";
 import type { ProjectStore } from "../projects/storage";
 import type { MediaOriginalInput } from "../projects/media/model";
 import { importImage } from "./imports";
 export interface MediaImportDependencies {
   store: Pick<ProjectStore, "prepareSaveCurrent" | "persistPrepared">;
   probe: (file: Blob, options?: { signal?: AbortSignal }) => Promise<VideoOriginalProbe>;
+  probeAudio?: (file: Blob, options?: { signal?: AbortSignal }) => Promise<AudioOriginalProbe>;
   confirm?: (plan: MotionInitializationPlan) => Promise<boolean>;
   flush?: () => Promise<void>;
 }
@@ -45,12 +49,14 @@ export async function importMediaFiles(
   engine: EnginePort,
   files: File[],
   dependencies: MediaImportDependencies,
-  options: { signal?: AbortSignal } = {},
+  options: { signal?: AbortSignal; at?: MotionTime } = {},
 ): Promise<void> {
   if (!engine.reserveTransaction)
     throw new MediaStorageError(
-      "VIDEO_IMPORT_UNAVAILABLE",
-      "Atomic video import is unavailable for this session.",
+      files.some((file) => file.type.startsWith("audio/"))
+        ? "AUDIO_IMPORT_UNAVAILABLE"
+        : "VIDEO_IMPORT_UNAVAILABLE",
+      "Atomic media import is unavailable for this session.",
     );
   if (!files.length || files.length > 100) throw Error("Import between one and 100 media files.");
   const origin = engine.getSnapshot(),
@@ -71,7 +77,7 @@ export async function importMediaFiles(
   let batchBytes = 0;
   for (const file of files) {
     assertCurrent();
-    if (!file.type.startsWith("video/")) {
+    if (!file.type.startsWith("video/") && !file.type.startsWith("audio/")) {
       assets.push(await importImage(file));
       continue;
     }
@@ -81,36 +87,53 @@ export async function importMediaFiles(
       (batchBytes += file.size) > 1024 * 1024 * 1024
     )
       throw new MediaStorageError(
-        "VIDEO_STORAGE_LIMIT",
-        "Video import is limited to 512 MiB per file and 1 GiB per batch.",
+        file.type.startsWith("audio/") ? "AUDIO_STORAGE_LIMIT" : "VIDEO_STORAGE_LIMIT",
+        "Media import is limited to 512 MiB per file and 1 GiB per batch.",
       );
-    const metadata = await dependencies.probe(file, options);
-    const asset: VideoAsset = {
+    const base = {
       id: crypto.randomUUID(),
-      kind: "video",
       name: file.name,
       mime: file.type,
       originalId: crypto.randomUUID(),
       contentRevision: crypto.randomUUID(),
       byteLength: file.size,
-      width: metadata.width,
-      height: metadata.height,
-      duration: metadata.duration,
-      firstTimestamp: metadata.firstTimestamp,
-      timeResolution: metadata.timeResolution,
-      orientation: metadata.orientation,
     };
+    let asset: VideoAsset | AudioAsset;
+    if (file.type.startsWith("audio/")) {
+      if (!dependencies.probeAudio)
+        throw new MediaStorageError(
+          "AUDIO_IMPORT_UNAVAILABLE",
+          "Audio metadata preparation is unavailable for this session.",
+        );
+      asset = { ...base, kind: "audio", ...(await dependencies.probeAudio(file, options)) };
+    } else {
+      const metadata = await dependencies.probe(file, options);
+      asset = {
+        ...base,
+        kind: "video",
+        width: metadata.width,
+        height: metadata.height,
+        duration: metadata.duration,
+        firstTimestamp: metadata.firstTimestamp,
+        timeResolution: metadata.timeResolution,
+        orientation: metadata.orientation,
+      };
+    }
     assets.push(asset);
     originals.push({
       originalId: asset.originalId,
       contentRevision: asset.contentRevision,
       blob: file,
     });
-    if (longest === null || compareMotionTime(asset.duration, longest) > 0)
-      longest = asset.duration;
+    const end = isAudioAsset(asset)
+      ? addMotionTime(options.at ?? { value: 0, rate: 1 }, asset.duration)
+      : asset.duration;
+    if (longest === null || compareMotionTime(end, longest) > 0) longest = end;
   }
   assertCurrent();
-  const layers = assets.map((asset, index) => fitLayer(asset, page, index));
+  const layers = assets
+    .filter((asset) => !isAudioAsset(asset))
+    .map((asset, index) => fitLayer(asset, page, index));
   const commands: Command[] = [{ type: "addLayers", layers, assets }];
   if (longest) {
     if (!page.motion) {
@@ -148,6 +171,22 @@ export async function importMediaFiles(
       if (compareMotionTime(longest, page.motion.duration) > 0)
         commands.push({ type: "setMotionDuration", duration: longest });
     }
+  }
+  for (const asset of assets.filter(isAudioAsset)) {
+    const start = options.at ?? { value: 0, rate: 1 };
+    commands.push({
+      type: "addMotionAudioTrack",
+      track: {
+        id: crypto.randomUUID(),
+        name: asset.name,
+        assetId: asset.id,
+        start,
+        end: addMotionTime(start, asset.duration),
+        sourceIn: { value: 0, rate: 1 },
+        mute: false,
+        volume: 1,
+      },
+    });
   }
   await dependencies.flush?.();
   assertCurrent();

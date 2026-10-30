@@ -1,5 +1,6 @@
 import {
   applyMotionValue,
+  getMotionOccurrenceAt,
   compareMotionTime,
   listMotionProperties,
   readMotionValue,
@@ -9,18 +10,20 @@ import {
   type EnginePort,
   type Layer,
   type MotionPropertyTarget,
-  type MotionPropertyTrack,
   type MotionTime,
   type SessionSnapshot,
 } from "@musart/core";
 import { createMotionTransport } from "../../services/motion/transport";
 import { getMotionAuthoring } from "./motion-authoring";
+import { motionTargetKey, hasMotionKeys } from "../motion/keyframes";
+export { motionTargetKey, motionPropertyTrack, hasMotionKeys } from "../motion/keyframes";
 
 export interface MotionEditOrigin {
   snapshot: SessionSnapshot;
   time: MotionTime;
   mode: "static" | "motion";
   auto: boolean;
+  occurrences: ReadonlyMap<string, string>;
   targets?: readonly MotionPropertyTarget[];
 }
 export type MotionEditTarget = MotionPropertyTarget | readonly MotionPropertyTarget[];
@@ -29,20 +32,20 @@ export interface MotionEffectIntent {
   patch: Partial<Layer["effects"][number]>;
 }
 
-export const motionTargetKey = (target: MotionPropertyTarget): string =>
-  JSON.stringify([
-    target.kind,
-    target.layerId,
-    target.kind === "layer" ? "" : target.effectId,
-    target.property,
-  ]);
-
 export function captureMotionEdit(engine: EnginePort, target?: MotionEditTarget): MotionEditOrigin {
   const transport = createMotionTransport(engine);
   transport.pause();
   const { time, mode } = transport.read();
+  const snapshot = engine.getSnapshot();
+  const page = snapshot.project.pages.find((item) => item.id === snapshot.pageId)!;
   return {
-    snapshot: engine.getSnapshot(),
+    snapshot,
+    occurrences: new Map(
+      page.layers.flatMap((layer) => {
+        const track = getMotionOccurrenceAt(page, layer.id, time, { terminalPreview: true });
+        return track ? [[layer.id, track.id] as const] : [];
+      }),
+    ),
     time,
     mode,
     auto: getMotionAuthoring(engine).read(),
@@ -100,6 +103,7 @@ export function motionPreviewPatch(
   intent?: MotionEffectIntent,
 ): Partial<Layer> {
   if (origin.mode !== "motion" || ids.length !== 1) return patch;
+  if (!origin.occurrences.has(ids[0]!)) return {};
   if (!intent && !patch.fillGradient) return patch;
   const page = origin.snapshot.project.pages.find((item) => item.id === origin.snapshot.pageId)!;
   const base = page.layers.find((layer) => layer.id === ids[0]);
@@ -136,7 +140,6 @@ export function isMotionEditCurrent(engine: EnginePort, origin: MotionEditOrigin
   );
 }
 
-const propertyIndexes = new WeakMap<Composition, ReadonlyMap<string, MotionPropertyTrack>>();
 const clockSources = new WeakMap<EnginePort, { subscribe(listener: () => void): () => void }>();
 /** Gesture invalidation follows authored time/owner, independently of whether its value changes. */
 export function motionTimeChanges(engine: EnginePort) {
@@ -165,25 +168,6 @@ export function motionTimeChanges(engine: EnginePort) {
   }
   return source;
 }
-export function motionPropertyTrack(
-  page: Composition,
-  target: MotionPropertyTarget,
-): MotionPropertyTrack | undefined {
-  let index = propertyIndexes.get(page);
-  if (!index) {
-    index = new Map(
-      page.motion?.tracks.flatMap((track) =>
-        track.properties.map((property) => [motionTargetKey(property.target), property] as const),
-      ) ?? [],
-    );
-    propertyIndexes.set(page, index);
-  }
-  return index.get(motionTargetKey(target));
-}
-export function hasMotionKeys(page: Composition, target: MotionPropertyTarget): boolean {
-  return Boolean(motionPropertyTrack(page, target)?.keyframes.length);
-}
-
 /** Revert keyed fields in a proposed base patch, including absence of optional/default fields. */
 function restoreBase(layer: Layer, base: Layer, target: MotionPropertyTarget): Layer {
   if (target.kind === "layer") {
@@ -238,12 +222,14 @@ export function motionLayerCommands(
   for (const id of ids) {
     const base = page.layers.find((layer) => layer.id === id);
     if (!base) continue;
+    const trackId = origin.occurrences.get(id);
+    if (!trackId) return [];
     let next: Layer = { ...base, ...patch };
     for (const descriptor of patchTargets(page, next, patch, origin, intent)) {
       const target = descriptor.target;
       const previous = resolveMotionProperty(page, target);
       if (!previous) continue;
-      if (!origin.auto && !hasMotionKeys(page, target)) continue;
+      if (!origin.auto && !hasMotionKeys(page, target, { trackId })) continue;
       // A reset/preset is allowed to affect every explicitly written eligible parameter.
       const effective = resolveMotionProperty(frame, target)?.value;
       if (intent && !origin.targets?.length && effective === descriptor.value) {
@@ -252,6 +238,7 @@ export function motionLayerCommands(
       }
       commands.push({
         type: "upsertMotionKeyframe",
+        trackId,
         target,
         time: origin.time,
         value: descriptor.value,
@@ -281,13 +268,13 @@ export function addMotionPropertyKeys(
     page =
       transport.readFrame() ??
       origin.snapshot.project.pages.find((item) => item.id === origin.snapshot.pageId)!;
-  if (targets.length)
-    engine.transaction(
-      targets.map((target) => ({
-        type: "upsertMotionKeyframe",
-        target,
-        time: origin.time,
-        value: readMotionValue(page, target),
-      })),
-    );
+  const commands = targets.map((target) => {
+    const value = readMotionValue(page, target);
+    const trackId = origin.occurrences.get(target.layerId);
+    return trackId
+      ? { type: "upsertMotionKeyframe" as const, trackId, target, time: origin.time, value }
+      : undefined;
+  });
+  if (commands.length && commands.every((command) => command !== undefined))
+    engine.transaction(commands);
 }

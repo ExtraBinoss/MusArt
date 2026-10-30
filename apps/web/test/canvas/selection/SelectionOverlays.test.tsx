@@ -5,6 +5,7 @@ import { SelectionOverlays } from "../../../src/canvas/selection/SelectionOverla
 import { SceneController } from "../../../src/canvas/session/scene-controller";
 import { createPlaybackSource } from "../../../src/canvas/session/playback-source";
 import { EMPTY_PREVIEW_SOURCE } from "../../../src/state/session/preview-source";
+import { motionPoseFixture } from "../../support/motion-pose";
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string, options?: { defaultValue?: string; count?: number }) =>
@@ -52,11 +53,15 @@ it("keeps ordinary per-layer handles and locks while exposing the real size", ()
   const d = source(2),
     onHandle = vi.fn(),
     selected = [d.page.layers[0]!];
-  const { rerender } = render(
+  const { rerender, container } = render(
     <SelectionOverlays {...d} selected={selected} zoom={2} onHandle={onHandle} />,
   );
   expect(screen.getByText("8 × 8")).toBeInTheDocument();
   expect(screen.getAllByRole("button")).toHaveLength(5);
+  expect(container.querySelector(".canvas-selection-overlays")).toHaveAttribute(
+    "data-selection-count",
+    "1",
+  );
   fireEvent.pointerDown(screen.getAllByRole("button")[0]!);
   expect(onHandle).toHaveBeenCalledOnce();
   rerender(
@@ -68,6 +73,10 @@ it("keeps ordinary per-layer handles and locks while exposing the real size", ()
     />,
   );
   expect(screen.getAllByRole("button")).toHaveLength(5);
+  expect(container.querySelector(".canvas-selection-overlays")).toHaveAttribute(
+    "data-selection-count",
+    "2",
+  );
   expect(screen.queryByText("8 × 8")).toBeNull();
   expect(screen.getByRole("img", { name: "Locked" })).toHaveClass("canvas-layer-lock");
 });
@@ -126,5 +135,50 @@ it("fades selected handles during playback, removes their editing targets and re
   expect(handle).toBeEnabled();
   fireEvent.pointerDown(handle);
   expect(onHandle).toHaveBeenCalledOnce();
+  mount.unmount();
+});
+
+it("mounts a newly selected paused media layer on its evaluated size and parent matrix without a new scene frame", () => {
+  const d = motionPoseFixture(),
+    changes = vi.fn(),
+    stop = d.controller.subscribe(changes);
+  const props = {
+    page: d.page,
+    zoom: 1,
+    controller: d.controller,
+    viewSource: { read: () => ({ x: 0, y: 0, zoom: 1 }), subscribe: () => () => {} },
+    onHandle: vi.fn(),
+  };
+  const mount = render(<SelectionOverlays {...props} selected={[]} />);
+  act(() => d.engine.select([d.picture.id]));
+  mount.rerender(
+    <SelectionOverlays
+      {...props}
+      selected={[d.page.layers.find((layer) => layer.id === d.picture.id)!]}
+    />,
+  );
+  const outline = mount.container.querySelector<HTMLElement>(
+    `.canvas-selection[data-layer-id="${d.picture.id}"]`,
+  )!;
+  expect(outline).toHaveStyle({ width: "45px", height: "30px" });
+  expect(outline.style.transform).toBe(`matrix(${d.index.worldMatrix(d.picture.id).join(",")})`);
+  expect(screen.getByText("45 × 30")).toBeInTheDocument();
+  act(() => d.engine.select([d.movie.id]));
+  mount.rerender(
+    <SelectionOverlays
+      {...props}
+      selected={[d.page.layers.find((layer) => layer.id === d.movie.id)!]}
+    />,
+  );
+  expect(
+    mount.container.querySelector<HTMLElement>(`.canvas-selection[data-layer-id="${d.movie.id}"]`)!
+      .style.transform,
+  ).toBe(`matrix(${d.index.worldMatrix(d.movie.id).join(",")})`);
+  expect(
+    mount.container.querySelector(`.canvas-selection[data-layer-id="${d.movie.id}"]`),
+  ).toHaveAttribute("data-layer-kind", "video");
+  expect(d.controller.read()).toBe(d.frame);
+  expect(changes).not.toHaveBeenCalled();
+  stop();
   mount.unmount();
 });

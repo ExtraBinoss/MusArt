@@ -99,3 +99,32 @@ it("rejects stale preparation and real persistence failures without publishing o
   });
   expect(d.engine.getSnapshot().project.name).toBe("Concurrent");
 });
+
+it("imports audio at the playhead as a nonvisual timed lane with atomic original persistence", async () => {
+  const d = fixture(2),
+    before = d.engine.getSnapshot();
+  const file = new File(["sound"], "pop.wav", { type: "audio/wav" });
+  const probeAudio = vi.fn(async () => ({
+    duration: { value: 1, rate: 1 },
+    firstTimestamp: { value: 0, rate: 1 },
+    timeResolution: 48000,
+    sampleRate: 48000,
+    channels: 1 as const,
+  }));
+  await importMediaFiles(d.engine, [file], { ...d, probeAudio }, { at: { value: 2, rate: 1 } });
+  const page = d.engine.getSnapshot().project.pages[0]!;
+  expect(page.layers).toHaveLength(2);
+  expect(page.motion!.tracks).toHaveLength(2);
+  expect(page.motion!.audioTracks![0]).toMatchObject({
+    start: { value: 2, rate: 1 },
+    end: { value: 3, rate: 1 },
+    mute: false,
+    volume: 1,
+  });
+  expect(page.motion!.duration).toEqual({ value: 3, rate: 1 });
+  expect(d.store.prepareSaveCurrent.mock.calls[0]![1]).toMatchObject({
+    mediaOriginals: [{ blob: file }],
+  });
+  d.engine.undo();
+  expect(d.engine.getSnapshot().project).toBe(before.project);
+});

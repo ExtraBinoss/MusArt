@@ -56,7 +56,7 @@ export async function projectForJournal(
     const asset =
       incoming.get(id) ?? (await tx.objectStore("journalAssets").get([frame.state.id, id]))?.asset;
     const description = descriptions.get(id)!;
-    if (description.kind === "video") {
+    if (description.kind === "video" || description.kind === "audio") {
       const header = await tx
         .objectStore("mediaOriginalMeta")
         .get([frame.state.id, description.originalId]);
@@ -65,7 +65,7 @@ export async function projectForJournal(
         header.contentRevision !== description.contentRevision ||
         header.byteLength !== description.byteLength
       )
-        throw Error(`Journal video original is missing: ${id}`);
+        throw Error(`Journal ${description.kind} original is missing: ${id}`);
       Object.defineProperty(pool, id, { value: description, enumerable: true });
       continue;
     }

@@ -13,6 +13,8 @@ export type { EditorCanvasProps } from "./session/canvas-contracts";
 import { shapeChoiceAtom } from "../components/assets/selection";
 import { createArtworkLayer } from "./interaction/shapes";
 import { completeDrawing, resizeDrawing } from "./interaction/drawing";
+import { createCanvasTransfers } from "./interaction/transfers";
+import { CanvasContextMenu } from "./selection/CanvasContextMenu";
 import { readReleasePoint } from "./interaction/release";
 import { useTranslation } from "react-i18next";
 import {
@@ -29,12 +31,12 @@ import { useRenderMetrics } from "../state/session/render-metrics";
 import { EMPTY_PREVIEW_SOURCE } from "../state/session/preview-source";
 import {
   clickSelection,
-  patchesToCommands,
   selectedRoots,
   type Handle,
   type LayerPatch,
 } from "./interaction/gestures";
-import { clientToPage, type Point, type View } from "./viewport/view";
+import { clientToPage, type Point } from "./viewport/view";
+import type { Gesture } from "./interaction/gesture-state";
 import { installTouchNavigation } from "./viewport/touch-navigation";
 import { useViewport } from "./viewport/use-viewport";
 import { ViewportControls } from "./viewport/ViewportControls";
@@ -44,11 +46,18 @@ import { artboardStyle } from "./artboards/presentation";
 import { ArtboardHeadings } from "./artboards/ArtboardHeadings";
 import { ArtboardModeFooter } from "./artboards/ArtboardModeFooter";
 import { InactiveArtboards } from "./artboards/InactiveArtboards";
-import { captureGestureOrigin, isGestureOriginCurrent } from "./interaction/gesture-origin";
+import { captureGestureOrigin } from "./interaction/gesture-origin";
+import {
+  captureTransformAuthoring,
+  isTransformAuthoringCurrent,
+  transformAuthoringCommands,
+  watchTransformAuthoring,
+} from "./interaction/transform-authoring";
 import "./artboards/artboards.css";
 import { QuickAdd } from "./quick-add/QuickAdd";
 import { CanvasSelection } from "./selection/CanvasSelection";
 import { canvasHit } from "./selection/hit";
+import { editablePresentedLayer, pickMotionPlayback } from "./selection/presented-pick";
 import { useMarquee } from "./selection/use-marquee";
 import { createLiveMarquee } from "./selection/live-marquee";
 import * as marqueeScope from "./selection/marquee-scope";
@@ -58,24 +67,10 @@ import { Measurements } from "./guides/Measurements";
 import { useWand } from "./interaction/use-wand";
 import { PixelSelectionOverlay, PixelSelectionToolbar } from "./selection/PixelSelectionOverlay";
 import { attachmentSelection } from "../state/selection/attachments";
-import {
-  useTransformSnapping,
-  type TransformGesture,
-} from "./interaction/snapping/use-transform-snapping";
+import { useTransformSnapping } from "./interaction/snapping/use-transform-snapping";
 import { EffectGizmo } from "./effects/EffectGizmo";
 import "./canvas.css";
 export type { Tool } from "./interaction/gestures";
-
-interface Gesture extends TransformGesture, marqueeScope.MarqueeScope {
-  pointerId: number;
-  mode: "pan" | "move" | "resize" | "box" | "draw";
-  view: View;
-  layers: Layer[];
-  handle?: Handle;
-  shape?: Layer;
-  current: Point;
-  boxStarted?: boolean;
-}
 export function EditorCanvas({
   engine,
   tool,
@@ -166,12 +161,15 @@ export function EditorCanvas({
     if (controller.read().playback && pixelSelection?.read()) pixelSelection.deselect();
     if (
       gesture.current &&
-      (!isGestureOriginCurrent(engine, gesture.current.origin) || controller.read().playback)
+      (!isTransformAuthoringCurrent(engine, gesture.current) || controller.read().playback)
     )
       cancelGesture();
   }, [engine, controller, cancelGesture, pixelSelection]);
+  useEffect(
+    () => watchTransformAuthoring(engine, () => gesture.current, cancelGesture),
+    [engine, cancelGesture],
+  );
   useCanvasPresentation({ controller, workspace, motion, viewport, beforePaint });
-
   function pagePoint(event: { clientX: number; clientY: number }): Point {
     return clientToPage(
       { x: event.clientX, y: event.clientY },
@@ -181,7 +179,7 @@ export function EditorCanvas({
     );
   }
   function capture(event: ReactPointerEvent) {
-    viewport.current?.focus();
+    viewport.current?.focus({ preventScroll: true });
     viewport.current?.setPointerCapture(event.pointerId);
   }
   function beginHandle(event: ReactPointerEvent, layer: Layer, handle: Handle) {
@@ -190,7 +188,8 @@ export function EditorCanvas({
     capture(event);
     const point = pagePoint(event);
     gesture.current = {
-      origin: captureGestureOrigin(engine),
+      ...captureTransformAuthoring(engine),
+      presentation: controller.read().page,
       pointerId: event.pointerId,
       mode: "resize",
       from: point,
@@ -204,20 +203,26 @@ export function EditorCanvas({
   function handlePointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
     if (event.button !== 0) return;
     if (gesture.current && gesture.current.pointerId !== event.pointerId) return;
-    const layer = page.layers.find((item) => item.id === event.currentTarget.dataset.layerId);
+    const layer = editablePresentedLayer(controller.read(), event.currentTarget.dataset.layerId);
     const handle = event.currentTarget.dataset.handle as Handle;
     if (layer) beginHandle(event, layer, handle);
   }
   function pointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    if (event.button < 0 || event.button > 2 || controller.read().playback) return;
+    if (event.button < 0 || event.button > 2) return;
     if (gesture.current && gesture.current.pointerId !== event.pointerId) return;
     if ((event.target as HTMLElement).closest("[data-canvas-control]")) return;
+    const frame = controller.read();
+    if (frame.playback) {
+      event.preventDefault();
+      if (tool === "pointer") pickMotionPlayback(engine, frame, pagePoint(event), event);
+      return;
+    }
     event.preventDefault();
-    event.currentTarget.focus({ preventScroll: true });
     capture(event);
     const point = pagePoint(event);
     const base = {
       origin: captureGestureOrigin(engine),
+      presentation: controller.read().page,
       pointerId: event.pointerId,
       from: point,
       current: point,
@@ -319,7 +324,12 @@ export function EditorCanvas({
     const ids = clickSelection(engine.getSnapshot().selection, hit.id, additive);
     engine.select(ids);
     if (picked?.locked) return;
-    gesture.current = { ...base, mode: "move", layers: selectedRoots(currentPage, ids) };
+    gesture.current = {
+      ...base,
+      ...captureTransformAuthoring(engine),
+      mode: "move",
+      layers: selectedRoots(currentPage, ids),
+    };
   }
   function pointerMove(event: ReactPointerEvent<HTMLDivElement>) {
     if (wand.active()) {
@@ -328,7 +338,7 @@ export function EditorCanvas({
     }
     const active = gesture.current;
     if (!active || active.pointerId !== event.pointerId) return;
-    if (!isGestureOriginCurrent(engine, active.origin)) {
+    if (!isTransformAuthoringCurrent(engine, active)) {
       cancelGesture();
       return;
     }
@@ -374,7 +384,7 @@ export function EditorCanvas({
     }
     const active = gesture.current;
     if (!active || active.pointerId !== event.pointerId) return;
-    if (!isGestureOriginCurrent(engine, active.origin)) {
+    if (!isTransformAuthoringCurrent(engine, active)) {
       cancelGesture();
       return;
     }
@@ -407,9 +417,8 @@ export function EditorCanvas({
         );
       liveMarquee.commit();
     }
-    const commands = patchesToCommands(patchesRef.current);
-    // Clear the transient frame before publishing canonical edits in this same input task.
-    // Otherwise observers materialize the entire preview again over the new document.
+    const commands = transformAuthoringCommands(engine, active, patchesRef.current);
+    // Clear the preview before canonical edits so observers cannot apply it twice.
     cancelGesture();
     try {
       if (active.mode === "move" || active.mode === "resize") {
@@ -437,162 +446,155 @@ export function EditorCanvas({
     if (!gesture.current || gesture.current.pointerId === event.pointerId) cancelGesture();
   }
   const gizmoProps = { engine, controller, viewSource: motion, onError };
+  const transfers = () =>
+    createCanvasTransfers({
+      engine,
+      readPage: () => controller.read().page,
+      readWorkspace: workspace.read,
+      readView: motion.read,
+      readViewport: () => viewport.current,
+      onActive: setDragOver,
+      onFiles: onDropFiles,
+    });
   const cursor = tool === "hand" || space ? "grab" : tool === "pointer" ? "default" : "crosshair";
   return (
-    <div
-      className="editor-canvas"
-      data-testid="editor-canvas"
-      aria-label={t("canvas", { defaultValue: "Zone de création" })}
-      ref={viewport}
-      tabIndex={0}
-      style={{ cursor }}
-      onPointerDownCapture={() => motion.stop()}
-      onPointerDown={pointerDown}
-      onPointerMove={pointerMove}
-      onPointerUp={pointerUp}
-      onPointerCancel={pointerCancel}
-      onLostPointerCapture={(event) => {
-        if (gesture.current || wand.active()) pointerCancel(event);
-      }}
-      onContextMenu={(event) => {
-        if (!(event.target as HTMLElement).closest("[data-canvas-control]")) event.preventDefault();
-      }}
-      onKeyDown={(event) => {
-        if ((event.target as HTMLElement).closest("[data-canvas-control]")) return;
-        if (event.code === "Space") {
-          event.preventDefault();
-          setSpace(true);
-        }
-        if (event.key === "Escape") {
-          const pendingBox = gesture.current?.boxSelection;
-          const pixelSelection = Boolean(services?.pixelSelection?.read());
-          if (pixelSelection || pendingBox?.intersect) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
-          wand.escape();
-          if (!pendingBox?.intersect) liveMarquee.discard();
-          cancelGesture();
-          if (!pixelSelection && !pendingBox?.intersect) engine.select([]);
-        }
-      }}
-      onKeyUp={(event) => {
-        if (event.code === "Space") setSpace(false);
-      }}
-      onBlur={() => setSpace(false)}
-      onDragOver={(event) => {
-        event.preventDefault();
-        setDragOver(true);
-      }}
-      onDragLeave={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragOver(false);
-      }}
-      onDrop={(event) => {
-        event.preventDefault();
-        setDragOver(false);
-        const world = workspace.read();
-        const target = artboardAt(
-          world,
-          clientToPage(
-            { x: event.clientX, y: event.clientY },
-            event.currentTarget.getBoundingClientRect(),
-            motion.read(),
-            world,
-          ),
-        );
-        if (target) engine.setPage(target.id);
-        onDropFiles?.(Array.from(event.dataTransfer.files));
-      }}
+    <CanvasContextMenu
+      engine={engine}
+      resolveTarget={(point) => transfers().target(point)}
+      onError={onError}
     >
-      <div className="canvas-stage">
-        <InactiveArtboards
-          engine={engine}
-          workspace={layout}
-          activeId={page.id}
-          projectId={snapshot.project.id}
-          view={shown}
-          viewport={viewport}
-          services={services}
-        />
-        <div
-          className="canvas-artboard canvas-artboard-editor"
-          data-testid="artboard"
-          data-artboard-id={page.id}
-          data-active="true"
-          data-zoom={shown.zoom}
-          data-pan-x={shown.x}
-          data-pan-y={shown.y}
-          data-view-moving={motion.isMoving()}
-          style={artboardStyle(activeBoard, layout, shown)}
-        >
-          <EditorScene
-            controller={controller}
-            onError={onError}
-            zoom={view.zoom}
-            fontResolver={fontResolver}
-            mediaResolverFor={services?.mediaResolverFor}
-          />
-          <CanvasSelection
-            controller={controller}
+      <div
+        className="editor-canvas"
+        data-testid="editor-canvas"
+        aria-label={t("canvas", { defaultValue: "Zone de création" })}
+        ref={viewport}
+        tabIndex={0}
+        style={{ cursor }}
+        onPointerDownCapture={() => motion.stop()}
+        onPointerDown={pointerDown}
+        onPointerMove={pointerMove}
+        onPointerUp={pointerUp}
+        onPointerCancel={pointerCancel}
+        onLostPointerCapture={(event) => {
+          if (gesture.current || wand.active()) pointerCancel(event);
+        }}
+        onKeyDown={(event) => {
+          if ((event.target as HTMLElement).closest("[data-canvas-control]")) return;
+          if (event.code === "Space") {
+            event.preventDefault();
+            setSpace(true);
+          }
+          if (event.key === "Escape") {
+            const pendingBox = gesture.current?.boxSelection;
+            const pixelSelection = Boolean(services?.pixelSelection?.read());
+            if (pixelSelection || pendingBox?.intersect) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+            wand.escape();
+            if (!pendingBox?.intersect) liveMarquee.discard();
+            cancelGesture();
+            if (!pixelSelection && !pendingBox?.intersect) engine.select([]);
+          }
+        }}
+        onKeyUp={(event) => {
+          if (event.code === "Space") setSpace(false);
+        }}
+        onBlur={() => setSpace(false)}
+        onDragOver={(event) => transfers().files.onDragOver(event)}
+        onDragLeave={(event) => transfers().files.onDragLeave(event)}
+        onDrop={(event) => transfers().files.onDrop(event)}
+      >
+        <div className="canvas-stage">
+          <InactiveArtboards
             engine={engine}
+            workspace={layout}
+            activeId={page.id}
+            projectId={snapshot.project.id}
+            view={shown}
+            viewport={viewport}
+            services={services}
+          />
+          <div
+            className="canvas-artboard canvas-artboard-editor"
+            data-testid="artboard"
+            data-artboard-id={page.id}
+            data-active="true"
+            data-zoom={shown.zoom}
+            data-pan-x={shown.x}
+            data-pan-y={shown.y}
+            data-view-moving={motion.isMoving()}
+            style={artboardStyle(activeBoard, layout, shown)}
+          >
+            <EditorScene
+              controller={controller}
+              onError={onError}
+              zoom={view.zoom}
+              fontResolver={fontResolver}
+              mediaResolverFor={services?.mediaResolverFor}
+            />
+            <CanvasSelection
+              controller={controller}
+              engine={engine}
+              viewSource={pageViewSource}
+              viewport={viewport}
+              showHandles={tool !== "wand" && tool !== "segment"}
+              onHandle={handlePointerDown}
+            />
+            <Measurements
+              controller={controller}
+              snapping={snapFeedback}
+              zoom={shown.zoom}
+              viewSource={motion}
+            />
+            <EffectGizmo {...gizmoProps} />
+            <div ref={marqueeElement} className="canvas-marquee" hidden />
+          </div>
+          <PixelSelectionOverlay
+            port={services?.pixelSelection}
+            controller={controller}
             viewSource={pageViewSource}
             viewport={viewport}
-            showHandles={tool !== "wand" && tool !== "segment"}
-            onHandle={handlePointerDown}
           />
-          <Measurements
+          <ArtboardHeadings
             controller={controller}
-            snapping={snapFeedback}
-            zoom={shown.zoom}
-            viewSource={motion}
+            engine={engine}
+            workspace={layout}
+            activeId={page.id}
+            view={shown}
+            onError={onError}
           />
-          <EffectGizmo {...gizmoProps} />
-          <div ref={marqueeElement} className="canvas-marquee" hidden />
+          <ArtboardModeFooter engine={engine} workspace={layout} view={shown} />
         </div>
-        <PixelSelectionOverlay
-          port={services?.pixelSelection}
+        <CanvasRulers
           controller={controller}
+          engine={engine}
+          page={page}
+          view={pageView}
           viewSource={pageViewSource}
           viewport={viewport}
         />
-        <ArtboardHeadings
-          controller={controller}
+        <ViewportControls engine={engine} view={shown} actions={viewportActions} />
+        <PixelSelectionToolbar port={services?.pixelSelection} onError={onError} />
+        <QuickAdd
           engine={engine}
-          workspace={layout}
-          activeId={page.id}
-          view={shown}
+          viewport={viewport}
+          workspace={workspace}
+          viewSource={motion}
+          controller={controller}
           onError={onError}
         />
-        <ArtboardModeFooter engine={engine} workspace={layout} view={shown} />
+        {tool !== "pointer" && (
+          <div className="canvas-help">
+            {t("toolHint", { defaultValue: "Cliquez ou tracez sur le canvas" })}
+          </div>
+        )}
+        {dragOver && (
+          <div className="canvas-drag-overlay">
+            {t("dropImages", { defaultValue: "Déposez vos images ici" })}
+          </div>
+        )}
       </div>
-      <CanvasRulers
-        controller={controller}
-        engine={engine}
-        page={page}
-        view={pageView}
-        viewSource={pageViewSource}
-        viewport={viewport}
-      />
-      <ViewportControls engine={engine} view={shown} actions={viewportActions} />
-      <PixelSelectionToolbar port={services?.pixelSelection} onError={onError} />
-      <QuickAdd
-        engine={engine}
-        viewport={viewport}
-        workspace={workspace}
-        viewSource={motion}
-        controller={controller}
-        onError={onError}
-      />
-      {tool !== "pointer" && (
-        <div className="canvas-help">
-          {t("toolHint", { defaultValue: "Cliquez ou tracez sur le canvas" })}
-        </div>
-      )}
-      {dragOver && (
-        <div className="canvas-drag-overlay">
-          {t("dropImages", { defaultValue: "Déposez vos images ici" })}
-        </div>
-      )}
-    </div>
+    </CanvasContextMenu>
   );
 }

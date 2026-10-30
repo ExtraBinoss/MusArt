@@ -32,8 +32,13 @@ export class MotionConfirmationError extends Error {
 }
 
 export interface MotionConfirmation {
-  request(this: void, plan: MotionInitializationPlan): Promise<boolean>;
+  request(
+    this: void,
+    plan: MotionInitializationPlan,
+    options?: { reason?: "import" | "transition" },
+  ): Promise<boolean>;
   read(this: void): MotionInitializationPlan | null;
+  readReason(this: void): "import" | "transition" | null;
   subscribe(this: void, listener: () => void): () => void;
   /** A captured plan token prevents a late click from answering a newer import. */
   respond(this: void, plan: MotionInitializationPlan, accepted: boolean): boolean;
@@ -73,6 +78,7 @@ export function getMotionConfirmation(engine: EnginePort): MotionConfirmation {
   let hosts = 0;
   let pending: {
     plan: MotionInitializationPlan;
+    reason: "import" | "transition";
     projectId: string;
     resolve: (accepted: boolean) => void;
     reject: (error: Error) => void;
@@ -101,13 +107,14 @@ export function getMotionConfirmation(engine: EnginePort): MotionConfirmation {
   }
   const port: MotionConfirmation = {
     read: () => pending?.plan ?? null,
+    readReason: () => pending?.reason ?? null,
     subscribe(listener) {
       listeners.add(listener);
       return () => {
         listeners.delete(listener);
       };
     },
-    request(plan) {
+    request(plan, options) {
       try {
         if (pending) throw new MotionConfirmationError("busy");
         validatePlan(plan);
@@ -135,6 +142,7 @@ export function getMotionConfirmation(engine: EnginePort): MotionConfirmation {
         const result = new Promise<boolean>((resolve, reject) => {
           pending = {
             plan: captured,
+            reason: options?.reason ?? "import",
             projectId: snapshot.project.id,
             resolve,
             reject,

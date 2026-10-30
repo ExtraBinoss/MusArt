@@ -9,9 +9,9 @@ export function validateMaskSource(mask: unknown, assets: Record<string, unknown
     assertText(mask.assetId);
     ensure(Object.hasOwn(assets, mask.assetId), "INVALID_DOCUMENT", "Mask asset is missing");
     ensure(
-      (assets[mask.assetId] as { kind?: unknown })?.kind !== "video",
+      [undefined, "image"].includes((assets[mask.assetId] as { kind?: string })?.kind),
       "INVALID_DOCUMENT",
-      "A timed video mask must reference its video layer",
+      "A mask asset must be an image; timed media must reference a visual layer",
     );
   }
   if (layer) assertText(mask.layerId);

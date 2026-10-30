@@ -71,7 +71,7 @@ export async function persistProjectWrite(
     assetsBytes += media.bytes;
     changed ||= media.changed;
     for (const description of frame.descriptions) {
-      if (description.kind === "video") continue;
+      if (description.kind === "video" || description.kind === "audio") continue;
       const original = incoming.get(description.id);
       if (!original) {
         if (

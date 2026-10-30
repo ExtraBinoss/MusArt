@@ -1,0 +1,27 @@
+.motion-canvas-frame {
+  position: sticky;
+  top: 32px;
+  left: var(--motion-gutter, 244px);
+  z-index: 1;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.motion-canvas-root {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  pointer-events: auto;
+  touch-action: none;
+  outline: none;
+}
+.motion-canvas-root:focus-visible {
+  outline: none;
+}
+.motion-canvas-root > canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+}

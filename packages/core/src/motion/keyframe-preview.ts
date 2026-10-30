@@ -21,10 +21,11 @@ export function createMotionKeyframePreview(
     "INVALID_COMMAND",
     "Invalid keyframe selection",
   );
-  let found = 0;
+  const found = new Set<string>();
+  const tracks = new Map(program.composition.motion?.tracks.map((track) => [track.id, track]));
   const affected = new Map(
     program.layers.flatMap((layer, layerIndex) => {
-      const track = program.composition.motion?.tracks.find((item) => item.layerId === layer.id);
+      const track = layer.trackId ? tracks.get(layer.trackId) : undefined;
       const properties = (track?.properties ?? []).filter(
         (property) => property.keyframes.length > 0,
       );
@@ -33,13 +34,13 @@ export function createMotionKeyframePreview(
         assertEditable(program.composition, getLayer(program.composition, layer.id));
         const descriptor = resolveMotionProperty(program.composition, property.target);
         ensure(descriptor, "INVALID_DOCUMENT", "Unknown Motion property");
-        found += property.keyframes.filter((key) => ids.has(key.id)).length;
+        for (const key of property.keyframes) if (ids.has(key.id)) found.add(key.id);
         return [{ propertyIndex, property, descriptor }];
       });
       return entries.length ? [[layerIndex, entries] as const] : [];
     }),
   );
-  ensure(found === ids.size, "NOT_FOUND", "Selected keyframe not found");
+  ensure(found.size === ids.size, "NOT_FOUND", "Selected keyframe not found");
   const constraints = [...affected.values()].flat().map(({ property }) => ({
     moving: property.keyframes.filter((key) => ids.has(key.id)),
     fixed: property.keyframes.filter((key) => !ids.has(key.id)),
@@ -48,7 +49,11 @@ export function createMotionKeyframePreview(
     try {
       validateMotionTime(delta);
       for (const { moving, fixed } of constraints) {
-        if (addMotionTime(moving[0]!.time, delta).value < 0) return false;
+        if (
+          program.composition.motion!.version !== 2 &&
+          addMotionTime(moving[0]!.time, delta).value < 0
+        )
+          return false;
         if (!fixed.length) continue;
         for (const key of moving) {
           const time = addMotionTime(key.time, delta);
@@ -83,7 +88,11 @@ export function createMotionKeyframePreview(
             time: ids.has(key.id) ? addMotionTime(key.time, delta) : key.time,
           }))
           .sort((a, b) => compareMotionTime(a.time, b.time));
-        ensure(keys[0]!.time.value >= 0, "INVALID_COMMAND", "Negative keyframe time");
+        ensure(
+          program.composition.motion!.version === 2 || keys[0]!.time.value >= 0,
+          "INVALID_COMMAND",
+          "Negative keyframe time",
+        );
         ensure(
           keys.every(
             (key, index) => index === 0 || compareMotionTime(keys[index - 1]!.time, key.time) < 0,

@@ -1,4 +1,4 @@
-import { assetOriginalIdentity, isVideoAsset } from "../assets/identity";
+import { assetOriginalIdentity, isOriginalMediaAsset } from "../assets/identity";
 import type { Asset, Project, SessionSnapshot } from "../document/model";
 import { createProject } from "../document/factories";
 import { validateProject } from "../document/validation";
@@ -33,17 +33,31 @@ export function copyContent(
     (id) => !geometry.ancestors(id).some((ancestor) => snapshot.selection.includes(ancestor.id)),
   );
   if (!options.composition && !selected.length) throw new Error("Clipboard selection is empty.");
-  const page = options.composition
+  const selectedPage = options.composition
     ? source
     : selectionComposition(source, selected, [
         snapshot.project.id,
         ...Object.keys(snapshot.project.assets),
       ]);
+  const page =
+    options.composition || !selectedPage.motion
+      ? selectedPage
+      : {
+          ...selectedPage,
+          motion: {
+            ...selectedPage.motion,
+            audioTracks: [],
+            tracks: selectedPage.motion.tracks.filter((track) =>
+              selectedPage.layers.some((layer) => layer.id === track.layerId),
+            ),
+          },
+        };
   const assetIds = new Set<string>();
   for (const layer of page.layers) {
     if (layer.assetId) assetIds.add(layer.assetId);
     if (layer.mask?.assetId) assetIds.add(layer.mask.assetId);
   }
+  for (const track of page.motion?.audioTracks ?? []) assetIds.add(track.assetId);
   const assets = Object.fromEntries([...assetIds].map((id) => [id, snapshot.project.assets[id]!]));
   const document = createProject({
     id: snapshot.project.id,
@@ -119,8 +133,8 @@ export function parseClipboard(text: string, destination: Project): ClipboardCon
       writable: true,
     });
   }
-  if (value.sourceProjectId !== destination.id && Object.values(assets).some(isVideoAsset))
-    throw Error("Video clipboard references require a binary media transfer between projects.");
+  if (value.sourceProjectId !== destination.id && Object.values(assets).some(isOriginalMediaAsset))
+    throw Error("Media clipboard references require a binary media transfer between projects.");
   const document = { ...value.document, assets };
   validateProject(document);
   if (

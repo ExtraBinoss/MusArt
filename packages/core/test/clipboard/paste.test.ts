@@ -182,3 +182,57 @@ it("preserves locked parent and child flags without weakening existing parent-lo
   d.engine.undo();
   expect(d.engine.getSnapshot().project).toBe(before.project);
 });
+
+it("clones a Motion composition with fresh visual/audio channel IDs and preserved original references", () => {
+  const { engine } = fixture();
+  engine.execute({ type: "setCompositionMode", mode: "motion" });
+  engine.execute({
+    type: "addMotionAudioTrack",
+    asset: {
+      id: "sound",
+      kind: "audio",
+      name: "Sound",
+      mime: "audio/wav",
+      originalId: "original",
+      contentRevision: "r1",
+      byteLength: 1,
+      duration: { value: 1, rate: 1 },
+      firstTimestamp: { value: 0, rate: 1 },
+      timeResolution: 48000,
+      sampleRate: 48000,
+      channels: 1,
+    },
+    track: {
+      id: "sound-track",
+      assetId: "sound",
+      name: "Sound",
+      start: { value: 0, rate: 1 },
+      end: { value: 1, rate: 1 },
+      sourceIn: { value: 0, rate: 1 },
+      mute: false,
+      volume: 0.5,
+    },
+  });
+  const original = engine
+    .getSnapshot()
+    .project.pages.find((page) => page.id === engine.getSnapshot().pageId)!;
+  const content = parseClipboard(
+    copyContent(engine.getSnapshot(), { composition: true }),
+    engine.getSnapshot().project,
+  );
+  let sequence = 0;
+  const pasted = pasteContent(
+    content,
+    engine.getSnapshot().project,
+    { x: 0, y: 0 },
+    () => `clone-${++sequence}`,
+  );
+  engine.transaction(pasted.commands);
+  const clone = engine.getSnapshot().project.pages.find((page) => page.id === pasted.pageId)!;
+  expect(clone.motion!.audioTracks![0]!.id).not.toBe("sound-track");
+  expect(clone.motion!.audioTracks![0]!.assetId).toBe("sound");
+  expect(clone.motion!.tracks.map((track) => track.id)).not.toEqual(
+    original.motion!.tracks.map((track) => track.id),
+  );
+  expect(clone.motion!.audioTracks![0]!.volume).toBe(0.5);
+});

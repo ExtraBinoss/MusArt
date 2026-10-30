@@ -1,4 +1,10 @@
-import { createLayer, type Asset, type Command, type Composition, type Layer } from "@musart/core";
+import {
+  createLayer,
+  type ImageAsset,
+  type Command,
+  type Composition,
+  type Layer,
+} from "@musart/core";
 const ACCEPTED = new Set([
   "image/png",
   "image/jpeg",
@@ -53,7 +59,10 @@ export interface ImageReader {
   dimensions: (url: string) => Promise<{ width: number; height: number }>;
 }
 const defaultReader: ImageReader = { dataUrl: readDataUrl, dimensions: imageDimensions };
-export async function importImage(file: File, reader: ImageReader = defaultReader): Promise<Asset> {
+export async function importImage(
+  file: File,
+  reader: ImageReader = defaultReader,
+): Promise<ImageAsset> {
   if (!ACCEPTED.has(file.type)) throw new Error(`${file.name}: format non pris en charge.`);
   if (file.size > 50 * 1024 * 1024) throw new Error(`${file.name}: limite de 50 Mo dépassée.`);
   const dataUrl = await reader.dataUrl(file);
@@ -87,7 +96,7 @@ export async function importBatch(
 ): Promise<Command> {
   if (!files.length) throw new Error("Aucune image à importer.");
   if (files.length > 100) throw new Error("Importer au maximum 100 images à la fois.");
-  const assets: Asset[] = [];
+  const assets: ImageAsset[] = [];
   // Bounded concurrent decode; a rejected file leaves the document untouched.
   for (let offset = 0; offset < files.length; offset += 3) {
     assets.push(

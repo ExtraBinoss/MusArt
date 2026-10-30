@@ -12,10 +12,13 @@ import {
 import type { EditorServices } from "../../../state/contracts";
 import type { useLayerDrag } from "../drag/use-layer-drag";
 import type { LayerDropPosition } from "../drop-target";
+import type { LayerDropRejection } from "../drag/validation";
 import { attachmentSelection, type AttachmentTarget } from "../../../state/selection/attachments";
 import { activateLayerPage, resolveLayerPage, sameLayerContainer } from "../tree/activation";
 import "./layer-row.css";
 import "../messages";
+import { useLayerHover } from "./use-layer-hover";
+import { getTransitionRequests } from "../../motion/transitions/requests";
 export const LayerRow = memo(function LayerRow({
   engine,
   page: incomingPage,
@@ -28,6 +31,7 @@ export const LayerRow = memo(function LayerRow({
   moving,
   dragging,
   drop,
+  rejected,
   reduced,
   services,
   previewKey,
@@ -48,6 +52,7 @@ export const LayerRow = memo(function LayerRow({
   moving: boolean;
   dragging: boolean;
   drop?: LayerDropPosition;
+  rejected?: LayerDropRejection;
   reduced: boolean;
   services?: Pick<EditorServices, "previewExport">;
   previewKey: string;
@@ -62,6 +67,7 @@ export const LayerRow = memo(function LayerRow({
   // Stable layer membership owns callbacks and drafts; page metadata is resolved at interaction time.
   const page = sameLayerContainer(retainedPage, incomingPage) ? retainedPage : incomingPage;
   if (page !== retainedPage) setRetainedPage(page);
+  const hover = useLayerHover(engine, page.id, layer.id);
   const node = useRef<HTMLDivElement>(null);
   useRowPosition(node, JSON.stringify([page.id, layer.id]), top, moving, reduced);
   const [editing, setEditing] = useState<{ page: Composition; id: string } | null>(null);
@@ -158,12 +164,20 @@ export const LayerRow = memo(function LayerRow({
       tabIndex={0}
       draggable={!locked}
       data-layer-id={layer.id}
+      data-layer-kind={layer.kind}
+      data-layer-drop-id={layer.id}
+      data-layer-drop-page-id={page.id}
+      data-layer-drop-kind="layer"
       data-layer-tree-key={`layer:${layer.id}`}
       data-dragging={dragging || undefined}
       data-locked={locked || undefined}
       data-lock-inherited={parentLocked || undefined}
       className={`layer-row ${selected && !attachmentTarget ? "selected" : ""} ${locked ? "is-locked" : ""} ${!layer.visible ? "is-hidden" : ""} ${drop ? `drop-${drop}` : ""}`}
       style={{ position: "absolute", left: 0, right: 0, top, paddingLeft: 12 + depth * 16 }}
+      onPointerEnter={hover.onPointerEnter}
+      onPointerLeave={hover.onPointerLeave}
+      onFocus={hover.onFocus}
+      onBlur={hover.onBlur}
       onClick={(event) => {
         if (event.currentTarget.contains(event.target as Node))
           select(event.shiftKey || event.metaKey || event.ctrlKey);
@@ -175,6 +189,7 @@ export const LayerRow = memo(function LayerRow({
         }
         if ((event.target as Element).closest("[data-attachment-target]")) return;
         if (!resolveLayerPage(engine, page)) return;
+        getTransitionRequests(engine).remember({ x: event.clientX, y: event.clientY });
         attachmentSelection(engine).clear();
         const snapshot = engine.getSnapshot();
         if (snapshot.pageId !== page.id || !snapshot.selection.includes(layer.id)) select(false);
@@ -192,6 +207,7 @@ export const LayerRow = memo(function LayerRow({
         if (!locked && activateLayerPage(engine, page)) setEditing({ page, id: layer.id });
       }}
       onDragStartCapture={(event) => {
+        hover.clear();
         if ((event.target as Element).closest("[data-attachment-target]")) {
           event.preventDefault();
           return;
@@ -224,6 +240,7 @@ export const LayerRow = memo(function LayerRow({
         locked={locked}
         lockDescription={lockDescription}
         drop={drop}
+        rejected={rejected}
         anchor={node}
         run={run}
         onToggle={toggle}

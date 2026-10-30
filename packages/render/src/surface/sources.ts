@@ -1,4 +1,4 @@
-import { isVideoAsset, type Asset } from "@musart/core";
+import { isImageAsset, type Asset } from "@musart/core";
 
 const images = new Map<string, Promise<HTMLImageElement>>();
 
@@ -19,8 +19,8 @@ export function context2d(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
 }
 
 export function loadAsset(asset: Asset): Promise<HTMLImageElement> {
-  if (isVideoAsset(asset))
-    return Promise.reject(Error("A video requires an explicit timed frame source."));
+  if (!isImageAsset(asset))
+    return Promise.reject(Error("Only an image original can be loaded as a still surface."));
   const key = asset.id + ":" + asset.dataUrl;
   const existing = images.get(key);
   if (existing) return existing;
@@ -39,6 +39,7 @@ export function loadAsset(asset: Asset): Promise<HTMLImageElement> {
 }
 
 export async function sourcePixels(asset: Asset): Promise<ImageData> {
+  if (!isImageAsset(asset)) throw Error("Only image originals have pixel surfaces.");
   const image = await loadAsset(asset);
   const canvas = createSurface(asset.width, asset.height);
   const context = context2d(canvas);

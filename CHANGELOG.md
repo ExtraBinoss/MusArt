@@ -171,6 +171,13 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 - Urgent visible thumbnails can preempt canonical thumbnail preparation immediately before GPU admission, including after asynchronous renderer/source setup. Canonical saving resumes after urgent delivery instead of compiling a full artboard ahead of newly scrolled rows.
 - Layer scrolling updates only its bounded virtual tree instead of rerendering the whole panel and its footer/context controls. Decoded thumbnails remain owned by mounted rows across visibility-margin crossings, avoiding repeated preview requests, object URLs and image loads on small scroll reversals; identity changes, cancellation and unmount still reject stale work and release resources.
 
+
+
+### Changed
+
+- Integrated the latest Motion/video branch with main, preserving the mobile editor, Melt branding, text-shaper preparation, bounded preview costs and contribution policy alongside Canvas timelines, linked gestures, audio and composition export. Fullscreen library dialogs override centered-dialog translation so project and template navigation remains inside the viewport.
+
+
 ## [0.2.0] - 2026-10-29
 
 ### Added

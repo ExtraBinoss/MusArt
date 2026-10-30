@@ -2,7 +2,7 @@ import type { PointerEvent as ReactPointerEvent } from "react";
 import type { EnginePort } from "@musart/core";
 import type { TimelineRow } from "../tree";
 import { createTimelineSelectionIndex, selectedRangeKeys, type KeyRange } from "./ranges";
-import { createTimelineAutoScroll } from "./autoscroll";
+import { createDragAutoScroll } from "../../shared/scroll/drag-auto-scroll";
 
 interface Surface {
   root: HTMLElement;
@@ -24,7 +24,7 @@ interface Marquee {
   surface: Surface;
   touched: Set<HTMLElement>;
   stopEngine: () => void;
-  scroll: ReturnType<typeof createTimelineAutoScroll>;
+  scroll: ReturnType<typeof createDragAutoScroll>;
   dirty: boolean;
 }
 
@@ -38,6 +38,8 @@ export function createTimelineMarquee(options: {
   publish: (value: ReadonlySet<string>) => void;
   onStart: () => void;
   onChanged: () => void;
+  onPreview?: (ranges: readonly KeyRange[], base: ReadonlySet<string>) => void;
+  onClearPreview?: () => void;
 }) {
   let active: Marquee | null = null;
   function coordinate(node: HTMLElement, surface: Surface, x: number, y: number) {
@@ -49,6 +51,7 @@ export function createTimelineMarquee(options: {
   }
   function cleanup(gesture: Marquee) {
     active = null;
+    options.onClearPreview?.();
     gesture.scroll.stop();
     gesture.stopEngine();
     gesture.node.removeEventListener("pointermove", move);
@@ -89,6 +92,7 @@ export function createTimelineMarquee(options: {
       start: Math.max(0, (x - 4) / gesture.surface.scale),
       end: (x + width + 4) / gesture.surface.scale,
     });
+    options.onPreview?.(gesture.ranges, gesture.base);
     const byProperty = new Map(gesture.ranges.map((range) => [range.propertyId, range]));
     for (const node of gesture.surface.root.querySelectorAll<HTMLElement>(
       ".motion-key[data-property-id]",
@@ -178,7 +182,7 @@ export function createTimelineMarquee(options: {
         touched: new Set(),
         stopEngine: () => {},
         dirty: false,
-        scroll: createTimelineAutoScroll({
+        scroll: createDragAutoScroll({
           viewport: surface.viewport,
           leftInset: surface.gutter,
           onScroll: preview,

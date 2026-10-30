@@ -1,0 +1,2 @@
+# Dependency diff context preserves upstream tabs and blank-line prefixes.
+patches/*.patch -whitespace

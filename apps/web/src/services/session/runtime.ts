@@ -11,6 +11,7 @@ import { FontLibrary } from "../fonts/library";
 import { ProjectWriteQueue } from "./project-write-queue";
 import { ThumbnailActivity } from "../projects/thumbnails/activity";
 import { freezeEffectPreviews } from "../../state/session/effect-preview";
+import { MotionAudioSession } from "../motion/audio/session";
 import { createRenderActivity } from "./render-activity";
 export interface RuntimeOptions {
   store?: ProjectStore;
@@ -106,6 +107,7 @@ export async function createRuntime(
     fonts,
     saveCurrent: writes.save,
   });
+  const audio = new MotionAudioSession(engine, services, onError);
   function activatePersistence() {
     if (disposed || autosave) return;
     stopDeferred?.();
@@ -161,7 +163,12 @@ export async function createRuntime(
         fonts.dispose();
         selection.dispose();
         try {
-          const results = await Promise.allSettled([thumbnails.dispose(), history, drainedWrites]);
+          const results = await Promise.allSettled([
+            thumbnails.dispose(),
+            history,
+            drainedWrites,
+            audio.dispose(),
+          ]);
           const errors = results.filter((result) => result.status === "rejected");
           if (errors.length)
             throw new AggregateError(

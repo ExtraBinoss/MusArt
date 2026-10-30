@@ -10,6 +10,9 @@ import type { CommandHandlers } from "./context";
 import type { Command } from "../document/model";
 import { updateLayerPatches } from "../layers/patches";
 import * as motion from "../motion/commands";
+import * as occurrences from "../motion/occurrence-commands";
+import * as audio from "../motion/audio/commands";
+import { applyMotionTransition } from "../motion/transitions/commands";
 import {
   moveMotionTrack,
   moveMotionKeyframes,
@@ -42,11 +45,20 @@ export const COMMAND_HANDLERS: CommandHandlers = Object.freeze({
   setReplay,
   setCompositionMode: motion.setCompositionMode,
   setMotionDuration: motion.setMotionDuration,
+  addMotionOccurrence: occurrences.addMotionOccurrence,
+  duplicateMotionOccurrence: occurrences.duplicateMotionOccurrence,
+  deleteMotionOccurrence: occurrences.deleteMotionOccurrence,
   setMotionTrackRange: motion.setMotionTrackRange,
   setMotionMedia: motion.setMotionMedia,
   upsertMotionKeyframe: motion.upsertMotionKeyframe,
   moveMotionKeyframe: motion.moveMotionKeyframe,
   deleteMotionKeyframe: motion.deleteMotionKeyframe,
+  addMotionAudioTrack: audio.addMotionAudioTrack,
+  moveMotionAudioTrack: audio.moveMotionAudioTrack,
+  setMotionAudioTrackRange: audio.setMotionAudioTrackRange,
+  updateMotionAudioTrack: audio.updateMotionAudioTrack,
+  deleteMotionAudioTrack: audio.deleteMotionAudioTrack,
+  applyMotionTransition,
   moveMotionTrack,
   moveMotionKeyframes,
   deleteMotionKeyframes,

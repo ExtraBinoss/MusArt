@@ -1,5 +1,5 @@
-/** Native drag feedback owns a minimal DOM snapshot; the canonical source row never moves. */
-export function layerDragImage(row: HTMLElement, transfer: DataTransfer, name: string) {
+/** Both input adapters use the same minimal snapshot without moving the canonical source row. */
+export function layerDragPreview(row: HTMLElement, name: string) {
   const document = row.ownerDocument,
     preview = document.createElement("div"),
     label = document.createElement("span"),
@@ -43,6 +43,11 @@ export function layerDragImage(row: HTMLElement, transfer: DataTransfer, name: s
   label.textContent = name;
   preview.append(label);
   document.body.append(preview);
+  return preview;
+}
+
+export function layerDragImage(row: HTMLElement, transfer: DataTransfer, name: string) {
+  const preview = layerDragPreview(row, name);
   try {
     transfer.setDragImage(preview, 12, 12);
   } catch (error) {

@@ -226,8 +226,8 @@ test("100,000 native journal events: cold document opens without reading history
         journalOriginals = [],
         sourceDigests: Record<string, string> = {};
       for (const asset of Object.values(project.assets)) {
-        if (asset.kind === "video")
-          throw Error("The image history benchmark fixture must not contain videos.");
+        if (asset.kind === "video" || asset.kind === "audio")
+          throw Error("The image history benchmark fixture must contain only image originals.");
         const { dataUrl, ...description } = asset;
         metadata[asset.id] = description;
         originals.push({ projectId: project.id, assetId: asset.id, dataUrl });

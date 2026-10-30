@@ -10,6 +10,26 @@ type DraftFactories = {
 };
 /** Opt in only handlers whose mutation contract is safe on the declared shallow draft. */
 const factories: DraftFactories = Object.freeze({
+  updateMotionAudioTrack: (project, pageId, command) => ({
+    ...project,
+    pages: project.pages.map((page) =>
+      page.id !== pageId || !page.motion
+        ? page
+        : {
+            ...page,
+            motion: {
+              ...page.motion,
+              ...(page.motion.audioTracks
+                ? {
+                    audioTracks: page.motion.audioTracks.map((track) =>
+                      track.id === command.trackId ? { ...track } : track,
+                    ),
+                  }
+                : {}),
+            },
+          },
+    ),
+  }),
   updatePage: (project, pageId) => ({
     ...project,
     // updatePage assigns permitted top-level metadata; it never mutates layer/asset data.

@@ -1,0 +1,30 @@
+diff --git a/dist/modules/src/matroska/matroska-muxer.js b/dist/modules/src/matroska/matroska-muxer.js
+index b4ab966b77ab937f3a92a71edc052b8c78feae52..7150839c16e69013694dca3435c55adf83c62bb6 100644
+--- a/dist/modules/src/matroska/matroska-muxer.js
++++ b/dist/modules/src/matroska/matroska-muxer.js
+@@ -994,8 +994,8 @@ export class MatroskaMuxer extends Muxer {
+         view.setUint8(0, 0x80 | trackData.track.id);
+         view.setInt16(1, relativeTimestamp, false);
+         const msDuration = Math.round(1000 * chunk.duration);
+-        // Subtitle cues need an explicit BlockDuration (a SimpleBlock has none)
+-        const needsBlockGroup = !!chunk.additions || trackData.type === 'subtitle';
++        // Video and subtitles need BlockDuration so the final sample retains its duration.
++        const needsBlockGroup = !!chunk.additions || trackData.type === 'subtitle' || trackData.type === 'video';
+         if (!needsBlockGroup) {
+             // No additions, we can write out a SimpleBlock
+             view.setUint8(3, Number(chunk.type === 'key') << 7); // Flags (keyframe flag only present for SimpleBlock)
+diff --git a/src/matroska/matroska-muxer.ts b/src/matroska/matroska-muxer.ts
+index a0f5fcc578d95464e1b25560671d0983ec70c0b3..c8c7c70b7247f03d53fb8e8c0f8174d96901ee1c 100644
+--- a/src/matroska/matroska-muxer.ts
++++ b/src/matroska/matroska-muxer.ts
+@@ -1269,8 +1269,8 @@ export class MatroskaMuxer extends Muxer {
+ 
+ 		const msDuration = Math.round(1000 * chunk.duration);
+ 
+-		// Subtitle cues need an explicit BlockDuration (a SimpleBlock has none)
+-		const needsBlockGroup = !!chunk.additions || trackData.type === 'subtitle';
++		// Video and subtitles need BlockDuration so the final sample retains its duration.
++		const needsBlockGroup = !!chunk.additions || trackData.type === 'subtitle' || trackData.type === 'video';
+ 
+ 		if (!needsBlockGroup) {
+ 			// No additions, we can write out a SimpleBlock

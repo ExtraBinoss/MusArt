@@ -106,3 +106,37 @@ test("uses sorted key lookup and avoids identical attribute mutations during con
   observer.disconnect();
   view.unmount();
 });
+
+test("switches occurrence arming at clip boundaries and disables the diamond in a gap without React renders", () => {
+  const d = setup();
+  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const id = d.engine.getSnapshot().project.pages[0]!.motion!.tracks[0]!.id;
+  d.engine.execute({
+    type: "duplicateMotionOccurrence",
+    trackId: id,
+    start: { value: 3, rate: 1 },
+  });
+  const target = { kind: "layer", layerId: d.rectangle.id, property: "x" } as const;
+  d.engine.execute({
+    type: "upsertMotionKeyframe",
+    trackId: id,
+    target,
+    time: { value: 0, rate: 1 },
+    value: 10,
+  });
+  let renders = 0;
+  function Harness() {
+    renders++;
+    return <MotionDiamond engine={d.engine} target={target} label="X" />;
+  }
+  d.mount(<Harness />);
+  const node = screen.getByRole("button");
+  const before = renders;
+  const transport = createMotionTransport(d.engine);
+  act(() => transport.seek({ value: 7, rate: 2 }));
+  expect(node).toHaveAttribute("data-animated", "false");
+  act(() => transport.seek({ value: 5, rate: 2 }));
+  expect(node).toBeDisabled();
+  expect(node.title).toContain("dans un clip");
+  expect(renders).toBe(before);
+});

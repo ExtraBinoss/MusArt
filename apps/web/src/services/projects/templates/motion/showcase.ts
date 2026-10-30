@@ -279,5 +279,11 @@ export function createBloomTemplate(media: MotionTemplateMedia): BuiltMotionTemp
     ),
   ];
   a.commit(commands);
+  a.sounds(media, [
+    { sound: 0, start: 0.15, volume: 0.45 },
+    { sound: 1, start: 0.65, volume: 0.55 },
+    { sound: 1, start: 1.9, volume: 0.4 },
+    { sound: 2, start: 2.8, volume: 0.35 },
+  ]);
   return a.finish();
 }

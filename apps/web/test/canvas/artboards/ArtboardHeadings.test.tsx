@@ -6,6 +6,7 @@ import { expect, it, vi } from "vitest";
 import { createPage, createProject, EditorEngine } from "@musart/core";
 import { ArtboardHeadings } from "../../../src/canvas/artboards/ArtboardHeadings";
 import { arrangeArtboards } from "../../../src/canvas/artboards/layout";
+import { subscribeCompositionExport } from "../../../src/components/export/composition-request";
 const render = (node: ReactNode, options?: RenderOptions) =>
   renderBase(node, {
     ...options,
@@ -41,6 +42,19 @@ async function menu(name = "Cover") {
   fireEvent.pointerDown(screen.getByLabelText(`options ${name}`), { button: 0, ctrlKey: false });
   await screen.findByRole("menuitem", { name: "rename" });
 }
+it("opens the common exporter for an inactive artboard without activating or editing it", async () => {
+  const d = fixture(),
+    request = vi.fn(),
+    before = d.engine.getSnapshot();
+  const stop = subscribeCompositionExport(d.engine, request);
+  const mount = render(<ArtboardHeadings {...d.props} />);
+  await menu("Story");
+  fireEvent.click(screen.getByRole("menuitem", { name: "export" }));
+  expect(request).toHaveBeenCalledWith({ projectId: before.project.id, compositionId: d.b.id });
+  expect(d.engine.getSnapshot()).toBe(before);
+  stop();
+  mount.unmount();
+});
 it("activates, renames once per completed input, cancels Escape and ignores empty/unchanged names", async () => {
   const d = fixture(),
     { container } = render(<ArtboardHeadings {...d.props} />);

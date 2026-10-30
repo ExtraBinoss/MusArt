@@ -8,6 +8,7 @@ import {
   EFFECT_CATALOG,
   isEffectParameterVisible,
   type EffectType,
+  planMotionInitialization,
 } from "@musart/core";
 import { EffectParameters } from "../../../../src/components/properties/effects/EffectParameters";
 import { i18n } from "../../../../src/state/i18n";
@@ -15,6 +16,47 @@ import { setup } from "../../../support/ui";
 import { choose } from "../../../support/select";
 import type { NumberInputProps } from "../../../../src/components/shared/NumberInput";
 import userEvent from "@testing-library/user-event";
+
+test("all parameter kinds retain a shared row and diamond slot across Static and Motion", () => {
+  const d = setup(),
+    effects = [createEffect("gradient"), createEffect("dither")];
+  d.engine.execute({ type: "updateLayers", ids: [d.rectangle.id], patch: { effects } });
+  const { container } = d.mount(
+    <>
+      {effects.map((effect) => (
+        <EffectParameters
+          key={effect.id}
+          engine={d.engine}
+          effect={effect}
+          layerId={d.rectangle.id}
+          onChange={vi.fn()}
+        />
+      ))}
+    </>,
+  );
+  const rows = [...container.querySelectorAll<HTMLElement>(".effect-parameter-row")];
+  expect(new Set(rows.map((row) => row.dataset.parameterKind))).toEqual(
+    new Set(["number", "boolean", "color", "select"]),
+  );
+  for (const row of rows) {
+    expect(
+      row.querySelector(":scope > .motion-property-field > .motion-property-input"),
+    ).not.toBeNull();
+    expect(row.querySelectorAll("[data-motion-diamond]")).toHaveLength(1);
+    expect(row.querySelector<HTMLElement>("[data-motion-diamond]")!.hidden).toBe(true);
+  }
+  act(() =>
+    d.engine.execute({
+      type: "setCompositionMode",
+      mode: "motion",
+      plan: planMotionInitialization(d.engine.getSnapshot()),
+    }),
+  );
+  for (const row of rows) {
+    expect(row.isConnected).toBe(true);
+    expect(row.querySelector<HTMLElement>("[data-motion-diamond]")!.hidden).toBe(false);
+  }
+});
 
 const fields = vi.hoisted(() => ({ render: vi.fn() }));
 vi.mock("../../../../src/components/shared/NumberInput", async (original) => {

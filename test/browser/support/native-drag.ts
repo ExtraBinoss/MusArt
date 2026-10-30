@@ -7,26 +7,46 @@ export interface NativeDragSample {
   payload: string;
 }
 type ProbeWindow = Window & { __musartDragProbe?: NativeDragSample[] };
-/** Observe actual browser DataTransfer after React's root listeners; never synthesize a successful drop. */
-export async function installNativeDragProbe(page: Page, mime: string) {
-  await page.evaluate((mime) => {
-    const root = document.getElementById("root");
-    if (!root) throw Error("Missing application root");
-    const samples: NativeDragSample[] = [];
-    (window as ProbeWindow).__musartDragProbe = samples;
-    for (const type of ["dragstart", "dragover", "drop", "dragend"])
-      root.addEventListener(type, (event) => {
-        const drag = event as DragEvent;
-        if (!drag.dataTransfer || samples.length >= 2000) return;
-        samples.push({
-          type,
-          allowed: drag.dataTransfer.effectAllowed,
-          effect: drag.dataTransfer.dropEffect,
-          prevented: drag.defaultPrevented,
-          payload: drag.dataTransfer.getData(mime),
-        });
-      });
-  }, mime);
+/** Observe real DataTransfer after handlers, including a surface that owns propagation. */
+export async function installNativeDragProbe(page: Page, mime: string, extraSurface?: string) {
+  await page.evaluate(
+    ({ mime, extraSurface }) => {
+      const root = document.getElementById("root");
+      if (!root) throw Error("Missing application root");
+      const extra = extraSurface ? [...document.querySelectorAll(extraSurface)] : [];
+      if (extraSurface && extra.length === 0)
+        throw Error(`Missing native drag surface ${extraSurface}`);
+      const samples: NativeDragSample[] = [];
+      const seen = new WeakSet<Event>();
+      (window as ProbeWindow).__musartDragProbe = samples;
+      for (const node of new Set([root, ...extra]))
+        for (const type of ["dragstart", "dragover", "drop", "dragend"])
+          node.addEventListener(type, (event) => {
+            const drag = event as DragEvent;
+            if (seen.has(event) || !drag.dataTransfer || samples.length >= 2000) return;
+            seen.add(event);
+            const transfer = drag.dataTransfer;
+            const sample = {
+              type,
+              allowed: transfer.effectAllowed,
+              effect: transfer.dropEffect,
+              prevented: drag.defaultPrevented,
+              payload: transfer.getData(mime),
+            };
+            samples.push(sample);
+            if (node !== root) {
+              // Native owners can rebind during a drag. Read payload while the store is readable;
+              // finish flags after all handlers, regardless of this listener's registration order.
+              requestAnimationFrame(() => {
+                sample.allowed = transfer.effectAllowed;
+                sample.effect = transfer.dropEffect;
+                sample.prevented = drag.defaultPrevented;
+              });
+            }
+          });
+    },
+    { mime, extraSurface },
+  );
 }
 export async function assertNativeMove(page: Page, payload: string) {
   const samples = await page.evaluate(() => (window as ProbeWindow).__musartDragProbe ?? []);

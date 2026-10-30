@@ -223,3 +223,26 @@ M64 clarifies keyframe contrast: selecting a layer must not color every unselect
 | Hover handles       | Hovering a timeline item shows the corresponding canvas decoration without selecting or editing the document. During playback, decorations follow evaluated geometry at about20% opacity with editing targets disabled; absent/hidden layers do not retain stale handles.                        |
 | Delegation          | Split independent UI, hover/presentation and persistence tasks across agents, while serializing heavy checks on the shared workstation.                                                                                                                                                          |
 | Resize grip         | Keep the resize pill hidden from the first entering frame until the panel spring settles, then fade it in once. Preserve the smooth exit fade and availability during manual resizing; interrupted transitions cannot flash or reveal it early (M88/M89).                                        |
+
+## Shared layer dragging follow-up (M93/M94)
+
+Both the timeline's layer gutter and the whole clip body must support vertical
+layer reordering, sharing the Layers panel's session, projection, canonical
+validation, live cues and edge-scroll velocity. The clip body locks its intent
+after a small movement threshold: vertical movement reorders, horizontal movement
+retimes the clip. Keyframes and trim handles retain their own timing gestures.
+Cross-view dragging uses one engine-scoped ownership model, not fabricated
+DragEvent/DataTransfer objects. Pixel motion stays imperative; React snapshots
+change only with semantic projection or phase. Completion commits once, while
+cancellation or stale ownership restores the original state. Unsupported timed
+hierarchy changes must be explained rather than silently bypassed.
+
+## Adaptive selection handle contrast
+
+M97 requires readable black/white handles against displayed artwork and consistent
+selection/timeline-hover styling. Preserve the no-production-readback contract:
+contrast must not call GPU maps, pixel reads, Canvas2D reads or VideoFrame copies
+into JavaScript. Browser compositing may adapt a bounded number of handles;
+multiple selection and playing decorations require a cheap two-tone fallback.
+Validate actual canvas screenshots, cleanup and performance boundaries before
+claiming adaptive colors. M98/M99 are explicitly canceled by M102.

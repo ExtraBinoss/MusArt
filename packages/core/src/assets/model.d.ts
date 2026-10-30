@@ -32,4 +32,24 @@ export interface VideoAsset extends AssetDescription {
   };
 }
 
-export type Asset = ImageAsset | VideoAsset;
+/** Nonvisual, immutable audio original. PCM and waveform caches are platform-owned. */
+export interface AudioAsset {
+  kind: "audio";
+  dataUrl?: never;
+  width?: never;
+  height?: never;
+  id: string;
+  name: string;
+  mime: string;
+  originalId: string;
+  contentRevision: string;
+  byteLength: number;
+  duration: MotionTime;
+  firstTimestamp: MotionTime;
+  timeResolution: number;
+  sampleRate: number;
+  channels: 1 | 2;
+}
+
+export type OriginalMediaAsset = VideoAsset | AudioAsset;
+export type Asset = ImageAsset | OriginalMediaAsset;

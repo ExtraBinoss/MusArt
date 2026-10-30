@@ -2,6 +2,16 @@ import { i18n } from "../../../state/i18n";
 
 const resources = {
   en: {
+    soundPlayground: "Sound Playground",
+    soundPlaygroundDescription: "6 s · Original SFX, playful groups, fades and transitions",
+    orbit: "Orbit Study",
+    orbitDescription: "5 s · Living color fields and orbital motion",
+    paper: "Paper Motion",
+    paperDescription: "5 s · Nested paper collage, springs and reveals",
+    colorfield: "Colorfield",
+    colorfieldDescription: "Editable shapes, color and gradient studies",
+    atlas: "Transition Atlas",
+    atlasDescription: "30 GPU styles · Independent clips · One shared layer",
     afterhours: "AFTERHOURS — Techno",
     bloom: "In Bloom — Motion showcase",
     stress: "Motion stress lab",
@@ -20,6 +30,16 @@ const resources = {
     cancel: "Cancel",
   },
   fr: {
+    soundPlayground: "Sound Playground",
+    soundPlaygroundDescription: "6 s · Sons originaux, groupes animés, fondus et transitions",
+    orbit: "Orbit Study",
+    orbitDescription: "5 s · Couleurs vivantes et mouvement orbital",
+    paper: "Paper Motion",
+    paperDescription: "5 s · Collage groupé, ressorts et révélations",
+    colorfield: "Colorfield",
+    colorfieldDescription: "Études de formes, couleurs et dégradés éditables",
+    atlas: "Atlas des transitions",
+    atlasDescription: "30 styles GPU · Clips indépendants · Un seul calque",
     afterhours: "AFTERHOURS — Techno",
     bloom: "In Bloom — Démo Motion",
     stress: "Laboratoire Motion",

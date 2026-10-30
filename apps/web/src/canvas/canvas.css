@@ -91,7 +91,7 @@
   left: 0;
   top: 0;
   transform-origin: 0 0;
-  border: 1px solid var(--primary);
+  border: 1px solid var(--canvas-selection-accent, var(--media-image));
   pointer-events: none;
   box-sizing: border-box;
 }
@@ -114,13 +114,7 @@
   box-shadow: 0 2px 8px #0003;
 }
 .canvas-handle {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: white;
-  border: 1px solid var(--primary);
   pointer-events: auto;
-  padding: 0;
 }
 .canvas-handle-nw {
   left: -4px;

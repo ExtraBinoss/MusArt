@@ -1,3 +1,5 @@
+import type { MotionProgram } from "@musart/core";
+
 export interface MotionPcmChunk {
   timestamp: number;
   sampleRate: number;
@@ -14,4 +16,11 @@ export interface MotionAudioSource {
     options?: { signal?: AbortSignal },
   ): Promise<readonly MotionPcmChunk[]>;
   dispose(): Promise<void>;
+}
+/** Serializable worker seam: timing/media only, with no visual properties or embedded images. */
+export interface MotionAudioPlan {
+  readonly mode: MotionProgram["mode"];
+  readonly duration: MotionProgram["duration"];
+  readonly layers: readonly Pick<MotionProgram["layers"][number], "start" | "end" | "media">[];
+  readonly audio: readonly Pick<MotionProgram["audio"][number], "id" | "start" | "end" | "media">[];
 }

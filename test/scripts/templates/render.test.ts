@@ -12,6 +12,9 @@ const options = {
 
 test("validates exact timestamp, known project identity and bounded native output before starting a browser", async () => {
   expect(() => validateCoverOptions(options)).not.toThrow();
+  expect(() =>
+    validateCoverOptions({ ...options, ids: ["orbit-study", "transition-atlas"] }),
+  ).not.toThrow();
   for (const patch of [
     { url: "file:///etc/passwd" },
     { edge: 0 },
@@ -21,6 +24,7 @@ test("validates exact timestamp, known project identity and bounded native outpu
     { time: { value: 1, rate: 0 } },
     { time: { value: 1.1, rate: 1 } },
     { ids: [] },
+    { ids: ["unknown-template" as never] },
     { ids: ["in-bloom", "in-bloom"] as const },
   ]) {
     expect(() => validateCoverOptions({ ...options, ...patch })).toThrow();
@@ -29,4 +33,8 @@ test("validates exact timestamp, known project identity and bounded native outpu
   await expect(
     renderTemplateCovers({ ...options, inputDirectory: "/definitely-missing-musart-template" }),
   ).rejects.toThrow();
+});
+
+test("accepts the audio-only Motion playground without widening the known-template boundary", () => {
+  expect(() => validateCoverOptions({ ...options, ids: ["sound-playground"] })).not.toThrow();
 });

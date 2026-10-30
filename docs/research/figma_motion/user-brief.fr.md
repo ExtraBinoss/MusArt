@@ -690,6 +690,537 @@ et pourqoi le dnd des layers ne marche plus dutout, il fait juste croix. why????
 quand je fais pin je veux bien que ca se pin daccord mais faut que ca s'anime de manière smooth et que dans la canvas ca nous bouge pas ou alors que ce soit smooth quoi, pas de truc violent quoi, truc vrm smooth
 ```
 
+## M93 — Drag surface clarification
+
+Question: La croix pendant le drag dans la liste Calques apparaît-elle aussi quand la lecture est arrêtée ?
+
+```text
+le drag je parle dans les layers (genre le panneau layer dans la timeline j'ai pas l'impression que je peux drag? et c'est un soucis, le meme moteur de dnd, vélocité et tout temps réel doit etre dans les layers etl e motion
+```
+
+## M94
+
+```text
+meme le truc de la timleine pourrait le drag up and down etc, pas que dans les trucs de gauche
+```
+
+## M95 — Subsequently canceled
+
+```text
+le preferences doit etre pareil bouton que le projets, template etc
+```
+
+## M96 — Cancels M95 only
+
+```text
+attend pardon oublie
+```
+
+M96 cancels the preference-button request. Motion selection, Pin framing and the shared drag engine remain active work.
+
+## M97 — Adaptive handle contrast
+
+```text
+le resiez handle doit adapter ses couleurs de handle, afin de s'adapter a la visibilité dans le canva,s genre faut echantionné , regarder les trucs dominants, et voir si le handle doit etre  blanc ou noir, parfois dans le hover dnas le motion c un resize avec handle noir aussi jsp pk
+```
+
+## M98 — Subsequently canceled text request
+
+```text
+kje dis que l'animation clear tout alors que le texte est similaire et tout tu vois
+```
+
+## M99 — Subsequently canceled hover request
+
+```text
+si y'a du motion, il doit etre play au hover, je pense avec l'engine, prépare le cou petc
+```
+
+## M100
+
+```text
+oh pnt
+```
+
+## M101
+
+```text
+pardon
+```
+
+## M102 — Cancels M98 and M99 only
+
+```text
+oublie  : si y'a du motion, il doit etre play au hover, je pense avec l'engine, prépare le cou petc
+kje dis que l'animation clear tout alors que le texte est similaire et tout tu vois
+```
+
+The text-transition and motion-hover-play requests are canceled. No implementation
+is authorized for those requests. The existing motion work and adaptive handle
+contrast remain active.
+
+## M103 — Graceful stop and tomorrow's scope
+
+```text
+peut tu arreter gracefully, me faire un recap pour reprendre demain en mode "go" je suis ok pour l'export de compositon et tout (tout ca ca serait dans export ducoup?? avec ptete un bouton dans le "..." qui fait pareil quoi
+
+le exporter pourra chosiir le artboard à selectionné par un select quoi avec les noms + scrollshadow etc
+
+il détecte automatiquement si c motion ou statique, si c motion ca la joue en temps réel dans le panneau si possible ou jsais pas, avec les params correct de medaibunny dans le bon ordre et surtout avec des defaults précis et tout,
+et pour les son il faut le add, donc voila, puis les sfx faudrait soit utiliser CINETIC qui a des sons typescript avec webaudio, soit juste une banque de cc0 pour vidéo comme ça on a une banque deja de sound (les sons auront une waveform type instagram a baton quoi) ou jsp clean quoi) faut des whoosh des trucs par catéégorie dans un selecteru
+
+et demain faudra aussi add des transitions car dans les motions on veux des transitions pareil enormement genre un pack de 30 en full gpu et tout propre ,et surtout fludie et catégorisé.
+```
+
+## M104 — One synchronized stacking order
+
+```text
+et rajoute que les layers dans le motion jouent le role de z-index tout comme les layers dans l'app normal, les deux sont synchro quoi avec le dnd etc hein!
+```
+
+## M105 — Recap only, not a coding resume
+
+```text
+allez go fait moi le recap jattend tjr
+```
+
+## M106 — Explicit implementation resume
+
+```text
+ok continue, gruiklle envoie sous agent tout fini vite vite (commit bien allong the way + push)
+```
+
+## M107 — Transition scope confirmed
+
+Question: “Pour le pack de 30 transitions, où doivent-elles s’appliquer ?”
+
+```text
+euh bah entrée ou sortie tu peux choisir.
+```
+
+Layer entry/exit is confirmed. The UI offers both placements per transition.
+
+## M108 — Parallel usability, templates and repeated clip occurrences
+
+```text
+keyframes joli padidng car la dans les effets il est collé
+hover sur layer doit avoir resize handle comme dans motion
+Dans motion pouvoir rename si double click sur le name
+add transition au right click video image ou autre truc visible
+add audio effects right click sur le "son"
+right click sur une keyframes pour l'enlever (ou suppr)
+plus de templates, faire la landing page
+
+dans la timeline motion on peux rajouter si on hover dans la timeline sur un endroit vide, un duplicata de la layer, genre style pouvoir enfaite aovir une layer image que tu met au début, et cette meme layer image que tu met à la fin de la motion, il ne faut pas que cette duplication soit une layer encore dans le système de calque, enfin si mais pas a proprement parler car ca serait une layer sur la meme ligne enfaite. genre tu peux faire comme un logiciel de montage quoi rajouter la meme piste plusieurs fois dans le temps
+
+aussi au hover faudrait que le hover ai la bonne couleur
+pour la waveform il faut obviously le faire en worker et tout, prorprement avec la webaduio api, si mediabunny t'aide utilise le.
+un truc comme ça https://audiowaveform.org/logo.png genre une montagne quoi (avec une ou deux couleur proche et sympa quoi
+```
+
+The new waveform reference supersedes the earlier Instagram-style bars. Sound
+decoding/peak generation must remain off the UI thread; a bounded smooth envelope
+uses one or two nearby audio colors. The reference is inspected, not redistributed
+as a product asset. Separate temporal clip occurrences must share one canonical
+layer and timeline row; their animation-ownership question remains pending until
+the user's answer. Landing routing and audio-effects meaning were also asked
+explicitly; elapsed time is not an answer.
+
+## M109 — Additional parallel fixes, existing scope retained
+
+```text
+c'est tout ce que j'ai remarqué qu'il faut fix en parralèle quoi
+```
+
+## M110 — Occurrence keyframe ownership
+
+Question: “Quand tu répètes un calque sur la même ligne, chaque occurrence doit-elle rejouer l’animation du calque depuis son début, ou avoir ses propres keyframes modifiables ?”
+
+```text
+Ses propres keyframes (recommandé)
+```
+
+## M111 — Audio effects and editable audio transitions
+
+Question: “Par « audio effects » au clic droit sur le son, tu veux des traitements du son (fondus, égaliseur, réverbération…) ou ouvrir la banque de SFX (whoosh, pop…) ?”
+
+```text
+je veux audio effects et audio transitions, donc fade in fade out du son (avec si je clique dessus un truc pour changer les valeurs du fade in fade out etc.. et oui audio effect ca peut etre pas mal genre en mode reverb, gain etc..
+```
+
+## M112 — Landing page reassigned by the user
+
+```text
+pour la landing oublie j'ai un autre agent qui le fait.
+```
+
+The landing page is canceled in this worktree's task scope. Do not modify the
+application entry point or implement a second landing page. Additional templates
+remain requested.
+
+## M113 — Progress request
+
+```text
+alors ou en est tu ?
+```
+
+## M114 — Shared volume popover
+
+```text
+oublie pas pour le volume le right click ou quoi doit avoir un truc volume avec un slider qu'on aime et tout tu vois, pour changer le volume, ou ptete comme c'est comment, direct l'avoir dans le popover. tu vois? from 0 to 100 etc.
+```
+
+The audio context menu and volume button open the same popover. Its Volume
+control uses the existing shared glass slider, a visible 0–100% value, imperative
+audible preview, one committed command/undo on release and cancellation restoration.
+
+## M115 — Remaining work request
+
+```text
+il manque quoi la?
+```
+
+The response distinguishes already pushed drag/GPU milestones from the integrated
+working tree. Remaining gates are real Chrome interactions, final In Bloom/Stress
+performance, static checks and the integration commit/push. No 16 ms claim is made
+from unit tests, cover captures or shader correctness checks.
+
+## M116 — Finish the remaining gates
+
+```text
+ok bah vasi fini ces 3 derniers trucs svp
+```
+
+## M117 — Requested pace
+
+```text
+et vite
+```
+
+## M118 — Properties, categories, track feedback and media previews
+
+```text
+dans les properties d'un effect faut que toutes les keyframes soit aligné, meme tout les trucs ca serait bien qu'il soit aligné tous.
+
+la liste d'effet doit avoir des catégoires pour genre tout comme ça on peux séparé et tout, pareil pour le adjustements faut des categories i guess
+
+sans hover faut que tout sois gris, au hover ca se colore un peu, au actif ca se met en full color du track
+oublie pas une template pour tester les sons, animation, transitions etc.
+jfaut pouvoir left click dans la canvas pour multi select, pas que dans le vide.
+le delete en click droit dit tout le temps delete "keyframes" au lieu de deelete keyframe (ou "s") avec {number} de kf a suspprimer
+
+dans le truc des transitions faut une preview de la transitions comme ça on sais, pareil pour les son, au hover on entend le son avec sa waveform, de la meme manière que le interploation popover et select etc.. fait ça au propre svp! tout propre, perfromatn etc
+```
+
+The earlier integration gates remain active. Additional UI work is delegated by
+domain: aligned effect-property columns and categorized catalogs; timeline
+feedback/selection and transition preview; sound hover preview and a headless
+combined sound/animation/transition playground. Preview work must remain bounded,
+cancel retired results, stop when inactive and use the actual engines.
+
+## M119 — Selection gesture clarification
+
+Question: “Pour sélectionner plusieurs objets depuis le canvas, tu veux quel geste ? Le glisser simple sur un objet sert actuellement à le déplacer.”
+
+```text
+non je parle dans le motion track, il faut que si je click + drag sa lance le selection box, pas qe dans le vide !! dans la canvas le multi select existe deja
+```
+
+The requested left-drag marquee belongs to the timeline, including its track and
+property surfaces. Canvas multiselection already exists and is not this change.
+
+## M120 — Preserve clip dragging; select across property lines
+
+Question: “Sur une barre de clip pleine, le glisser sert déjà à déplacer le clip et à réordonner les calques. Quelle priorité veux-tu ? Sur les lignes de propriétés, le rectangle pourra démarrer directement.”
+
+```text
+oui tu peux faire genre que le track puisse etre bouger avec un simple click, je parlais plutot sur le trait de keyframes et intepolation ya pas mal de vide mais pas d'action de mouvement donc on peux. evidemment sur une track on peux pas, faudrait passer par le vide oui.
+```
+
+Preserve ordinary clip dragging. Extend marquee initiation only across decorative
+keyframe/interpolation lines and their empty surfaces; keep actual key and easing
+icon interactions. No new modifier is required or requested.
+
+## M121 — Clip interaction freezes, handles and duration feedback
+
+```text
+quand je resiez un clip ou que j'en rajotue un, y'a clairement freeze aussi au hover/actif, les pill de drag sont doublé genre y'en a deux
+aussi la length du clip doit etre un tooltip en temps réel en fonction du nb de ms ou seconde (unité) de la timeline
+
+faut que la pill soit juste la pill en mode inactif en plus gros legermeent
+```
+
+Profile clip insertion/resizing and hover/active feedback on the real workloads.
+Remove duplicate handle decoration, retain one slightly larger resting pill, and
+show live clip duration in the timeline's selected milliseconds/seconds unit.
+Do not infer a performance improvement from CSS changes or a prepared trace.
+
+## M122 — Profile all interactions on Sound Playground
+
+```text
+toutes les intreactions, que ce soit ouvertures popover de interpolation, ouverture popover fade in, fadeout, les effets, tout lag genre absolument TOUT il faut que tu profile bien et continue encore une fois la y'a des gros gros soucis de perf, meme le scroll de la vlist lag, regarde avec react 19 si y'a du rerender, si yaa du js work pour rien , si y'a du profiling chrome que tu peux faire, la c'est sur sound lab hein je précise
+```
+
+Sound Playground/Sound Lab is now the first performance reproduction workload.
+Capture actual React commits and Chrome CPU/timeline evidence for interpolation,
+audio fades, effects, hover/selection, virtual scrolling and clip edits. Earlier
+functional passes and other templates do not establish this workload's latency.
+
+## M123 — Status of confirmed findings and progress
+
+```text
+tu as reperer et avancer ?
+```
+
+Report verified causes and fixes as they are established, while keeping pending
+native comparisons and the remaining performance acceptance failures explicit.
+
+## M124 — User-recorded Chrome timeline trace and virtual-list stutter
+
+```text
+quand je scroll ca stutter clairement c pas smooth, regarde le profiling chrome que j'ai fais en scrollant et cliquant dans la timeline
+
+mais oui c'est deja bien miuex
+
+je veux un moteur de vlist et tout vriament très très instant et performant /home/albi/Téléchargements/Trace-20261030T115129.json analyse tout ça
+```
+
+Analyze the user's actual Chrome recording of timeline scrolling and clicks before
+choosing the next virtual-list correction. Preserve the observed improvement and
+the still-visible stutter as separate findings; earlier synthetic or capped
+cohorts do not replace this evidence.
+
+## M125 — Cinetic provenance question
+
+```text
+ducoup ta utilisé cinectic pour les sound effect?
+```
+
+The current fifteen effects are original TypeScript recipes. Cinetic was consulted,
+but its audio assets were not imported. Keep provenance explicit.
+
+## M126 — Instant sound-bank previews and ready waveforms
+
+```text
+et je trouve que pareil, c'est lent à preview les sons, aussi chacun devrait avoir leur waveform de ready dessus, et avoir tu sais la waveforme grise et quand elle passe elle se devient verte et tout tu vois???, j'aimerais aussi que ca soit beaucoup plus rapide à load et tout, que y'ai pas d'attente de placeholder et tout qui servent à rien, si y'a des crédits tu met juste un I genre dans le titre desound effect quoi, je vexu pas des textes de partout...
+```
+
+Give every bank item its prepared waveform. Use gray for the unplayed shape and
+green for actual playback progress. Remove redundant loading placeholders and
+scattered help text. Put any required credits behind a compact information action
+beside the bank title. Improve actual preparation/playback latency, not merely its
+visual indication.
+
+## M127 — Scope is the sound bank
+
+```text
+je parle dans la sound bank la
+```
+
+Apply this request to the sound bank; it does not request redesigning audio tracks.
+
+## M128 — Canvas mountain waveforms
+
+```text
+j'aimerais que la waveform soit rendu en canvas aufaite pas du dom hein faut que ce soit maxi performant hein. .et par chunk si besoin de perf aussi et j'aimerais que ca ressemble plus a une montage enfin que ca prenne du bas vers le haut, pas une waveforme baton entré svp
+```
+
+Render each bank waveform in canvas, using a filled mountain rising from the bottom
+baseline, without bars or a mirrored centerline. Prepare the shape outside the main
+thread, use bounded chunks when useful, keep playback progress imperative and clean
+up native resources. No production pixel readbacks are permitted.
+
+## M129 — Preserve waveforms during hover
+
+```text
+au hover les waveformes ne sont plus visible for some reason
+```
+
+Keep each genuine canvas mountain visible before, during and after audition,
+including development StrictMode effect replay and virtualized remounts.
+
+## M130 — Grouped and virtualized sound bank
+
+```text
+oublie pas de les catégoriser dans des catégories genre tu met des marqueurs entre chaque catégories quoi  oublie pas de vlist etc hein
+```
+
+Show compact category separators in the full bank, preserve category filtering
+and use the shared virtual-list engine with bounded visible rows and scroll shadows.
+
+## M131 — New native trace and possible canvas timeline
+
+```text
+fait ca, mais je tassure ya tjr du lag, la liste est laggy et aussi je vois des lignes qui ne s'affiche pas pendant le scroll fin c'est vrm pas smooth, sois faut passer en timeline full canvas, genre purement que du canvas api, car la c'est plus possible ca lag trop, t'es sur on doit pas passé en timeline canvas etc ??? /home/albi/Téléchargements/Trace-20261030T133413.json
+```
+
+Analyze the new user trace before declaring performance solved. Investigate missing
+rows during scrolling and assess a canvas timeline body against measured JavaScript,
+React, layout and painting costs. Preserve native editor controls and document
+semantics when changing presentation; a canvas alone does not bypass main-thread
+blocking work. Raw captures stay in ignored artifacts.
+
+## M132 — Inspect Beam before choosing the timeline renderer
+
+```text
+pask ej'en ai marre de faire du javascript pour rien alors qu'on pourrait faire une timeline motion full canvas2D comme ça on gère tu vois ??? et on arrete de se battre. j'ai deaj fait ca en engine pure dans Beam ../../../Beam tu vois ?? y'a une timeline full canvas avec pleinnnn d'optimisation tu peux anlayser, m'en parler et voir si c'est smart
+```
+
+Read the existing Beam implementation and discuss whether its optimized Canvas2D
+timeline approach fits MusArt. This asks for an evidence-based architecture
+assessment, not an immediate unreviewed renderer replacement. The matching source
+repository is `/home/albi/Documents/Projects/Beam`; `/home/albi/Documents/Beam`
+contains composition data.
+
+## M133 — Implement the viewport Canvas timeline
+
+```text
+fait une belle canvas limité au viewport, copie colle ce qui a dans Beam, les overlays restent en DOM; mais tout ce qui est lignes et track etc c'est du canvas2D, of course la liste à gauche c'est du texte et html c'est normal. mais la timeline motion doit etre du full canvas, avec dnd etc.. tout pareil hein !!!
+```
+
+This authorizes the implementation after M132's assessment. Render the temporal
+body in a viewport-bounded Canvas2D surface, retain the HTML label gutter and DOM
+overlays, and preserve all editing, drag/drop, trim, keyboard and undo semantics.
+
+## M134 — Verify Beam's actual rendering backend
+
+```text
+normalement le truc de beam est full webgl et engine, verifie bien comment c'est fait, dit moi si tu trouves des trucs
+```
+
+Inspect actual context creation and runtime boundaries. Beam's shared timeline
+surface requests Canvas2D; its Blick audio waveform renderer requests WebGL2 in
+a shared worker, then publishes ImageBitmaps. Distinguish these paths rather than
+describe the entire timeline as WebGL or assume its performance transfers unchanged.
+
+## M135 — Remaining zoom and scroll stutter
+
+```text
+les zooms sont pas encore smooth dans la timeline ni niveau animation  ou autre ca lag, et pareil pour scroll c'est pas mal , ca lagm oins mais y'a quand meme un stutter je tassure
+```
+
+Keep the reported lag open after the Canvas milestone. Profile real timeline wheel
+zoom, slider zoom and scroll cadence independently of hover; preserve delivered
+input clocks, React commits, Canvas paints and matching source attribution. The
+hover result does not establish that zoom or scrolling meets the frame budget.
+
+## M136 — Both-axis scroll edges, deferred workers and waveform shape
+
+```text
+genre scroll sidewars et scroll haut et bas il stutter sur la fin et le début c pas top, j'ai l'impression que les workers ne sont pas top, en plus ils n'utilisent pas la bonne visualiation et j'ai l'impression c pas defered
+```
+
+The explicit answer to the waveform clarification is: **« Oui, ce rendu dans les
+deux »**. Audio tracks and the sound bank both use a filled, bottom-up mountain.
+Keep decoding/preparation out of active wheel, pan, zoom and drag interactions;
+preserve ready waveforms and inspect the actual worker/foreground overlap.
+
+## M137 — Report findings and reuse the generic right scroll shadow
+
+```text
+tu me dis si dans ton profiling tu trouves des trucs, je veux aussi une scrollshadow dans le right side  quand ca déborde la meme que le scrollshadow genrique hein
+```
+
+Report confirmed findings while investigating. Add horizontal overflow indication
+through the existing generic ScrollShadow, including the right edge, with the
+same theme and scrollbar clearance as its vertical counterpart.
+
+## M138 — Aggressive native benchmark movements
+
+```text
+fais vrm des gros mouvements et tout genre vraiment dans ton benchmark tu dois en abuser
+```
+
+Retain the matched comparison workload, and additionally exercise large two-axis
+movements, rapid direction reversals, repeated end/start clamps and full-range
+zoom/scrub gestures. Record delivered native inputs and outcomes; report the
+additional stress scenario separately rather than inventing a matching baseline.
+Keep the shared workstation resource budget and serial Chrome ownership.
+
+## M139 — Linked movement, bounded gestures and broken layer DnD
+
+```text
+y'a  toujours des big soucis, quand je bouge dans la timeline un item passer le "flag" en mode end of composition, il continue d'avancer et tout
+
+ensuite, quand je bouge, les trucs liés a lui ne bouge pas en temps réel, faurait que tout sois temps réel quoi en mode la "Chime"  a un chime striker, bah il bouge pas quand je bouge le top level thing
+
+le dnd des layers ne marche tjr pas j'ai que un curseur blocké jsp pourquoi.. dans les calques normaux
+
+je ne peuix pas dnd entre les layers dans motion aussi. ni dans le pseudo/name de la layer ni autre chose genre la canvas donc regle sa dans un sous agent
+```
+
+```text
+quand je déplace jusqu'a derière 0 ca me dit invalid, bah enfaite ca devrait juste bloqué quand un element arrive 0, nimporte qu'elle elmeent du groupe quoi
+```
+
+```text
+Oui : le déplacement doit se bloquer dès que le premier élément du groupe atteint zér des QUUN element qui bouge en meme temps en temps réel deborde sur le0, des qu'il touche y'a un truc genre rouge une barre rouge qui s'affiche quoi
+```
+
+Clamp the common gesture as soon as any element moving with it reaches zero or
+the composition end. Show a red zero boundary while blocked, keep linked artwork
+and timeline children in the same real-time draft, and preserve a single undo.
+Investigate actual blocked native and pointer drags in normal Layers, Motion
+names and temporal bars; do not infer success from a mocked transfer alone.
+
+## M140 — Keep the dragged playhead in the visible ruler and prioritize fixes
+
+```text
+quand je prend le plauyhead a la souris direct, je peux  dépasser les rulers, PAS TOP;
+```
+
+```text
+j'aimeraisque t'aille plus vite
+```
+
+Clamp captured playhead scrubbing to the visible ruler and valid composition time.
+Prioritize these interaction defects, delegate independent domains and keep the
+workstation's heavy verification serial.
+
+## M141 — Native drag closes the timeline; expose refusal reasons
+
+```text
+grouille toi gros ta fucking 4 sous agents qui tourne et ca va encore mettre 1 heure a tourner -_-
+```
+
+```text
+alors que je me demande juste de profile, et fix des bug simple pitié
+```
+
+```text
+moi je te dit le dnd il fais curseur rouge banni genrej ep eux pas, que ce soti dans motion timeline ou layer
+```
+
+```text
+la timeline aussi si je clique et je fais un dnd, ca ferme le timeline c relou
+```
+
+```text
+sinon met un console log de pourquoi c banni et je te dirais avec une vrai erreur
+```
+
+Prioritize concrete profiling fixes and interaction regressions over a new preview
+engine. Keep an unpinned dock expanded through the pointercancel/native-drag
+handoff and shared layer drag. Expose deduplicated, structured `[MusArt DnD]`
+refusal reasons so the user can report their actual blocked path; preserve the
+distinction between a passing nominal fixture and the unresolved user case.
+
+## M142 — User console evidence and overlapping insertion guidance
+
+The user supplied repeated native dragover diagnostics with
+`reason: 'inactiveDrag'`, `mode: 'motion'` and a retained source ID. This identifies
+a retired session before target acceptance, rather than evidence of a MIME or
+target-validation failure. A concrete native blur cancellation path was then
+removed, with owner-scoped retirement and a start/rerender/blur/drop regression.
+
+```text
+le dnd dans la timeline à l'air de fonctionner mais le insert below et tout defois y'a plusieurs messages ducoup ils sse superposent c pas top
+```
+
+Keep the shared insertion state synchronized across surfaces, but show its cue
+only at the actual hovered DOM row. The same layer in Layers and Motion must not
+produce overlapping visible messages.
+
 ## Reference handling
 
 The screenshots are user-supplied Figma UI references, not MusArt product assets. They document the requested appearance and interaction target; they do not grant a license to redistribute Figma code, brand assets or an external design system inside the application. Preserve MusArt branding and use the repository's genuine shadcn/Radix controls.

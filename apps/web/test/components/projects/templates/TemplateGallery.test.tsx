@@ -60,11 +60,13 @@ test("filters real Motion projects independently from blank formats and preserve
   expect(screen.queryByText("Tous les modèles")).toBeNull();
   fireEvent.click(screen.getByRole("radio", { name: "Motion" }));
   const cards = screen.getAllByRole("button");
-  expect(cards).toHaveLength(2);
-  expect(cards[0]).toHaveTextContent("1440 × 1040 px");
-  expect(cards[1]).toHaveTextContent("1440 × 1200 px");
+  expect(cards).toHaveLength(6);
+  for (const name of [/Orbit Study/, /Paper Motion/, /Atlas des transitions/, /Sound Playground/])
+    await waitFor(() => expect(screen.getByRole("button", { name })).toBeVisible());
+  expect(screen.getByRole("button", { name: /In Bloom/ })).toHaveTextContent("1440 × 1040 px");
+  expect(screen.getByRole("button", { name: /Laboratoire/ })).toHaveTextContent("1440 × 1200 px");
   expect(cards.every((card) => Boolean(card.querySelector('[data-mode="motion"] svg')))).toBe(true);
-  fireEvent.click(cards[0]!);
+  fireEvent.click(screen.getByRole("button", { name: /In Bloom/ }));
   expect(onChoose).toHaveBeenLastCalledWith("in-bloom");
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "Laboratoire" } });
   expect(screen.getAllByRole("button")).toHaveLength(1);
@@ -72,6 +74,7 @@ test("filters real Motion projects independently from blank formats and preserve
   fireEvent.click(screen.getByRole("radio", { name: "Statique" }));
   expect(screen.queryByRole("button", { name: /In Bloom/ })).toBeNull();
   await waitFor(() => expect(screen.getByRole("button", { name: /AFTERHOURS/ })).toBeVisible());
+  expect(screen.getByRole("button", { name: /Colorfield/ })).toBeVisible();
   expect(
     screen.getByRole("button", { name: /TikTok/ }).querySelector('[data-mode="static"]'),
   ).not.toBeNull();

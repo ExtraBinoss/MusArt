@@ -178,6 +178,7 @@ export const LayerTree = memo(function LayerTree({
             aria-label={t("layers")}
             aria-describedby="layer-drag-hint"
             className="layer-tree scrollable-panel"
+            data-layer-drag-viewport
             onScroll={(event) => {
               cancelExpansion();
               const focused = document.activeElement;
@@ -246,13 +247,16 @@ export const LayerTree = memo(function LayerTree({
                     moving={!!drag.dragging}
                     dragging={drag.dragging === entry.layer.id}
                     drop={drag.target?.id === entry.layer.id ? drag.target.position : undefined}
+                    rejected={
+                      drag.rejected?.id === entry.layer.id ? drag.rejected.reason : undefined
+                    }
                     reduced={reduced}
                     services={services}
                     previewKey={previewKeys.get(entry.layer.id)!}
                     top={at * LAYER_ROW_HEIGHT}
                     run={run}
                     onToggle={toggle}
-                    onDragEnd={drag.cancel}
+                    onDragEnd={drag.cancelOwned}
                     drag={drag.handlers}
                   />
                 ) : (

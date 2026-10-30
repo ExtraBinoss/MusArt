@@ -1,4 +1,5 @@
-import { expect, test, vi } from "vitest";
+import { canvasContext } from "./components/motion/canvas/support";
+import { beforeEach, expect, test, vi } from "vitest";
 import { screen, fireEvent, waitFor, act, within } from "@testing-library/react";
 import { App } from "../src/App";
 import { setup } from "./support/ui";
@@ -6,6 +7,10 @@ import { projectSummary } from "./support/projects";
 import { toolAtom } from "../src/state/session/editor";
 import { createEffect, createProject } from "@musart/core";
 import { createMotionTransport } from "../src/services/motion/transport";
+import { requestLayerTransition } from "../src/components/motion/transitions/requests";
+beforeEach(() => {
+  vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(canvasContext() as never);
+});
 vi.mock("../src/canvas/EditorCanvas", () => ({
   EditorCanvas: ({
     onError,
@@ -25,6 +30,15 @@ vi.mock("../src/canvas/EditorCanvas", () => ({
     </div>
   ),
 }));
+test("the app owns one persistent transition editor for requests originating outside Layers", async () => {
+  const d = setup();
+  d.mount(<App engine={d.engine} services={d.services} />);
+  await screen.findByTestId("canvas");
+  await act(async () => {
+    await requestLayerTransition(d.engine, d.page.id, d.rectangle.id, { x: 100, y: 120 });
+  });
+  expect(screen.getAllByRole("dialog", { name: "Transition" })).toHaveLength(1);
+});
 test("opening an effect on an unselected layer leaves the app shell untouched", async () => {
   const d = setup();
   const locationBefore = location.href;

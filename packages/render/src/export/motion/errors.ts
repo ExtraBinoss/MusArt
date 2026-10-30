@@ -2,6 +2,7 @@ export class MotionExportError extends Error {
   constructor(
     public readonly code:
       | "invalidOptions"
+      | "containerPrecision"
       | "alphaUnsupported"
       | "missingMotion"
       | "noVideoCodec"

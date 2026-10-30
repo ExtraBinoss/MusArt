@@ -8,11 +8,15 @@ import { createMotionTransport } from "../../services/motion/transport";
 import { TimelinePanel } from "../motion/TimelinePanel";
 import type { TimelineTransport } from "../motion/model";
 import { observeDockInteraction } from "./dock-interaction";
+import {
+  createViewportResizeAnchor,
+  type ViewportResizeLease,
+} from "../../canvas/session/viewport-resize";
+import { presentationSpring } from "../shared/motion/presentation-spring";
 import "./motion-shell.css";
 
 const RetainedPanel = memo(TimelinePanel);
 const peekTransform = "translateY(calc(100% - 32px))";
-const dockSpring = { type: "spring" as const, mass: 1, stiffness: 385.53, damping: 39.27 };
 function rememberChoice(previous: ReadonlyMap<string, boolean>, key: string, pinned: boolean) {
   if (previous.get(key) === pinned) return previous;
   const next = new Map(previous);
@@ -78,6 +82,7 @@ function DockSurface({
   remember: (scope: string, pinned: boolean) => void;
 }) {
   const [open, setOpen] = useAtom(timelineOpenAtom);
+  const resizeAnchor = useMemo(() => createViewportResizeAnchor(engine), [engine]);
   const store = useStore();
   const [pinned, setPinned] = useState(initialPinned || pinRequest > 0);
   const [initialExpansion] = useState(initialPinned || pinRequest > 0);
@@ -87,8 +92,14 @@ function DockSurface({
     slot = useRef<HTMLDivElement>(null);
   const interaction = useRef<ReturnType<typeof observeDockInteraction> | null>(null);
   const latest = useRef({ expanded, pinned });
-  const beforeLayout = useRef<{ node: HTMLElement; height: number; pinned: boolean } | null>(null);
+  const beforeLayout = useRef<{ anchor: ViewportResizeLease; pinned: boolean } | null>(null);
   const idleFrame = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      beforeLayout.current?.anchor.cancel();
+    },
+    [],
+  );
   const transitions = useRef(0),
     initialized = useRef(false);
   const beginTransition = useCallback(() => {
@@ -176,7 +187,7 @@ function DockSurface({
     const animation = animate(
       node,
       { transform: target, opacity: expanded ? 1 : 0.98 },
-      dockSpring,
+      presentationSpring,
     );
     void animation.then(() => {
       finishTransition();
@@ -192,45 +203,23 @@ function DockSurface({
     const before = beforeLayout.current;
     if (before && before.pinned !== pinned) return;
     beforeLayout.current = null;
-    if (!before || reduced) return;
-    const after = before.node.getBoundingClientRect().height;
-    if (!after || before.height === after) return;
-    const node = before.node,
-      transform = node.style.transform,
-      origin = node.style.transformOrigin;
-    node.style.transformOrigin = "top";
+    if (!before) return;
     const finishTransition = beginTransition();
-    const animation = animate(
-      node,
-      { transform: [`scaleY(${before.height / after})`, "scaleY(1)"] },
-      dockSpring,
-    );
-    let restored = false;
-    const restore = () => {
-      if (restored) return;
-      restored = true;
-      node.style.transform = transform;
-      node.style.transformOrigin = origin;
+    before.anchor.apply();
+    void before.anchor.finished.then(finishTransition);
+    return () => {
+      before.anchor.cancel();
       finishTransition();
     };
-    void animation.then(restore);
-    return () => {
-      animation.stop();
-      restore();
-    };
-  }, [beginTransition, pinned, reduced]);
+  }, [beginTransition, pinned]);
   const captureLayout = useCallback(
     (nextPinned: boolean) => {
       measure();
-      const node = slot.current?.parentElement?.querySelector<HTMLElement>(".workspace-panels");
-      if (node)
-        beforeLayout.current = {
-          node,
-          height: node.getBoundingClientRect().height,
-          pinned: nextPinned,
-        };
+      beforeLayout.current?.anchor.cancel();
+      const anchor = resizeAnchor.capture();
+      beforeLayout.current = anchor ? { anchor, pinned: nextPinned } : null;
     },
-    [measure],
+    [measure, resizeAnchor],
   );
   const pin = useCallback(() => {
     const nextPinned = !latest.current.pinned;

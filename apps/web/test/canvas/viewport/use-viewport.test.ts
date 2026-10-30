@@ -6,6 +6,7 @@ import { SceneController } from "../../../src/canvas/session/scene-controller";
 import { createWorkspace } from "../../../src/canvas/artboards/workspace";
 import { useViewport } from "../../../src/canvas/viewport/use-viewport";
 import { EMPTY_PREVIEW_SOURCE } from "../../../src/state/session/preview-source";
+import { createViewportResizeAnchor } from "../../../src/canvas/session/viewport-resize";
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.useRealTimers();
@@ -162,4 +163,32 @@ it("keeps repeated pan events imperative, commits after quiet and cancels pendin
   fireEvent.wheel(screen.getByTestId("viewport"), { deltaX: 2, deltaY: 3 });
   unmount();
   expect(vi.getTimerCount()).toBe(0);
+});
+
+it("registers an origin bridge for explicit pin reservations while ordinary fit and resize keep their behavior", async () => {
+  const d = fixture(),
+    view = render(createElement(d.Probe));
+  d.advance(0);
+  const port = createViewportResizeAnchor(d.engine),
+    lease = port.capture()!;
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
+    left: 0,
+    top: 0,
+    width: 1000,
+    height: 600,
+  } as DOMRect);
+  await act(async () => {
+    lease.apply();
+    await lease.finished;
+  });
+  expect(d.read().motion.read()).toEqual({ x: 0, y: 100, zoom: 1 });
+  expect(d.read().viewRef.current).toBe(d.read().motion.read());
+  act(() => {
+    d.read().actions.run("fit");
+  });
+  d.advance(160);
+  expect(d.read().motion.read()).toEqual({ x: 0, y: 0, zoom: 1 });
+  view.unmount();
+  expect(port.capture()).toBeUndefined();
+  expect(d.frames.size).toBe(0);
 });

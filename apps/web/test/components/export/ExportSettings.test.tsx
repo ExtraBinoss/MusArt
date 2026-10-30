@@ -37,6 +37,7 @@ test("exports cropped selected content by default and switches explicitly to the
         format: "png",
         quality: 1,
         allPages: false,
+        signal: expect.any(AbortSignal),
       },
       { page: data.page, revision: 0, selection: [data.rectangle.id] },
     ),

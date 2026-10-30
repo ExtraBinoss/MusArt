@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { createLayer, createPage, createProject, EFFECT_CATALOG } from "@musart/core";
 
 for (const language of ["fr", "en"]) {
-  test(`effect and color-adjustment menus follow the ${language} alphabet and add the chosen type`, async ({
+  test(`effect and color-adjustment menus group and filter the ${language} catalog and add the chosen type`, async ({
     page,
   }) => {
     await page.addInitScript(
@@ -31,7 +31,16 @@ for (const language of ["fr", "en"]) {
       "alphabet-owner",
     );
     for (const category of ["effect", "adjustment"] as const) {
-      await page.locator(`[data-layer-add-category="${category}"]`).click();
+      await page.locator(".layers-header-actions .layer-create-actions button").click();
+      const categoryName =
+        category === "effect"
+          ? language === "fr"
+            ? "Ajouter un effet"
+            : "Add effect"
+          : language === "fr"
+            ? "Ajouter un réglage"
+            : "Add adjustment";
+      await page.getByRole("menuitem", { name: categoryName, exact: true }).hover();
       const menu = page.locator('.effect-catalog-menu[data-state="open"]');
       await expect(menu).toBeVisible();
       const labels = (await menu.getByRole("menuitem").allTextContents()).map((label) =>
@@ -40,11 +49,16 @@ for (const language of ["fr", "en"]) {
       expect(labels).toHaveLength(
         Object.values(EFFECT_CATALOG).filter((item) => item.category === category).length,
       );
-      expect(labels).toEqual(
-        [...labels].sort((a, b) =>
-          a.localeCompare(b, language, { sensitivity: "base", numeric: true }),
-        ),
-      );
+      for (const group of await menu.getByRole("group").all()) {
+        const grouped = (await group.getByRole("menuitem").allTextContents()).map((label) =>
+          label.trim(),
+        );
+        expect(grouped).toEqual(
+          [...grouped].sort((a, b) =>
+            a.localeCompare(b, language, { sensitivity: "base", numeric: true }),
+          ),
+        );
+      }
       const name =
         category === "effect"
           ? language === "fr"
@@ -54,6 +68,10 @@ for (const language of ["fr", "en"]) {
             ? "Luminosité"
             : "Brightness";
       const choice = menu.getByRole("menuitem", { name, exact: true });
+      const search = menu.getByRole("textbox");
+      await search.fill(name);
+      await expect(menu.getByRole("menuitem")).toHaveCount(1);
+      await expect(menu.locator(".scroll-shadow > .effect-catalog-viewport")).toBeVisible();
       await choice.scrollIntoViewIfNeeded();
       await choice.click();
       await expect(menu).toHaveCount(0);

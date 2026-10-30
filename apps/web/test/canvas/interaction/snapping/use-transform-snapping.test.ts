@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, renderHook } from "@testing-library/react";
 import { afterEach, expect, it } from "vitest";
-import { createLayer, createPage, createProject, EditorEngine } from "@musart/core";
+import { createLayer, createPage, createProject, EditorEngine, transformPoint } from "@musart/core";
 import {
   useTransformSnapping,
   type TransformGesture,
@@ -10,6 +10,7 @@ import { SceneController } from "../../../../src/canvas/session/scene-controller
 import { EMPTY_PREVIEW_SOURCE } from "../../../../src/state/session/preview-source";
 import { snappingPreferences } from "../../../../src/state/snapping/preferences";
 import type { LayerPatch } from "../../../../src/canvas/interaction/gestures";
+import { motionPoseFixture } from "../../../support/motion-pose";
 afterEach(() => {
   cleanup();
   snappingPreferences.reset();
@@ -80,4 +81,35 @@ it("ignores unrelated keys, inactive/stale gestures and preserves document state
     snappingPreferences.update({ enabled: true });
   });
   expect(d.patches.current).toBe(patches);
+});
+
+it("resizes in the captured evaluated child/parent coordinates while retaining its canonical origin", () => {
+  const d = motionPoseFixture(),
+    layer = d.index.get(d.picture.id),
+    matrix = d.index.worldMatrix(layer.id);
+  const from = transformPoint(matrix, { x: layer.width, y: layer.height }),
+    to = transformPoint(matrix, { x: layer.width + 10, y: layer.height });
+  const gesture: { current: TransformGesture | null } = {
+    current: {
+      origin: captureGestureOrigin(d.engine),
+      presentation: d.frame.page,
+      mode: "resize",
+      handle: "se",
+      from,
+      current: to,
+      layers: [layer],
+    },
+  };
+  const patches: { current: LayerPatch[] } = { current: [] },
+    before = d.engine.getSnapshot();
+  const view = { read: () => ({ x: 0, y: 0, zoom: 1 }), subscribe: () => () => {} };
+  const hook = renderHook(() =>
+    useTransformSnapping({ engine: d.engine, controller: d.controller, view, gesture, patches }),
+  );
+  act(() => hook.result.current.update(gesture.current!, to, true, false));
+  expect(patches.current[0]!.patch.width).toBeCloseTo(55);
+  expect(patches.current[0]!.patch.height).toBeCloseTo(30);
+  expect(d.engine.getSnapshot()).toBe(before);
+  expect(gesture.current!.origin.project).toBe(before.project);
+  hook.unmount();
 });

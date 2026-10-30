@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { act, fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, screen, within } from "@testing-library/react";
 import { AddEffect } from "../../../../src/components/layers/menu/AddEffect";
 import { setup } from "../../../support/ui";
 import { i18n } from "../../../../src/state/i18n";
@@ -12,7 +12,7 @@ import {
 } from "@musart/core";
 
 test.each(["effect", "adjustment"] as const)(
-  "%s menu sorts localized labels and updates its order while open",
+  "%s menu groups localized labels and updates each family's order while open",
   async (category) => {
     const d = setup();
     d.engine.select([d.rectangle.id]);
@@ -39,11 +39,16 @@ test.each(["effect", "adjustment"] as const)(
         expect(labels).toHaveLength(
           Object.values(EFFECT_CATALOG).filter((e) => e.category === category).length,
         );
-        expect(labels).toEqual(
-          [...labels].sort((a, b) =>
-            a.localeCompare(b, language, { sensitivity: "base", numeric: true }),
-          ),
-        );
+        for (const group of screen.getAllByRole("group")) {
+          const grouped = within(group)
+            .getAllByRole("menuitem")
+            .map((node) => node.textContent!.trim());
+          expect(grouped).toEqual(
+            [...grouped].sort((a, b) =>
+              a.localeCompare(b, language, { sensitivity: "base", numeric: true }),
+            ),
+          );
+        }
       }
       expect(d.engine.getSnapshot().canUndo).toBe(false);
     } finally {

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
 import { ExportSettings } from "./ExportSettings";
+import { CompositionExportSettings } from "./CompositionExportSettings";
 import type { ExportPopoverProps } from "./model";
 import "./messages";
 import "./export.css";
@@ -36,7 +37,16 @@ export function ExportPopover(props: ExportPopoverProps) {
           if (pendingRef.current) event.preventDefault();
         }}
       >
-        <ExportSettings {...props} pendingRef={pendingRef} />
+        {props.engine ? (
+          <CompositionExportSettings
+            key={props.initialCompositionId ?? "active"}
+            {...props}
+            engine={props.engine}
+            pendingRef={pendingRef}
+          />
+        ) : (
+          <ExportSettings {...props} pendingRef={pendingRef} />
+        )}
       </PopoverContent>
     </Popover>
   );

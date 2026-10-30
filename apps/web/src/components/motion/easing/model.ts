@@ -70,6 +70,7 @@ export interface EasingOrigin {
   projectId: string;
   pageId: string;
   revision: number;
+  trackId: string;
   property: MotionPropertyTrack;
   key: MotionKeyframe;
 }
@@ -82,13 +83,21 @@ export function captureEasingOrigin(
 ): EasingOrigin {
   const snapshot = engine.getSnapshot();
   const page = snapshot.project.pages.find((item) => item.id === pageId);
-  const property = page?.motion?.tracks
-    .flatMap((track) => track.properties)
-    .find((item) => item.id === propertyId);
+  const track = page?.motion?.tracks.find((track) =>
+    track.properties.some((property) => property.id === propertyId),
+  );
+  const property = track?.properties.find((item) => item.id === propertyId);
   const key = property?.keyframes.find((item) => item.id === keyId);
   if (snapshot.pageId !== pageId || page?.motion?.mode !== "motion" || !property || !key)
     throw new EngineError("INVALID_COMMAND", "Easing target is unavailable.");
-  return { projectId: snapshot.project.id, pageId, revision: snapshot.revision, property, key };
+  return {
+    projectId: snapshot.project.id,
+    pageId,
+    revision: snapshot.revision,
+    trackId: track!.id,
+    property,
+    key,
+  };
 }
 
 /** The destination key keeps its identity, authored time and value. */
@@ -102,6 +111,7 @@ export function commitEasing(
   if (
     current.projectId !== origin.projectId ||
     current.revision !== origin.revision ||
+    current.trackId !== origin.trackId ||
     compareMotionTime(current.key.time, origin.key.time) !== 0
   )
     throw new EngineError("INVALID_COMMAND", "Easing target changed.");
@@ -109,6 +119,7 @@ export function commitEasing(
   engine.transaction([
     {
       type: "upsertMotionKeyframe",
+      trackId: origin.trackId,
       target: origin.property.target,
       time: origin.key.time,
       value: origin.key.value,

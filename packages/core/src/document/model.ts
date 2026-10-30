@@ -6,8 +6,15 @@ import type { FillGradient } from "../paint/gradient";
 import type { EffectCompositeMode } from "../effects/compositing";
 import type { Asset } from "../assets/model";
 import type { PreparedEngineTransaction } from "../session/reservation";
-export type { Asset, ImageAsset, VideoAsset } from "../assets/model";
+export type {
+  Asset,
+  ImageAsset,
+  VideoAsset,
+  AudioAsset,
+  OriginalMediaAsset,
+} from "../assets/model";
 import type { CompositionMotion, MotionCommand } from "../motion/model";
+import type { ApplyMotionTransitionCommand } from "../motion/transitions/model";
 /** Portable document contract. No browser, React or renderer dependencies. */
 export const FORMAT_VERSION = 1 as const;
 export type LayerKind = "rectangle" | "ellipse" | "text" | "image" | "video" | "group" | "vector";
@@ -43,7 +50,8 @@ export type EffectType =
   | "datamosh"
   | "bit-dither"
   | "receipt"
-  | "pink-phosphor";
+  | "pink-phosphor"
+  | "transition";
 /** Effect-owned scalar settings are validated against that effect's definition. */
 export type EffectSettings = Partial<Record<string, number | boolean | string>>;
 export interface Effect {
@@ -143,6 +151,7 @@ export interface SessionSnapshot {
   canRedo: boolean;
 }
 export type Command =
+  | ApplyMotionTransitionCommand
   | MotionCommand
   | { type: "addLayers"; layers: Layer[]; assets?: Asset[] }
   | { type: "updateLayers"; ids: string[]; patch: Partial<Layer> }

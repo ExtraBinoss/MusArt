@@ -1,6 +1,7 @@
 import { useRef, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
-import { Ellipsis, Pencil, Trash2 } from "lucide-react";
+import { Download, Ellipsis, Pencil, Trash2 } from "lucide-react";
+import { requestCompositionExport } from "../../components/export/composition-request";
 import type { EnginePort } from "@musart/core";
 import { Button } from "../../components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../components/ui/tooltip";
@@ -46,6 +47,7 @@ function ArtboardHeading({
   const [editing, setEditing] = useState(false),
     [name, setName] = useState(board.name);
   const done = useRef(false);
+  const exporting = useRef(false);
   const origin = useRef<GestureOrigin | null>(null);
   const edit = () => {
     engine.setPage(board.id);
@@ -140,12 +142,22 @@ function ArtboardHeading({
         <DropdownMenuContent
           data-canvas-control
           onCloseAutoFocus={(event) => {
-            if (editing) event.preventDefault();
+            if (editing || exporting.current) event.preventDefault();
+            exporting.current = false;
           }}
         >
           <DropdownMenuItem onSelect={edit}>
             <Pencil />
             {t("rename")}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => {
+              exporting.current = true;
+              requestCompositionExport(engine, board.id);
+            }}
+          >
+            <Download />
+            {t("export")}
           </DropdownMenuItem>
           {placement.compact && (
             <DropdownMenuLabel className="artboard-menu-dimensions">

@@ -3,6 +3,8 @@ import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { serializeProject, validateProject } from "../../packages/core/src/index";
 import { createBloomTemplate } from "../../apps/web/src/services/projects/templates/motion/showcase";
+import { isOriginalMediaAsset } from "../../packages/core/src/index";
+import { createSoundPlayground } from "../../apps/web/src/services/projects/templates/motion/sound-playground";
 import { createStressTemplate } from "../../apps/web/src/services/projects/templates/motion/stress";
 import type { MotionTemplateManifest } from "../../apps/web/src/services/projects/templates/motion/model";
 import { readTemplateMedia } from "./media";
@@ -12,16 +14,32 @@ export async function generateMotionTemplates(options: {
   mediaDirectory: string;
   outputDirectory: string;
 }): Promise<string[]> {
-  const { media, originals } = await readTemplateMedia(options.mediaDirectory);
+  const { media, originals, audioOriginals } = await readTemplateMedia(options.mediaDirectory);
   await mkdir(options.outputDirectory, { recursive: true });
+  for (const original of audioOriginals) {
+    const path = resolve(options.outputDirectory, original.file);
+    await mkdir(resolve(path, ".."), { recursive: true });
+    await writeFile(path, original.data);
+  }
   const written: string[] = [];
   for (const [templateId, build] of [
     ["in-bloom", createBloomTemplate],
     ["motion-stress-lab", createStressTemplate],
+    ["sound-playground", createSoundPlayground],
   ] as const) {
     const { initial, project, batches } = build(media);
     validateProject(project);
-    const manifest: MotionTemplateManifest = { version: 1, templateId, project, originals };
+    const usedOriginals = new Set(
+      Object.values(project.assets)
+        .filter(isOriginalMediaAsset)
+        .map((asset) => asset.originalId),
+    );
+    const manifest: MotionTemplateManifest = {
+      version: 1,
+      templateId,
+      project,
+      originals: originals.filter((original) => usedOriginals.has(original.originalId)),
+    };
     const files = {
       [`${templateId}.json`]: JSON.stringify(manifest),
       [`${templateId}.musart`]: serializeProject(project),

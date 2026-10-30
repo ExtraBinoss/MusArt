@@ -1,11 +1,12 @@
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
 import {
   addMotionTime,
-  compareMotionTime,
   getAncestors,
-  getDescendants,
   motionTimeToSeconds,
   subtractMotionTime,
+  clampMotionTrackMove,
+  planMotionTrackMove,
+  type MotionTrackMovePlan,
   type Command,
   type Composition,
   type EnginePort,
@@ -17,18 +18,29 @@ import type { TimelineTransport } from "./model";
 import { timelineTime } from "./time";
 import type { TimelineRow } from "./tree";
 import { createTimelineMarquee } from "./selection/marquee";
-import { createTimelineAutoScroll } from "./selection/autoscroll";
+import { createDragAutoScroll } from "../shared/scroll/drag-auto-scroll";
 import { createTimelineLinkPreview } from "./link-preview";
-import { createKeyframeTooltipPreview } from "./gestures/tooltip";
-
+import { createTimelineGesturePresentation } from "./gestures/presentation";
+import { createTimelineTooltipPreview, renderTimelineGestureTooltip } from "./gestures/tooltip";
+import {
+  toTimelinePointerInput,
+  type TimelinePointerInput,
+  type TimelinePointerMove,
+} from "./gestures/input";
+import {
+  acceptsOccurrencePlacement,
+  occurrenceMoveTargets,
+  timelineGestureBounds,
+} from "./gestures/occurrences";
+import { nearestTimelineSnap, timelineSnapReferences } from "./gestures/snapping";
+import { isTimelineGestureCurrent, type TimelineGestureOrigin } from "./gestures/origin";
+export type { TimelinePointerInput, TimelinePointerMove } from "./gestures/input";
 type TrackAction = "move" | "trimStart" | "trimEnd";
-interface Gesture {
+interface Gesture extends TimelineGestureOrigin {
   node: HTMLElement;
   pointer: number;
   x: number;
   scroll: number;
-  revision: number;
-  projectId: string;
   page: Composition;
   originalLayers: string[];
   originalKeys: ReadonlySet<string>;
@@ -36,6 +48,10 @@ interface Gesture {
   track?: MotionLayerTrack;
   keyIds: string[];
   layerIds: ReadonlySet<string>;
+  trackIds: ReadonlySet<string>;
+  limits: Pick<MotionTrackMovePlan, "minimum" | "maximum">;
+  movePlan?: MotionTrackMovePlan;
+  boundary: "start" | "end" | null;
   anchor: MotionTime;
   delta: MotionTime;
   snapped: MotionTime | null;
@@ -44,10 +60,10 @@ interface Gesture {
   dirty: boolean;
   rejected: boolean;
   stopEngine: () => void;
-  scrollLoop: ReturnType<typeof createTimelineAutoScroll> | null;
+  scrollLoop: ReturnType<typeof createDragAutoScroll> | null;
   point: { x: number; y: number; shift: boolean };
   preview: ReturnType<NonNullable<TimelineTransport["beginKeyframePreview"]>>;
-  tooltip?: ReturnType<typeof createKeyframeTooltipPreview>;
+  tooltip?: ReturnType<typeof createTimelineTooltipPreview>;
   links?: ReturnType<typeof createTimelineLinkPreview>;
 }
 
@@ -69,6 +85,7 @@ export function createTimelineGestures(options: {
     gutter?: number;
     timeWidth?: number;
   } | null = null;
+  const presentation = createTimelineGesturePresentation();
   let selected = new Set<string>();
   let active: Gesture | null = null;
   let ignorePointerClick = false;
@@ -82,6 +99,8 @@ export function createTimelineGestures(options: {
     origin: () => origin,
     selected: () => selected,
     publish: setSelection,
+    onPreview: presentation.marquee,
+    onClearPreview: presentation.clearMarquee,
     onStart: () => {
       cancel();
       options.onStart?.();
@@ -91,7 +110,17 @@ export function createTimelineGestures(options: {
   });
 
   function setSelection(next: ReadonlySet<string>) {
+    if (next === selected) return;
+    let same = next.size === selected.size;
+    if (same)
+      for (const id of next)
+        if (!selected.has(id)) {
+          same = false;
+          break;
+        }
+    if (same) return;
     selected = new Set(next);
+    presentation.notify();
     if (!disposed) options.onSelection();
   }
   function currentPage() {
@@ -102,13 +131,14 @@ export function createTimelineGestures(options: {
   }
   function clear(gesture: Gesture) {
     active = null;
+    presentation.clear();
     delete gesture.node.dataset.dragging;
     gesture.stopEngine();
     gesture.scrollLoop?.stop();
     gesture.preview?.clear();
     gesture.links?.clear();
     gesture.tooltip?.dispose();
-    gesture.node.removeEventListener("pointermove", move);
+    gesture.node.removeEventListener("pointermove", updatePointer);
     gesture.node.removeEventListener("pointerup", finish);
     gesture.node.removeEventListener("pointercancel", cancelEvent);
     gesture.node.removeEventListener("lostpointercapture", cancelEvent);
@@ -128,12 +158,7 @@ export function createTimelineGestures(options: {
     clear(gesture);
     setSelection(gesture.originalKeys);
     const snapshot = engine.getSnapshot();
-    if (
-      !stale &&
-      snapshot.project.id === gesture.projectId &&
-      snapshot.pageId === gesture.page.id &&
-      snapshot.revision === gesture.revision
-    )
+    if (!stale && isTimelineGestureCurrent(snapshot, gesture))
       engine.select(gesture.originalLayers);
     if (stale && !disposed) options.onError("changed");
   }
@@ -142,46 +167,19 @@ export function createTimelineGestures(options: {
   }
 
   function preview(gesture: Gesture) {
-    const root = surface?.root;
-    if (!root) return;
-    const px = motionTimeToSeconds(gesture.delta) * (surface?.scale ?? 1);
-    if (gesture.action === "keys") {
-      const ids = new Set(gesture.keyIds);
-      for (const node of root.querySelectorAll<HTMLElement>(".motion-key[data-key-id]")) {
-        if (!ids.has(node.dataset.keyId!)) continue;
-        node.style.setProperty("--motion-drag-x", `${px}px`);
-        gesture.touched.add(node);
-      }
-    } else if (gesture.action === "move") {
-      gesture.links?.shift(gesture.delta);
-      for (const node of root.querySelectorAll<HTMLElement>(".motion-row[data-layer-id]")) {
-        if (!gesture.layerIds.has(node.dataset.layerId!)) continue;
-        node.style.setProperty("--motion-drag-x", `${px}px`);
-        gesture.touched.add(node);
-      }
-    } else {
-      const track = gesture.track!,
-        end = track.end ?? gesture.page.motion!.duration;
-      const startTime =
-        gesture.action === "trimStart" ? addMotionTime(track.start, gesture.delta) : track.start;
-      const endTime = gesture.action === "trimEnd" ? addMotionTime(end, gesture.delta) : end;
-      for (const node of root.querySelectorAll<HTMLElement>(".motion-track-wrap[data-track-id]")) {
-        if (node.dataset.trackId !== track.id) continue;
-        node.style.setProperty(
-          "--motion-trim-left",
-          `${motionTimeToSeconds(startTime) * (surface?.scale ?? 1)}px`,
-        );
-        node.style.setProperty(
-          "--motion-trim-width",
-          `${(motionTimeToSeconds(endTime) - motionTimeToSeconds(startTime)) * (surface?.scale ?? 1)}px`,
-        );
-        gesture.touched.add(node);
-      }
-    }
-    const feedback = surface?.feedback;
-    gesture.tooltip?.set(addMotionTime(gesture.anchor, gesture.delta));
-    if (feedback)
-      feedback.textContent = `${motionTimeToSeconds(addMotionTime(gesture.anchor, gesture.delta)).toFixed(3)} s${gesture.snapped ? " ◇" : ""}`;
+    if (!surface) return;
+    presentation.render(gesture, surface.root, surface.scale);
+    renderTimelineGestureTooltip(surface.feedback, gesture);
+  }
+  function autoScroll() {
+    return surface
+      ? createDragAutoScroll({
+          viewport: surface.viewport,
+          leftInset: surface.gutter,
+          horizontalOnly: true,
+          onScroll: movePoint,
+        })
+      : null;
   }
   function movePoint() {
     const gesture = active;
@@ -196,36 +194,24 @@ export function createTimelineGestures(options: {
     gesture.snapped = null;
     if (gesture.point.shift) {
       const target = motionTimeToSeconds(addMotionTime(gesture.anchor, delta));
-      let low = 0,
-        high = gesture.references.length;
-      while (low < high) {
-        const middle = (low + high) >>> 1;
-        if (gesture.references[middle]!.seconds < target) low = middle + 1;
-        else high = middle;
-      }
-      const candidates = [
-        gesture.references[low - 1],
-        gesture.references[low],
-        { seconds: motionTimeToSeconds(transport.read().time), time: transport.read().time },
-      ].filter((value) => value !== undefined);
-      const closest = candidates.sort(
-        (a, b) => Math.abs(a.seconds - target) - Math.abs(b.seconds - target),
-      )[0];
-      if (closest && Math.abs(closest.seconds - target) * (surface?.scale ?? 1) <= 6) {
-        delta = subtractMotionTime(closest.time, gesture.anchor);
-        gesture.snapped = closest.time;
+      const closest = nearestTimelineSnap(
+        gesture.references,
+        target,
+        transport.read().time,
+        surface?.scale ?? 1,
+      );
+      if (closest) {
+        delta = subtractMotionTime(closest, gesture.anchor);
+        gesture.snapped = closest;
       }
     }
-    if (gesture.action === "trimStart") {
-      const end = gesture.track!.end ?? gesture.page.motion!.duration;
-      const candidate = addMotionTime(gesture.anchor, delta);
-      if (candidate.value < 0 || compareMotionTime(candidate, end) >= 0) return;
+    const clamped = clampMotionTrackMove(gesture.limits, delta);
+    delta = clamped.delta;
+    gesture.boundary = clamped.boundary;
+    if (gesture.boundary) {
+      gesture.scrollLoop?.stop();
+      gesture.scrollLoop = null;
     }
-    if (
-      gesture.action === "trimEnd" &&
-      compareMotionTime(addMotionTime(gesture.anchor, delta), gesture.track!.start) <= 0
-    )
-      return;
     if (
       gesture.action === "keys" &&
       gesture.preview?.update(delta, addMotionTime(gesture.anchor, delta)) === false
@@ -233,28 +219,39 @@ export function createTimelineGestures(options: {
       gesture.rejected = true;
       return;
     }
+    if (
+      gesture.track &&
+      gesture.action !== "keys" &&
+      !acceptsOccurrencePlacement(
+        gesture.page,
+        gesture.track,
+        gesture.action,
+        delta,
+        gesture.movePlan,
+      )
+    )
+      return;
     gesture.rejected = false;
     gesture.delta = delta;
     preview(gesture);
   }
-  function move(event: PointerEvent) {
+  function updatePointer(event: TimelinePointerMove) {
     if (!active || event.pointerId !== active.pointer) return;
     active.point = { x: event.clientX, y: event.clientY, shift: event.shiftKey };
     movePoint();
+    if (active && !active.boundary && !active.scrollLoop) active.scrollLoop = autoScroll();
     active?.scrollLoop?.update(event.clientX, event.clientY);
   }
   function finish(event: PointerEvent) {
     const gesture = active;
     if (!gesture || gesture.pointer !== event.pointerId) return;
     const snapshot = engine.getSnapshot();
-    const stale =
-      snapshot.project.id !== gesture.projectId ||
-      snapshot.pageId !== gesture.page.id ||
-      snapshot.revision !== gesture.revision;
-    if (stale) {
+    if (!isTimelineGestureCurrent(snapshot, gesture)) {
       cancel(true);
       return;
     }
+    updatePointer(event);
+    if (active !== gesture) return;
     clear(gesture);
     if (gesture.rejected) {
       options.onError("gestureFailed");
@@ -287,7 +284,7 @@ export function createTimelineGestures(options: {
     }
   }
   function begin(
-    event: ReactPointerEvent<HTMLElement>,
+    input: TimelinePointerInput,
     data: {
       action: Gesture["action"];
       layerId: string;
@@ -297,7 +294,7 @@ export function createTimelineGestures(options: {
       originalKeys?: ReadonlySet<string>;
     },
   ) {
-    if (disposed || event.button !== 0) return;
+    if (disposed || input.button !== 0) return;
     marquee.cancel();
     cancel();
     ignorePointerClick = false;
@@ -316,10 +313,20 @@ export function createTimelineGestures(options: {
       options.onError("locked");
       return;
     }
+    if (
+      data.track &&
+      page.motion.tracks.find((track) => track.id === data.track!.id) !== data.track
+    ) {
+      options.onError("changed");
+      return;
+    }
     options.onStart?.();
-    event.preventDefault();
-    event.stopPropagation();
-    event.currentTarget.focus();
+    input.node.focus();
+    const focused = engine.getSnapshot();
+    if (focused.project !== snapshot.project || focused.pageId !== page.id) {
+      options.onError("changed");
+      return;
+    }
     transport.pause();
     let keyPreview: Gesture["preview"];
     let links =
@@ -354,26 +361,18 @@ export function createTimelineGestures(options: {
         return;
       }
     }
-    const originalLayers = [...snapshot.selection];
+    const originalLayers = [...(input.originalLayers ?? snapshot.selection)];
     engine.select(
-      event.shiftKey ? [...new Set([...snapshot.selection, data.layerId])] : [data.layerId],
+      input.shiftKey ? [...new Set([...snapshot.selection, data.layerId])] : [data.layerId],
     );
-    const layerIds = new Set(
+    const movePlan =
+      data.action === "move" && data.track ? planMotionTrackMove(page, data.track.id) : undefined;
+    const targets =
       data.action === "move"
-        ? getDescendants(page, [data.layerId]).map((item) => item.id)
-        : [data.layerId],
-    );
-    layerIds.add(data.layerId);
-    const movingKeys = new Set(
-      data.keyIds ??
-        (data.action === "move"
-          ? page.motion.tracks
-              .filter((track) => layerIds.has(track.layerId))
-              .flatMap((track) =>
-                track.properties.flatMap((property) => property.keyframes.map((key) => key.id)),
-              )
-          : []),
-    );
+        ? occurrenceMoveTargets(page, data.layerId, data.track?.id, movePlan)
+        : { layerIds: new Set([data.layerId]), keyIds: [], trackIds: new Set<string>() };
+    const { layerIds } = targets;
+    const movingKeys = new Set(data.keyIds ?? targets.keyIds);
     if (data.action === "move")
       links = createTimelineLinkPreview(page, [...movingKeys], () =>
         surface
@@ -385,30 +384,26 @@ export function createTimelineGestures(options: {
             }
           : null,
       );
-    const references = [
-      { seconds: 0, time: { value: 0, rate: 1 } },
-      { seconds: motionTimeToSeconds(page.motion.duration), time: page.motion.duration },
-    ];
-    for (const track of page.motion.tracks)
-      for (const property of track.properties)
-        for (const key of property.keyframes)
-          if (!movingKeys.has(key.id))
-            references.push({ seconds: motionTimeToSeconds(key.time), time: key.time });
-    references.sort((a, b) => a.seconds - b.seconds);
+    const references = timelineSnapReferences(page, movingKeys);
     const gesture: Gesture = {
-      node: event.currentTarget,
-      pointer: event.pointerId,
-      x: event.clientX,
+      node: input.node,
+      pointer: input.pointerId,
+      x: input.clientX,
       scroll: surface?.viewport?.scrollLeft ?? 0,
-      projectId: snapshot.project.id,
+      project: snapshot.project,
       revision: snapshot.revision,
+      installedLayers: engine.getSnapshot().selection,
       page,
       originalLayers,
       originalKeys: data.originalKeys ?? new Set(selected),
       action: data.action,
       ...(data.track ? { track: data.track } : {}),
-      keyIds: data.keyIds ?? [],
+      keyIds: data.action === "move" ? [...movingKeys] : (data.keyIds ?? []),
       layerIds,
+      trackIds: targets.trackIds,
+      limits: timelineGestureBounds(page, data.action, data.track, movingKeys, movePlan),
+      ...(movePlan ? { movePlan } : {}),
+      boundary: null,
       anchor: data.anchor,
       delta: { value: 0, rate: 1 },
       snapped: null,
@@ -418,36 +413,38 @@ export function createTimelineGestures(options: {
       rejected: false,
       stopEngine: () => {},
       scrollLoop: null,
-      point: { x: event.clientX, y: event.clientY, shift: event.shiftKey },
+      point: { x: input.clientX, y: input.clientY, shift: input.shiftKey },
       preview: keyPreview,
       ...(links ? { links } : {}),
-      ...(data.action === "keys"
-        ? { tooltip: createKeyframeTooltipPreview(event.currentTarget) }
-        : {}),
+      tooltip: createTimelineTooltipPreview(input.node, data.action),
     };
     active = gesture;
-    if (surface)
-      gesture.scrollLoop = createTimelineAutoScroll({
-        viewport: surface.viewport,
-        leftInset: surface.gutter,
-        horizontalOnly: true,
-        onScroll: movePoint,
-      });
+    gesture.scrollLoop = autoScroll();
     gesture.stopEngine = engine.subscribe(() => {
       const next = engine.getSnapshot();
-      if (
-        active === gesture &&
-        (next.revision !== gesture.revision ||
-          next.project.id !== gesture.projectId ||
-          next.pageId !== gesture.page.id)
-      )
-        cancel(true);
+      if (active === gesture && !isTimelineGestureCurrent(next, gesture)) cancel(true);
     });
-    gesture.node.addEventListener("pointermove", move);
+    gesture.node.addEventListener("pointermove", updatePointer);
     gesture.node.addEventListener("pointerup", finish);
     gesture.node.addEventListener("pointercancel", cancelEvent);
     gesture.node.addEventListener("lostpointercapture", cancelEvent);
     gesture.node.setPointerCapture(gesture.pointer);
+    return true;
+  }
+  function beginTrackInput(
+    input: TimelinePointerInput,
+    track: MotionLayerTrack,
+    action: TrackAction,
+  ) {
+    return begin(input, {
+      action,
+      layerId: track.layerId,
+      track,
+      anchor:
+        action === "trimEnd"
+          ? (track.end ?? currentPage()?.motion?.duration ?? track.start)
+          : track.start,
+    });
   }
   function selectKey(id: string, additive: boolean) {
     const next = additive ? new Set(selected) : new Set<string>();
@@ -501,6 +498,12 @@ export function createTimelineGestures(options: {
       const kept = new Set([...selected].filter((id) => existing.has(id)));
       if (kept.size !== selected.size) setSelection(kept);
     },
+    beginTrackInput,
+    updatePointer,
+    cancel,
+    readPreview: presentation.read,
+    readMarqueePreview: presentation.readMarquee,
+    subscribePreview: presentation.subscribe,
     readSelected: (): ReadonlySet<string> => selected,
     selectKey,
     deleteSelected,
@@ -528,15 +531,10 @@ export function createTimelineGestures(options: {
       track: MotionLayerTrack,
       action: TrackAction,
     ) {
-      begin(event, {
-        action,
-        layerId: track.layerId,
-        track,
-        anchor:
-          action === "trimEnd"
-            ? (track.end ?? currentPage()?.motion?.duration ?? track.start)
-            : track.start,
-      });
+      if (beginTrackInput(toTimelinePointerInput(event), track, action)) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
     },
     beginKey(event: ReactPointerEvent<HTMLElement>, layerId: string, key: MotionKeyframe) {
       if (event.button !== 0) return;
@@ -544,13 +542,18 @@ export function createTimelineGestures(options: {
       const originalKeys = new Set(selected);
       if (event.shiftKey || !selected.has(key.id)) selectKey(key.id, event.shiftKey);
       if (!selected.has(key.id)) return;
-      begin(event, {
-        action: "keys",
-        layerId,
-        keyIds: [...selected],
-        anchor: key.time,
-        originalKeys,
-      });
+      if (
+        begin(toTimelinePointerInput(event), {
+          action: "keys",
+          layerId,
+          keyIds: [...selected],
+          anchor: key.time,
+          originalKeys,
+        })
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
     },
     keyDown(event: ReactKeyboardEvent<HTMLElement>) {
       if (disposed) return;
@@ -564,7 +567,7 @@ export function createTimelineGestures(options: {
       if (event.key !== "Delete" && event.key !== "Backspace") return;
       if (
         (event.target as HTMLElement).closest(
-          "input,textarea,[contenteditable=true],[role=combobox],[data-slot=popover-content]",
+          "input,textarea,[contenteditable=true],[role=combobox],[role=menu],[role=listbox],[data-slot=popover-content]",
         )
       )
         return;
@@ -585,5 +588,4 @@ export function createTimelineGestures(options: {
     },
   };
 }
-
 export type TimelineGestures = ReturnType<typeof createTimelineGestures>;

@@ -1,3 +1,4 @@
+import { isImageAsset } from "@musart/core";
 import { expect, it, vi } from "vitest";
 import {
   persistProjectWrite,
@@ -57,11 +58,13 @@ it("rejects stale asset bases before writing and applies changed/deleted origina
       }),
     ).rejects.toBeInstanceOf(AssetBasisMismatchError);
     expect(await d.db.get("projects", d.project.id)).toEqual(before);
+    const photo = d.project.assets.photo!;
+    if (!isImageAsset(photo)) throw new Error("Expected an image fixture");
     const changed = {
       ...d.project,
       assets: {
         photo: {
-          ...d.project.assets.photo!,
+          ...photo,
           kind: "image" as const,
           dataUrl: "data:image/png;base64,BBBBBBBB",
         },

@@ -1,5 +1,6 @@
 import {
   motionTimeToSeconds,
+  listLayerMotionOccurrences,
   type Composition,
   type Layer,
   type MotionKeyframe,
@@ -7,7 +8,13 @@ import {
   type MotionPropertyTrack,
 } from "@musart/core";
 
-export type TimelineRow = { key: string; layer: Layer; depth: number; track?: MotionLayerTrack } & (
+export type TimelineRow = {
+  key: string;
+  layer: Layer;
+  depth: number;
+  track?: MotionLayerTrack;
+  occurrences?: readonly MotionLayerTrack[];
+} & (
   | { kind: "layer"; expandable: boolean; expanded: boolean }
   | { kind: "property"; property: MotionPropertyTrack }
 );
@@ -16,9 +23,9 @@ export type TimelineRow = { key: string; layer: Layer; depth: number; track?: Mo
 export function projectTimelineRows(
   page: Composition,
   collapsed: ReadonlySet<string>,
+  chosen?: ReadonlyMap<string, string>,
 ): TimelineRow[] {
   const children = new Map<string | null, Layer[]>();
-  const tracks = new Map(page.motion?.tracks.map((track) => [track.layerId, track]));
   for (const layer of page.layers) {
     const siblings = children.get(layer.parentId) ?? [];
     siblings.push(layer);
@@ -28,10 +35,11 @@ export function projectTimelineRows(
   const rows: TimelineRow[] = [];
   while (pending.length) {
     const { layer, depth } = pending.pop()!;
-    const track = tracks.get(layer.id);
+    const occurrences = listLayerMotionOccurrences(page, layer.id);
+    const track = occurrences.find((item) => item.id === chosen?.get(layer.id)) ?? occurrences[0];
     const expanded = !collapsed.has(layer.id);
     const expandable = !!children.get(layer.id)?.length || !!track?.properties.length;
-    const common = { layer, depth, ...(track ? { track } : {}) };
+    const common = { layer, depth, occurrences, ...(track ? { track } : {}) };
     rows.push({ ...common, kind: "layer", key: layer.id, expandable, expanded });
     if (!expanded) continue;
     for (const property of track?.properties ?? [])

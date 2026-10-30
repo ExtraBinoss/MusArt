@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, type RefObject } from "react";
 import type { EnginePort } from "@musart/core";
 import { useProjectPreference, useProjectPreferences } from "../workspace/preferences/context";
 import { clampTimelineHeight, readTimelineHeight, rememberTimelineHeight } from "./height";
@@ -7,6 +7,77 @@ interface LocalValue {
   owner: ReturnType<typeof useProjectPreferences>;
   source: number | undefined;
   value: number;
+}
+
+export function useTimelineCollapsedRows() {
+  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
+  const toggle = useCallback(
+    (id: string) =>
+      setCollapsed((current) => {
+        const next = new Set(current);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      }),
+    [],
+  );
+  return { collapsed, setCollapsed, toggle };
+}
+
+/** Range navigation keeps its callback stable while native scroll changes the virtual window. */
+export function useTimelineRangeZoom({
+  zoom,
+  width,
+  actionWidth,
+  protectZoom,
+  saveZoom,
+  setZoom,
+  viewport: viewportRef,
+  horizontalScroll: horizontalScrollRef,
+  desiredZoom: desiredZoomRef,
+  anchor: anchorRef,
+}: {
+  zoom: number;
+  width: number;
+  actionWidth: number;
+  protectZoom: () => void;
+  saveZoom: (value: number) => void;
+  setZoom: (value: number) => void;
+  viewport: RefObject<HTMLDivElement | null>;
+  horizontalScroll: RefObject<number>;
+  desiredZoom: RefObject<number>;
+  anchor: RefObject<{ time: number; x: number } | null>;
+}) {
+  return useCallback(
+    (start: number, end: number) => {
+      const next = Math.min(
+        640,
+        Math.max(zoom * 2, (width - actionWidth - 48) / Math.max(0.001, end - start)),
+      );
+      protectZoom();
+      saveZoom(next);
+      if (next === zoom && viewportRef.current) {
+        horizontalScrollRef.current = Math.max(0, start * next - 24);
+        viewportRef.current.scrollLeft = horizontalScrollRef.current;
+      } else {
+        anchorRef.current = { time: start, x: 24 };
+        desiredZoomRef.current = next;
+        setZoom(next);
+      }
+    },
+    [
+      zoom,
+      width,
+      actionWidth,
+      protectZoom,
+      saveZoom,
+      setZoom,
+      viewportRef,
+      horizontalScrollRef,
+      desiredZoomRef,
+      anchorRef,
+    ],
+  );
 }
 
 /** Durable preferences only update this panel; pointer painting and the playback clock stay local. */

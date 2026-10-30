@@ -1,6 +1,6 @@
 import {
   assetOriginalIdentity,
-  isVideoAsset,
+  isOriginalMediaAsset,
   createLayerGeometryIndex,
   type Asset,
   type Composition,
@@ -10,12 +10,12 @@ import {
 interface AssetState {
   token: number;
   data: unknown;
-  width: number;
-  height: number;
+  width: number | undefined;
+  height: number | undefined;
   mime: string;
 }
 function assetData(asset: Asset): unknown {
-  if (isVideoAsset(asset)) return assetOriginalIdentity(asset);
+  if (isOriginalMediaAsset(asset)) return assetOriginalIdentity(asset);
   const descriptor = Object.getOwnPropertyDescriptor(asset, "dataUrl");
   if (!descriptor) return undefined;
   // Compare an opaque accessor's identity without calling or binding the original getter.

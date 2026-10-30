@@ -14,6 +14,7 @@ import { isVideoAsset } from "../assets/identity";
 import { validateMotionEasing } from "./easing";
 import { resolveMotionProperty, validateMotionValue } from "./properties/registry";
 import type { MotionPropertyTarget } from "./properties/model";
+import { validateMotionAudioTracks } from "./audio/validation";
 
 /** Called after the canonical layer graph is validated. Portable data stays inert. */
 export function validateCompositionMotion(
@@ -25,7 +26,7 @@ export function validateCompositionMotion(
   if (motion === undefined) return;
   assertRecord(motion);
   ensure(
-    motion.version === 1 && motion.initialized === true,
+    (motion.version === 1 || motion.version === 2) && motion.initialized === true,
     "INVALID_DOCUMENT",
     "Invalid Motion version",
   );
@@ -37,17 +38,19 @@ export function validateCompositionMotion(
   validateMotionTime(motion.duration);
   ensure(motion.duration.value > 0, "INVALID_DOCUMENT", "Invalid Motion duration");
   validateMotionFrameRate(motion.frameRate);
+  validateMotionAudioTracks(motion.audioTracks, ids, assets);
   assertList(motion.tracks, 10000);
   const layerIds = new Set(page.layers.map((layer) => layer.id));
   const tracked = new Set<string>();
   let keys = 0;
+  const intervals = new Map<string, { start: MotionTime; end: MotionTime }[]>();
   for (const track of motion.tracks) {
     assertRecord(track);
     assertUniqueId(track.id, ids);
     ensure(
       typeof track.layerId === "string" &&
         layerIds.has(track.layerId) &&
-        !tracked.has(track.layerId),
+        (motion.version === 2 || !tracked.has(track.layerId)),
       "INVALID_DOCUMENT",
       "Invalid Motion layer track",
     );
@@ -98,6 +101,12 @@ export function validateCompositionMotion(
           "Video trim exceeds the original source range",
         );
     }
+    const intervalEnd = track.end ?? motion.duration;
+    if (compareMotionTime(track.start, intervalEnd) < 0) {
+      const siblings = intervals.get(track.layerId) ?? [];
+      siblings.push({ start: track.start, end: intervalEnd });
+      intervals.set(track.layerId, siblings);
+    }
     assertList(track.properties, 1024);
     const addresses = new Set<string>();
     for (const property of track.properties) {
@@ -139,7 +148,8 @@ export function validateCompositionMotion(
         assertUniqueId(key.id, ids);
         validateMotionTime(key.time);
         ensure(
-          key.time.value >= 0 && (!previous || compareMotionTime(previous, key.time) < 0),
+          (motion.version === 2 || key.time.value >= 0) &&
+            (!previous || compareMotionTime(previous, key.time) < 0),
           "INVALID_DOCUMENT",
           "Unordered or duplicate Motion key time",
         );
@@ -148,5 +158,16 @@ export function validateCompositionMotion(
         previous = key.time;
       }
     }
+  }
+  for (const siblings of intervals.values()) {
+    siblings.sort((a, b) => compareMotionTime(a.start, b.start));
+    ensure(
+      siblings.every(
+        (current, index) =>
+          index === 0 || compareMotionTime(siblings[index - 1]!.end, current.start) <= 0,
+      ),
+      "INVALID_DOCUMENT",
+      "Motion occurrences of the same layer overlap",
+    );
   }
 }

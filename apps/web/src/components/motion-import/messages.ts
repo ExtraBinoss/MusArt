@@ -2,6 +2,11 @@ import { registerFeatureTranslations } from "../../state/i18n/feature-resources"
 
 export const messages = {
   en: {
+    transitionDescription:
+      "{{count}} items will be added to the timeline before choosing a transition.",
+    transitionTiming: "Existing artwork spans the composition. Its design stays editable.",
+    transitionAccept: "Yes, enable Motion",
+    transitionCancel: "No, keep Static",
     title: "Bring this composition into Motion?",
     description: "{{count}} items, including the imported video, will be added to the timeline.",
     timing: "Existing artwork spans the composition. Each video keeps its own source duration.",
@@ -11,6 +16,11 @@ export const messages = {
     cancel: "No, cancel import",
   },
   fr: {
+    transitionDescription:
+      "{{count}} éléments seront ajoutés à la timeline avant de choisir une transition.",
+    transitionTiming: "La composition existante couvre toute la durée. Son dessin reste éditable.",
+    transitionAccept: "Oui, activer Motion",
+    transitionCancel: "Non, garder statique",
     title: "Passer cette composition en Motion ?",
     description: "{{count}} éléments, dont la vidéo importée, seront ajoutés à la timeline.",
     timing:

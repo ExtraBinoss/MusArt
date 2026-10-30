@@ -27,6 +27,7 @@ import { MobileControlsContext, useMobileLayout } from "./components/workspace/m
 import { EditorSidebar } from "./components/workspace/EditorSidebar";
 import { CanvasArea } from "./components/viewport/CanvasArea";
 import { ProjectDialog, type ProjectDialogProps } from "./components/projects/ProjectDialog";
+import { TransitionRequestHost } from "./components/motion/transitions/TransitionRequestHost";
 import { MotionImportConfirmation } from "./components/motion-import/ConfirmationDialog";
 import { EditorNotice, type EditorNoticeValue } from "./components/notifications/EditorNotice";
 import { errorDiagnostics } from "./components/notifications/diagnostics";
@@ -146,6 +147,7 @@ export function App({ engine, services, welcome = false }: AppProps) {
           >
             <main className="musart-app" ref={element}>
               <MotionImportConfirmation engine={engine} />
+              <TransitionRequestHost engine={engine} />
               {!choosingProject && (
                 <>
                   <ProjectPanelGroup
@@ -264,7 +266,7 @@ export function App({ engine, services, welcome = false }: AppProps) {
                     ref={input}
                     type="file"
                     multiple
-                    accept="image/*,video/*,.svg"
+                    accept="image/*,video/*,audio/*,.svg"
                     className="sr-only"
                     aria-label={t("import")}
                     onChange={(event) => {

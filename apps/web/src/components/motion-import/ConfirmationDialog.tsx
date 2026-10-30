@@ -21,6 +21,7 @@ export function MotionImportConfirmation({ engine }: { engine: EnginePort }) {
   const { t } = useTranslation("motionImport");
   const port = getMotionConfirmation(engine);
   const plan = useSyncExternalStore(port.subscribe, port.read, port.read);
+  const transition = port.readReason() === "transition";
   useEffect(() => port.attachHost(), [port]);
   return (
     <AlertDialog
@@ -36,9 +37,13 @@ export function MotionImportConfirmation({ engine }: { engine: EnginePort }) {
           </AlertDialogMedia>
           <AlertDialogTitle>{t("title")}</AlertDialogTitle>
           <AlertDialogDescription>
-            {t("description", { count: plan?.layerIds.length ?? 0 })}
+            {t(transition ? "transitionDescription" : "description", {
+              count: plan?.layerIds.length ?? 0,
+            })}
           </AlertDialogDescription>
-          <p className="text-sm text-muted-foreground">{t("timing")}</p>
+          <p className="text-sm text-muted-foreground">
+            {t(transition ? "transitionTiming" : "timing")}
+          </p>
           <p className="text-xs text-muted-foreground">{t("groups")}</p>
           <p className="text-xs text-muted-foreground">{t("preserve")}</p>
         </AlertDialogHeader>
@@ -48,14 +53,14 @@ export function MotionImportConfirmation({ engine }: { engine: EnginePort }) {
               if (plan) port.respond(plan, false);
             }}
           >
-            {t("cancel")}
+            {t(transition ? "transitionCancel" : "cancel")}
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={() => {
               if (plan) port.respond(plan, true);
             }}
           >
-            {t("accept")}
+            {t(transition ? "transitionAccept" : "accept")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

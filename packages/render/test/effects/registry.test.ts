@@ -7,7 +7,7 @@ describe("effect implementation registry", () => {
   it("implements every core catalogue type without a central type switch", () => {
     expect(Object.keys(EFFECT_NODES).sort()).toEqual(
       Object.keys(EFFECT_CATALOG)
-        .filter((type) => type !== "gradient")
+        .filter((type) => type !== "gradient" && type !== "transition")
         .sort(),
     );
     expect(Object.isFrozen(EFFECT_NODES)).toBe(true);

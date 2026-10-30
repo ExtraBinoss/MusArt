@@ -1,6 +1,7 @@
 import {
   createId,
-  isVideoAsset,
+  isOriginalMediaAsset,
+  isImageAsset,
   PRESETS,
   createLayer,
   createPage,
@@ -27,6 +28,7 @@ import { DeletedProjectError } from "../projects/lifecycle";
 import { StaleProjectWriteError } from "../projects/writes/revision";
 import { createMediaProjectOpener } from "./media-project";
 import { assertExportScope } from "./export-scope";
+import { createCompositionExporter } from "../export/composition";
 import { createPreviewExport } from "./previews";
 import { importMediaFiles } from "../assets/media-import";
 import { importBatch, readDataUrl } from "../assets/imports";
@@ -76,6 +78,12 @@ export function createEditorServices(
     }
     return resolver;
   };
+  const exportComposition = createCompositionExporter(engine, {
+    render: renderer,
+    download,
+    mediaResolverFor,
+    fontResolver: dependencies.fonts?.resolve,
+  });
   const activePage = () => {
     const snapshot = engine.getSnapshot();
     return snapshot.project.pages.find((p) => p.id === snapshot.pageId)!;
@@ -119,6 +127,7 @@ export function createEditorServices(
     engine.load(project);
   };
   return {
+    exportComposition,
     projectPreferences: store.preferences,
     pixelSelection,
     mediaResolverFor,
@@ -208,7 +217,7 @@ export function createEditorServices(
         [
           ...new Map(
             Object.values(source.assets)
-              .filter(isVideoAsset)
+              .filter(isOriginalMediaAsset)
               .map((asset) => [asset.originalId, asset]),
           ).values(),
         ].map(async (asset) => ({
@@ -223,13 +232,20 @@ export function createEditorServices(
       thumbnails?.schedule(duplicate);
     },
     async importFiles(files) {
-      if (files.some((file) => file.type.startsWith("video/"))) {
-        await importMediaFiles(engine, files, {
-          store,
-          flush: switchReady,
-          confirm: dependencies.confirmMotion ?? getMotionConfirmation(engine).request,
-          probe: async (file, options) => (await renderer()).probeVideoOriginal(file, options),
-        });
+      if (files.some((file) => /^(?:video|audio)\//.test(file.type))) {
+        await importMediaFiles(
+          engine,
+          files,
+          {
+            store,
+            flush: switchReady,
+            confirm: dependencies.confirmMotion ?? getMotionConfirmation(engine).request,
+            probe: async (file, options) => (await renderer()).probeVideoOriginal(file, options),
+            probeAudio: async (file, options) =>
+              (await renderer()).probeAudioOriginal(file, options),
+          },
+          { at: createMotionTransport(engine).read().time },
+        );
         return;
       }
       const snapshot = engine.getSnapshot();
@@ -271,9 +287,9 @@ export function createEditorServices(
     async exportProject() {
       freezeEffectPreviews(engine);
       const project = engine.getSnapshot().project;
-      if (Object.values(project.assets).some(isVideoAsset))
+      if (Object.values(project.assets).some(isOriginalMediaAsset))
         throw Error(
-          "Video projects require a binary portable archive; JSON export is unavailable until archive support is installed.",
+          "Media projects require a binary portable archive; JSON export is unavailable until archive support is installed.",
         );
       download(
         new Blob([serializeProject(project)], { type: "application/json" }),
@@ -281,6 +297,7 @@ export function createEditorServices(
       );
     },
     async exportImage(options: ExportOptions, scope?: ExportScope) {
+      options.signal?.throwIfAborted();
       freezeEffectPreviews(engine);
       const snapshot = engine.getSnapshot(),
         { project } = snapshot;
@@ -303,6 +320,7 @@ export function createEditorServices(
       const { exportComposition } = await renderer();
       const output: Record<string, Uint8Array> = {};
       for (const [index, page] of pages.entries()) {
+        options.signal?.throwIfAborted();
         const blob = await exportComposition(page, project.assets, {
           ...options,
           mediaResolver: mediaResolverFor(project.id),
@@ -311,6 +329,7 @@ export function createEditorServices(
         });
         const filename = `${safeName(page.name)}.${options.format === "jpeg" ? "jpg" : options.format}`;
         if (!options.allPages) {
+          options.signal?.throwIfAborted();
           download(blob, filename);
           return;
         }
@@ -319,6 +338,7 @@ export function createEditorServices(
         );
       }
       const { zipSync } = await import("fflate");
+      options.signal?.throwIfAborted();
       download(
         new Blob([zipSync(output, { level: 0 })], { type: "application/zip" }),
         `${safeName(project.name)}.zip`,
@@ -335,7 +355,7 @@ export function createEditorServices(
         page = activePage(),
         layer = page.layers.find((layer) => layer.id === layerId);
       const asset = layer?.assetId ? snapshot.project.assets[layer.assetId] : undefined;
-      if (!layer || layer.kind !== "image" || !asset || isVideoAsset(asset))
+      if (!layer || layer.kind !== "image" || !asset || !isImageAsset(asset))
         throw new Error("Sélectionnez un calque image.");
       if (layer.locked) throw new Error("Le calque est verrouillé.");
       const sx = Math.max(0, Math.min(asset.width - 1, (x / layer.width) * asset.width)),
