@@ -1,6 +1,6 @@
 import { Font, Glyph, Path } from "opentype.js";
 import type { OutlineFont } from "../src/surface/text/fonts";
-export function outlineFont(): OutlineFont {
+export function outlineFont(): Font & OutlineFont {
   const path = new Path();
   path.moveTo(0, 0);
   path.lineTo(500, 0);
@@ -25,7 +25,7 @@ export function outlineFont(): OutlineFont {
     ascender: 800,
     descender: -200,
     glyphs,
-  }) as OutlineFont;
+  }) as Font & OutlineFont;
   font.kerningPairs = { "2,3": -100 };
   return font;
 }

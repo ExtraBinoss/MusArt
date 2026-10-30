@@ -1,10 +1,10 @@
 import type { Layer } from "@musart/core";
-import type { Glyph } from "opentype.js";
+import type { OutlineGlyph } from "./outlines";
 import { weightedGlyph, type OutlineFont } from "./fonts";
 import type { ShapedGlyph } from "./shaping";
 
 export interface PlacedGlyph {
-  glyph: Glyph;
+  glyph: OutlineGlyph;
   x: number;
   baseline: number;
 }

@@ -10,9 +10,8 @@
   "dependencies": {
     "@musart/assets": "workspace:*",
     "@musart/core": "workspace:*",
-    "harfbuzzjs": "0.4.15",
     "mediabunny": "1.62.1",
-    "opentype.js": "2.0.0",
+    "text-shaper": "0.1.28",
     "three": "0.186.1"
   }
 }

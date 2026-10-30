@@ -1,0 +1,212 @@
+diff --git a/src/font/tables/glyf.ts b/src/font/tables/glyf.ts
+--- a/src/font/tables/glyf.ts
++++ b/src/font/tables/glyf.ts
+@@ -565,7 +565,14 @@
+ 	}
+ 	const key = getAxisCoordsCacheKey(axisCoords);
+ 	let cache = byKey.get(key);
+-	if (!cache) {
++	if (cache) {
++		byKey.delete(key);
++		byKey.set(key, cache);
++	} else {
++		if (byKey.size >= 8) {
++			const oldest = byKey.keys().next().value;
++			if (oldest !== undefined) byKey.delete(oldest);
++		}
+ 		cache = new Map();
+ 		byKey.set(key, cache);
+ 	}
+diff --git a/src/font/tables/gpos-mark.ts b/src/font/tables/gpos-mark.ts
+--- a/src/font/tables/gpos-mark.ts
++++ b/src/font/tables/gpos-mark.ts
+@@ -1,3 +1,4 @@
++import { type DeviceOrVariationIndex, parseDeviceAt } from "../../layout/structures/device.ts";
+ import {
+ 	type Coverage,
+ 	parseCoverageAt,
+@@ -15,6 +16,9 @@
+ 	/** Device table offsets (format 3) */
+ 	xDeviceOffset?: uint16;
+ 	yDeviceOffset?: uint16;
++	/** Parsed Device/VariationIndex retained for variable attachment adjustments. */
++	xDevice?: DeviceOrVariationIndex;
++	yDevice?: DeviceOrVariationIndex;
+ }
+ 
+ /** Mark record */
+@@ -120,6 +124,8 @@
+ 	} else if (format === 3) {
+ 		anchor.xDeviceOffset = reader.uint16();
+ 		anchor.yDeviceOffset = reader.uint16();
++		anchor.xDevice = parseDeviceAt(reader, anchor.xDeviceOffset) ?? undefined;
++		anchor.yDevice = parseDeviceAt(reader, anchor.yDeviceOffset) ?? undefined;
+ 	}
+ 
+ 	return anchor;
+diff --git a/src/font/tables/gpos.ts b/src/font/tables/gpos.ts
+--- a/src/font/tables/gpos.ts
++++ b/src/font/tables/gpos.ts
+@@ -807,6 +807,59 @@
+ 	return null;
+ }
+ 
++function applyPairValue(position: GlyphPosition, value: ValueRecord): void {
++	position.xOffset += value.xPlacement ?? 0;
++	position.yOffset += value.yPlacement ?? 0;
++	position.xAdvance += value.xAdvance ?? 0;
++	position.yAdvance += value.yAdvance ?? 0;
++}
++
++/**
++ * Apply pair records and report zero/no match or the number of consumed glyphs.
++ */
++export function applyPairPosition(
++	lookup: PairPosLookup,
++	firstGlyph: GlyphId,
++	secondGlyph: GlyphId,
++	pos1: GlyphPosition,
++	pos2: GlyphPosition,
++): 0 | 1 | 2 {
++	for (let i = 0; i < lookup.subtables.length; i++) {
++		const subtable = lookup.subtables[i]!;
++		const coverageIndex = subtable.coverage.get(firstGlyph);
++		if (coverageIndex === null) continue;
++
++		if (subtable.format === 1) {
++			const pairSet = subtable.pairSets[coverageIndex];
++			if (!pairSet) continue;
++
++			const record = findPairValueRecord(pairSet.pairValueRecords, secondGlyph);
++			if (record) {
++				applyPairValue(pos1, record.value1);
++				applyPairValue(pos2, record.value2);
++				return subtable.valueFormat2 === 0 ? 1 : 2;
++			}
++		} else if (subtable.format === 2) {
++			const class1 = subtable.classDef1.get(firstGlyph);
++			// Early bounds check before array access
++			const class1Records = subtable.class1Records;
++			if (class1 >= class1Records.length) continue;
++
++			const class1Record = class1Records[class1]!;
++			const class2 = subtable.classDef2.get(secondGlyph);
++			const class2Records = class1Record.class2Records;
++			if (class2 >= class2Records.length) continue;
++
++			const class2Record = class2Records[class2]!;
++			applyPairValue(pos1, class2Record.value1);
++			applyPairValue(pos2, class2Record.value2);
++			return subtable.valueFormat2 === 0 ? 1 : 2;
++		}
++	}
++
++	return 0;
++}
++
+ /**
+  * Apply kerning directly to positions, avoiding object allocation.
+  * Returns true if kerning was applied, false otherwise.
+@@ -818,44 +871,7 @@
+ 	pos1: GlyphPosition,
+ 	pos2: GlyphPosition,
+ ): boolean {
+-	for (let i = 0; i < lookup.subtables.length; i++) {
+-		const subtable = lookup.subtables[i]!;
+-		const coverageIndex = subtable.coverage.get(firstGlyph);
+-		if (coverageIndex === null) continue;
+-
+-		if (subtable.format === 1) {
+-			const pairSet = subtable.pairSets[coverageIndex];
+-			if (!pairSet) continue;
+-
+-			const record = findPairValueRecord(pairSet.pairValueRecords, secondGlyph);
+-			if (record) {
+-				const xAdv1 = record.value1.xAdvance;
+-				const xAdv2 = record.value2.xAdvance;
+-				if (xAdv1) pos1.xAdvance += xAdv1;
+-				if (xAdv2) pos2.xAdvance += xAdv2;
+-				return true;
+-			}
+-		} else if (subtable.format === 2) {
+-			const class1 = subtable.classDef1.get(firstGlyph);
+-			// Early bounds check before array access
+-			const class1Records = subtable.class1Records;
+-			if (class1 >= class1Records.length) continue;
+-
+-			const class1Record = class1Records[class1]!;
+-			const class2 = subtable.classDef2.get(secondGlyph);
+-			const class2Records = class1Record.class2Records;
+-			if (class2 >= class2Records.length) continue;
+-
+-			const class2Record = class2Records[class2]!;
+-			const xAdv1 = class2Record.value1.xAdvance;
+-			const xAdv2 = class2Record.value2.xAdvance;
+-			if (xAdv1) pos1.xAdvance += xAdv1;
+-			if (xAdv2) pos2.xAdvance += xAdv2;
+-			return true;
+-		}
+-	}
+-
+-	return false;
++	return applyPairPosition(lookup, firstGlyph, secondGlyph, pos1, pos2) !== 0;
+ }
+ 
+ // Export internal functions for testing
+diff --git a/src/shaper/shaper.ts b/src/shaper/shaper.ts
+--- a/src/shaper/shaper.ts
++++ b/src/shaper/shaper.ts
+@@ -12,7 +12,7 @@
+ import { getGlyphClass } from "../font/tables/gdef.ts";
+ import {
+ 	type AnyGposLookup,
+-	applyKerningDirect,
++	applyPairPosition,
+ 	type CursivePosLookup,
+ 	GposLookupType,
+ 	type MarkBasePosLookup,
+@@ -631,6 +631,8 @@
+ 		if (!bufferDigest.mayIntersect(entry.lookup.digest)) continue;
+ 
+ 		applyGsubLookup(font, buffer, entry.lookup, plan);
++		// Later lookups must not see glyphs already consumed by a ligature.
++		buffer.compact();
+ 
+ 		// Rebuild after every lookup so staged same-length substitutions
+ 		// can unlock later digest-filtered lookups in the same shaping pass.
+@@ -1792,7 +1794,7 @@
+ 	if (!needsSkip) {
+ 		// SUPER-FAST PATH: Single subtable (very common for kerning)
+ 		// Inline all logic to avoid function call overhead
+-		if (subtableCount === 1) {
++		if (subtableCount === 1 && (subtables[0]!.valueFormat1 & ~0x44) === 0 && subtables[0]!.valueFormat2 === 0) {
+ 			const subtable = subtables[0]!;
+ 			const coverage = subtable.coverage;
+ 
+@@ -1857,7 +1859,7 @@
+ 
+ 		// FAST PATH: Two subtables (Format 1 + Format 2) - common for kerning
+ 		// Inline both lookups to avoid function call overhead
+-		if (subtableCount === 2) {
++		if (subtableCount === 2 && (subtables[0]!.valueFormat1 & ~0x44) === 0 && subtables[0]!.valueFormat2 === 0 && (subtables[1]!.valueFormat1 & ~0x44) === 0 && subtables[1]!.valueFormat2 === 0) {
+ 			const st0 = subtables[0]!;
+ 			const st1 = subtables[1]!;
+ 
+@@ -1930,7 +1932,7 @@
+ 			const info2 = infos[i + 1]!;
+ 			const pos1 = positions[i]!;
+ 			const pos2 = positions[i + 1]!;
+-			applyKerningDirect(lookup, info1.glyphId, info2.glyphId, pos1, pos2);
++			if (applyPairPosition(lookup, info1.glyphId, info2.glyphId, pos1, pos2) === 2) i++;
+ 		}
+ 		return;
+ 	}
+@@ -1952,7 +1954,7 @@
+ 		const info2 = infos[j]!;
+ 		const pos1 = positions[i]!;
+ 		const pos2 = positions[j]!;
+-		applyKerningDirect(lookup, info1.glyphId, info2.glyphId, pos1, pos2);
++		if (applyPairPosition(lookup, info1.glyphId, info2.glyphId, pos1, pos2) === 2) i = j;
+ 	}
+ }
+ 

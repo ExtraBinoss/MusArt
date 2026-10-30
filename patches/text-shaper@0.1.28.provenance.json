@@ -1,0 +1,22 @@
+{
+  "package": "text-shaper",
+  "version": "0.1.28",
+  "gitHead": "a23058f475f2b0655b93a89bfce426eecafb9439",
+  "tarball": "https://registry.npmjs.org/text-shaper/-/text-shaper-0.1.28.tgz",
+  "integrity": "sha512-uwm6+tkgYJ4hsTV0wZVHkZeoXR1/mthLxDiJvfU9o/FiibNinpFRC8PAMTNx8SaOjaK/5ZjDG1XAkPbKlIe2Jg==",
+  "originalBundleSha256": "6c844a3133e6816b00be742ee0d9ae4b4298a3db63c1f5975ed0c7b4ae253943",
+  "patchedBundleSha256": "43746f6e9885b317347d700464786050c38577550eb1c092a3751bcde9547867",
+  "patchSha256": "0975b49a3c78f137d2b2a2a04ecaaaa1a66908d8f658ec9d20c606b64463b8a5",
+  "coordinateSetLimit": 8,
+  "glyphLimitPerSet": 256,
+  "publicAPIChanged": "Anchor.xDevice/yDevice optional fields retain parsed existing format-3 data; no new debug exports",
+  "note": "Applied patch updates dist/index.js and matching Anchor/internal GPOS declarations. Readable source patch records four upstream TypeScript files. The root package API has no new debug exports.",
+  "changes": [
+    "eight-coordinate LRU",
+    "retain parsed anchor Device/VariationIndex",
+    "PairPos fast paths only for xAdvance-only records",
+    "generic PairPos applies all four positioning fields for both glyphs",
+    "compact consumed glyphs between GSUB lookups",
+    "consume the matched second PairPos glyph when valueFormat2 is nonzero"
+  ]
+}

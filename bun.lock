@@ -13,7 +13,6 @@
         "clsx": "2.1.1",
         "cmdk": "1.1.1",
         "fflate": "0.8.3",
-        "harfbuzzjs": "0.4.15",
         "i18next": "26.5.11",
         "idb": "8.0.4",
         "jotai": "3.0.1",
@@ -28,6 +27,7 @@
         "react-i18next": "17.1.9",
         "react-resizable-panels": "4.15.0",
         "tailwind-merge": "3.7.0",
+        "text-shaper": "0.1.28",
         "three": "0.186.1",
         "tw-animate-css": "1.4.0",
       },
@@ -50,6 +50,7 @@
         "eslint-plugin-react-hooks": "7.1.1",
         "fake-indexeddb": "6.2.6",
         "jsdom": "30.1.3",
+        "magic-string": "1.4.5",
         "oxfmt": "0.75.0",
         "oxlint": "1.90.0",
         "oxlint-tsgolint": "7.0.2005",
@@ -84,12 +85,14 @@
       "dependencies": {
         "@musart/assets": "workspace:*",
         "@musart/core": "workspace:*",
-        "harfbuzzjs": "0.4.15",
         "mediabunny": "1.62.1",
-        "opentype.js": "2.0.0",
+        "text-shaper": "0.1.28",
         "three": "0.186.1",
       },
     },
+  },
+  "patchedDependencies": {
+    "text-shaper@0.1.28": "patches/text-shaper@0.1.28.patch",
   },
   "packages": {
     "@adobe/css-tools": ["@adobe/css-tools@4.5.0", "", {}, "sha512-6OzddxPio9UiWTCemp4N8cYLV2ZN1ncRnV1cVGtve7dhPOtRkleRyx32GQCYSwDYgaHU3USMm84tNsvKzRCa1Q=="],
@@ -930,8 +933,6 @@
 
     "guid-typescript": ["guid-typescript@1.0.9", "", {}, "sha512-Y8T4vYhEfwJOTbouREvG+3XDsjr8E3kIr7uf+JZ0BYloFsttiHU0WfvANVsR7TxNUJa/WpCnw/Ino/p+DeBhBQ=="],
 
-    "harfbuzzjs": ["harfbuzzjs@0.4.15", "", {}, "sha512-p1edvnlc+vpRe2kz7OKzcscf0gyFiDZpco+miDxAiiZ67cu1oNlbuOkmP/A/i1l/w938VrkF2FdZ8scNcnkPrQ=="],
-
     "has-property-descriptors": ["has-property-descriptors@1.0.2", "", { "dependencies": { "es-define-property": "^1.0.0" } }, "sha512-55JNKuIW+vq4Ke1BjOTjM2YctQIvCT7GFzHwmfZPGo5wnrgkid0YQtnAleFSqumZm4az3n2BS+erby5ipJdgrg=="],
 
     "hashery": ["hashery@1.5.1", "", { "dependencies": { "hookified": "^1.15.0" } }, "sha512-iZyKG96/JwPz1N55vj2Ie2vXbhu440zfUfJvSwEqEbeLluk7NnapfGqa7LH0mOsnDxTF85Mx8/dyR6HfqcbmbQ=="],
@@ -1269,6 +1270,8 @@
     "tailwindcss": ["tailwindcss@4.3.3", "", {}, "sha512-gOhV3P7ufE62QDGg1zVaTgCR+EtPv92k2nIhVcVKcLmxT1sUBsQGhnZj175j+MqRt4zLF7ic+sCYjfhxMxj7YQ=="],
 
     "tapable": ["tapable@2.3.3", "", {}, "sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A=="],
+
+    "text-shaper": ["text-shaper@0.1.28", "", {}, "sha512-uwm6+tkgYJ4hsTV0wZVHkZeoXR1/mthLxDiJvfU9o/FiibNinpFRC8PAMTNx8SaOjaK/5ZjDG1XAkPbKlIe2Jg=="],
 
     "three": ["three@0.186.1", "", {}, "sha512-blFeqb49wRCSGUGj7gtpfnSGHy2lwDk94RhUmS1c/hTby70kvChbWpkJ4Pm1390LqzzvTmzgXKHPEafJwCb8jA=="],
 

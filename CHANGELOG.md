@@ -37,6 +37,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Changed
 
+- Replaced production HarfBuzz/OpenType text preparation with pinned, MIT-licensed text-shaper while retaining analytical Slug rendering in Three/TSL. The compatibility adapter preserves variable positioning, phantom advances, UTF-16 clusters and token kerning; a declared Bun patch fixes upstream positioning/substitution behavior and bounds variation caches. Font ownership, cancellation, readiness acknowledgments and disposal remain explicit. Independent glyph/layout fingerprints, vector-outline witnesses and reproducible three-run CPU/browser comparisons document correctness, performance gains and cold-path regressions in `docs/performance/text-shaping.md` and `docs/performance/text-shaping-browser.md`.
+
 - Rebuilt the Typography font picker with restored portal scrolling, memoized catalog filtering, real decoded phrase previews in a bounded eight-face cache, and intent-based canvas previews that pause during scrolling. Categories share the horizontal scroll-shadow control and disclosure chevron. Generation-bound loading completes only after the requested text is actually drawn; cancellation, one-step undo, import/reload and Motion's evaluated weight are preserved. Native production measurements and their limits are recorded in `docs/performance/fonts.md`.
 
 - The landing template rail automatically drifts through an infinite loop and supports mouse/touch panning with velocity and inertia, without scrollbars, arrow buttons or duplicate focusable cards. Automatic motion pauses for interaction, hover, keyboard focus, hidden/offscreen content and reduced motion, then resumes gently. Vertical page scrolling remains available and GPU hover previews pause while the rail moves.
@@ -89,6 +91,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 - Locked artwork remains inspectable on the canvas with a constant-size lock badge and no editing handles. Layer rows expose persistent protection indicators, while the inspector and effect/mask popovers identify blocking parent locks and unlock only that chain in one undoable transaction.
 
 ### Fixed
+
+- Removed obsolete HarfBuzz WASM loading and import maps from the text-layout and video-composition browser witnesses so they bundle the installed text-shaper backend directly. Their native WebGPU/WebGL pixel, reuse and cleanup assertions remain unchanged.
 
 - Restored CI verification by provisioning FFprobe for source-backed Motion templates and aligning integration tests with the complete 33-command registry, retained selection overlays, shared zoom controls, button-based library navigation, timeline state and metadata-stable attachment previews. Assertions still verify real values, identity, stale-input guards and cancellation.
 

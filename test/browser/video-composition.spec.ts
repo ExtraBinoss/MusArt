@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 import { installReadbackProbe } from "./support/readback-probe";
 import { installNativeVideoProbe } from "./support/native-video-probe";
 const cohort = resolve("artifacts/video-composition-native");
-let bundle: string, wasm: Buffer;
+let bundle: string;
 test.beforeAll(async () => {
   await mkdir(cohort, { recursive: true });
   execFileSync(
@@ -14,14 +14,12 @@ test.beforeAll(async () => {
       "build",
       "test/browser/support/video-composition-witness.ts",
       "--target=browser",
-      "--external=harfbuzzjs/hb.wasm?url",
       "--outfile",
       resolve(cohort, "witness.js"),
     ],
     { stdio: "pipe" },
   );
   bundle = await readFile(resolve(cohort, "witness.js"), "utf8");
-  wasm = await readFile(resolve("node_modules/harfbuzzjs/hb.wasm"));
 });
 for (const forceWebGL of [false, true])
   test(`video composition uses real groups, image overlays, masks and GPU effects (${forceWebGL ? "WebGL" : "WebGPU"})`, async ({
@@ -34,17 +32,8 @@ for (const forceWebGL of [false, true])
     await page.route("**/video-composition-witness.html", (route) =>
       route.fulfill({
         contentType: "text/html",
-        body: '<!doctype html><title>Video compositing witness</title><script type="importmap">{"imports":{"harfbuzzjs/hb.wasm?url":"/video-composition-font-url.js"}}</script>',
+        body: "<!doctype html><title>Video compositing witness</title>",
       }),
-    );
-    await page.route("**/video-composition-font-url.js", (route) =>
-      route.fulfill({
-        contentType: "text/javascript",
-        body: 'export default "/video-composition-font.wasm";',
-      }),
-    );
-    await page.route("**/video-composition-font.wasm", (route) =>
-      route.fulfill({ contentType: "application/wasm", body: wasm }),
     );
     await page.route("**/video-composition-witness.js", (route) =>
       route.fulfill({ contentType: "text/javascript", body: bundle }),
