@@ -8,6 +8,7 @@ import {
 import { getDropCommand, type LayerDropPosition } from "../drop-target";
 import { validateLayerDrop, type LayerDropRejection } from "./validation";
 import { layerDragDiagnostics } from "./diagnostics";
+import { DeferredDragSession } from "../../shared/dnd/session";
 
 export interface LayerDragTarget {
   id: string;
@@ -32,19 +33,16 @@ interface Origin {
 /** Engine-scoped semantic state; pointer pixels and DOM resources belong to input adapters. */
 export class LayerDragController {
   private origin: Origin | null = null;
-  private state: LayerDragState | null = null;
-  private listeners = new Set<() => void>();
+  private session = new DeferredDragSession<LayerDragState>();
   private stopEngine: (() => void) | null = null;
   constructor(private readonly engine: EnginePort) {}
-  read = (): LayerDragState | null => this.state;
-  subscribe = (listener: () => void) => {
-    this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
-  };
+  private get state() {
+    return this.session.read();
+  }
+  read = this.session.read;
+  subscribe = this.session.subscribe;
   private publish(state: LayerDragState | null) {
-    if (this.state === state) return;
-    this.state = state && Object.freeze(state);
-    for (const listener of this.listeners) listener();
+    this.session.publish(state);
   }
   private canonical(origin: Origin): boolean {
     const snapshot = this.engine.getSnapshot();
@@ -83,6 +81,7 @@ export class LayerDragController {
       diagnostics.refuse("begin", "originChangedDuringActivation");
       return false;
     }
+    this.session.begin(() => this.cancel());
     this.origin = origin;
     this.stopEngine = this.engine.subscribe(() => {
       if (this.origin === origin && !this.canonical(origin)) {
@@ -134,7 +133,10 @@ export class LayerDragController {
       this.clear({ id: target.id, reason: "crossComposition" });
       return false;
     }
-    if (target.id === origin.id) return true;
+    if (target.id === origin.id) {
+      this.clear();
+      return true;
+    }
     if (this.state?.target?.id === target.id && this.state.target.position === position)
       return true;
     const result = validateLayerDrop(origin.page, origin.id, target.id, position);
@@ -146,7 +148,7 @@ export class LayerDragController {
       pageId: page.id,
       base: page.layers,
       id: origin.id,
-      layers: result.layers,
+      layers: page.layers,
       target: { id: target.id, position },
       rejected: null,
     });
@@ -191,20 +193,19 @@ export class LayerDragController {
               layer.id !== origin.page.layers[index]!.id ||
               layer.parentId !== origin.page.layers[index]!.parentId,
           );
-    this.cancel();
-    if (!changed) return false;
-    origin.run(() => {
-      if (this.canonical(origin))
-        this.engine.execute(getDropCommand(id, destination, target.position, origin.page.layers));
+    return this.session.finish(changed, () => {
+      origin.run(() => {
+        if (this.canonical(origin))
+          this.engine.execute(getDropCommand(id, destination, target.position, origin.page.layers));
+      });
     });
-    return true;
   }
   cancel(owner?: symbol) {
     if (owner !== undefined && this.origin?.owner !== owner) return;
     this.origin = null;
     this.stopEngine?.();
     this.stopEngine = null;
-    this.publish(null);
+    this.session.cancel();
   }
 }
 

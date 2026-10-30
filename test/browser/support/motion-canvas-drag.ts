@@ -46,8 +46,8 @@ export async function verifyCanvasReorder(page: Page) {
       source === "card" ? await canvas.screenshot({ path: `${output}/stack-before.png` }) : null;
     await page.mouse.move(a.x + 1, b.y, { steps: 6 });
     await expect(page.locator(label(source))).toHaveAttribute("data-layer-reorder-source", "true");
-    await expect.poll(() => order()).toEqual(["peer", "card"]);
-    await expect.poll(() => order(true)).toEqual(["peer", "card"]);
+    await expect.poll(() => order()).toEqual(["card", "peer"]);
+    await expect.poll(() => order(true)).toEqual(["card", "peer"]);
     expect(await counters(page)).toEqual(quiet);
     expect(await page.evaluate(() => window.musart!.snapshot().project)).toEqual(original);
     await page.screenshot({ path: `${output}/bar-${source}-reorder-draft.png` });
@@ -81,15 +81,14 @@ export async function verifyCanvasReorder(page: Page) {
   await page.mouse.move(b.x + 1, b.y);
   await expect(page.locator("[data-timeline-drop-target]:not([hidden])")).toHaveAttribute(
     "data-layer-drop-kind",
-    "property",
+    "layer",
   );
-  // The preview moved this property under the stationary pointer. The already accepted
-  // insertion survives its one-pixel hand jitter; the proxy still follows the visible row.
+  // The proxy follows the stationary canonical row under the pointer.
   await expect(page.locator("[data-timeline-drop-target]:not([hidden])")).toHaveAttribute(
     "data-motion-row-key",
-    "card-x",
+    "peer",
   );
-  await expect.poll(() => order()).toEqual(["peer", "card"]);
+  await expect.poll(() => order()).toEqual(["card", "peer"]);
   expect(await counters(page)).toEqual(quiet);
   await page.screenshot({ path: `${output}/gutter-native-drop-draft.png` });
   await page.mouse.up();

@@ -1,106 +1,125 @@
-import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useSyncExternalStore,
+  type DragEvent,
+} from "react";
 import { useStore } from "jotai";
 import type { SearchItem } from "../../search/catalog/model";
+import { DeferredDragSession, setDragCueAnchor } from "../../shared/dnd/session";
+import { createDragDiagnostics } from "../../shared/dnd/diagnostics";
 import { dockCommandsAtom, moveDockCommand } from "./preferences";
 const MIME = "application/x-musart-dock-command";
 interface Origin {
   id: string;
   ids: readonly string[];
   scope: string;
+  target: { id: string; position: "before" | "after" } | null;
 }
-/** Reorder a visual copy; the authoritative preference list changes once on a valid final drop. */
+/** Destination-only adapter for the shared deferred drag engine. */
 export function useDockDrag(ids: readonly string[], commands: readonly SearchItem[]) {
-  const store = useStore(),
-    scope = JSON.stringify(commands.map((command) => command.id));
-  const source = useRef<Origin | null>(null),
-    projection = useRef<string[] | null>(null);
-  const pointer = useRef<{ x: number; y: number; top: number; left: number } | null>(null);
-  const [visual, setVisual] = useState<{ origin: Origin; ids: string[] } | null>(null);
+  const store = useStore();
+  const scope = JSON.stringify(commands.map((command) => command.id));
+  const session = useMemo(() => new DeferredDragSession<Origin>(), []);
+  const diagnostics = useMemo(createDragDiagnostics, []);
+  const source = useSyncExternalStore(session.subscribe, session.read, session.read);
+  const anchor = useRef<HTMLElement | null>(null);
   const cancel = useCallback(() => {
-    source.current = null;
-    projection.current = null;
-    pointer.current = null;
-    setVisual(null);
-  }, []);
+    session.cancel();
+    anchor.current = null;
+  }, [session]);
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
       if (event.key === "Escape") cancel();
     };
-    window.addEventListener("keydown", key);
-    return () => {
-      window.removeEventListener("keydown", key);
-      source.current = null;
-      projection.current = null;
-      pointer.current = null;
+    const outside = (event: globalThis.DragEvent) => {
+      if (!session.read()) return;
+      if (!(event.target instanceof Element) || !event.target.closest("[data-dock-command]")) {
+        setDragCueAnchor(null);
+        anchor.current = null;
+        session.publish({ ...session.read()!, target: null });
+        if (event.dataTransfer) event.dataTransfer.dropEffect = "none";
+        diagnostics.refuse("nativeDragover", "nonDockTarget", undefined, event);
+      }
     };
-  }, [cancel]);
+    window.addEventListener("keydown", key);
+    window.addEventListener("dragover", outside);
+    window.addEventListener("dragend", cancel);
+    window.addEventListener("pagehide", cancel);
+    return () => {
+      cancel();
+      window.removeEventListener("keydown", key);
+      window.removeEventListener("dragover", outside);
+      window.removeEventListener("dragend", cancel);
+      window.removeEventListener("pagehide", cancel);
+    };
+  }, [session, diagnostics, cancel]);
   useEffect(() => {
-    source.current = null;
-    projection.current = null;
-    pointer.current = null;
-  }, [ids, scope]);
+    cancel();
+  }, [ids, scope, cancel]);
   function current(origin: Origin) {
     return (
       origin.ids === ids && origin.ids === store.get(dockCommandsAtom) && origin.scope === scope
     );
   }
-  const active = visual?.origin.ids === ids && visual.origin.scope === scope ? visual : null;
+  const active = source && current(source) ? source : null;
   return {
-    ids: active?.ids ?? ids,
-    dragging: active?.origin.id ?? null,
+    ids,
+    dragging: active?.id ?? null,
+    target: active?.target ?? null,
+    anchor,
     cancel,
     start(event: DragEvent<HTMLElement>, id: string) {
+      diagnostics.begin({ mode: "dock", input: "native", sourceId: id });
       if (
         store.get(dockCommandsAtom) !== ids ||
         !ids.includes(id) ||
         !commands.some((command) => command.id === id)
       ) {
+        event.preventDefault();
+        diagnostics.refuse("begin", "sourceRejected", id, event);
         cancel();
         return;
       }
-      const origin = { id, ids, scope };
-      source.current = origin;
-      projection.current = null;
-      pointer.current = null;
-      setVisual({ origin, ids: [...ids] });
-      event.dataTransfer.setData(MIME, id);
-      event.dataTransfer.effectAllowed = "move";
+      session.begin(cancel);
+      session.publish({ id, ids, scope, target: null });
+      try {
+        event.dataTransfer.setData(MIME, id);
+        event.dataTransfer.effectAllowed = "move";
+      } catch (error) {
+        cancel();
+        event.preventDefault();
+        throw error;
+      }
     },
     over(event: DragEvent<HTMLElement>, id: string) {
-      const origin = source.current;
+      const origin = session.read();
       if (!origin) return;
-      if (!current(origin)) {
+      if (!current(origin) || !ids.includes(id)) {
+        event.dataTransfer.dropEffect = "none";
+        diagnostics.refuse("nativeDragover", "staleOrMissingTarget", id, event);
         cancel();
         return;
       }
       event.preventDefault();
       event.dataTransfer.dropEffect = "move";
-      const viewport = event.currentTarget.closest<HTMLElement>("[data-dock-scroll]"),
-        top = viewport?.scrollTop ?? 0,
-        left = viewport?.scrollLeft ?? 0;
-      const x = Number.isFinite(event.clientX) ? event.clientX : 0,
-        y = Number.isFinite(event.clientY) ? event.clientY : 0;
-      if (
-        pointer.current &&
-        pointer.current.x === x &&
-        pointer.current.y === y &&
-        pointer.current.top === top &&
-        pointer.current.left === left
-      )
-        return;
-      if (id === origin.id) return;
-      pointer.current = { x, y, top, left };
-      const bounds = event.currentTarget.getBoundingClientRect(),
-        after = y >= bounds.top + bounds.height / 2;
-      const target = ids.filter((value) => value !== origin.id).indexOf(id);
-      if (target < 0) return;
-      const next = moveDockCommand(ids, origin.id, target + (after ? 1 : 0));
-      if (projection.current?.every((value, index) => value === next[index])) return;
-      projection.current = next;
-      setVisual({ origin, ids: next });
+      const bounds = event.currentTarget.getBoundingClientRect();
+      const y = Number.isFinite(event.clientY) ? event.clientY : 0;
+      const position = y >= bounds.top + bounds.height / 2 ? "after" : "before";
+      anchor.current = id === origin.id ? null : event.currentTarget;
+      setDragCueAnchor(anchor.current);
+      const target = id === origin.id ? null : ({ id, position } as const);
+      if (origin.target?.id !== target?.id || origin.target?.position !== target?.position)
+        session.publish({ ...origin, target });
     },
     overViewport(this: void, event: DragEvent<HTMLElement>) {
-      if (source.current && current(source.current) && projection.current) {
+      if (
+        session.read()?.target &&
+        event.target instanceof Element &&
+        event.target.closest("[data-dock-command]")
+      ) {
         event.preventDefault();
         event.dataTransfer.dropEffect = "move";
       }
@@ -108,17 +127,25 @@ export function useDockDrag(ids: readonly string[], commands: readonly SearchIte
     drop(event: DragEvent<HTMLElement>): boolean {
       event.preventDefault();
       event.stopPropagation();
-      const origin = source.current,
-        next = projection.current;
-      const changed =
-        !!origin &&
-        current(origin) &&
-        event.dataTransfer.getData(MIME) === origin.id &&
-        !!next &&
-        next.some((id, at) => id !== ids[at]);
-      cancel();
-      if (changed) store.set(dockCommandsAtom, next);
-      return changed;
+      const origin = session.read();
+      if (
+        !origin ||
+        !current(origin) ||
+        event.dataTransfer.getData(MIME) !== origin.id ||
+        !origin.target
+      ) {
+        diagnostics.refuse("drop", "noAcceptedTargetOrStaleSource", origin?.target?.id, event);
+        cancel();
+        return false;
+      }
+      const target = ids.filter((id) => id !== origin.id).indexOf(origin.target.id);
+      const next = moveDockCommand(
+        ids,
+        origin.id,
+        target + (origin.target.position === "after" ? 1 : 0),
+      );
+      const changed = next.some((id, at) => id !== ids[at]);
+      return session.finish(changed, () => store.set(dockCommandsAtom, next));
     },
   };
 }

@@ -55,27 +55,7 @@ export const LayerTree = memo(function LayerTree({
     () => projectLayerWorkspace(project, collapsedPages, collapsed, attachments),
     [project, collapsedPages, collapsed, attachments],
   );
-  const entries = useMemo(
-    () =>
-      drag.dragging
-        ? projectLayerWorkspace(project, collapsedPages, collapsed, attachments, {
-            pageId: drag.pageId,
-            layers: drag.layers,
-            inside: drag.target?.position === "inside" ? drag.target.id : undefined,
-          })
-        : canonicalEntries,
-    [
-      drag.dragging,
-      drag.layers,
-      drag.pageId,
-      project,
-      collapsedPages,
-      collapsed,
-      attachments,
-      drag.target,
-      canonicalEntries,
-    ],
-  );
+  const entries = canonicalEntries;
   const positions = useMemo(() => {
     const result = new Map<string, number>();
     for (let at = 0; at < entries.length; at++) {

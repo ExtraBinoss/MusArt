@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAtom, useSetAtom, useStore } from "jotai";
-import { motion, useReducedMotion } from "motion/react";
+import { DropCue } from "../../layers/drag/DropCue";
 import { useTranslation } from "react-i18next";
 import { PinOff } from "lucide-react";
 import { IconButton } from "../../shared/IconButton";
@@ -33,8 +33,7 @@ export function PinnedCommands({
   const store = useStore(),
     group = useRef<HTMLDivElement>(null),
     focusAfterUnpin = useRef<number | null>(null);
-  const drag = useDockDrag(ids, commands),
-    reduced = useReducedMotion();
+  const drag = useDockDrag(ids, commands);
   const catalog = useMemo(
     () => new Map(commands.map((command) => [command.id, command])),
     [commands],
@@ -76,12 +75,9 @@ export function PinnedCommands({
           return (
             <ContextMenu key={id} onOpenChange={(open) => open && drag.cancel()}>
               <ContextMenuTrigger asChild>
-                <motion.div
-                  layout={!reduced && !!drag.dragging ? "position" : false}
-                  transition={{ type: "spring", stiffness: 430, damping: 34, mass: 0.65 }}
+                <div
                   data-dock-command={id}
                   data-dragging={drag.dragging === id || undefined}
-                  style={{ order: drag.ids.indexOf(id) }}
                   tabIndex={command.disabled ? 0 : -1}
                   role="group"
                   aria-label={t("dock:options", { name: command.label })}
@@ -117,7 +113,7 @@ export function PinnedCommands({
                   >
                     <Icon strokeWidth={1.65} />
                   </IconButton>
-                </motion.div>
+                </div>
               </ContextMenuTrigger>
               <ContextMenuContent className="floating-panel">
                 <ContextMenuItem
@@ -137,6 +133,9 @@ export function PinnedCommands({
           );
         })}
       </div>
+      {drag.target && (
+        <DropCue key={drag.target.id} anchor={drag.anchor} position={drag.target.position} />
+      )}
       <Separator />
       <DockCustomizer
         ids={ids}

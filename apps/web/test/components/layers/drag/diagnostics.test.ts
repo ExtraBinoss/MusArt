@@ -8,7 +8,7 @@ import { setup } from "../../../support/ui";
 afterEach(() => vi.restoreAllMocks());
 
 test("reports concrete rejection evidence once per target/stage and resets for the next gesture", () => {
-  const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+  const warn = vi.spyOn(console, "error").mockImplementation(() => {});
   const diagnostics = createLayerDragDiagnostics();
   diagnostics.begin({ input: "native", mode: "motion", sourceId: "source" });
   const event = {
@@ -52,7 +52,7 @@ test("reports concrete rejection evidence once per target/stage and resets for t
 });
 
 test("bounds diagnostic memory and shares evidence only within the same engine", () => {
-  const warn = vi.spyOn(console, "warn").mockImplementation(() => {}),
+  const warn = vi.spyOn(console, "error").mockImplementation(() => {}),
     d = setup(),
     other = setup();
   const diagnostics = layerDragDiagnostics(d.engine);

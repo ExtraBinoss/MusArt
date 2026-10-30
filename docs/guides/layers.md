@@ -61,7 +61,7 @@ option remains available for a future interactive tooltip.
 | Luminance mode       | Luminance remains an explicit mask mode for white-reveals/black-conceals raster workflows.                                                                                                                   |
 | Editable source      | The mask source remains canonical editable content, not a rasterized replacement.                                                                                                                            |
 | Floating cue         | The accepted insertion/mask cue is translated and portaled above scroll clipping and Motion stacking contexts.                                                                                               |
-| Retained drag source | Native drag sources remain mounted in canonical DOM order while only their displayed positions change.                                                                                                       |
+| Retained drag source | Native drag sources and displayed rows remain in canonical order until a completed drop.                                                                                                                     |
 | Commit and rejection | Hover changes no document state; a valid completed drop commits one command, an identical existing attachment creates no undo entry, and stale/locked/cyclic targets remain rejected.                        |
 | Mask controls        | Mask controls expose inversion, enable/disable, mode and removal, with direct navigation to an editable linked source.                                                                                       |
 | Isolated mask view   | A genuine isolated mask view requires a renderer presentation mode; document visibility edits or CSS previews must not impersonate it.                                                                       |
@@ -106,14 +106,14 @@ Expanding a layer shows its ordered effects, followed by its mask reference and 
 
 ### Virtual rows and resource ownership
 
-| Panel topic         | Behavior                                                                                                          |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Window size         | The visible-row window includes a small overscan and advances in five-row batches.                                |
-| Scroll publication  | Native scroll metrics update immediately; movement inside the existing window performs no React state update.     |
-| Stable controls     | Static rows use stable memoized handlers; Motion layout measurement is enabled only during layer drag projection. |
-| Selection reveal    | Newly selected offscreen rows are revealed without mounting the entire document.                                  |
-| Thumbnail ownership | Each visible thumbnail owns an abort signal and browser URL.                                                      |
-| Cleanup             | An appearance change, exit or unmount releases it, and a late result cannot allocate a replacement URL.           |
+| Panel topic         | Behavior                                                                                                                    |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Window size         | The visible-row window includes a small overscan and advances in five-row batches.                                          |
+| Scroll publication  | Native scroll metrics update immediately; movement inside the existing window performs no React state update.               |
+| Stable controls     | Static rows use stable memoized handlers; Reorder hover changes only destination feedback; it never projects row positions. |
+| Selection reveal    | Newly selected offscreen rows are revealed without mounting the entire document.                                            |
+| Thumbnail ownership | Each visible thumbnail owns an abort signal and browser URL.                                                                |
+| Cleanup             | An appearance change, exit or unmount releases it, and a late result cannot allocate a replacement URL.                     |
 
 Alignment is implicit: a single root uses its artboard; a single child or sibling selection uses its common group; multiple roots use selection bounds; mixed hierarchies use artboard/world coordinates. Distribution remains available only for three or more siblings. Numeric display rounds to two decimals without rewriting untouched higher-precision document values.
 
@@ -222,3 +222,16 @@ drop, cancellation, invalidation or unmount; it never includes row controls or a
 | Project rename               | A project rename produced no new layer preview requests.                                                                                                                                                                        |
 | Color-control scenarios      | Repeated solid/gradient saturation, hue, alpha and hexadecimal edits, including switching targets during a held gesture, produced no maximum-depth or cleanup errors in the tested development/StrictMode and production paths. |
 | Unconfirmed original trigger | The previously reported intermittent maximum-depth error was not reproduced by these scenarios; its exact original trigger remains unconfirmed.                                                                                 |
+
+### Shared deferred drag engine
+
+Toolbar pins, Layers and both DOM/canvas timeline reorder inputs use
+`components/shared/dnd/session.ts`. New reorder adapters must use this engine
+for exclusive gesture ownership, state publication, cancellation and final commit.
+Domain adapters validate destinations and stale origins, and commit through
+`session.finish` once. Never publish a prospective order to rendered rows or
+auto-expand hovered groups. Use the shared cue anchor for at most one visible
+destination/error message and shared diagnostics for bounded, deduplicated
+`console.error` rejection evidence. Native and pointer adapters retain their
+input-specific capture and scrolling cleanup. Timeline time-edit gestures retain
+the separate validated preview/commit contract.

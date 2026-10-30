@@ -196,7 +196,7 @@ it("returns one presentation per engine and releases cursor/ghost ownership afte
   expect(d.frames.size).toBe(0);
 });
 
-it("holds the insertion intent through stationary layout expansion, then retargets on actual scroll", () => {
+it("retargets actual rows immediately, including after scroll", () => {
   const d = fixture(),
     point = { x: 100, y: 45, alt: false };
   d.presentation.over(d.target, d.page.layers[1]!, d.page, point);
@@ -205,13 +205,13 @@ it("holds the insertion intent through stationary layout expansion, then retarge
   vi.spyOn(next, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 40, 200, 40));
   d.presentation.invalidate();
   expect(d.presentation.over(next, d.page.layers[2]!, d.page, point)).toBe(true);
-  expect(d.controller.read()?.target?.id).toBe("b");
+  expect(d.controller.read()?.target?.id).toBe("c");
   d.viewport.scrollTop = 40;
   expect(d.presentation.over(next, d.page.layers[2]!, d.page, point)).toBe(true);
   expect(d.controller.read()?.target?.id).toBe("c");
 });
 
-it("keeps an accepted stationary insertion when preview motion moves a property underneath release", () => {
+it("rejects a property under the pointer immediately without retaining an earlier insertion", () => {
   const d = fixture(),
     point = { x: 100, y: 45, alt: false };
   d.presentation.over(d.target, d.page.layers[1]!, d.page, point);
@@ -225,10 +225,10 @@ it("keeps an accepted stationary insertion when preview motion moves a property 
   d.elementFromPoint.mockReturnValue(property);
   d.presentation.invalidate();
   d.presentation.flush();
-  expect(d.controller.read()?.target?.id).toBe("b");
+  expect(d.controller.read()?.target).toBeNull();
   d.presentation.move({ ...point, x: 101 });
   d.presentation.flush();
-  expect(d.controller.read()?.target?.id).toBe("b");
+  expect(d.controller.read()?.target).toBeNull();
   d.presentation.move({ ...point, x: 107 });
   d.presentation.flush();
   expect(d.controller.read()?.target).toBeNull();
@@ -248,14 +248,4 @@ it("a real scroll, outside hit or foreign page still retires stationary insertio
     d.presentation.flush();
     expect(d.controller.read()?.target).toBeNull();
   }
-});
-
-it("does not latch a property outside the actual viewport or across modifier changes", () => {
-  const d = fixture(),
-    point = { x: 100, y: 45, alt: false };
-  d.presentation.over(d.target, d.page.layers[1]!, d.page, point);
-  expect(d.presentation.retainIntent({ ...point, x: 101 }, "one", d.target)).toBe(true);
-  expect(d.presentation.retainIntent(point, "two", d.target)).toBe(false);
-  expect(d.presentation.retainIntent({ ...point, alt: true }, "one", d.target)).toBe(false);
-  expect(d.presentation.retainIntent(point, "one", document.createElement("div"))).toBe(false);
 });

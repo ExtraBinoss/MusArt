@@ -5,7 +5,7 @@ import { sfxWav, synthesizeSfx } from "../../apps/web/src/services/motion/audio/
 import { installReadbackProbe } from "./support/readback-probe";
 import { interactionEnvironment } from "./support/interaction-probe";
 import { verifyCanvasReorder } from "./support/motion-canvas-drag";
-import { verifyCanvasSpringPose } from "./support/motion-canvas-pose";
+import { verifyCanvasStationaryPose } from "./support/motion-canvas-pose";
 import {
   output,
   surface,
@@ -518,10 +518,10 @@ for (const [id, name] of [
     await canvas.screenshot({ path: `${output}/${id}.png` });
   });
 
-test("Canvas rows, bitmap and native drop proxy share a real intermediate spring pose", async ({
+test("Canvas rows remain stationary during reorder and cancellation clears the sole cue", async ({
   page,
 }) => {
-  await verifyCanvasSpringPose(page);
+  await verifyCanvasStationaryPose(page);
 });
 
 test("dense Canvas key buckets retain bounded native choices and exact stored-key selection", async ({

@@ -86,7 +86,7 @@ test("compact header and dock expose real commands, persist pins and support key
   await page.screenshot({ path: "artifacts/screenshots/dock-compact-header.png" });
 });
 
-test("native layer drag projects its order before one document commit and Escape restores it", async ({
+test("native layer drag keeps rows stationary until one document commit and Escape cancels it", async ({
   page,
 }) => {
   await installReadbackProbe(page);
@@ -109,8 +109,8 @@ test("native layer drag projects its order before one document commit and Escape
   );
   await expect.poll(() => layerOrder(page)).toEqual(["c", "b", "a"]);
   async function hoverDrag() {
-    const source = await page.locator('[data-layer-id="a"]').boundingBox();
-    const target = await page.locator('[data-layer-id="c"]').boundingBox();
+    const source = await page.locator('.layers-panel [data-layer-id="a"]').boundingBox();
+    const target = await page.locator('.layers-panel [data-layer-id="c"]').boundingBox();
     if (!source || !target) throw Error("Missing layer row");
     await page.mouse.move(source.x + 100, source.y + source.height / 2);
     await page.mouse.down();
@@ -120,7 +120,8 @@ test("native layer drag projects its order before one document commit and Escape
   }
   await installNativeDragProbe(page, "application/x-musart-layer");
   await hoverDrag();
-  await expect.poll(() => layerOrder(page)).toEqual(["a", "c", "b"]);
+  await expect.poll(() => layerOrder(page)).toEqual(["c", "b", "a"]);
+  await expect(page.locator(".layer-drop-cue:visible")).toHaveCount(1);
   expect(await snapshotOrder(page)).toEqual(["a", "b", "c"]);
   expect(await page.evaluate(() => window.musart!.snapshot().canUndo)).toBe(false);
   await page.screenshot({ path: "artifacts/screenshots/layers-held-drag.png" });
@@ -128,9 +129,9 @@ test("native layer drag projects its order before one document commit and Escape
   await page.mouse.up();
   await expect.poll(() => layerOrder(page)).toEqual(["c", "b", "a"]);
   expect(await snapshotOrder(page)).toEqual(["a", "b", "c"]);
-  await expect(page.locator('[data-layer-id="a"]')).toHaveCSS("transform", "none");
+  await expect(page.locator('.layers-panel [data-layer-id="a"]')).toHaveCSS("transform", "none");
   await hoverDrag();
-  await expect.poll(() => layerOrder(page)).toEqual(["a", "c", "b"]);
+  await expect.poll(() => layerOrder(page)).toEqual(["c", "b", "a"]);
   await page.mouse.up();
   await expect.poll(() => snapshotOrder(page)).toEqual(["b", "c", "a"]);
   await assertNativeMove(page, "a");
@@ -164,8 +165,8 @@ test("native group and Alt-mask drops preserve semantic commands and undo", asyn
       ],
     }),
   );
-  const source = page.locator('[data-layer-id="a"]'),
-    group = page.locator('[data-layer-id="g"]');
+  const source = page.locator('.layers-panel [data-layer-id="a"]'),
+    group = page.locator('.layers-panel [data-layer-id="g"]');
   await group.getByRole("button", { name: "Group", exact: true }).click();
   await source.dragTo(group);
   await expect
@@ -189,7 +190,7 @@ test("native group and Alt-mask drops preserve semantic commands and undo", asyn
     .toBeNull();
   await expect(source).toHaveCSS("transform", "none");
   await page.keyboard.down("Alt");
-  await source.dragTo(page.locator('[data-layer-id="b"]'));
+  await source.dragTo(page.locator('.layers-panel [data-layer-id="b"]'));
   await page.keyboard.up("Alt");
   await expect
     .poll(() =>

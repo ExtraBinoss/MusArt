@@ -64,8 +64,8 @@ it("projects the shared source into a bounded canonical DOM window and restores 
   act(() => hook.result.current.native.over(event, d.text));
   expect(hook.result.current.rows.map((row) => row.layer.id)).toEqual([
     d.image.id,
-    d.rectangle.id,
     d.text.id,
+    d.rectangle.id,
   ]);
   const window = hook.result.current.window(0, 1);
   expect(window).toHaveLength(2);

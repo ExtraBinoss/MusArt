@@ -46,7 +46,7 @@ test("executes shared commands with disabled gates and persists only completed d
     append = vi.spyOn(d.group, "appendChild");
   fireEvent.dragStart(d.row("addPage"), { dataTransfer: d.transfer });
   fireEvent.dragOver(d.row("save"), { dataTransfer: d.transfer });
-  expect(d.order().slice(0, 2)).toEqual(["action:save", "action:addPage"]);
+  expect(d.order().slice(0, 2)).toEqual(["action:addPage", "action:save"]);
   expect(d.row("addPage")).toBe(source);
   expect(insert).not.toHaveBeenCalled();
   expect(append).not.toHaveBeenCalled();
@@ -130,7 +130,7 @@ test("opening the menu cancels a held reorder and removing the final pin keeps a
   const d = fixture();
   fireEvent.dragStart(d.row("addPage"), { dataTransfer: d.transfer });
   fireEvent.dragOver(d.row("save"), { dataTransfer: d.transfer });
-  expect(d.order().slice(0, 2)).toEqual(["action:save", "action:addPage"]);
+  expect(d.order().slice(0, 2)).toEqual(["action:addPage", "action:save"]);
   fireEvent.contextMenu(d.row("save"));
   expect(d.order().slice(0, 2)).toEqual(["action:addPage", "action:save"]);
   fireEvent.click(screen.getByRole("menuitem", { name: "Désépingler save" }));

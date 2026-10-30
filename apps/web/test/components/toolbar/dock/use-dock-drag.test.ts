@@ -40,18 +40,18 @@ function fixture() {
   }
   return { ...d, ...hook, ids, commands, event, viewport, transfer };
 }
-test("projected spring order never persists until drop and stationary pointers retarget only after viewport scroll", () => {
+test("canonical order stays stationary until drop and destinations follow the actual pointer", () => {
   const d = fixture(),
     original = d.store.get(dockCommandsAtom);
   act(() => d.result.current.start(d.event(0), d.ids[0]!));
   act(() => d.result.current.over(d.event(1), d.ids[1]!));
-  expect(d.result.current.ids).toEqual([d.ids[1], d.ids[0], d.ids[2]]);
+  expect(d.result.current.ids).toBe(original);
   expect(d.store.get(dockCommandsAtom)).toBe(original);
   act(() => d.result.current.over(d.event(2), d.ids[2]!));
-  expect(d.result.current.ids).toEqual([d.ids[1], d.ids[0], d.ids[2]]);
+  expect(d.result.current.ids).toBe(original);
   d.viewport.scrollTop = 35;
   act(() => d.result.current.over(d.event(2), d.ids[2]!));
-  expect(d.result.current.ids).toEqual([d.ids[1], d.ids[2], d.ids[0]]);
+  expect(d.result.current.ids).toBe(original);
   act(() => expect(d.result.current.drop(d.event(2))).toBe(true));
   expect(d.store.get(dockCommandsAtom)).toEqual([d.ids[1], d.ids[2], d.ids[0]]);
 });

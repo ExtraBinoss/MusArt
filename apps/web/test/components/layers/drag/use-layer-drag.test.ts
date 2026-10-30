@@ -78,7 +78,7 @@ test("native drag feedback is owned through restart, Escape, dragend, pagehide a
 });
 
 test("a subsequently rejected native dragstart clears its own feedback without canceling a replacement drag", async () => {
-  const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+  const warn = vi.spyOn(console, "error").mockImplementation(() => {});
   const d = fixture(),
     before = d.engine.getSnapshot();
   act(() => d.result.current.start(d.event, d.rectangle));
@@ -284,7 +284,7 @@ test("a stale panel cannot start a new drag or keep previewing after an authorit
   expect(active.result.current.target).toBeNull();
 });
 
-test("native autoscroll updates a stationary-pointer target while Motion-only movement keeps insertion intent", () => {
+test("native target changes follow actual rows and scroll without changing document state", () => {
   const d = fixture(),
     original = d.engine.getSnapshot();
   const tree = document.createElement("div");
@@ -299,9 +299,9 @@ test("native autoscroll updates a stationary-pointer target while Motion-only mo
   act(() => d.result.current.start(d.event, d.rectangle));
   act(() => d.result.current.over(first, d.text));
   expect(d.result.current.target?.id).toBe(d.text.id);
-  // Rows can move under the pointer during spring layout without a new drag intent.
+  // Each actual row becomes the destination immediately.
   act(() => d.result.current.over(next, d.image));
-  expect(d.result.current.target?.id).toBe(d.text.id);
+  expect(d.result.current.target?.id).toBe(d.image.id);
   // A real scroll changes which insertion is under the same pointer coordinates.
   tree.scrollTop = 40;
   act(() => d.result.current.over(next, d.image));
@@ -359,7 +359,7 @@ test("a rejected native image releases the controller and surfaces the real plat
 
 test("an unaccepted MusArt native dragover reports the missing session once without admitting files", () => {
   const d = fixture(),
-    warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    warn = vi.spyOn(console, "error").mockImplementation(() => {});
   const event = {
     ...d.event,
     defaultPrevented: false,

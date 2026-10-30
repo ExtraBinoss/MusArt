@@ -3,6 +3,8 @@ import { createDragAutoScroll } from "../../shared/scroll/drag-auto-scroll";
 import { getDropPosition } from "../drop-target";
 import { layerDragController } from "./controller";
 import { layerDragPreview } from "./drag-image";
+import { layerDragDiagnostics } from "./diagnostics";
+import { setDragCueAnchor } from "../../shared/dnd/session";
 
 export interface LayerDragPoint {
   x: number;
@@ -22,9 +24,8 @@ export function createLayerDragPresentation(engine: EnginePort) {
   function cueAt(row: HTMLElement | null) {
     const target = row?.closest<HTMLElement>("[data-layer-drop-id]") ?? row;
     if (cueTarget === target) return;
-    cueTarget?.removeAttribute("data-layer-drop-cue-target");
     cueTarget = target;
-    cueTarget?.setAttribute("data-layer-drop-cue-target", "true");
+    setDragCueAnchor(target);
   }
   let stopState: (() => void) | null = null;
   let version = 0;
@@ -89,7 +90,8 @@ export function createLayerDragPresentation(engine: EnginePort) {
       left = viewport?.scrollLeft ?? 0;
     if (
       previous &&
-      (previous.version === version || previous.targetId !== layer.id) &&
+      previous.version === version &&
+      previous.targetId === layer.id &&
       previous.point.x === input.x &&
       previous.point.y === input.y &&
       previous.point.alt === input.alt &&
@@ -107,26 +109,6 @@ export function createLayerDragPresentation(engine: EnginePort) {
     previous = { point: input, top, left, viewport, valid, version, targetId: layer.id };
     return valid;
   }
-  function retainIntent(
-    input: LayerDragPoint,
-    pageId: string | undefined,
-    nextViewport: HTMLElement | null,
-  ) {
-    const state = controller.read();
-    // Reordered rows move underneath the cursor. The existing six-pixel drag threshold
-    // also prevents tiny hand jitter from replacing an accepted insertion with that new row.
-    return !!(
-      previous?.valid &&
-      state?.target?.id === previous.targetId &&
-      pageId === state.pageId &&
-      nextViewport !== null &&
-      previous.viewport === nextViewport &&
-      Math.hypot(previous.point.x - input.x, previous.point.y - input.y) < 6 &&
-      previous.point.alt === input.alt &&
-      previous.top === nextViewport.scrollTop &&
-      previous.left === nextViewport.scrollLeft
-    );
-  }
   function hit() {
     if (!point || !controller.read()) return;
     if (ghost) ghost.style.transform = `translate3d(${point.x + 12}px,${point.y + 12}px,0)`;
@@ -136,6 +118,7 @@ export function createLayerDragPresentation(engine: EnginePort) {
     if (!row) {
       cueAt(null);
       controller.clear();
+      layerDragDiagnostics(engine).refuse("preview", "noLayerTarget");
       previous = null;
       return;
     }
@@ -143,7 +126,6 @@ export function createLayerDragPresentation(engine: EnginePort) {
     if (nextViewport) bindViewport(nextViewport);
     const id = row.dataset.layerDropId!,
       pageId = row.dataset.layerDropPageId;
-    if (retainIntent(point, pageId, nextViewport)) return;
     if (row.dataset.layerDropKind === "property") {
       cueAt(row);
       controller.clear({ id, reason: "property" });
@@ -219,9 +201,6 @@ export function createLayerDragPresentation(engine: EnginePort) {
       const valid = apply(row, layer, page, input);
       scroll?.update(input.x, input.y);
       return valid;
-    },
-    retainIntent(input: LayerDragPoint, pageId: string, node: HTMLElement) {
-      return retainIntent(input, pageId, node.closest<HTMLElement>("[data-layer-drag-viewport]"));
     },
     release,
     invalidate,

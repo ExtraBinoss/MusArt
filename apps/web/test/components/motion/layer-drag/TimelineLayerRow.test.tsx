@@ -61,7 +61,7 @@ it("retains its source DOM shell, shares target handlers and shows an explicit i
   const node = view.container.firstElementChild!;
   expect(node).toHaveAttribute("data-layer-reorder-source", "true");
   expect(node).toHaveAttribute("data-layer-drop-kind", "layer");
-  expect(screen.getByRole("status")).toHaveTextContent(
+  expect(screen.getByRole("status", { hidden: true })).toHaveTextContent(
     "Les calques animés doivent garder leur groupe",
   );
   fireEvent.dragOver(node);

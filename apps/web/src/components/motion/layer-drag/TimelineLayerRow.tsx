@@ -28,8 +28,7 @@ export function TimelineLayerRow({
   useRenderMetrics(node);
   useRowPosition(node, `${drag?.page.id ?? ""}:${row.key}`, top, !!drag?.moving, reduced);
   const target = row.kind === "layer" && drag?.target?.id === row.layer.id ? drag.target : null;
-  const rejected =
-    row.kind === "layer" && drag?.rejected?.id === row.layer.id ? drag.rejected : null;
+  const rejected = drag?.rejected?.id === row.layer.id ? drag.rejected : null;
   return (
     <div
       {...props}

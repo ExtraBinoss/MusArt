@@ -339,17 +339,6 @@ export function CanvasTimelineOverlay(props: CanvasTimelineOverlayProps) {
             );
       if (!label) return;
       const input = timelineLayerDragEvent(event, label);
-      if (
-        layerDragPresentation(engine).retainIntent(
-          { x: event.clientX, y: event.clientY, alt: event.altKey },
-          compositionId,
-          label,
-        )
-      ) {
-        if (event.type === "drop") props.drag.native.drop(input);
-        else props.drag.native.overTree(input);
-        return;
-      }
       if (row.kind !== "layer") props.drag.rejectProperty(input, row.layer.id);
       else if (event.type === "drop") props.drag.native.drop(input, row.layer);
       else props.drag.native.over(input, row.layer);

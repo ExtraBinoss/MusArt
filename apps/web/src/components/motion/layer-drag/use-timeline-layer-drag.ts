@@ -74,20 +74,7 @@ export function useTimelineLayerDrag(options: {
     [page, collapsed, options.chosenOccurrences],
   );
   const moving = native.dragging !== null && native.pageId === page.id;
-  const rows = useMemo(() => {
-    if (!moving) return canonical;
-    let hidden = collapsed;
-    if (native.target?.position === "inside" && collapsed.has(native.target.id)) {
-      const next = new Set(collapsed);
-      next.delete(native.target.id);
-      hidden = next;
-    }
-    return projectTimelineRows(
-      { ...page, layers: native.layers },
-      hidden,
-      options.chosenOccurrences,
-    );
-  }, [moving, canonical, page, collapsed, native.layers, native.target, options.chosenOccurrences]);
+  const rows = canonical;
   const controller = useMemo(() => layerDragController(engine), [engine]);
   const rejectProperty = useCallback(
     (event: DragEvent<HTMLElement>, id: string) => {

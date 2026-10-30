@@ -41,6 +41,7 @@ it("shares one semantic projection across views, commits once and preserves anim
   expect(d.controller.begin(d.owner, d.page(), "a", d.run)).toBe(true);
   expect(d.controller.preview(d.page(), d.layer("b"), "before")).toBe(true);
   const projection = d.controller.read();
+  expect(projection?.layers).toBe(d.page().layers);
   expect(d.controller.preview(d.page(), d.layer("b"), "before")).toBe(true);
   expect(d.controller.read()).toBe(projection);
   expect(updates).toHaveBeenCalledTimes(2);
@@ -155,4 +156,18 @@ it("keeps an original insertion and an existing identical alpha mask out of hist
   d.controller.preview(d.page(), d.layer("b"), "mask");
   expect(d.controller.finish("a")).toBe(false);
   expect(d.engine.getSnapshot()).toBe(masked);
+});
+
+it("returning to the stationary source clears the previous destination without committing", () => {
+  const d = fixture();
+  const before = d.engine.getSnapshot();
+  const execute = vi.spyOn(d.engine, "execute");
+  d.controller.begin(d.owner, d.page(), "a", d.run);
+  d.controller.preview(d.page(), d.layer("b"), "before");
+  expect(d.controller.read()?.layers).toBe(d.page().layers);
+  d.controller.preview(d.page(), d.layer("a"), "after");
+  expect(d.controller.read()?.target).toBeNull();
+  expect(d.controller.finish("a")).toBe(false);
+  expect(d.engine.getSnapshot()).toBe(before);
+  expect(execute).not.toHaveBeenCalled();
 });

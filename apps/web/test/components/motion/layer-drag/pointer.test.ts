@@ -255,7 +255,7 @@ it("treats an invalid release as cancellation without adding history or retainin
 
 it("reports factual browser cancellation, lost capture and retired adapter ownership", () => {
   const d = fixture(),
-    warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    warn = vi.spyOn(console, "error").mockImplementation(() => {});
   d.send("pointerdown", 100);
   d.send("pointercancel", 100);
   expect(warn).toHaveBeenLastCalledWith(
