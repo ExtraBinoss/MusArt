@@ -25,6 +25,10 @@ vi.mock("@musart/render", async (importOriginal) => ({
     releasePresentation = gpu.releasePresentation;
   },
 }));
+const proxyActivity = expect.objectContaining({
+  read: expect.any(Function),
+  subscribe: expect.any(Function),
+});
 function result(width = 600, height = 500) {
   return { texture: new Texture(), width, height };
 }
@@ -296,6 +300,7 @@ describe("direct GPU preview ownership and scheduling", () => {
         motionFrame: undefined,
         mediaMode: "preview",
         signal: expect.any(AbortSignal),
+        videoProxy: proxyActivity,
       },
     );
     expect(density).toHaveBeenLastCalledWith(0.5, 96, 70);
@@ -314,6 +319,7 @@ describe("direct GPU preview ownership and scheduling", () => {
         motionFrame: undefined,
         mediaMode: "preview",
         signal: expect.any(AbortSignal),
+        videoProxy: proxyActivity,
       },
     );
     expect(density).toHaveBeenLastCalledWith(4, 768, 560);
@@ -347,6 +353,7 @@ describe("direct GPU preview ownership and scheduling", () => {
         motionFrame: undefined,
         mediaMode: "preview",
         signal: expect.any(AbortSignal),
+        videoProxy: proxyActivity,
       },
     );
     expect(d.renderer.domElement.dataset.rendererReady).toBe("true");

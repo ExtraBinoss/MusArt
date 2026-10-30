@@ -1,5 +1,12 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import { createLayer, type VideoAsset } from "@musart/core";
+import {
+  createLayer,
+  createPage,
+  createProject,
+  compileMotion,
+  evaluateMotion,
+  type VideoAsset,
+} from "@musart/core";
 import { GpuResourceCache } from "../../../src/cache/GpuResourceCache";
 import { MediaVideoSources } from "../../../src/sources/media/video-sources";
 import { makeGpuRenderer } from "../../gpu-fixture";
@@ -13,6 +20,9 @@ const fake = vi.hoisted(() => ({
   }),
   clear: vi.fn(),
   factory: vi.fn(),
+  cursorFactory: vi.fn(),
+  proxyRead: vi.fn(),
+  retire: vi.fn(async () => {}),
 }));
 vi.mock("../../../src/sources/video/source", () => ({
   createVideoFrameSource: (...args: unknown[]) => {
@@ -32,7 +42,29 @@ vi.mock("../../../src/sources/video/rasterizer", () => ({
     clear = fake.clear;
     dispose = async () => {};
     retainStreams = async () => {};
+    retireStream = fake.retire;
     settle = async () => {};
+    stats = () => ({});
+  },
+}));
+vi.mock("../../../src/sources/video/proxy/cache", () => ({
+  VideoProxyCache: class {
+    configure() {}
+    retain() {}
+    read = fake.proxyRead;
+    stats = () => ({});
+    dispose() {}
+  },
+}));
+vi.mock("../../../src/sources/video/playback", () => ({
+  VideoPlaybackCursor: class {
+    constructor(options: unknown) {
+      fake.cursorFactory(options);
+    }
+    metadata = fake.metadata;
+    requestFrame = fake.reads;
+    dispose = fake.dispose;
+    readTime = () => null;
     stats = () => ({});
   },
 }));
@@ -63,6 +95,7 @@ const lease = () =>
   }) as unknown as VideoFrameLease;
 beforeEach(() => {
   vi.clearAllMocks();
+  fake.proxyRead.mockReset();
   fake.metadata.mockResolvedValue({ width: 2, height: 2 });
   fake.dispose.mockResolvedValue(undefined);
   fake.reads.mockImplementation(async () => lease());
@@ -123,7 +156,7 @@ it("enforces active-original budgets before any media read and restores leases o
     sources = new MediaVideoSources(renderer, cache, 64);
   const resolver = { resolveOriginal: vi.fn(async () => new Blob(["v"])) },
     assets = Object.fromEntries(
-      Array.from({ length: 5 }, (_, i) => [
+      Array.from({ length: 9 }, (_, i) => [
         `video${i}`,
         { ...asset, id: `video${i}`, originalId: `original${i}` },
       ]),
@@ -167,6 +200,130 @@ it("never releases a native frame whose already-submitted GPU copy becomes stale
   ).rejects.toMatchObject({ name: "AbortError" });
   expect(borrowed.release).not.toHaveBeenCalled();
   borrowed.release();
+  await sources.dispose();
+  cache.clear();
+});
+
+it("plays five originals with one shared decoded budget and no duplicate poster decoders", async () => {
+  const { renderer } = makeGpuRenderer(),
+    cache = new GpuResourceCache(),
+    sources = new MediaVideoSources(renderer, cache, 64);
+  const resolver = { resolveOriginal: vi.fn(async () => new Blob(["v"])) };
+  const assets = Object.fromEntries(
+    Array.from({ length: 5 }, (_, i) => [`v${i}`, { ...asset, id: `v${i}`, originalId: `o${i}` }]),
+  );
+  await sources.prepare(
+    "page",
+    Object.keys(assets).map((id) => ({ ...layer, id, assetId: id })),
+    assets,
+    { mediaResolver: resolver, mediaMode: "playback" },
+  );
+  expect(fake.factory).not.toHaveBeenCalled();
+  expect(fake.cursorFactory).toHaveBeenCalledTimes(5);
+  expect(
+    new Set(fake.cursorFactory.mock.calls.map(([options]) => options.decodedBudget)).size,
+  ).toBe(1);
+  expect(resolver.resolveOriginal).toHaveBeenCalledTimes(5);
+  await sources.dispose();
+  expect(fake.dispose).toHaveBeenCalledTimes(5);
+  cache.clear();
+});
+it("uses session proxies only for explicit interactive previews and returns to originals for exact rendering", async () => {
+  const { renderer } = makeGpuRenderer(),
+    cache = new GpuResourceCache(),
+    sources = new MediaVideoSources(renderer, cache, 64);
+  const original = new Blob(["v"]),
+    proxyBlob = new Blob(["p"]);
+  const resolver = { resolveOriginal: async () => original },
+    videoProxy = { read: () => false, subscribe: () => () => {} };
+  const proxyAsset = {
+    ...asset,
+    originalId: "private-proxy",
+    contentRevision: "proxy-profile",
+    width: 1,
+    height: 1,
+  };
+  fake.proxyRead.mockReturnValue({ asset: proxyAsset, original: proxyBlob });
+  fake.metadata.mockResolvedValueOnce({ width: 1, height: 1 });
+  await sources.prepare(
+    "page",
+    [layer],
+    { video: asset },
+    { mediaResolver: resolver, videoProxy, mediaMode: "preview" },
+  );
+  expect(fake.factory.mock.calls[0]![0].original).toBe(proxyBlob);
+  await sources.prepare(
+    "page",
+    [layer],
+    { video: asset },
+    { mediaResolver: resolver, videoProxy, mediaMode: "exact" },
+  );
+  expect(fake.proxyRead).toHaveBeenCalledOnce();
+  expect(fake.factory.mock.calls[1]![0].original).toBe(original);
+  expect(fake.retire).toHaveBeenCalledWith("page:layer");
+  expect((sources.image(layer.id).image as { width: number }).width).toBe(2);
+  await sources.dispose();
+  cache.clear();
+});
+
+it("pins the initial playback variant across late proxy completion or cache eviction until preview", async () => {
+  const { renderer } = makeGpuRenderer(),
+    cache = new GpuResourceCache(),
+    sources = new MediaVideoSources(renderer, cache, 64);
+  const resolver = { resolveOriginal: async () => new Blob(["v"]) },
+    videoProxy = { read: () => false, subscribe: () => () => {} };
+  const page = createPage({
+    id: "page",
+    layers: [layer],
+    motion: {
+      version: 1,
+      initialized: true,
+      mode: "motion",
+      duration: { value: 2, rate: 1 },
+      frameRate: { numerator: 30, denominator: 1 },
+      tracks: [
+        {
+          id: "track",
+          layerId: layer.id,
+          start: { value: 0, rate: 1 },
+          end: { value: 2, rate: 1 },
+          properties: [],
+          media: { sourceIn: { value: 0, rate: 1 }, mute: true, volume: 1 },
+        },
+      ],
+    },
+  });
+  const program = compileMotion(createProject({ pages: [page], assets: { video: asset } }), {
+    compositionId: "page",
+  });
+  const proxy = {
+    asset: { ...asset, originalId: "proxy", width: 1, height: 1 },
+    original: new Blob(["p"]),
+  };
+  const prepare = (time: number, mode: "preview" | "playback") =>
+    sources.prepare(
+      "page",
+      [layer],
+      { video: asset },
+      {
+        mediaResolver: resolver,
+        videoProxy,
+        mediaMode: mode,
+        motionFrame: evaluateMotion(program, { value: time, rate: 1 }),
+      },
+    );
+  fake.proxyRead.mockReturnValue(undefined);
+  await prepare(0, "playback");
+  fake.proxyRead.mockReturnValue(proxy);
+  await prepare(1, "playback");
+  expect(fake.cursorFactory).toHaveBeenCalledOnce(); // A late proxy cannot replace the original mid-Play.
+  fake.metadata.mockResolvedValue({ width: 1, height: 1 });
+  await prepare(0, "preview");
+  await prepare(0, "playback");
+  fake.proxyRead.mockReturnValue(undefined); // Ready-cache eviction cannot replace an active proxy either.
+  await prepare(1, "playback");
+  expect(fake.cursorFactory).toHaveBeenCalledTimes(2);
+  expect(fake.cursorFactory.mock.calls[1]![0].original).toBe(proxy.original);
   await sources.dispose();
   cache.clear();
 });

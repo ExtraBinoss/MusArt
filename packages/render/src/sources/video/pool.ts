@@ -1,5 +1,6 @@
 import { addMotionTime, compareMotionTime, type MotionTime } from "@musart/core";
 import { VideoSourceError } from "./errors";
+import type { VideoDecodedBudget } from "./budgets";
 import type {
   DecodedVideoFrame,
   VideoFrameLease,
@@ -24,9 +25,26 @@ export class VideoFramePool {
 
   private readonly identity: VideoSourceIdentity;
   private readonly limits: VideoSourceBudgets;
-  constructor(identity: VideoSourceIdentity, limits: VideoSourceBudgets) {
+  constructor(
+    identity: VideoSourceIdentity,
+    limits: VideoSourceBudgets,
+    private readonly aggregate?: VideoDecodedBudget,
+  ) {
     this.identity = Object.freeze({ ...identity });
     this.limits = Object.freeze({ ...limits });
+  }
+
+  private total(): number {
+    return this.cachedBytes + this.heldBytes + this.reservations;
+  }
+  private account(): void {
+    this.aggregate?.resize(this, this.total());
+  }
+  private fits(additional: number): boolean {
+    return (
+      this.total() + additional <= this.limits.maxDecodedBytes &&
+      (this.aggregate?.fits(this, this.total() + additional) ?? true)
+    );
   }
 
   stats() {
@@ -40,16 +58,8 @@ export class VideoFramePool {
   }
 
   private fit(additional: number): void {
-    while (
-      this.cache.size &&
-      this.cachedBytes + this.heldBytes + this.reservations + additional >
-        this.limits.maxDecodedBytes
-    )
-      this.evict();
-    if (
-      this.cachedBytes + this.heldBytes + this.reservations + additional >
-      this.limits.maxDecodedBytes
-    )
+    while (this.cache.size && !this.fits(additional)) this.evict();
+    if (!this.fits(additional))
       throw new VideoSourceError(
         "budgetExceeded",
         "Video decoded-frame budget is exhausted by active consumers.",
@@ -64,6 +74,7 @@ export class VideoFramePool {
     const first = this.cache.entries().next().value!;
     this.cache.delete(first[0]);
     this.cachedBytes -= first[1].bytes;
+    this.account();
     first[1].decoded.frame.close();
   }
 
@@ -74,11 +85,13 @@ export class VideoFramePool {
     const bytes = frameBytes * 4;
     this.fit(bytes);
     this.reservations += bytes;
+    this.account();
     let released = false;
     return () => {
       if (!released) {
         released = true;
         this.reservations -= bytes;
+        this.account();
       }
     };
   }
@@ -95,15 +108,18 @@ export class VideoFramePool {
       if (!this.covers(cached.decoded, time)) continue;
       this.cache.delete(key);
       this.cachedBytes -= cached.bytes;
+      this.account();
       try {
         this.fit(cached.bytes * 2);
         const frame = cached.decoded.frame.clone();
         this.cache.set(key, cached);
         this.cachedBytes += cached.bytes;
+        this.account();
         return this.lease({ ...cached.decoded, frame }, cached.bytes, requestedTime);
       } catch (error) {
         this.cache.set(key, cached);
         this.cachedBytes += cached.bytes;
+        this.account();
         throw error;
       }
     }
@@ -128,12 +144,14 @@ export class VideoFramePool {
       if (previous) {
         this.cache.delete(key);
         this.cachedBytes -= previous.bytes;
+        this.account();
         previous.decoded.frame.close();
       }
       this.fit(bytes * 2);
       const cloned = decoded.frame.clone();
       this.cache.set(key, { decoded, bytes });
       this.cachedBytes += bytes;
+      this.account();
       return this.lease({ ...decoded, frame: cloned }, bytes, requestedTime);
     } catch (error) {
       decoded.frame.close();
@@ -148,6 +166,7 @@ export class VideoFramePool {
   ): VideoFrameLease {
     this.borrowed++;
     this.heldBytes += bytes;
+    this.account();
     let released = false;
     return Object.freeze({
       ...this.identity,
@@ -159,6 +178,7 @@ export class VideoFramePool {
         decoded.frame.close();
         this.borrowed--;
         this.heldBytes -= bytes;
+        this.account();
         if (!this.borrowed) {
           for (const resolve of this.drained) resolve();
           this.drained = [];

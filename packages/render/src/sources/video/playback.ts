@@ -53,7 +53,7 @@ export class VideoPlaybackCursor {
         "budgetExceeded",
         "Invalid playback source identity or resource bounds.",
       );
-    this.pool = new VideoFramePool(options, this.limits);
+    this.pool = new VideoFramePool(options, this.limits, options.decodedBudget);
     this.backend = (options.backendFactory ?? createMediabunnyVideoBackend)(
       options.original,
       this.limits.maxSourceCacheBytes,
@@ -73,6 +73,9 @@ export class VideoPlaybackCursor {
   }
   readTime(): MotionTime | null {
     return this.previous;
+  }
+  metadata(): Promise<VideoSourceMetadata> {
+    return this.metadataPromise;
   }
   stats() {
     return {

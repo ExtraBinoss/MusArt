@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { VideoFramePool } from "../../../src/sources/video/pool";
+import { VideoDecodedBudget } from "../../../src/sources/video/budgets";
 import type { VideoSourceBudgets } from "../../../src/sources/video/model";
 import { decoded, FakeFrame } from "./fixtures";
 
@@ -12,6 +13,30 @@ const limits: VideoSourceBudgets = {
   maxPendingExact: 2,
 };
 const identity = { assetId: "original", contentRevision: "sha-1" };
+
+test("shares one compositor budget across decoder reservations and leases until native consumers release them", async () => {
+  const budget = new VideoDecodedBudget(96),
+    frames: FakeFrame[] = [];
+  const a = new VideoFramePool(identity, limits, budget),
+    b = new VideoFramePool(identity, limits, budget);
+  const release = a.reserveDecoder(16);
+  const first = b.adopt(decoded(frames), { value: 0, rate: 1 }, true);
+  expect(budget.stats().bytes).toBe(96);
+  expect(() => a.adopt(decoded(frames), { value: 0, rate: 1 }, false)).toThrow("budget");
+  expect(frames.at(-1)!.closed).toBe(true);
+  await a.close();
+  let drained = false;
+  const close = b.close().then(() => {
+    drained = true;
+  });
+  await Promise.resolve();
+  expect(drained).toBe(false);
+  expect(budget.stats().bytes).toBe(80);
+  first.release();
+  await close;
+  release();
+  expect(budget.stats()).toMatchObject({ bytes: 0, pools: 0, peakBytes: 96, maxBytes: 96 });
+});
 
 test("bounds the LRU and keeps borrowed frames alive after cache eviction/close", async () => {
   const frames: FakeFrame[] = [];

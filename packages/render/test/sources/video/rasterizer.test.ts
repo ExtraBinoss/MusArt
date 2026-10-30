@@ -138,3 +138,26 @@ it("rejects actual presentation dimensions beyond the device limit before any GP
   await rasterizer.dispose();
   target.dispose();
 });
+it("fences the previous composition before retiring old-size proxy upload textures", async () => {
+  const { renderer } = makeGpuRenderer(),
+    reserveBytes = vi.fn();
+  const rasterizer = new VideoRasterizer(renderer, { reserveBytes }),
+    target = new RenderTarget(2, 2);
+  await rasterizer.render(lease(), target, "clip");
+  await rasterizer.settle();
+  const fence = deferred<void>();
+  vi.mocked(settleVideoUpload).mockReturnValueOnce(fence.promise);
+  let retired = false;
+  const retirement = rasterizer.retireStream("clip").then(() => {
+    retired = true;
+  });
+  await Promise.resolve();
+  expect(retired).toBe(false);
+  expect(rasterizer.stats().textureBytes).toBe(32);
+  fence.resolve();
+  await retirement;
+  expect(rasterizer.stats()).toMatchObject({ streams: 0, slots: 0, textureBytes: 0, pending: 0 });
+  expect(reserveBytes).toHaveBeenLastCalledWith(0);
+  await rasterizer.dispose();
+  target.dispose();
+});

@@ -13,14 +13,14 @@ import { texture } from "three/tsl";
 import { createVideoFrameSource } from "../../../packages/render/src/sources/video/source";
 import { VideoFrameTextureOwner } from "../../../packages/render/src/sources/video/texture";
 
-export async function createVideoFixture(count = 3) {
+export async function createVideoFixture(count = 3, width = 64, height = 64) {
   const canvas = document.createElement("canvas");
-  canvas.width = 64;
-  canvas.height = 64;
+  canvas.width = width;
+  canvas.height = height;
   const context = canvas.getContext("2d")!;
   const quality = new Quality("high");
-  const codec = (await canEncodeVideo("avc", { width: 64, height: 64, quality })) ? "avc" : "vp8";
-  if (!(await canEncodeVideo(codec, { width: 64, height: 64, quality })))
+  const codec = (await canEncodeVideo("avc", { width, height, quality })) ? "avc" : "vp8";
+  if (!(await canEncodeVideo(codec, { width, height, quality })))
     throw new Error("No native fixture encoder is available");
   const target = new BufferTarget();
   const output = new Output({
@@ -37,7 +37,7 @@ export async function createVideoFixture(count = 3) {
       durations = count === 3 ? [0.25, 0.5, 0.75] : times.map(() => 1 / 30);
     for (let index = 0; index < times.length; index++) {
       context.fillStyle = ["#e02020", "#20d040", "#2020e0"][index % 3]!;
-      context.fillRect(0, 0, 64, 64);
+      context.fillRect(0, 0, width, height);
       await source.add(times[index]!, durations[index]!, {
         keyFrame: count === 3 || index % 60 === 0,
       });

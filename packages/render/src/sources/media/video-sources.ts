@@ -1,4 +1,7 @@
 import { VideoSourceError } from "../video/errors";
+import { VideoDecodedBudget, VIDEO_MAX_STREAMS } from "../video/budgets";
+import type { VideoProxy } from "../video/proxy/model";
+import { VideoProxyCache } from "../video/proxy/cache";
 import {
   addMotionTime,
   assetOriginalIdentity,
@@ -26,17 +29,19 @@ interface RasterFrame {
   readonly stamp: string;
 }
 interface SourceEntry {
-  readonly source: VideoFrameSource;
+  source: VideoFrameSource | null;
+  sourceIdentity: string;
+  playbackProxy?: VideoProxy | null;
   readonly original: Blob;
 }
-const MAX_ACTIVE_ORIGINALS = 4;
+const MAX_ACTIVE_ORIGINALS = VIDEO_MAX_STREAMS;
 function traceSpan(name: string, start: number): void {
   if (typeof performance.measure !== "function") return;
   performance.measure(name, { start, end: performance.now() });
   performance.clearMeasures(name); // The tracing event survives; runtime entry buffers stay bounded.
 }
 
-/** Bounded original-only source ownership, with native frames copied once into retained GPU targets. */
+/** Bounded original/proxy source ownership, with native frames copied once into retained GPU targets. */
 export class MediaVideoSources {
   uploads = 0;
   private readonly timings = {
@@ -63,6 +68,8 @@ export class MediaVideoSources {
     traceSpan(`musart.video.${phase}:${id}`, start);
   }
   private readonly sources = new Map<string, SourceEntry>();
+  private readonly decodedBudget = new VideoDecodedBudget();
+  private readonly proxies = new VideoProxyCache();
   private readonly playback = new Map<string, { identity: string; cursor: VideoPlaybackCursor }>();
   private readonly frames = new WeakMap<LayerTargets, RasterFrame>();
   private readonly prepared = new Map<string, { texture: Texture; stamp: string }>();
@@ -81,31 +88,46 @@ export class MediaVideoSources {
     if (options.canRender && !options.canRender())
       throw new DOMException("Stale video rendering was rejected.", "AbortError");
   }
-  private async source(asset: VideoAsset, options: RenderOptions): Promise<VideoFrameSource> {
+  private async original(asset: VideoAsset, options: RenderOptions): Promise<SourceEntry> {
     const identity = assetOriginalIdentity(asset),
       existing = this.sources.get(identity);
-    if (existing) return existing.source;
+    if (existing) return existing;
     if (!options.mediaResolver)
       throw new VideoSourceError(
         "VIDEO_ORIGINAL_MISSING",
         "Video rendering requires an original media resolver.",
       );
     if (this.sources.size >= MAX_ACTIVE_ORIGINALS)
-      throw Error("The active composition exceeds its four-original decoder budget.");
-    const resolveStarted = performance.now();
+      throw Error("The active composition exceeds its eight-original decoder budget.");
+    const started = performance.now();
     const original = await options.mediaResolver.resolveOriginal(asset, { signal: options.signal });
-    this.timings.resolveMs += performance.now() - resolveStarted;
-    this.record("resolve", resolveStarted, asset.id, options.profileVideo);
+    this.timings.resolveMs += performance.now() - started;
+    this.record("resolve", started, asset.id, options.profileVideo);
     this.current(options);
     if (!(original instanceof Blob) || original.size !== asset.byteLength)
       throw new VideoSourceError(
         "VIDEO_ORIGINAL_MISSING",
         "Video original size does not match its immutable description.",
       );
+    const entry: SourceEntry = { source: null, sourceIdentity: "", original };
+    this.sources.set(identity, entry);
+    return entry;
+  }
+  private async source(
+    asset: VideoAsset,
+    original: Blob,
+    entry: SourceEntry,
+    options: RenderOptions,
+  ): Promise<VideoFrameSource> {
+    const identity = assetOriginalIdentity(asset);
+    if (entry.source && entry.sourceIdentity === identity) return entry.source;
+    await entry.source?.dispose();
+    entry.source = null;
     const source = createVideoFrameSource({
       assetId: asset.id,
       contentRevision: asset.contentRevision,
       original,
+      decodedBudget: this.decodedBudget,
       budgets: {
         maxCachedFrames: 2,
         maxDecodedBytes: 96 * 1024 * 1024,
@@ -113,18 +135,18 @@ export class MediaVideoSources {
         maxOpenBackends: 1,
       },
     });
-    this.sources.set(identity, { source, original });
     try {
-      const metadataStarted = performance.now();
-      const metadata = await source.metadata();
-      this.timings.metadataMs += performance.now() - metadataStarted;
-      this.record("metadata", metadataStarted, asset.id, options.profileVideo);
+      const started = performance.now(),
+        metadata = await source.metadata();
+      this.timings.metadataMs += performance.now() - started;
+      this.record("metadata", started, asset.id, options.profileVideo);
       this.current(options);
       if (metadata.width !== asset.width || metadata.height !== asset.height)
         throw Error("Video display dimensions differ from their stored description.");
+      entry.source = source;
+      entry.sourceIdentity = identity;
       return source;
     } catch (error) {
-      this.sources.delete(identity);
       await source.dispose();
       throw error;
     }
@@ -138,6 +160,10 @@ export class MediaVideoSources {
   ): Promise<void> {
     this.current(options);
     this.prepared.clear();
+    this.proxies.configure(
+      !!options.videoProxy && options.mediaMode !== "exact",
+      options.videoProxy,
+    );
     if (options.motionFrame && options.motionFrame.compositionId !== pageId)
       throw Error("Video frame plan belongs to another composition.");
     const required = new Set(
@@ -149,6 +175,7 @@ export class MediaVideoSources {
           return assetOriginalIdentity(asset);
         }),
     );
+    this.proxies.retain(required);
     await this.rasterizer?.retainStreams(
       new Set(
         layers.filter((layer) => layer.kind === "video").map((layer) => `${pageId}:${layer.id}`),
@@ -160,7 +187,7 @@ export class MediaVideoSources {
         : [],
     );
     if (playing.size > MAX_ACTIVE_ORIGINALS)
-      throw Error("The active composition exceeds its four-stream playback decoder budget.");
+      throw Error("The active composition exceeds its eight-stream playback decoder budget.");
     for (const [key, entry] of this.playback) {
       if (this.resolver === options.mediaResolver && playing.has(key)) continue;
       this.playback.delete(key);
@@ -169,11 +196,16 @@ export class MediaVideoSources {
     for (const [identity, entry] of this.sources) {
       if (this.resolver === options.mediaResolver && required.has(identity)) continue;
       this.sources.delete(identity);
-      await entry.source.dispose();
+      await entry.source?.dispose();
     }
+    if (options.mediaMode === "playback")
+      for (const entry of this.sources.values()) {
+        await entry.source?.dispose();
+        entry.source = null;
+      }
     this.resolver = options.mediaResolver;
     if (required.size > MAX_ACTIVE_ORIGINALS)
-      throw Error("The active composition exceeds its four-original decoder budget.");
+      throw Error("The active composition exceeds its eight-original decoder budget.");
     const requests = new Map(
       options.motionFrame?.mediaRequests.map((request) => [request.layerId, request]),
     );
@@ -189,10 +221,28 @@ export class MediaVideoSources {
       let time = request?.sourceTime ?? asset.firstTimestamp;
       if (options.motionFrame?.terminalPreview && options.motionFrame.mode === "motion")
         time = subtractMotionTime(time, { value: 1, rate: 1_000_000 });
-      const identity = assetOriginalIdentity(asset),
+      const entry =
+        this.sources.get(assetOriginalIdentity(asset)) ?? (await this.original(asset, options));
+      let proxy =
+        options.videoProxy && options.mediaMode !== "exact"
+          ? this.proxies.read(asset, entry.original)
+          : undefined;
+      if (options.mediaMode === "playback") {
+        if (entry.playbackProxy === undefined) entry.playbackProxy = proxy ?? null;
+        proxy = entry.playbackProxy ?? undefined;
+      } else entry.playbackProxy = undefined;
+      const selected = proxy?.asset ?? asset,
+        original = proxy?.original ?? entry.original;
+      const identity = assetOriginalIdentity(selected),
         key = `video:${pageId}:${layer.id}`;
+      const shift = proxy
+        ? subtractMotionTime(asset.firstTimestamp, selected.firstTimestamp)
+        : { value: 0, rate: 1 };
+      const sampleTime = subtractMotionTime(time, shift);
       let target = this.cache.get<LayerTargets>(key);
       const cached = target && this.frames.get(target);
+      if (cached && cached.identity !== identity)
+        await this.rasterizer?.retireStream(`${pageId}:${layer.id}`);
       if (
         cached &&
         cached.identity === identity &&
@@ -201,12 +251,11 @@ export class MediaVideoSources {
       ) {
         this.timings.gpuReuses++;
         this.prepared.set(layer.id, {
-          texture: target!.target("source", asset.width, asset.height).texture,
+          texture: target!.target("source", selected.width, selected.height).texture,
           stamp: cached.stamp,
         });
         continue;
       }
-      const source = await this.source(asset, options);
       const decodeStarted = performance.now();
       this.timings.requests++;
       let lease: VideoFrameLease | null;
@@ -216,36 +265,43 @@ export class MediaVideoSources {
         if (
           entry &&
           (entry.identity !== identity ||
-            (entry.cursor.readTime() && compareMotionTime(time, entry.cursor.readTime()!) < 0))
+            (entry.cursor.readTime() &&
+              compareMotionTime(sampleTime, entry.cursor.readTime()!) < 0))
         ) {
           this.playback.delete(cursorKey);
           await entry.cursor.dispose();
           entry = undefined;
         }
         if (!entry) {
-          const original = this.sources.get(identity)!.original;
           entry = {
             identity,
             cursor: new VideoPlaybackCursor({
               assetId: asset.id,
-              contentRevision: asset.contentRevision,
+              contentRevision: selected.contentRevision,
               original,
+              decodedBudget: this.decodedBudget,
             }),
           };
           this.playback.set(cursorKey, entry);
         }
         try {
-          lease = await entry.cursor.requestFrame(time, { signal: options.signal });
+          const metadata = await entry.cursor.metadata();
+          if (metadata.width !== selected.width || metadata.height !== selected.height)
+            throw Error("Video playback dimensions differ from their immutable description.");
+          lease = await entry.cursor.requestFrame(sampleTime, { signal: options.signal });
         } catch (error) {
           this.playback.delete(cursorKey);
           await entry.cursor.dispose();
           throw error;
         }
-      } else
-        lease = await source.requestFrame(time, {
+      } else {
+        const source = await this.source(selected, original, entry, options);
+        lease = await source.requestFrame(sampleTime, {
           mode: options.mediaMode ?? "preview",
           signal: options.signal,
         });
+      }
+      if (lease && proxy) lease = { ...lease, timestamp: addMotionTime(lease.timestamp, shift) };
       this.timings.decodeMs += performance.now() - decodeStarted;
       this.record("decode", decodeStarted, layer.id, options.profileVideo);
       try {
@@ -260,8 +316,11 @@ export class MediaVideoSources {
       }
       let transferred = false;
       try {
-        this.cache.ensureCapacity(key, target.projectedBytes("source", asset.width, asset.height));
-        const output = target.target("source", asset.width, asset.height);
+        this.cache.ensureCapacity(
+          key,
+          target.projectedBytes("source", selected.width, selected.height),
+        );
+        const output = target.target("source", selected.width, selected.height);
         this.cache.synchronize(key);
         this.rasterizer ??= new VideoRasterizer(this.renderer, {
           reserveBytes: (bytes) => this.cache.reserveExternal("video-upload-textures", bytes),
@@ -317,7 +376,9 @@ export class MediaVideoSources {
   stats() {
     return {
       originals: this.sources.size,
-      sources: [...this.sources.values()].map((entry) => entry.source.stats()),
+      sources: [...this.sources.values()].map((entry) => entry.source?.stats() ?? null),
+      decoded: this.decodedBudget.stats(),
+      proxies: this.proxies.stats(),
       playback: [...this.playback].map(([layer, entry]) => ({ layer, ...entry.cursor.stats() })),
       passes: this.rasterizer?.passes ?? 0,
       timings: { ...this.timings },
@@ -335,6 +396,7 @@ export class MediaVideoSources {
   async dispose(): Promise<void> {
     if (this.closed) return;
     this.closed = true;
+    this.proxies.dispose();
     this.prepared.clear();
     const playback = [...this.playback.values()];
     this.playback.clear();
@@ -343,7 +405,7 @@ export class MediaVideoSources {
     const results = await Promise.allSettled([
       this.rasterizer?.dispose(),
       ...playback.map((entry) => entry.cursor.dispose()),
-      ...sources.map((entry) => entry.source.dispose()),
+      ...sources.map((entry) => entry.source?.dispose()),
     ]);
     const failures = results.filter(
       (result): result is PromiseRejectedResult => result.status === "rejected",

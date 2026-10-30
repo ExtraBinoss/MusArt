@@ -267,3 +267,5 @@ Fixtures cover every Gradient field and treatment, isolated constant-color frost
 | Reports                        | Reports and captures live under ignored `artifacts/reference-surfaces/`.                                                                                                                                                                                     |
 
 The eleven new procedural effects share the definition/settings/uniform contract documented in [effect authoring](effects/authoring.md). Per-effect visual references and decoded native results live in their own rendering documents. [Groups, masks and Display-P3 verification](effects/groups-p3-verification.md) covers every new type under nested transformed groups and a real layer mask on both backends. [Texture dimension verification](texture-limits.md) records actual device limits, rejected allocations, valid recovery and preserved prior pixels.
+
+Interactive video originals, automatic native proxies, shared decoded budgets and variant-switch ownership follow the [video preview contract](video-preview.md).

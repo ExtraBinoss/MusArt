@@ -6,6 +6,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Added generic, configurable idle video proxies with resumable Mediabunny conversion, native 960px previews and bounded session caches; audio and exports retain originals. Five-video playback now shares a decoded-memory budget, admits up to eight streams, avoids duplicate poster decoders and retires old upload textures safely. The five-1080p cohort completed 56.1 canvas compositions/s with proxies versus 21.1/s with originals (median of three runs); see `docs/performance/video-preview.md` for the workload and limits.
+
 - Stabilized the live timeline counter with fixed tabular width and readable playback precision while keeping exact editable times and imperative frame updates. Added configurable Ctrl/Cmd+Space playback from the canvas and timeline, with platform-aware keycaps and protected text entry.
 - Added one delegated named tooltip for layer effect/mask previews and expanded effect rows, keeping closed virtual rows free of per-attachment tooltip trees.
 

@@ -7,6 +7,7 @@ import {
 import { createMediabunnyVideoBackend } from "./backend";
 import { VideoSourceError, videoSourceFailure } from "./errors";
 import { VideoFramePool } from "./pool";
+import type { VideoDecodedBudget } from "./budgets";
 import type {
   DecodedVideoFrame,
   VideoDecodeBackend,
@@ -23,6 +24,7 @@ export interface VideoFrameSourceOptions extends VideoSourceIdentity {
   readonly budgets?: Partial<VideoSourceBudgets>;
   /** Injectable native boundary for focused lifecycle tests; production uses Mediabunny. */
   readonly backendFactory?: VideoDecodeBackendFactory;
+  readonly decodedBudget?: VideoDecodedBudget;
 }
 
 export interface VideoFrameRequestOptions {
@@ -102,6 +104,7 @@ export class VideoFrameSource {
     this.pool = new VideoFramePool(
       { assetId: options.assetId, contentRevision: options.contentRevision },
       this.limits,
+      options.decodedBudget,
     );
   }
 

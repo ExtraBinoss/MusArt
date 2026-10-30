@@ -1,0 +1,21 @@
+# Interactive video sources and proxies
+
+`MediaVideoSources` owns original resolution, optional presentation variants, decoded budgets and GPU uploads. Portable projects retain the original `VideoAsset`; proxy metadata and encoded bytes never enter the document, history, asset store or original resolver. The interactive canvas opts in through `RenderOptions.videoProxy`. Headless callers may provide the same activity contract and profile without depending on React or browser editor state. Exact rendering always ignores proxies. Audio and export continue resolving originals.
+
+## Conversion policy
+
+The session-local `VideoProxyCache` queues original identities (`originalId` plus `contentRevision`) and runs one reusable native worker. The immutable profile controls longest edge, bitrate, keyframe interval, per-result bytes, aggregate cached bytes and entry count. Defaults are 960 pixels, 1.2 Mbit/s, one-second GOP, 16 MiB per result, 64 MiB ready bytes and eight identities. Profile changes invalidate previous results and retire the old worker. Deletion, resolver retirement and disposal reject late work; failed conversions are recorded in source statistics and retain original playback without an automatic retry loop. Long sources that exceed the configured encoded-byte limit fall back to originals.
+
+Mediabunny `Conversion` resizes through its native video path, bakes orientation, discards the proxy audio track and preserves original cadence, including VFR. There is no forced frame-rate conversion or forced hardware decoder preference. AVC is preferred when the browser encoder supports it, with VP8 fallback. A bounded `StreamTarget` rejects out-of-budget writes before accepting them. Output metadata and duration are validated before admission. Source/proxy first-PTS differences are translated at the request/lease boundary; authored timing stays unchanged.
+
+The canvas activity adapter opens conversion after 180 ms of quiet time and closes it during pointer gestures, native dragging, wheel/key input, hidden tabs, playback and noncanonical previews. `Conversion.execute({pauseSignal})` cooperatively suspends an active conversion, retaining its encoded prefix; the same conversion resumes when idle. Explicit retirement terminates the worker. No idle RAF loop or periodic polling is installed. Completed proxies request an imperative canvas refresh. Playback keeps its initial source object until pause/preview, including through ready-cache eviction, avoiding mid-play decoder/profile switches. These active blobs follow the bounded stream lifetime separately from the ready-cache byte limit.
+
+## Resource ownership
+
+At most eight active original identities/playback streams/upload rings are admitted. Each source retains the existing 96 MiB local decoded limit, but all sources/cursors additionally share one 384 MiB decoded budget. It includes cached/borrowed frames and the existing four-frame decoder reservation; codec-private browser surfaces remain additional native overhead. GPU upload textures and retained layer targets remain charged to the existing GPU cache, independently of decoded-memory accounting. Playback opens its sequential cursor directly without a duplicate poster decoder. A variant switch fences the prior composition and retires old-size upload rings before allocating replacements. Native leases remain owned until actual GPU acknowledgements.
+
+This is bounded resource admission, not a guarantee that eight arbitrary 4K clips can play concurrently. Until preparation finishes, previews use originals; codec support, duration, source complexity and available memory still matter. Proxies are rebuilt per session and are not a persistent disk cache.
+
+## Mediabunny references
+
+The implementation follows the pinned 1.62.1 API and its official [conversion guide](https://mediabunny.dev/guide/converting-media-files), [conversion video options](https://mediabunny.dev/api/ConversionVideoOptions), [media sinks](https://mediabunny.dev/guide/media-sinks) and [VideoSampleSink API](https://mediabunny.dev/api/VideoSampleSink). Playback already used sequential `samples(start)` with latency optimization; the new work keeps that path and reduces the resolution entering it. See [the five-video measurements](../performance/video-preview.md) for native verification and limitations.

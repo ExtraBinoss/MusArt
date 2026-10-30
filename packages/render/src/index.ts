@@ -21,6 +21,8 @@ export type { FontResolver } from "./surface/text/fonts";
 export { MAX_FONT_BYTES } from "./surface/text/fonts";
 
 export type { MediaSourceResolver } from "./sources/media/model";
+export type { VideoProxyActivity } from "./sources/video/proxy/model";
+export type { VideoProxyProfile } from "./sources/video/proxy/profile";
 export { probeVideoOriginal } from "./sources/video/probe";
 export type { VideoOriginalProbe } from "./sources/video/probe";
 export { probeAudioOriginal } from "./sources/audio/probe";

@@ -19,6 +19,7 @@ import type { VideoFrameLease } from "./model";
 import { VideoFrameTextureOwner } from "./texture";
 import { videoOrientationMatrix } from "./orientation";
 import { settleVideoUpload } from "./settle";
+import { VIDEO_MAX_STREAMS } from "./budgets";
 interface Slot {
   readonly owner: VideoFrameTextureOwner;
   bytes: number;
@@ -34,7 +35,7 @@ interface RasterizerOptions {
   reserveBytes?: (bytes: number) => void;
 }
 const SLOTS_PER_STREAM = 3,
-  MAX_STREAMS = 4,
+  MAX_STREAMS = VIDEO_MAX_STREAMS,
   SAMPLE_LIMIT = 256;
 function sample(values: number[], value: number): void {
   values.push(value);
@@ -225,14 +226,19 @@ export class VideoRasterizer {
   }
   /** Called between serialized render jobs; inactive streams release only after their real acks. */
   async retainStreams(ids: ReadonlySet<string>): Promise<void> {
-    for (const [id, ring] of this.rings) {
-      if (ids.has(id)) continue;
-      await Promise.all(pendingUploads(ring));
-      await Promise.all(ring.map((slot) => slot.owner.dispose()));
-      this.textureBytes -= ring.reduce((sum, slot) => sum + slot.bytes, 0);
-      this.options.reserveBytes?.(this.textureBytes);
-      this.rings.delete(id);
-    }
+    for (const id of this.rings.keys()) if (!ids.has(id)) await this.retireStream(id);
+    this.assertOpen();
+  }
+  /** A proxy/profile switch retires all old-size owners before allocating the replacement ring. */
+  async retireStream(id: string): Promise<void> {
+    const ring = this.rings.get(id);
+    if (!ring) return;
+    await Promise.all(pendingUploads(ring));
+    await settleVideoUpload(this.renderer);
+    await Promise.all(ring.map((slot) => slot.owner.dispose()));
+    this.textureBytes -= ring.reduce((sum, slot) => sum + slot.bytes, 0);
+    this.options.reserveBytes?.(this.textureBytes);
+    this.rings.delete(id);
     this.assertOpen();
   }
   async settle(): Promise<void> {

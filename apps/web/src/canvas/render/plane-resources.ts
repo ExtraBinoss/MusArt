@@ -20,6 +20,7 @@ import {
 } from "three/webgpu";
 import { texture, uv } from "three/tsl";
 import { previewScale } from "./preview-quality";
+import { CanvasVideoProxyActivity } from "./video-proxy-activity";
 import { syncArtboardBackdrops } from "../artboards/backdrop-presentation";
 import { formatUiError } from "../../state/i18n/errors/format";
 import { errorDiagnostics } from "../../components/notifications/diagnostics";
@@ -53,6 +54,7 @@ interface PreviewRequest {
 const canvasOwners = new WeakMap<HTMLCanvasElement, PlaneResources>();
 /** Owns one display plane and a latest-only queue. GPU allocation begins at activation. */
 export class PlaneResources {
+  private videoProxyActivity: CanvasVideoProxyActivity | null = null;
   private readonly profileVideo = new URLSearchParams(location.search).get("profileVideo") === "1";
   readonly placeholder = new DataTexture(new Uint8Array(4), 1, 1, RGBAFormat);
   readonly sample: TextureNode<"vec4">;
@@ -131,6 +133,17 @@ export class PlaneResources {
   ): () => void {
     if (this.disposed) throw new Error("Aperçu GPU déjà libéré");
     this.users++;
+    this.videoProxyActivity ??= new CanvasVideoProxyActivity(() => {
+      const current = this.current;
+      if (!current || this.disposed || !this.users || current.playback) return;
+      this.submit(
+        { ...current.page },
+        current.assets,
+        current.presentation,
+        current.motionFrame,
+        false,
+      );
+    });
     canvasOwners.set(this.renderer.domElement, this);
     this.scene = scene;
     this.camera = camera;
@@ -192,6 +205,7 @@ export class PlaneResources {
     playback = false,
   ) {
     if (this.disposed || this.deviceLost) return;
+    this.videoProxyActivity?.setBlocked(playback || presentation?.canonical === false);
     this.current = {
       page,
       assets,
@@ -313,6 +327,7 @@ export class PlaneResources {
         mediaResolver: request.mediaResolver,
         motionFrame: request.motionFrame,
         mediaMode: request.playback ? "playback" : "preview",
+        ...(this.videoProxyActivity ? { videoProxy: this.videoProxyActivity } : {}),
         ...(this.profileVideo ? { profileVideo: true } : {}),
         signal: abort.signal,
         canRender: () => this.canPresent(request),
@@ -475,6 +490,8 @@ export class PlaneResources {
   dispose(): Promise<void> {
     if (this.disposal) return this.disposal;
     this.disposed = true;
+    this.videoProxyActivity?.dispose();
+    this.videoProxyActivity = null;
     this.activeAbort?.abort();
     this.stopDeviceEvents?.();
     this.stopDeviceEvents = null;
