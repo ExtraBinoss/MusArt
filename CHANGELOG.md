@@ -6,6 +6,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Placed each animation property's delete control beside its name and contextual info, keeping property ownership clear within Details.
+
 - Moved animation Details and property explanations into compact info tooltips, using a reusable contextual-help component with hover, keyboard-focus and tap access.
 
 - Unified dropdown and popover entrance scheduling so optional GPU thumbnail work yields during effect/adjustment menu openings, preserving genuine Radix focus and `asChild` ownership. Added native opening measurements and bounded nested-lifetime regressions; see `docs/performance/overlay-openings.md`.

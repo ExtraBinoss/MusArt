@@ -58,31 +58,31 @@ export function AnimationChannel({
         <div className="animation-channel-title">
           <strong>{name}</strong>
           <InfoTooltip label={t("aboutProperty", { name })}>{hint}</InfoTooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span tabIndex={lastChannel ? 0 : undefined}>
+                <Button
+                  type="button"
+                  size="icon-xs"
+                  variant="ghost"
+                  className="animation-delete-action"
+                  aria-label={t("removeProperty", { name })}
+                  disabled={lastChannel}
+                  onClick={() =>
+                    edit((preset) => {
+                      preset.channels.splice(index, 1);
+                    })
+                  }
+                >
+                  <Trash2 size={12} />
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              {lastChannel ? t("lastPropertyHint") : t("removeProperty", { name })}
+            </TooltipContent>
+          </Tooltip>
         </div>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span tabIndex={lastChannel ? 0 : undefined}>
-              <Button
-                type="button"
-                size="icon-xs"
-                variant="ghost"
-                className="animation-delete-action"
-                aria-label={t("removeProperty", { name })}
-                disabled={lastChannel}
-                onClick={() =>
-                  edit((preset) => {
-                    preset.channels.splice(index, 1);
-                  })
-                }
-              >
-                <Trash2 size={12} />
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            {lastChannel ? t("lastPropertyHint") : t("removeProperty", { name })}
-          </TooltipContent>
-        </Tooltip>
       </div>
       <div className="animation-channel-points">
         {points.map((point, pi) => {

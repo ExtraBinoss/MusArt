@@ -131,6 +131,17 @@ for (const reduced of [false, true])
     const explanation = "100% = original size. Smaller shrinks; larger grows.";
     await expect(page.getByText(explanation, { exact: true })).toHaveCount(0);
     const info = channel.getByRole("button", { name: "About Horizontal scale", exact: true });
+    const propertyName = channel.locator(".animation-channel-title strong");
+    const removeProperty = channel.getByRole("button", {
+      name: "Remove Horizontal scale animation",
+      exact: true,
+    });
+    const nameBox = await propertyName.boundingBox(),
+      removeBox = await removeProperty.boundingBox();
+    expect(removeBox!.x - (nameBox!.x + nameBox!.width)).toBeLessThan(40);
+    expect(
+      Math.abs(removeBox!.y + removeBox!.height / 2 - nameBox!.y - nameBox!.height / 2),
+    ).toBeLessThan(3);
     await info.focus();
     await expect(page.getByRole("tooltip", { name: explanation, exact: true })).toBeVisible();
     await page.keyboard.press("Escape");
