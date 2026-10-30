@@ -1,4 +1,5 @@
 import { registerFeatureTranslations } from "../../../state/i18n/feature-resources";
+import shadow from "./library/shadow/messages.json";
 import ripple from "./library/ripple/messages.json";
 import shatter from "./library/shatter/messages.json";
 import noise from "./library/noise/messages.json";
@@ -13,6 +14,7 @@ import receipt from "./library/receipt/messages.json";
 import pinkPhosphor from "./library/pink-phosphor/messages.json";
 /** UI resources stay on the web side; the core catalog only contains stable label keys. */
 export const libraryMessages = {
+  shadow,
   ripple,
   shatter,
   noise,

@@ -1,0 +1,20 @@
+{
+  "en": {
+    "name": "Drop shadow",
+    "parameter": {
+      "offsetX": "Horizontal offset",
+      "offsetY": "Vertical offset",
+      "radius": "Blur radius",
+      "shadowColor": "Shadow color"
+    }
+  },
+  "fr": {
+    "name": "Ombre portée",
+    "parameter": {
+      "offsetX": "Décalage horizontal",
+      "offsetY": "Décalage vertical",
+      "radius": "Rayon du flou",
+      "shadowColor": "Couleur de l’ombre"
+    }
+  }
+}

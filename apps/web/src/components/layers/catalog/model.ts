@@ -55,6 +55,7 @@ export const EFFECT_FAMILY = {
   "bit-dither": "texture",
   receipt: "retro",
   "pink-phosphor": "retro",
+  shadow: "light",
   transition: "motion",
 } as const satisfies Record<EffectType, EffectFamily>;
 

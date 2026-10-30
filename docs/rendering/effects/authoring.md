@@ -9,7 +9,7 @@
 | Imported settings | Imported settings reject unknown names, wrong types and out-of-range values.                                                                                                                                |
 | Uniform updates   | Scoped values are resolved once per uniform update, with stable uniform identities; choice values use their declared option index and colors use encoded working RGB.                                       |
 
-Definitions also declare whether raw treatment coverage is preserved or may be reduced. Preserving builders retain the source-alpha graph directly; ink opacity and transparent cuts declare reduction and have native default/partial-cutout witnesses. Optional Porter-Duff compositing remains a separate operation.
+Definitions declare whether raw treatment coverage is preserved, reduced or expanded. Blur and Drop shadow explicitly expand their GPU transport bounds; [their contract](shadow-blur.md) describes margin admission, premultiplied sampling and mask mapping. Preserving builders retain the source-alpha graph directly; ink opacity and transparent cuts declare reduction and have native default/partial-cutout witnesses. Optional Porter-Duff compositing remains a separate operation.
 
 ### Density, seeds and time
 

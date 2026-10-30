@@ -1,4 +1,4 @@
-import { Matrix3, Texture, Vector2, type TextureNode } from "three/webgpu";
+import { Matrix3, Texture, Vector2, Vector4, type TextureNode } from "three/webgpu";
 import { clamp, dot, max, mix, step, texture, uniform, uv, vec2, vec3, vec4 } from "three/tsl";
 
 import { textureUv } from "./uv";
@@ -25,16 +25,24 @@ export function copyControls() {
     normalize: uniform(0),
     premultiply: uniform(0),
     flipY: uniform(0),
+    region: uniform(new Vector4(0, 0, 1, 1)),
   };
 }
 export function copyNode(controls: ReturnType<typeof copyControls>) {
-  const sample = controls.source.sample(textureUv(controls.flipY));
+  const coord = uv().mul(controls.region.zw).add(controls.region.xy);
+  const inside = step(0, coord.x).mul(step(coord.x, 1)).mul(step(0, coord.y)).mul(step(coord.y, 1));
+  const sample = controls.source.sample(
+    vec2(
+      clamp(coord.x, 0, 1),
+      mix(clamp(coord.y, 0, 1), clamp(coord.y, 0, 1).oneMinus(), controls.flipY),
+    ),
+  );
   return vec4(
     mix(sample.rgb, sample.rgb.div(max(sample.a, 0.000001)), controls.normalize).mul(
       mix(1, sample.a, controls.premultiply),
     ),
     sample.a,
-  );
+  ).mul(inside);
 }
 export function maskControls() {
   return {

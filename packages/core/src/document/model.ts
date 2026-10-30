@@ -25,6 +25,7 @@ export type EffectType =
   | "contrast"
   | "grayscale"
   | "blur"
+  | "shadow"
   | "saturation"
   | "hue"
   | "exposure"

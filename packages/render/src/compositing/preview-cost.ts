@@ -13,7 +13,8 @@ import {
   primitiveCapacity,
 } from "./primitives/attributes";
 import { groupViewport } from "./group-viewport";
-import { gradientStages } from "../effects/gradient/pipeline";
+import { effectStages } from "../effects/pipeline";
+import { effectFootprint } from "../effects/shared/footprint";
 import { rasterExtent } from "./types";
 import { maskLayerMapping } from "./mask-binding";
 
@@ -87,7 +88,7 @@ export function estimatePreviewCost(
     const key = `${l.id}:${density}:${window?.key ?? "full"}`;
     if (seen.has(key)) return;
     seen.add(key);
-    const w = rasterExtent(l.width, density),
+    let w = rasterExtent(l.width, density),
       h = rasterExtent(l.height, density);
     if (l.kind === "group") children(l.id, l.width, l.height, density, fixed, window);
     else if (l.kind !== "image" && l.kind !== "video") target(w, h, fixed);
@@ -103,14 +104,16 @@ export function estimatePreviewCost(
     }
     const effects = l.effects.filter((e) => e.enabled);
     if (effects.length) {
-      if (l.kind === "group" || l.kind === "text" || l.kind === "vector") target(w, h, fixed);
+      const footprint = effectFootprint(effects);
+      const expanded = footprint.left || footprint.right || footprint.top || footprint.bottom;
+      w = rasterExtent(l.width + footprint.left + footprint.right, density);
+      h = rasterExtent(l.height + footprint.top + footprint.bottom, density);
+      if (expanded || l.kind === "group" || l.kind === "text" || l.kind === "vector")
+        target(w, h, fixed);
       target(w, h, fixed);
-      const stages = effects.reduce(
-        (n, e) => n + (e.type === "gradient" ? gradientStages(e).length : 1),
-        0,
-      );
+      const stages = effects.reduce((n, effect) => n + effectStages(effect).length, 0);
       if (stages > 1) scratch = Math.max(scratch, w * h * 4);
-      if (effects.some((e, i) => e.type === "gradient" && i > 0))
+      if (effects.some((effect) => effectStages(effect).length > 1))
         backdrop = Math.max(backdrop, w * h * 4);
     }
     if (l.mask?.enabled) {

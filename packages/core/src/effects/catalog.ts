@@ -24,6 +24,8 @@ import { BIT_DITHER_DEFINITION } from "./bit-dither/definition";
 import { RECEIPT_DEFINITION } from "./receipt/definition";
 import { PINK_PHOSPHOR_DEFINITION } from "./pink-phosphor/definition";
 import { TRANSITION_DEFINITION } from "./transition/definition";
+import { BLUR_DEFINITION } from "./blur/definition";
+import { SHADOW_DEFINITION } from "./shadow/definition";
 /** Portable effect metadata shared by factories, validation and client controls. */
 export const EFFECT_CATALOG: Readonly<Record<EffectType, EffectDefinition>> = Object.freeze({
   dither: defineEffect("dither", {}, [AMOUNT, SCALE, LEVELS, COLOR, SEED]),
@@ -31,7 +33,8 @@ export const EFFECT_CATALOG: Readonly<Record<EffectType, EffectDefinition>> = Ob
   brightness: defineEffect("brightness", { amount: 0.5 }, [AMOUNT], "adjustment"),
   contrast: defineEffect("contrast", { amount: 0.5 }, [AMOUNT], "adjustment"),
   grayscale: defineEffect("grayscale", {}, [AMOUNT], "adjustment"),
-  blur: defineEffect("blur", {}, [AMOUNT, SCALE]),
+  blur: BLUR_DEFINITION,
+  shadow: SHADOW_DEFINITION,
   saturation: defineEffect("saturation", { amount: 0.5 }, [AMOUNT], "adjustment"),
   hue: defineEffect("hue", { amount: 0.5 }, [AMOUNT], "adjustment"),
   exposure: defineEffect("exposure", { amount: 0.5 }, [AMOUNT], "adjustment"),

@@ -125,10 +125,20 @@ export class GpuEffects {
       for (const stage of stages) {
         const existing = this.passes.get(effectPassKey(effect, stage));
         if (existing && this.compiled.has(existing)) continue;
-        const pass = this.getPass(effect, stage, target.texture, target.texture, width, height, {
+        const pass = this.getPass(
+          effect,
+          stage,
+          target.texture,
+          stage.final && effectStages(effect).length > 1
+            ? this.getBackdrop(width, height).texture
+            : target.texture,
           width,
           height,
-        });
+          {
+            width,
+            height,
+          },
+        );
         if (this.compiled.has(pass)) continue;
         if (!this.mesh) {
           this.mesh = new Mesh(this.geometry, pass.material);
@@ -159,7 +169,7 @@ export class GpuEffects {
         : this.scratch
           ? this.scratch.width * this.scratch.height * 4
           : 0;
-    const backdrop = enabled.some((effect, index) => effect.type === "gradient" && index > 0)
+    const backdrop = enabled.some((effect) => effectStages(effect).length > 1)
       ? width * height * 4
       : this.backdrop
         ? this.backdrop.width * this.backdrop.height * 4
@@ -173,6 +183,17 @@ export class GpuEffects {
             resolveGradientSettings(effect.settings).treatment === "ascii"),
       );
     return scratch + backdrop + (atlas ? 256 * 16 * 4 : 0);
+  }
+  private getBackdrop(width: number, height: number): RenderTarget {
+    this.backdrop ??= new RenderTarget(width, height, {
+      depthBuffer: false,
+      type: UnsignedByteType,
+      minFilter: NearestFilter,
+      magFilter: NearestFilter,
+    });
+    this.backdrop.texture.colorSpace = NoColorSpace;
+    this.backdrop.setSize(width, height);
+    return this.backdrop;
   }
   private getScratch(width: number, height: number): RenderTarget {
     if (!this.scratch) {
@@ -226,15 +247,8 @@ export class GpuEffects {
     try {
       for (const block of blocks) {
         let original = input;
-        if (block.effect.type === "gradient" && input !== source) {
-          this.backdrop ??= new RenderTarget(width, height, {
-            depthBuffer: false,
-            type: UnsignedByteType,
-            minFilter: NearestFilter,
-            magFilter: NearestFilter,
-          });
-          this.backdrop.texture.colorSpace = NoColorSpace;
-          this.backdrop.setSize(width, height);
+        if (block.stages.length > 1 && input !== source) {
+          const backdrop = this.getBackdrop(width, height);
           const copy: EffectStage = {
             key: "copy",
             builder: ({ source, controls }) => sampleEffect(source, controls, uv()),
@@ -242,9 +256,9 @@ export class GpuEffects {
           };
           this.draw(
             this.getPass(block.effect, copy, input, input, width, height, logical),
-            this.backdrop,
+            backdrop,
           );
-          original = this.backdrop.texture;
+          original = backdrop.texture;
         }
         for (const stage of block.stages) {
           const target = (total - index++) % 2 === 1 ? output : scratch!;

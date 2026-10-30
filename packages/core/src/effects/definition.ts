@@ -53,7 +53,7 @@ export interface EffectDefinition {
   readonly nameKey: string;
   readonly category: "effect" | "adjustment";
   /** Raw treatment coverage before optional compositing operators. Reduction never expands alpha. */
-  readonly coverage: "preserve" | "reduce";
+  readonly coverage: "preserve" | "reduce" | "expand";
   readonly defaults: Readonly<Omit<Effect, "id" | "type">>;
   readonly parameters: readonly EffectParameter[];
   readonly gizmo?: {

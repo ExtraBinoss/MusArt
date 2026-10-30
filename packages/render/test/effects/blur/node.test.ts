@@ -1,24 +1,27 @@
 import { expect, it } from "vitest";
 import { createEffect } from "@musart/core";
-import { blurNode } from "../../../src/effects/blur/node";
+import { effectFootprint } from "../../../src/effects/shared/footprint";
+import { effectStages } from "../../../src/effects/pipeline";
 import { updateEffectUniforms } from "../../../src/effects/shared/uniforms";
-import { expectSourceAlpha, graphNodes, nodeFixture } from "../node-fixture";
-it("keeps radius amount and scale live in one graph while preserving the uncluttered source alpha", () => {
+import { nodeFixture } from "../node-fixture";
+it("softens RGBA on two axes while keeping admitted bounds stable across amount animation", () => {
   const fixture = nodeFixture("blur");
-  const node = blurNode(fixture);
-  const graph = graphNodes(node);
-  expectSourceAlpha(node, fixture.input);
-  expect(graph.has(fixture.controls.amount)).toBe(true);
-  expect(graph.has(fixture.controls.scale)).toBe(true);
-  expect(graph.has(fixture.controls.logicalResolution)).toBe(true);
-  const cacheKey = node.getCacheKey();
-  updateEffectUniforms(
-    fixture.controls,
-    createEffect("blur", { amount: 0.5, scale: 20 }),
-    1920,
-    1080,
-  );
-  expect(fixture.controls.amount.value * fixture.controls.scale.value).toBe(10);
-  expect(node.getCacheKey()).toBe(cacheKey);
+  const radius = fixture.controls.scale,
+    amount = fixture.controls.amount;
+  for (const value of [0, 0.5, 1]) {
+    const effect = createEffect("blur", { amount: value, scale: 20 });
+    updateEffectUniforms(fixture.controls, effect, 320, 240);
+    expect(fixture.controls.scale).toBe(radius);
+    expect(fixture.controls.amount).toBe(amount);
+    expect(radius.value * amount.value).toBe(20 * value);
+    expect(effectFootprint([effect])).toEqual({ left: 65, top: 65, right: 65, bottom: 65 });
+    expect(effectStages(effect).map((stage) => stage.final)).toEqual([false, true]);
+  }
+  expect(effectFootprint([createEffect("blur", { enabled: false })])).toEqual({
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+  });
   fixture.dispose();
 });

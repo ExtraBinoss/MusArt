@@ -14,6 +14,7 @@ describe("portable effect definitions", () => {
       "contrast",
       "grayscale",
       "blur",
+      "shadow",
       "saturation",
       "hue",
       "exposure",
@@ -67,6 +68,7 @@ describe("portable effect definitions", () => {
       contrast: ["amount"],
       grayscale: ["amount"],
       blur: ["amount", "scale"],
+      shadow: ["amount", "offsetX", "offsetY", "radius", "shadowColor"],
       saturation: ["amount"],
       hue: ["amount"],
       exposure: ["amount"],
@@ -329,15 +331,20 @@ describe("portable effect definitions", () => {
       );
       expect(getEffectDefinition(definition.type)).toBe(definition);
       expect(definition.coverage).toBe(
-        ["gradient", "circle", "shatter", "crt", "receipt", "transition"].includes(definition.type)
-          ? "reduce"
-          : "preserve",
+        ["blur", "shadow"].includes(definition.type)
+          ? "expand"
+          : ["gradient", "circle", "shatter", "crt", "receipt", "transition"].includes(
+                definition.type,
+              )
+            ? "reduce"
+            : "preserve",
       );
       expect(definition.category).toBe(
         [
           "dither",
           "ascii",
           "blur",
+          "shadow",
           "grain",
           "halftone",
           "vignette",

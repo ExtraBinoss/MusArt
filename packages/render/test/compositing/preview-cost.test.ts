@@ -65,7 +65,9 @@ it("includes required mask sources and shares effect scratch instead of charging
     b = { ...a, id: "b" },
     one = estimatePreviewCost(createPage({ width: 128, height: 128, layers: [a] }), 1),
     two = estimatePreviewCost(createPage({ width: 128, height: 128, layers: [a, b] }), 1);
-  expect(two.fixedBytes - one.fixedBytes).toBe(one.fixedBytes - 64 * 64 * 4);
+  // Both 80×80 scratch/backdrop planes are shared; each layer owns its source, padded output and mips.
+  expect(one.fixedBytes).toBe(64 * 64 * 4 + 80 * 80 * 4 * 4 + 34120);
+  expect(two.fixedBytes - one.fixedBytes).toBe(one.fixedBytes - 80 * 80 * 8);
 });
 it("rejects invalid scales and counts original metadata dimensions without rasterizing them", () => {
   const image = createLayer("image", { assetId: "image", width: 10, height: 10 });

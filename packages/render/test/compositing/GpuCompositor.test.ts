@@ -345,7 +345,10 @@ it("evaluates an arbitrary effect stack and its masked group descendants in one 
   const apply = vi.spyOn(EffectResources.prototype, "apply");
   for (const scale of [0.125, 0.49, 1, 2, 4]) await graph.render(page, {}, { scale });
   expect(apply).toHaveBeenCalledTimes(2);
-  for (const call of apply.mock.calls) expect(call.slice(1, 3)).toEqual([80, 60]);
+  expect(apply.mock.calls.map((call) => call.slice(1, 3))).toEqual([
+    [96, 76],
+    [80, 60],
+  ]);
   const planes = new Set(
     fake.setRenderTarget.mock.calls
       .map(([target]) => target)

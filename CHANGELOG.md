@@ -7,6 +7,7 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 ### Changed
 
 - Kept the Motion preset picker at a stable size across Library/My presets, categories and search; replaced its preview image with the bundled alpine-lake photograph.
+- Reworked Blur into a separable premultiplied-RGBA Gaussian with transparent overscan, making photo edges visibly soften during Motion entrances. Corrected Share Your Work card geometry, text/photo stacking and drift from the supplied video frames, with editable photo shadows.
 
 - Fixed cold Motion audio/video startup losing sound attacks while the timeline advanced before PCM was ready. Live playback now synchronizes its initial presentation clock with the first native audio block, admits originals on demand, caches bounded decoded windows and skips obsolete decode requests after slow frames. A matched 40-cue/video Chromium cohort reduced median native-graph onset 138.7 → 106.0 ms and original reads 42 → 2; this is not physical speaker latency. Offline export keeps eager validation. See `docs/performance/audio-playback.md`.
 
@@ -31,6 +32,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 - Reduced agent coordination overhead with bounded implementation ownership, fresh contexts for independent tasks, concise handoffs and one integrated validation owner. Tests now protect behavior without requiring an exact mirror for every source file; focused coverage falls back to related tests when mirrors are absent, while full CI coverage thresholds remain unchanged.
 
 ### Added
+
+- Added a native GPU Drop shadow effect with editable color, opacity, blur and signed offsets, expanding source transport, mask mapping, bounded cache accounting and portable undoable settings.
 
 - Unified canvas and layer context actions, added animation-block editing/duplication/reversal/preset saving, and isolated destructive Delete actions below a separator. Clip deletion keeps its occurrence scope; animation deletion preserves its object and supports undo.
 

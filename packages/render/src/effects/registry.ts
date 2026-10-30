@@ -1,6 +1,7 @@
 import type { EffectType } from "@musart/core";
 import { asciiNode } from "./ascii/node";
 import { blurNode } from "./blur/node";
+import { shadowNode } from "./shadow/node";
 import { brightnessNode } from "./brightness/node";
 import { contrastNode } from "./contrast/node";
 import { ditherNode } from "./dither/node";
@@ -42,6 +43,7 @@ export const EFFECT_NODES: Readonly<
   contrast: contrastNode,
   grayscale: grayscaleNode,
   blur: blurNode,
+  shadow: shadowNode,
   exposure: exposureNode,
   saturation: saturationNode,
   hue: hueNode,

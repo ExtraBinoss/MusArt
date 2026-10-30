@@ -32,6 +32,9 @@ test("search matches localized names, durable IDs and families, with accent-inse
   const entries = effectCatalogEntries("effect", i18n.getFixedT("fr"), "fr");
   expect(normalizeEffectSearch("  ÉCRANS  ")).toBe("ecrans");
   expect(filterEffectCatalog(entries, "FlOu", "all").map((entry) => entry.type)).toEqual(["blur"]);
+  expect(filterEffectCatalog(entries, "ombre", "all").map((entry) => entry.type)).toEqual([
+    "shadow",
+  ]);
   expect(filterEffectCatalog(entries, "pink-phosphor", "all").map((entry) => entry.type)).toEqual([
     "pink-phosphor",
   ]);

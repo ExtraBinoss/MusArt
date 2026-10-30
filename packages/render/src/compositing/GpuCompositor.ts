@@ -13,7 +13,7 @@ import { ColorPipeline } from "../color/ColorPipeline";
 import { GpuResourceCache } from "../cache/GpuResourceCache";
 import { gpuTextureLimit } from "../cache/texture-limits";
 import { createSourceKeys } from "../cache/keys";
-import { maskLayerMapping } from "./mask-binding";
+import { finishLayerSource } from "./finish-layer";
 import { EffectResources } from "./effect-resources";
 import { VectorSources } from "../surface/vector/source";
 import { TextureSources } from "../surface/TextureSources";
@@ -384,54 +384,20 @@ export class GpuCompositor {
       this.color!.render(source, converted, "to-p3");
       source = { ...source, texture: converted.texture };
     }
-    if (layer.effects.some((effect) => effect.enabled)) {
-      if (source.premultiplied) {
-        const straight = this.target(entry, key, "straight", width, height);
-        this.passes!.copyTo(source, straight, true);
-        source = { texture: straight.texture, width, height, premultiplied: false };
-      }
-      const output = this.target(entry, key, "effects", width, height);
-      const effects = layer.effects;
-      this.cache.ensureCapacity(
-        "shared-effects",
-        this.effects!.projectedBytes(width, height, effects),
-      );
-      let texture;
-      try {
-        texture = this.effects!.apply(source.texture, width, height, effects, output, {
-          width: layer.width,
-          height: layer.height,
-        });
-      } finally {
-        this.cache.synchronize("shared-effects");
-      }
-
-      source = { texture, width, height, premultiplied: false };
-    }
-    if (layer.mask?.enabled) {
-      const target = this.target(entry, key, "mask", width, height);
-      const mask = layer.mask;
-      if (mask.assetId)
-        this.passes!.maskTo(source, this.sources.image(mask.assetId), mask.inverted, target, {
-          luminance: mask.mode === "luminance",
-        });
-      else if (mask.layerId) {
-        const maskLayer = geometry.byId.get(mask.layerId);
-        if (!maskLayer) throw new Error(`Calque masque introuvable : ${mask.layerId}`);
-        const mapping = maskLayerMapping(page, layer, maskLayer, false);
-        const content = mapping.opacity > 0 ? this.layer(maskLayer, frame) : source;
-        this.passes!.maskTo(source, content.texture, mask.inverted, target, {
-          ...mapping,
-          premultiplied: content.premultiplied,
-        });
-      } else throw new Error("Source de masque absente.");
-      source = { ...source, texture: target.texture };
-    }
-    if (reference) {
-      const filtered = this.target(entry, key, "reference", width, height, true);
-      this.passes!.copyTo(source, filtered, false, !source.premultiplied);
-      source = { texture: filtered.texture, width, height, premultiplied: true };
-    }
+    if (reference)
+      source = finishLayerSource(layer, page, scale, source, {
+        target: (role, w, h, mipmapped) => this.target(entry, key, role, w, h, mipmapped),
+        passes: this.passes!,
+        effects: this.effects!,
+        cache: this.cache,
+        image: (id) => this.sources.image(id),
+        maskSource: (maskLayer) => this.layer(maskLayer, frame),
+        mask: (id) => {
+          const maskLayer = geometry.byId.get(id);
+          if (!maskLayer) throw new Error(`Calque masque introuvable : ${id}`);
+          return maskLayer;
+        },
+      });
     entry.output = source;
     entry.signature = signature;
     return source;

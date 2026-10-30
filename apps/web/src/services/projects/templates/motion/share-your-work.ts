@@ -1,5 +1,6 @@
 import {
   MOTION_ANIMATION_PRESETS,
+  createEffect,
   type ImageAsset,
   type MotionAnimationPreset,
 } from "@musart/core";
@@ -12,13 +13,13 @@ export function createShareYourWork(photos: readonly ImageAsset[]): BuiltMotionT
   const a = new TemplateAuthor("share-your-work", "Share Your Work", 480, 480);
   const placements = [
     [238, 144, 170, -4],
-    [295, 165, 175, 9],
-    [370, 250, 180, 4],
-    [379, 321, 175, -10],
-    [260, 329, 180, 6],
-    [175, 322, 185, 10],
-    [116, 280, 180, -10],
-    [174, 229, 180, 3],
+    [295, 165, 170, 9],
+    [363, 239, 170, 5],
+    [357, 332, 170, -6],
+    [241, 335, 170, 6],
+    [168, 303, 170, 9],
+    [115, 252, 170, -10],
+    [148, 174, 170, 3],
   ] as const;
   const cards = placements.map(([cx, cy, size, rotation], index) =>
     a.layer("image", `share-card-${index + 1}`, `Card ${index + 1}`, {
@@ -28,6 +29,13 @@ export function createShareYourWork(photos: readonly ImageAsset[]): BuiltMotionT
       width: size,
       height: size,
       rotation,
+      effects: [
+        createEffect("shadow", {
+          id: `share-shadow-${index + 1}`,
+          amount: 0.65,
+          settings: { radius: 12, offsetX: 0, offsetY: 10, shadowColor: "#000000" },
+        }),
+      ],
     }),
   );
   const text = (id: string, value: string, x: number, y: number, width: number) =>
@@ -39,7 +47,7 @@ export function createShareYourWork(photos: readonly ImageAsset[]): BuiltMotionT
       height: 88,
       fontFamily: "Inter Variable",
       fontWeight: 750,
-      fontSize: value === "SHARE" ? 75 : value === "WORK" ? 74 : 72,
+      fontSize: value === "SHARE" ? 75 : 74,
       lineHeight: 0.85,
       letterSpacing: -4,
       fill: "#ffffff",
@@ -74,17 +82,17 @@ export function createShareYourWork(photos: readonly ImageAsset[]): BuiltMotionT
       type: "addLayers",
       assets: [...photos],
       layers: [
-        cards[1]!,
-        cards[2]!,
-        cards[3]!,
         cards[4]!,
         cards[5]!,
+        cards[6]!,
+        text("share-work", "WORK", 127, 257, 260),
+        cards[3]!,
+        text("share-your", "YOUR", 142, 196, 231),
+        cards[2]!,
+        cards[1]!,
         cards[0]!,
         text("share-title", "SHARE", 53, 141, 310),
-        cards[6]!,
         cards[7]!,
-        text("share-your", "YOUR", 145, 196, 225),
-        text("share-work", "WORK", 127, 257, 260),
         ...labels,
       ],
     },
@@ -96,7 +104,8 @@ export function createShareYourWork(photos: readonly ImageAsset[]): BuiltMotionT
   );
   entrance.duration = 450;
   for (const channel of entrance.channels) {
-    channel.points[1]!.at = 1 / 3;
+    channel.points[1]!.at = channel.target.kind === "effect" ? 0.5 : 1 / 3;
+    if (channel.target.kind === "effect") channel.points[1]!.easing = { type: "linear" };
     channel.points.push({ ...structuredClone(channel.points[1]!), at: 1 });
   }
   for (let index = 0; index < cards.length; index++) {
@@ -160,7 +169,7 @@ export function createShareYourWork(photos: readonly ImageAsset[]): BuiltMotionT
         unit: "width",
         points: [
           { at: 0, value: 0 },
-          { at: 1, value: 0.15, easing: { type: "linear" } },
+          { at: 1, value: 0.265, easing: { type: "linear" } },
         ],
       },
     ],

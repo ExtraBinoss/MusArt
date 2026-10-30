@@ -145,11 +145,13 @@ describe("shared-renderer GPU effect operator", () => {
     expect(output.height).toBe(20);
     expect(gpu.stats().bytes).toBe(10 * 20 * 4);
     gpu.apply(source, 4, 5, [createEffect("contrast"), createEffect("blur")], output);
-    expect(backend.setRenderTarget.mock.calls[3]?.[0]).toBe(scratch);
+    expect(backend.setRenderTarget.mock.calls[3]?.[0]).toBe(output);
+    expect(backend.setRenderTarget.mock.calls[5]?.[0]).toBe(scratch);
+    expect(backend.setRenderTarget.mock.calls[6]?.[0]).toBe(output);
     expect(scratch.width).toBe(4);
     expect(scratch.height).toBe(5);
-    expect(gpu.stats().targets).toBe(1);
-    expect(gpu.stats().bytes).toBe(4 * 5 * 4);
+    expect(gpu.stats().targets).toBe(2);
+    expect(gpu.stats().bytes).toBe(4 * 5 * 8);
     fixture.dispose();
   });
   it("reuses one material per effect type across color toggles, numeric edits and different source textures", () => {
@@ -195,7 +197,7 @@ describe("shared-renderer GPU effect operator", () => {
     expect(backend.setRenderTarget).toHaveBeenLastCalledWith(previous);
     expect(gpu.stats().passes).toBe(0);
     expect(gpu.apply(source, 2, 2, [createEffect("blur")], output)).toBe(output.texture);
-    expect(gpu.stats().passes).toBe(1);
+    expect(gpu.stats().passes).toBe(2);
     vi.mocked(HTMLCanvasElement.prototype.getContext).mockReturnValueOnce(null);
     expect(() => gpu.apply(source, 2, 2, [createEffect("ascii")], output)).toThrow("ASCII");
     expect(backend.setRenderTarget).toHaveBeenLastCalledWith(previous);

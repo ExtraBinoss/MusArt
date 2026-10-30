@@ -147,11 +147,18 @@ export class GpuPasses {
     target: RenderTarget | null,
     normalize = false,
     premultiply = false,
+    region?: Bounds,
   ): void {
     this.copy.source.value = source.texture;
     this.copy.flipY.value = textureFlip(source.texture);
     this.copy.normalize.value = normalize ? 1 : 0;
     this.copy.premultiply.value = premultiply ? 1 : 0;
+    this.copy.region.value.set(
+      region?.x ?? 0,
+      region?.y ?? 0,
+      region?.width ?? 1,
+      region?.height ?? 1,
+    );
     this.draw(this.copyMaterial, target);
   }
   maskTo(

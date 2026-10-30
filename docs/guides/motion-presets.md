@@ -1,6 +1,6 @@
 # Animation presets
 
-Select an object in a Motion composition and open **Animations → +** in Properties. The picker contains 61 built-in motions, with search and categories. Every card uses the same sample photograph; hover or keyboard focus previews the actual native renderer. Click a card to apply it. Static compositions keep animation authoring controls hidden.
+Select an object in a Motion composition and open **Animations → +** in Properties. The picker contains 61 built-in motions, with search and categories. The picker keeps a stable size across tabs, categories and empty results. Every card uses the same alpine-lake photograph; hover or keyboard focus previews the actual native renderer. Click a card to apply it. Static compositions keep animation authoring controls hidden.
 
 ## Everyday editing
 
@@ -29,4 +29,4 @@ Personal presets live in this browser profile's global IndexedDB storage. They s
 
 ## Reference example
 
-Open **Templates → Share Your Work** for the reconstructed 1.5-second card collage: eight replacement photographs, ten staggered scale/blur entrances and one separate movement. It contains native editable layers and animation blocks, rather than a flattened reference video.
+Open **Templates → Share Your Work** for the reconstructed 1.5-second card collage: eight replacement photographs, ten staggered scale/blur entrances, editable photo drop shadows, interleaved text and one separate movement. It contains native editable layers and animation blocks, rather than a flattened reference video.
