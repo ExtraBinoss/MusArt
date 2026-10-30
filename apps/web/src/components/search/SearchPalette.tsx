@@ -32,6 +32,10 @@ import "./messages";
 
 // cmdk still scores newly registered items when shouldFilter=false. Ranking already belongs to our index.
 const alreadyRanked = () => 1;
+function keepButtonActivation(event: KeyboardEvent<HTMLButtonElement>) {
+  // Let the browser activate this button; cmdk must not reinterpret its key as a result choice.
+  if (event.key === "Enter" || event.key === " ") event.stopPropagation();
+}
 interface Props {
   engine: EnginePort;
   catalog: SearchCatalog;
@@ -131,27 +135,31 @@ const PaletteContent = memo(function PaletteContent({
     );
     if (enabled) current.onChoose(enabled);
   }, []);
-  const captureKey = useCallback((event: KeyboardEvent<HTMLDivElement>) => {
-    if (
-      event.nativeEvent.isComposing ||
-      event.nativeEvent.keyCode === 229 ||
-      sameCriteria(latest.current, displayed.current)
-    )
-      return;
-    if (event.key === "Enter") {
-      event.preventDefault();
-      const current = context.current,
-        criteria = latest.current;
-      const enabled = searchItems(current.items, criteria.query, criteria.category).items.find(
-        (item) => !item.disabled,
-      );
-      if (enabled) current.onChoose(enabled);
-    } else if (
-      ["ArrowUp", "ArrowDown", "Home", "End"].includes(event.key) ||
-      (event.ctrlKey && ["j", "n", "p"].includes(event.key))
-    )
-      event.preventDefault();
-  }, []);
+  const captureKey = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      if (
+        event.target !== inputRef.current ||
+        event.nativeEvent.isComposing ||
+        event.nativeEvent.keyCode === 229 ||
+        sameCriteria(latest.current, displayed.current)
+      )
+        return;
+      if (event.key === "Enter") {
+        event.preventDefault();
+        const current = context.current,
+          criteria = latest.current;
+        const enabled = searchItems(current.items, criteria.query, criteria.category).items.find(
+          (item) => !item.disabled,
+        );
+        if (enabled) current.onChoose(enabled);
+      } else if (
+        ["ArrowUp", "ArrowDown", "Home", "End"].includes(event.key) ||
+        (event.ctrlKey && ["j", "n", "p"].includes(event.key))
+      )
+        event.preventDefault();
+    },
+    [inputRef],
+  );
   useSearchPlaceholder(inputRef, items, t("search:searchPrefix"), reduced);
   return (
     <div className="magic-search-surface" data-reduced-motion={reduced || undefined}>
@@ -176,7 +184,13 @@ const PaletteContent = memo(function PaletteContent({
             onValueChange={changeQuery}
             placeholder={t("search:search")}
           />
-          <Button variant="ghost" size="icon-sm" aria-label={t("close")} onClick={onClose}>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={t("close")}
+            onClick={onClose}
+            onKeyDown={keepButtonActivation}
+          >
             <Kbd>Esc</Kbd>
           </Button>
         </div>
@@ -263,6 +277,7 @@ const CategoryTabs = memo(function CategoryTabs({
           size="sm"
           aria-pressed={category === value}
           onClick={() => onChange(value)}
+          onKeyDown={keepButtonActivation}
         >
           {t(`search:${value}`)}
         </Button>

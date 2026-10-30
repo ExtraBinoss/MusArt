@@ -51,3 +51,36 @@ test("reduced motion skips visual entrance and Escape keeps the real Radix close
   fireEvent.keyDown(dialog, { key: "Escape" });
   expect(change).toHaveBeenCalledExactlyOnceWith(false);
 });
+
+test("Escape preserves IME composition and forwards the native handler before ordinary dismissal", async () => {
+  const d = setup(),
+    change = vi.fn(),
+    escape = vi.fn();
+  d.mount(
+    <SearchDialog open reduced onOpenChange={change} onEscapeKeyDown={escape}>
+      <DialogTitle>Composition search</DialogTitle>
+      <DialogDescription>Commands</DialogDescription>
+      <input aria-label="Query" autoFocus />
+    </SearchDialog>,
+  );
+  await act(async () => {
+    await Promise.resolve();
+  });
+  const input = screen.getByRole("textbox", { name: "Query" });
+  for (const composition of [{ isComposing: true }, { keyCode: 229 }]) {
+    const event = new KeyboardEvent("keydown", {
+      key: "Escape",
+      bubbles: true,
+      cancelable: true,
+      ...composition,
+    });
+    fireEvent(input, event);
+    expect(event.defaultPrevented).toBe(true);
+    expect(escape).toHaveBeenLastCalledWith(event);
+    expect(change).not.toHaveBeenCalled();
+    expect(input).toHaveFocus();
+  }
+  fireEvent.keyDown(input, { key: "Escape" });
+  expect(escape).toHaveBeenCalledTimes(3);
+  expect(change).toHaveBeenCalledExactlyOnceWith(false);
+});

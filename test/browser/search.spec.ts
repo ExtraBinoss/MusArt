@@ -241,3 +241,23 @@ test("spotlight immediate typing and Enter open the actual latest-query image pi
     contentType: "application/json",
   });
 });
+
+test("spotlight category and close buttons own native keyboard activation", async ({ page }) => {
+  await ready(page);
+  const before = await page.evaluate(() => window.musart!.snapshot());
+  await page.keyboard.press("Control+k");
+  const layers = page.getByRole("button", { name: "Calques", exact: true });
+  await layers.focus();
+  await page.keyboard.press("Enter");
+  await expect(layers).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("combobox", { name: "Rechercher dans MusArt" })).toBeFocused();
+  await expect(page.locator("[cmdk-list]")).toHaveAttribute("data-search-category", "layers");
+  const close = page.getByRole("button", { name: "Fermer", exact: true });
+  await close.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  const after = await page.evaluate(() => window.musart!.snapshot());
+  expect(after.project).toEqual(before.project);
+  expect(after.selection).toEqual(before.selection);
+  expect(after.revision).toBe(before.revision);
+});

@@ -6,7 +6,7 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 
 ### Added
 
-- Added reproducible production Cmd+K profiling with real native typing, 150-layer and 50-image/100-effect documents, immediate input after a committed edit, actual React/GPU/readback counters, retained CPU/Blink traces and mapped source attribution. The order-matched comparison preserves mixed latency results, cold-opening variability and all candidate history without claiming a general speedup or treating profiled timings as latency guarantees.
+- Added reproducible production Cmd+K profiling with real native typing, 150-layer and 50-image/100-effect documents, immediate input after a committed edit, actual React/GPU/readback counters, retained CPU/Blink traces and mapped source attribution. The v2 probe separates input echo from correctly committed latest results, counts superseded prefixes and verifies final-query convergence. Its report documents the measured input responsiveness/result-delay tradeoff without counting old DOM as fresh results or claiming a general speedup; all earlier cohorts remain available.
 
 - Saved Motion project cards now play their actual authored artboard on hover through the same bounded GPU preview owner as templates. Readonly, abortable snapshots leave project persistence, current selection and document history untouched; video originals stay lazy, while Static pages retain their cached page carousel.
 
@@ -81,6 +81,8 @@ All notable changes are recorded here in English. MusArt uses a synchronized [Se
 - Locked artwork remains inspectable on the canvas with a constant-size lock badge and no editing handles. Layer rows expose persistent protection indicators, while the inspector and effect/mask popovers identify blocking parent locks and unlock only that chain in one undoable transaction.
 
 ### Fixed
+
+- Kept native Enter/Space activation on command-search category and close buttons, including while results are pending. Escape preserves IME composition, and queued selection-dependent commands reject changed targets before touching another layer or the clipboard.
 
 - Command search prioritizes controlled input over interruptible result updates. Retained results report their displayed criteria and stay busy/inert while newer criteria are pending; queued stale clicks and navigation cannot execute them, while immediate Enter resolves the latest enabled match and preserves IME composition.
 

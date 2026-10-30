@@ -1,5 +1,6 @@
 import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
 import { createLayer } from "@musart/core";
 import { createRef, Profiler } from "react";
 import { setup } from "../../support/ui";
@@ -320,4 +321,56 @@ test("pending Enter cannot fall back to an old command when the latest query has
   expect(entered).toBe(true);
   expect(d.onChoose).not.toHaveBeenCalled();
   expect(screen.queryAllByRole("option")).toHaveLength(0);
+});
+
+test.each(["{Enter}", " "])(
+  "category and close buttons own %s without selecting an unrelated result",
+  async (key) => {
+    const d = fixture(),
+      user = userEvent.setup();
+    fireEvent.change(d.input, { target: { value: "flou" } });
+    const category = screen.getByRole("button", { name: "Calques" });
+    category.focus();
+    fireEvent.keyDown(category, { key: "ArrowRight" });
+    await user.keyboard(key);
+    expect(category).toHaveAttribute("aria-pressed", "true");
+    expect(d.onChoose).not.toHaveBeenCalled();
+    expect(d.onClose).not.toHaveBeenCalled();
+    expect(d.input).toHaveFocus();
+    fireEvent.click(screen.getByRole("button", { name: "Tout" }));
+    const close = screen.getByRole("button", { name: "Fermer" });
+    close.focus();
+    await user.keyboard(key);
+    expect(d.onClose).toHaveBeenCalledOnce();
+    expect(d.onChoose).not.toHaveBeenCalled();
+  },
+);
+test("pending query capture leaves category and close keydown activation uncancelled", () => {
+  let intercept = false,
+    tested = false;
+  const d = fixture(() => {
+    if (
+      !intercept ||
+      tested ||
+      document.querySelector<HTMLElement>("[cmdk-list]")?.dataset.searchPending !== "true"
+    )
+      return;
+    tested = true;
+    const buttons = [
+      ...document.querySelectorAll<HTMLButtonElement>(".magic-search-categories button"),
+      document.querySelector<HTMLButtonElement>(".magic-search-input-row button")!,
+    ];
+    for (const button of buttons)
+      for (const key of ["Enter", " "]) {
+        const event = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
+        button.dispatchEvent(event);
+        expect(event.defaultPrevented).toBe(false);
+      }
+  });
+  fireEvent.change(d.input, { target: { value: "baguette" } });
+  intercept = true;
+  fireEvent.change(d.input, { target: { value: "flou" } });
+  expect(tested).toBe(true);
+  expect(d.onChoose).not.toHaveBeenCalled();
+  expect(d.onClose).not.toHaveBeenCalled();
 });

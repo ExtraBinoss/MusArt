@@ -40,6 +40,11 @@ function SearchDialogLayers({ reduced, children, ...props }: ContentProps & { re
       />
       <Content
         {...props}
+        onEscapeKeyDown={(event) => {
+          props.onEscapeKeyDown?.(event);
+          // Escape first belongs to the native IME candidate list, including legacy composition events.
+          if (event.isComposing || event.keyCode === 229) event.preventDefault();
+        }}
         forceMount
         data-slot="dialog-content"
         data-magic-search
