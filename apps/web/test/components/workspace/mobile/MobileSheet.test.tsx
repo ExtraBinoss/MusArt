@@ -115,14 +115,13 @@ test("the mobile Layers sheet has one title and retains live count and the origi
       </MobileSheet>
     </MobileControlsContext>,
   );
-  expect(screen.getAllByRole("heading", { name: "Calques", exact: true })).toHaveLength(1);
+  expect(screen.getAllByRole("heading", { name: "Calques" })).toHaveLength(1);
   expect(document.querySelector(".layers-panel > .panel-heading")).toBeNull();
   const header = document.querySelector(".mobile-sheet-header")!;
   expect(header.querySelector(".small-count")).toHaveTextContent("3");
   expect(
     within(header as HTMLElement).getAllByRole("group", {
       name: "Actions des calques",
-      exact: true,
     }),
   ).toHaveLength(1);
   const add = within(header as HTMLElement).getByRole("button", {

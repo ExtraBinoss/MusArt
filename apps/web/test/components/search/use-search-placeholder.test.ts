@@ -19,7 +19,7 @@ function fixture(reduced = false) {
     ref = { current: input },
     renders = vi.fn();
   const view = renderHook(
-    ({ prefix = "Rechercher", reducedMotion = reduced }) => {
+    ({ prefix, reducedMotion }) => {
       renders();
       useSearchPlaceholder(ref, items, prefix, reducedMotion);
     },
@@ -30,7 +30,9 @@ function fixture(reduced = false) {
 test("types actual translated catalog labels without React commits and stops while typing or hidden", () => {
   const d = fixture();
   const renders = d.renders.mock.calls.length;
-  act(() => vi.advanceTimersByTime(700));
+  act(() => {
+    vi.advanceTimersByTime(700);
+  });
   expect(d.input.placeholder).toBe("Rechercher Contraste…");
   expect(d.renders).toHaveBeenCalledTimes(renders);
   d.input.value = "blur";
@@ -53,7 +55,9 @@ test("types actual translated catalog labels without React commits and stops whi
 });
 test("rotates hints, follows locale/reduced-motion updates and cleans every timer", () => {
   const d = fixture();
-  act(() => vi.advanceTimersByTime(3400));
+  act(() => {
+    vi.advanceTimersByTime(3400);
+  });
   expect(d.input.placeholder).toContain("Flou");
   d.rerender({ prefix: "Search", reducedMotion: true });
   expect(d.input.placeholder).toBe("Search Contraste…");
@@ -72,7 +76,9 @@ test("uses a static translated prefix if no catalog hints exist", () => {
 test("query-owner renders reuse hint selection without rescanning the catalog or resetting its clock", () => {
   const d = fixture(),
     find = vi.spyOn(items, "find");
-  act(() => vi.advanceTimersByTime(130));
+  act(() => {
+    vi.advanceTimersByTime(130);
+  });
   const placeholder = d.input.placeholder;
   d.rerender({ prefix: "Rechercher", reducedMotion: false });
   expect(find).not.toHaveBeenCalled();
