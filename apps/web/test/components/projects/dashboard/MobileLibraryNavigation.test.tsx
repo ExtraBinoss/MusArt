@@ -1,8 +1,11 @@
+import { atom } from "jotai";
 import { useRef, useState } from "react";
 import { expect, test, vi } from "vitest";
 import { act, fireEvent, screen, within } from "@testing-library/react";
 import { MobileLibraryNavigation } from "../../../../src/components/projects/dashboard/MobileLibraryNavigation";
 import { setup } from "../../../support/ui";
+
+const closedPreferences = atom(false);
 
 function pointer(target: EventTarget, type: string, x: number) {
   const event = new Event(type, { bubbles: true, cancelable: true });
@@ -36,7 +39,7 @@ test("swipe presents without React commits, focuses an exiting card's destinatio
         <MobileLibraryNavigation
           view={view}
           busy={false}
-          preferences={false}
+          preferences={closedPreferences}
           surface={surface}
           content={content}
           onViewChange={(value) => {
@@ -79,7 +82,7 @@ test("preferences reuses its existing action, pending work disables activation a
         <MobileLibraryNavigation
           view="projects"
           busy={busy}
-          preferences={false}
+          preferences={closedPreferences}
           surface={surface}
           content={content}
           onViewChange={change}
@@ -122,7 +125,7 @@ test("programmatic page activation moves retained card focus before the old cont
         <MobileLibraryNavigation
           view="projects"
           busy={false}
-          preferences={false}
+          preferences={closedPreferences}
           surface={surface}
           content={content}
           onViewChange={change}

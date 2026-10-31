@@ -6,6 +6,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Isolate Preferences and library-detail visibility in small Jotai leaves so opening/closing no longer rerenders their card grids. Preserve genuine Radix exit presence and opener focus, use shared opacity-only glass-dialog fades, and reserve settings blur reveals for tab changes. Defer optional Motion preparation and frames during real overlay transitions with cancellation and clock preservation; record bounded native timing diagnostics.
+
 - Reveal settings categories with a short blur/fade entrance and reduced-motion support. Place the compact Try snapping action beside its distance label, retaining the real sandbox. Add shared content-mask scroll fades for translucent panels, preserving their existing background/blur and scrollbar gutters instead of painting opaque edge bands.
 
 - Keep search typewriter artwork mounted throughout typing and erasing, crossfade successive previews in place, and fade hints while entering a real query without resetting the current artwork. Respect reduced motion and preserve imperative updates and timer/listener cleanup.

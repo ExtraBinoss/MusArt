@@ -192,7 +192,7 @@ test("captures template origin before download, prevents duplicate opening, and 
   await act(async () => finish());
   expect(close).not.toHaveBeenCalled();
 });
-test("preferences requested by search open in a separate dialog rather than a dashboard tab", () => {
+test("preferences requested by search open in a separate dialog rather than a dashboard tab", async () => {
   const d = setup(),
     close = vi.fn();
   d.mount(
@@ -208,7 +208,7 @@ test("preferences requested by search open in a separate dialog rather than a da
   expect(screen.queryByRole("tab", { name: "Projets" })).not.toBeInTheDocument();
   expect(d.services.listProjectPage).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: "Fermer" }));
-  expect(close).toHaveBeenCalled();
+  await waitFor(() => expect(close).toHaveBeenCalled());
 });
 test("the search editor route opens snapping preferences directly without loading the project gallery", () => {
   const d = setup();

@@ -313,3 +313,40 @@ test("the final subframe stays below the exclusive duration instead of presentin
   expect(f.times.at(-1)).toBe(0);
   await owner.release();
 });
+
+test("optional preview preparation and frame admission yield to overlay transitions and preserve their clock", async () => {
+  const f = fixture();
+  let busy = true;
+  const listeners = new Set<() => void>();
+  f.dependencies.presentation = {
+    busy: () => busy,
+    hold: () => () => {},
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+  };
+  const owner = f.start();
+  await flush();
+  expect(f.dependencies.prepare).not.toHaveBeenCalled();
+  expect(listeners.size).toBe(1);
+  busy = false;
+  listeners.forEach((listener) => listener());
+  await flush();
+  expect(f.dependencies.prepare).toHaveBeenCalledOnce();
+  expect(f.times).toEqual([0]);
+  expect(listeners.size).toBe(0);
+  busy = true;
+  f.tick(1067);
+  await flush();
+  expect(f.times).toEqual([0]);
+  busy = false;
+  f.tick(1167);
+  await flush();
+  expect(f.times.at(-1)).toBeCloseTo(2 / 30);
+  await owner.release();
+  expect(listeners.size).toBe(0);
+  expect(f.callbacks.size).toBe(0);
+});

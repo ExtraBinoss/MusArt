@@ -1,3 +1,8 @@
+import {
+  getUiPresentation,
+  type UiPresentationPort,
+} from "../../../../state/session/ui-presentation";
+import { waitForPresentation } from "../../../../state/session/wait-for-presentation";
 import { beginProjectTiming } from "../../../../services/performance/project-timing";
 import {
   applyMotionFrame,
@@ -23,6 +28,7 @@ import { motionTemplateSources as sources } from "../../../../services/projects/
 export type PreviewStatus = "idle" | "loading" | "playing" | "paused" | "failed";
 type Session = Pick<ReturnType<typeof createRenderSession>, "withCanvasFrame" | "dispose">;
 export interface PreviewDependencies {
+  presentation?: UiPresentationPort;
   prepare: (id: MotionTemplateId, signal: AbortSignal) => Promise<PreparedMotionTemplate>;
   createSession: (options: RenderOptions & { maxBytes: number }) => Promise<Session>;
   now: () => number;
@@ -86,6 +92,8 @@ export function startMotionPreview(
   },
   dependencies: Omit<PreviewDependencies, "prepare"> = native,
 ): PreviewOwner {
+  const presentation =
+    dependencies.presentation ?? (dependencies === native ? getUiPresentation() : undefined);
   const timing = beginProjectTiming(options.label ?? "Hover preview");
   const previous = active;
   const abort = new AbortController();
@@ -96,6 +104,7 @@ export function startMotionPreview(
   let draining: Promise<void> | null = null;
   let disposal: Promise<void> | null = null;
   let began = 0;
+  let presentationHeldAt: number | null = null;
   let paused = false;
   let renderGeneration = 0;
   let changePaused: ((next: boolean) => void) | null = null;
@@ -137,6 +146,7 @@ export function startMotionPreview(
       await previous?.release();
       abort.signal.throwIfAborted();
       timing?.stage("Read + validate preview source");
+      if (presentation?.busy()) await waitForPresentation(presentation, abort.signal);
       const source = await options.prepare(abort.signal);
       abort.signal.throwIfAborted();
       const prepared =
@@ -148,6 +158,7 @@ export function startMotionPreview(
         : prepared.project.pages[0];
       if (!page) throw new Error("The saved Motion preview artboard is no longer available.");
       timing?.stage("Compile animation");
+      if (presentation?.busy()) await waitForPresentation(presentation, abort.signal);
       const program =
         dependencies === native
           ? sources.compile(prepared.project, page.id)
@@ -169,6 +180,7 @@ export function startMotionPreview(
         },
       };
       timing?.stage("Acquire GPU preview session (reuse when compatible)");
+      if (presentation?.busy()) await waitForPresentation(presentation, abort.signal);
       session = await dependencies.createSession({
         maxBytes: 128 * 1024 * 1024,
         fontResolver: prepared.fontResolver,
@@ -179,8 +191,10 @@ export function startMotionPreview(
       abort.signal.throwIfAborted();
       const scale = Math.min(1, 480 / Math.max(page.width, page.height));
       async function render(seconds: number) {
-        const plan = evaluateMotion(program, { value: Math.floor(seconds * 30 + 1e-7), rate: 30 });
         const generation = renderGeneration;
+        if (presentation?.busy()) await waitForPresentation(presentation, abort.signal);
+        if (!alive() || paused || generation !== renderGeneration) return;
+        const plan = evaluateMotion(program, { value: Math.floor(seconds * 30 + 1e-7), rate: 30 });
         try {
           await session!.withCanvasFrame(
             applyMotionFrame(program, plan),
@@ -232,6 +246,15 @@ export function startMotionPreview(
       }
       function tick(now: number) {
         if (!alive() || paused) return;
+        if (presentation?.busy()) {
+          presentationHeldAt ??= now;
+          frame = dependencies.requestFrame(tick);
+          return;
+        }
+        if (presentationHeldAt !== null) {
+          began += now - presentationHeldAt;
+          presentationHeldAt = null;
+        }
         const sample = Math.floor((((now - began) / 1000) % duration) * 30 + 1e-7);
         if (sample !== lastSample) {
           lastSample = sample;
@@ -248,6 +271,10 @@ export function startMotionPreview(
         if (!alive() || paused === next) return;
         paused = next;
         if (next) {
+          if (presentationHeldAt !== null) {
+            began += dependencies.now() - presentationHeldAt;
+            presentationHeldAt = null;
+          }
           renderGeneration++;
           pausedAt = dependencies.now();
           if (frame !== null) dependencies.cancelFrame(frame);

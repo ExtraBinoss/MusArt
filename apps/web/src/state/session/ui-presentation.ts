@@ -51,7 +51,7 @@ class UiPresentation implements UiPresentationPort {
     if (
       element?.nodeType !== 1 ||
       !element.matches(
-        ':is([data-slot="popover-content"],[data-slot="context-menu-content"],[data-slot="context-menu-sub-content"],[data-slot="dropdown-menu-content"],[data-slot="dropdown-menu-sub-content"])[data-state="open"]',
+        ':is([data-slot="popover-content"],[data-slot="context-menu-content"],[data-slot="context-menu-sub-content"],[data-slot="dropdown-menu-content"],[data-slot="dropdown-menu-sub-content"],[data-slot="dialog-content"],[data-slot="dialog-overlay"]):is([data-state="open"],[data-state="closed"])',
       )
     )
       return;

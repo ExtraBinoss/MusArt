@@ -246,7 +246,9 @@
   align-items: center;
   gap: 8px;
 }
-.preferences-page[data-state="active"] .preferences-page-body {
+.preferences-workspace[data-has-switched="true"]
+  .preferences-page[data-state="active"]
+  .preferences-page-body {
   animation: preferences-page-reveal 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 @keyframes preferences-page-reveal {
@@ -262,7 +264,9 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .preferences-page[data-state="active"] .preferences-page-body {
+  .preferences-workspace[data-has-switched="true"]
+    .preferences-page[data-state="active"]
+    .preferences-page-body {
     animation: none;
   }
 }

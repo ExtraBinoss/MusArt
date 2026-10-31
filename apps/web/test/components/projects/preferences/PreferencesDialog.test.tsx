@@ -1,9 +1,9 @@
 import { expect, test, vi } from "vitest";
-import { act, screen, fireEvent, within } from "@testing-library/react";
+import { act, screen, fireEvent, within, waitFor } from "@testing-library/react";
 import { setup } from "../../../support/ui";
 import { PreferencesDialog } from "../../../../src/components/projects/preferences/PreferencesDialog";
 import { keybindings } from "../../../../src/state/keybindings/store";
-test("preferences are a standalone accessible dialog with native dismissal", () => {
+test("preferences are a standalone accessible dialog with native dismissal", async () => {
   const d = setup(),
     close = vi.fn();
   d.mount(<PreferencesDialog onClose={close} />);
@@ -12,10 +12,10 @@ test("preferences are a standalone accessible dialog with native dismissal", () 
     "Personnalisez l’apparence et la langue de l’éditeur.",
   );
   fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
-  expect(close).toHaveBeenCalled();
+  await waitFor(() => expect(close).toHaveBeenCalled());
 });
 
-test("the shortcuts category embeds the real editor and keeps shortcut capture Escape inside preferences", () => {
+test("the shortcuts category embeds the real editor and keeps shortcut capture Escape inside preferences", async () => {
   const d = setup(),
     close = vi.fn();
   d.mount(<PreferencesDialog onClose={close} />);
@@ -37,7 +37,7 @@ test("the shortcuts category embeds the real editor and keeps shortcut capture E
     { key: "p", mod: true, alt: true, shift: false },
   ]);
   fireEvent.click(within(editor).getByRole("button", { name: "Fermer" }));
-  expect(close).toHaveBeenCalledOnce();
+  await waitFor(() => expect(close).toHaveBeenCalledOnce());
   act(() => keybindings.reset());
 });
 test("opens directly in editor preferences through the routed initial section", () => {

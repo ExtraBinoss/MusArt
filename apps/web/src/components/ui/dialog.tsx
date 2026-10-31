@@ -8,9 +8,13 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "./button";
+import { useOverlayEntrance } from "../shared/overlays/use-overlay-entrance";
+import { withPresentationBoundary } from "../shared/overlays/PresentationBoundary";
+import "./dialog.css";
 
-function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
-  return <DialogPrimitive.Root data-slot="dialog" {...props} />;
+function Dialog({ onOpenChange, ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
+  const change = useOverlayEntrance(onOpenChange, true);
+  return <DialogPrimitive.Root data-slot="dialog" onOpenChange={change} {...props} />;
 }
 
 function DialogTrigger({ ...props }: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
@@ -46,6 +50,7 @@ function DialogContent({
   children,
   showCloseButton = true,
   closeLabel,
+  asChild,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean;
@@ -57,13 +62,14 @@ function DialogContent({
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
+        asChild={asChild}
         className={cn(
           "fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:max-w-lg",
           className,
         )}
         {...props}
       >
-        {children}
+        {withPresentationBoundary(children, asChild)}
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"

@@ -1,14 +1,15 @@
-import { createContext, useContext, useCallback, useMemo, useState, type ReactNode } from "react";
-import { ArrowUpRight, Star } from "lucide-react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { atom, useSetAtom } from "jotai";
+import { ItemDialog, type LibrarySelection } from "./ItemDialog";
+import { ArrowUpRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { EditorServices } from "../../../state/contracts";
-import { libraryItemKey, type LibraryItem } from "../../../services/projects/library/favorites";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "../../ui/dialog";
+import { type LibraryItem } from "../../../services/projects/library/favorites";
 import { Button } from "../../ui/button";
-import { MeltLogo } from "../../../ui/brand/MeltLogo";
 import { LibraryItemsContext } from "./context";
-import { ItemPreview } from "./ItemPreview";
 import { useFavorites } from "./use-favorites";
+import { FavoritesOutletContext } from "./favorites-context";
+export { useLibraryFavorites } from "./favorites-context";
 import "./messages";
 import "./items.css";
 export function LibraryOpenButton({
@@ -46,18 +47,21 @@ export function LibraryBrowser({
   services: EditorServices;
   busy: boolean;
 }) {
-  const { t } = useTranslation("libraryItem"),
-    favorites = useFavorites();
-  const [selected, setSelected] = useState<{ item: LibraryItem; open: () => void } | null>(null),
-    [error, setError] = useState(false);
-  const inspect = useCallback((item: LibraryItem, open: () => void) => {
-    setSelected({ item, open });
-    setError(false);
-  }, []);
+  const { t } = useTranslation("libraryItem");
+  const favorites = useFavorites();
+  const [selection] = useState(() => atom<LibrarySelection | null>(null));
+  const select = useSetAtom(selection);
+  const inspect = useCallback(
+    (item: LibraryItem, open: () => void) => {
+      select({
+        item,
+        open,
+        returnFocus: document.activeElement instanceof HTMLElement ? document.activeElement : null,
+      });
+    },
+    [select],
+  );
   const context = useMemo(() => ({ inspect }), [inspect]);
-  const favorite =
-    selected &&
-    favorites.items.some((item) => libraryItemKey(item) === libraryItemKey(selected.item));
   return (
     <FavoritesOutletContext.Provider value={favorites}>
       <LibraryItemsContext.Provider value={context}>
@@ -70,70 +74,8 @@ export function LibraryBrowser({
             </button>
           </div>
         )}
-        {selected && (
-          <Dialog
-            open
-            onOpenChange={(open) => {
-              if (!open && !busy) setSelected(null);
-            }}
-          >
-            <DialogContent className="library-item-dialog" showCloseButton={!busy}>
-              <div className="library-item-info">
-                <DialogTitle className="library-item-name">{selected.item.name}</DialogTitle>
-                <span className="library-item-kind">{t(selected.item.kind)}</span>
-                <DialogDescription>{t("hint")}</DialogDescription>
-                <div className="library-item-author">
-                  <MeltLogo
-                    size={38}
-                    className={selected.item.kind === "project" ? "library-author-avatar" : ""}
-                  />
-                  <span>
-                    <small>{t("author")}</small>
-                    <strong>
-                      {selected.item.kind === "project" ? `ExtraBinoss · ${t("me")}` : "Melt"}
-                    </strong>
-                  </span>
-                </div>
-                <Button
-                  className="library-item-primary"
-                  disabled={busy}
-                  onClick={() => {
-                    const action = selected.open;
-                    setSelected(null);
-                    action();
-                  }}
-                >
-                  <ArrowUpRight size={15} />
-                  <span>{t("open")}</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  disabled={favorites.saving || busy}
-                  aria-pressed={!!favorite}
-                  onClick={() => {
-                    setError(false);
-                    void favorites.toggle(selected.item, !favorite).catch(() => setError(true));
-                  }}
-                >
-                  <Star size={14} fill={favorite ? "currentColor" : "none"} />
-                  <span>{t(favorite ? "unfavorite" : "favorite")}</span>
-                </Button>
-                {error && <p role="alert">{t("saveFailed")}</p>}
-              </div>
-              <ItemPreview
-                key={libraryItemKey(selected.item)}
-                item={selected.item}
-                services={services}
-              />
-            </DialogContent>
-          </Dialog>
-        )}
+        <ItemDialog selection={selection} services={services} busy={busy} />
       </LibraryItemsContext.Provider>
     </FavoritesOutletContext.Provider>
   );
-}
-// One durable favorites owner serves details, badges and ordering in both normal grids.
-const FavoritesOutletContext = createContext<ReturnType<typeof useFavorites> | null>(null);
-export function useLibraryFavorites() {
-  return useContext(FavoritesOutletContext);
 }

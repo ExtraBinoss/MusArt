@@ -1,3 +1,5 @@
+import { atom, useStore } from "jotai";
+import { PreferencesHost } from "./preferences/PreferencesHost";
 import { LibraryBrowser } from "./items/LibraryBrowser";
 import { brand } from "../../ui/brand/config";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
@@ -80,7 +82,8 @@ function ProjectDashboard({
   const [creating, setCreating] = useState(initialView === "newProject");
   const [busy, setBusy] = useState(false);
   const [templateLoading, setTemplateLoading] = useState(false);
-  const [preferences, setPreferences] = useState(false);
+  const [preferences] = useState(() => atom(false));
+  const preferenceStore = useStore();
   const fileRef = useRef<HTMLInputElement>(null);
   const librarySurface = useRef<HTMLDivElement>(null);
   const libraryContent = useRef<HTMLDivElement>(null);
@@ -209,17 +212,20 @@ function ProjectDashboard({
       <Dialog
         open
         onOpenChange={(open) => {
-          if (!open && !welcome && !busy && !preferences && !creating) onClose();
+          if (!open && !welcome && !busy && !preferenceStore.get(preferences) && !creating)
+            onClose();
         }}
       >
         <DialogContent
           closeLabel={t("close")}
           showCloseButton={!welcome && !busy}
           onEscapeKeyDown={(event) => {
-            if (welcome || busy || preferences || creating) event.preventDefault();
+            if (welcome || busy || preferenceStore.get(preferences) || creating)
+              event.preventDefault();
           }}
           onInteractOutside={(event) => {
-            if (welcome || busy || preferences || creating) event.preventDefault();
+            if (welcome || busy || preferenceStore.get(preferences) || creating)
+              event.preventDefault();
           }}
           data-welcome={welcome || undefined}
           className="floating-panel project-dashboard translate-x-0 translate-y-0"
@@ -242,7 +248,7 @@ function ProjectDashboard({
               busy={busy}
               onViewChange={changeView}
               onChooseRecent={(id) => complete(() => services.openProject(id))}
-              onPreferences={() => setPreferences(true)}
+              onPreferences={() => preferenceStore.set(preferences, true)}
             />
           </div>
           <div ref={librarySurface} className="dashboard-main">
@@ -349,12 +355,12 @@ function ProjectDashboard({
                 surface={librarySurface}
                 content={libraryContent}
                 onViewChange={changeView}
-                onPreferences={() => setPreferences(true)}
+                onPreferences={() => preferenceStore.set(preferences, true)}
               />
             )}
           </div>
           {creationDialog}
-          {preferences && <PreferencesDialog onClose={() => setPreferences(false)} />}
+          <PreferencesHost state={preferences} />
           <input
             ref={fileRef}
             className="sr-only"

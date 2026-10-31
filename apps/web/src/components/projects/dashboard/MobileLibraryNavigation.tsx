@@ -1,3 +1,4 @@
+import { useAtomValue, type Atom } from "jotai";
 import { useEffect, useLayoutEffect, useRef, type RefObject } from "react";
 import { animate, useMotionValue, useReducedMotion } from "motion/react";
 import { FolderOpen, LayoutTemplate, Settings2, Users } from "lucide-react";
@@ -10,7 +11,7 @@ import "./mobile-library.css";
 export function MobileLibraryNavigation({
   view,
   busy,
-  preferences,
+  preferences: preferencesState,
   surface,
   content,
   onViewChange,
@@ -18,14 +19,15 @@ export function MobileLibraryNavigation({
 }: {
   view: "projects" | "templates";
   busy: boolean;
-  preferences: boolean;
+  preferences: Atom<boolean>;
   surface: RefObject<HTMLElement | null>;
   content: RefObject<HTMLDivElement | null>;
   onViewChange: (view: "projects" | "templates") => void;
   onPreferences: () => void;
 }) {
   const { t } = useTranslation("library"),
-    reduced = useReducedMotion();
+    reduced = useReducedMotion(),
+    preferences = useAtomValue(preferencesState);
   const nav = useRef<HTMLElement>(null),
     position = useMotionValue(NaN),
     x = useMotionValue(0);

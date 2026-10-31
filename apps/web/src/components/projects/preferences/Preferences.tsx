@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 import { Laptop, Sun, Moon, Keyboard, SlidersHorizontal, Paintbrush, Magnet } from "lucide-react";
@@ -49,6 +49,7 @@ export function Preferences({
   editorPreview?: ReactNode;
 } = {}) {
   const { t, i18n } = useTranslation();
+  const [switched, setSwitched] = useState(false);
   const [theme, setTheme] = useAtom(themeAtom),
     [snapping, setSnapping] = useAtom(snappingAtom),
     [clipboard, setClipboard] = useAtom(clipboardAtom);
@@ -60,6 +61,8 @@ export function Preferences({
   return (
     <Tabs
       defaultValue={initialSection}
+      onValueChange={() => setSwitched(true)}
+      data-has-switched={switched}
       orientation="vertical"
       className="preferences preferences-workspace"
     >
