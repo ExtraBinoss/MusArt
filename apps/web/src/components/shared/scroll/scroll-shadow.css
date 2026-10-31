@@ -107,3 +107,59 @@
     transition: none;
   }
 }
+
+/* Content masks reveal the existing glass surface rather than repainting its color.
+   The first two layers preserve the actual scrollbar gutters on either axis. */
+.scroll-shadow[data-scroll-shadow-fade="mask"] {
+  --scroll-fade-top: 0px;
+  --scroll-fade-bottom: 0px;
+  --scroll-fade-left: 0px;
+  --scroll-fade-right: 0px;
+}
+.scroll-shadow[data-scroll-shadow-fade="mask"][data-overflow-top] {
+  --scroll-fade-top: 12px;
+}
+.scroll-shadow[data-scroll-shadow-fade="mask"][data-overflow-bottom] {
+  --scroll-fade-bottom: 12px;
+}
+.scroll-shadow[data-scroll-shadow-fade="mask"][data-overflow-left] {
+  --scroll-fade-left: 12px;
+}
+.scroll-shadow[data-scroll-shadow-fade="mask"][data-overflow-right] {
+  --scroll-fade-right: 12px;
+}
+.scroll-shadow[data-scroll-shadow-fade="mask"] > :first-child {
+  mask-image:
+    linear-gradient(#000, #000), linear-gradient(#000, #000),
+    linear-gradient(
+      to bottom,
+      transparent,
+      #000 var(--scroll-fade-top),
+      #000 calc(100% - var(--scroll-fade-bottom)),
+      transparent
+    ),
+    linear-gradient(
+      to right,
+      transparent,
+      #000 var(--scroll-fade-left),
+      #000 calc(100% - var(--scroll-fade-right)),
+      transparent
+    );
+  mask-size:
+    var(--scroll-shadow-scrollbar-right, 0px) 100%,
+    100% var(--scroll-shadow-scrollbar-bottom, 0px),
+    100% 100%,
+    100% 100%;
+  mask-position:
+    right top,
+    left bottom,
+    left top,
+    left top;
+  mask-repeat: no-repeat;
+  mask-composite: add, add, intersect;
+}
+.scroll-shadow[data-scroll-shadow-fade="mask"]::before,
+.scroll-shadow[data-scroll-shadow-fade="mask"]::after,
+.scroll-shadow[data-scroll-shadow-fade="mask"] > .scroll-shadow-side {
+  display: none;
+}

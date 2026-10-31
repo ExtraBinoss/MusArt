@@ -22,6 +22,7 @@ export const messages = {
     snapDistanceDescription:
       "Measured in screen pixels so the attraction feels consistent at any zoom.",
     trySnap: "Try snapping",
+    tryAction: "Try",
     tryClose: "Close preview",
     tryDescription:
       "Drag the object near the reference. Hold Alt to bypass snapping; arrow keys move it, and Shift increases the step.",
@@ -52,6 +53,7 @@ export const messages = {
     snapDistanceDescription:
       "Mesurée en pixels à l’écran, pour une attraction constante à chaque niveau de zoom.",
     trySnap: "Essayer le magnétisme",
+    tryAction: "Essayer",
     tryClose: "Fermer l’essai",
     tryDescription:
       "Faites glisser l’objet près du repère. Maintenez Alt pour ignorer l’accrochage ; les flèches déplacent l’objet et Maj augmente le pas.",

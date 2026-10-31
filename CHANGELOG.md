@@ -6,6 +6,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Reveal settings categories with a short blur/fade entrance and reduced-motion support. Place the compact Try snapping action beside its distance label, retaining the real sandbox. Add shared content-mask scroll fades for translucent panels, preserving their existing background/blur and scrollbar gutters instead of painting opaque edge bands.
+
 - Keep search typewriter artwork mounted throughout typing and erasing, crossfade successive previews in place, and fade hints while entering a real query without resetting the current artwork. Respect reduced motion and preserve imperative updates and timer/listener cleanup.
 
 - Reduce complex template opening work with bounded scalar-array serialization and a shared validated source/program cache. Add opt-in conservative contour compaction, verified on the original 67-state Full HD reference with a 56.1% smaller manifest; preserve native rendering comparisons and diagnostic timing limits separately from the newer Melt mascot template.

@@ -2,10 +2,10 @@
 
 ## Settings categories and appearance
 
-| Setting         | Behavior                                                                                                                                                                                                                                                                                  |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Categories      | The settings dialog uses genuine vertical Radix tabs with four categories: General, Appearance, Shortcuts and Editor. The navigation remains visible while its selected content scrolls. Colored icon tiles identify categories; active rows and ordinary controls use the neutral theme. |
-| Shortcut editor | Shortcuts embed the same `ShortcutSettings` and `BindingRow` controls as the standalone shortcut dialog, including real recording, conflict validation, clearing, resetting and persistent user overrides.                                                                                |
+| Setting         | Behavior                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Categories      | The settings dialog uses genuine vertical Radix tabs with four categories: General, Appearance, Shortcuts and Editor. The navigation remains visible while its selected content scrolls. Active content enters with a short blur/fade reveal; reduced motion disables it. Translucent panels use the shared ScrollShadow content mask, preserving their glass background and scrollbar gutters. Colored icon tiles identify categories; active rows and ordinary controls use the neutral theme. |
+| Shortcut editor | Shortcuts embed the same `ShortcutSettings` and `BindingRow` controls as the standalone shortcut dialog, including real recording, conflict validation, clearing, resetting and persistent user overrides.                                                                                                                                                                                                                                                                                       |
 
 ## Clipboard preference
 
@@ -40,13 +40,13 @@
 
 ## Try snapping
 
-| Setting                    | Behavior                                                                                                                                                          |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Playground                 | **Try snapping** opens a compact Radix popover with two real core layers and `SnapIndex`, without expanding or resizing the settings panel.                       |
-| Input                      | Pointer and arrow-key input use the actual resolver and live preferences.                                                                                         |
-| Modifiers and cancellation | Shift increases the keyboard step, Alt bypasses snapping, Escape or pointer cancellation restores the gesture's starting position, and Reset restores the sample. |
-| Preview                    | Its DOM transforms and cue lines update imperatively without editing the open project or rerendering editor surfaces per pointer event.                           |
-| Cleanup                    | Closing it releases pointer capture, the resize observer and the preference subscription.                                                                         |
+| Setting                    | Behavior                                                                                                                                                                         |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Playground                 | A compact **Try** action beside **Snapping distance** opens a compact Radix popover with two real core layers and `SnapIndex`, without expanding or resizing the settings panel. |
+| Input                      | Pointer and arrow-key input use the actual resolver and live preferences.                                                                                                        |
+| Modifiers and cancellation | Shift increases the keyboard step, Alt bypasses snapping, Escape or pointer cancellation restores the gesture's starting position, and Reset restores the sample.                |
+| Preview                    | Its DOM transforms and cue lines update imperatively without editing the open project or rerendering editor surfaces per pointer event.                                          |
+| Cleanup                    | Closing it releases pointer capture, the resize observer and the preference subscription.                                                                                        |
 
 Mirrored tests exercise validation, storage failures and cross-window events, atom
 updates, command routing, single numeric commits, actual shortcut recording and

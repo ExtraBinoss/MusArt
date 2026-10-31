@@ -27,13 +27,15 @@ function Panel({ section, children }: { section: PreferencesSection; children: R
   const { t } = useTranslation();
   return (
     <TabsContent value={section} className="preferences-page">
-      <ScrollShadow className="preferences-page-scroll" surface="var(--popover)">
+      <ScrollShadow className="preferences-page-scroll" fade="mask">
         <div className="preferences-page-viewport">
-          <header>
-            <h3>{t(`preferences:${section}`)}</h3>
-            <p>{t(`preferences:${section}Description`)}</p>
-          </header>
-          {children}
+          <div className="preferences-page-body">
+            <header>
+              <h3>{t(`preferences:${section}`)}</h3>
+              <p>{t(`preferences:${section}Description`)}</p>
+            </header>
+            {children}
+          </div>
         </div>
       </ScrollShadow>
     </TabsContent>
@@ -154,7 +156,10 @@ export function Preferences({
             </label>
             <div className="preferences-setting-row">
               <div>
-                <strong>{t("preferences:snapDistance")}</strong>
+                <div className="preferences-setting-heading">
+                  <strong>{t("preferences:snapDistance")}</strong>
+                  {editorPreview}
+                </div>
                 <p>{t("preferences:snapDistanceDescription")}</p>
               </div>
               <NumberInput
@@ -170,7 +175,6 @@ export function Preferences({
               />
             </div>
           </div>
-          {editorPreview}
         </Panel>
       </div>
     </Tabs>

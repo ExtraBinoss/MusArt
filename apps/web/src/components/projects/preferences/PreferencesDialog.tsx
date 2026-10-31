@@ -36,7 +36,10 @@ export function PreferencesDialog({
           <DialogTitle>{t("settings")}</DialogTitle>
           <DialogDescription>{t("dashboard:preferencesHint")}</DialogDescription>
         </DialogHeader>
-        <Preferences initialSection={initialSection} editorPreview={<SnappingPlayground />} />
+        <Preferences
+          initialSection={initialSection}
+          editorPreview={<SnappingPlayground compact />}
+        />
       </DialogContent>
     </Dialog>
   );

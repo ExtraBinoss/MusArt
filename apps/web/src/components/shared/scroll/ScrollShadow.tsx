@@ -9,6 +9,7 @@ export function ScrollShadow({
   surface,
   viewportSelector,
   axis = "vertical",
+  fade = "surface",
 }: {
   children: ReactElement;
   className?: string;
@@ -18,6 +19,8 @@ export function ScrollShadow({
   /** Locate a viewport inside a component that emits sibling metadata (for example Radix Select). */
   viewportSelector?: string;
   axis?: "vertical" | "horizontal" | "both";
+  /** Fade content itself on translucent/blurred panels, without painting an opaque surface. */
+  fade?: "surface" | "mask";
 }) {
   const root = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
@@ -91,6 +94,7 @@ export function ScrollShadow({
       className={cn("scroll-shadow", className)}
       ref={root}
       data-scroll-shadow-axis={axis}
+      data-scroll-shadow-fade={fade}
       data-scroll-axis={axis}
       style={surface ? ({ ...style, "--scroll-shadow-surface": surface } as CSSProperties) : style}
     >

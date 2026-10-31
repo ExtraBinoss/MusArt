@@ -14,16 +14,20 @@ const SIZE = Object.freeze({ width: 360, height: 180 });
 const REFERENCE = Object.freeze({ x: 232, y: 56, width: 64, height: 68 });
 
 /** A disposable sandbox, using the same pure resolver and screen-pixel preference as gestures. */
-export function SnappingPlayground() {
+export function SnappingPlayground({ compact = false }: { compact?: boolean } = {}) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   return (
-    <section className="snapping-playground">
+    <section className="snapping-playground" data-compact={compact}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm">
+          <Button
+            variant={compact ? "ghost" : "outline"}
+            size={compact ? "xs" : "sm"}
+            aria-label={t("preferences:trySnap")}
+          >
             <Play size={13} />
-            {t("preferences:trySnap")}
+            {t(compact ? "preferences:tryAction" : "preferences:trySnap")}
           </Button>
         </PopoverTrigger>
         <PopoverContent

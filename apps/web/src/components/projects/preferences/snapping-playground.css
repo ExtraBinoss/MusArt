@@ -1,6 +1,11 @@
 .snapping-playground {
   margin-top: 16px;
 }
+.snapping-playground[data-compact="true"] {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin: 0;
+}
 .snapping-playground > button {
   font-size: 11px;
 }
