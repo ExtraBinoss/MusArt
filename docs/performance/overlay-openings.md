@@ -1,5 +1,109 @@
 # Effect, adjustment and color opening audit — 2026-10-30
 
+## Supplied Chrome traces and shared menu correction — 2026-10-31
+
+The user's `Trace-20261031T003622.json` records four right-click openings
+lasting 135.3–327.3 ms inside the native contextmenu dispatch. Every following
+right-button pointerup dispatches a synthetic `click` from Radix MenuItem's
+pointer-release handler, followed by `menu.itemSelect`; those nested clicks take
+107.1–299.7 ms. The item received no pointerdown because it mounted beneath the
+held right button. This is a second activation caused by the menu implementation,
+not another physical primary click. The initial centre-of-label witness missed
+it because its release landed on a menu separator.
+
+All shared context/dropdown root and submenu content now capture pointerup and
+reject secondary-button activation before Radix's item handler can synthesize a
+click. The same guard protects Select options. Primary drag-release selection,
+keyboard activation, consumer capture callbacks and genuine Radix focus/portals
+remain covered. The native Morph witness explicitly holds the right button,
+moves over Duplicate and releases it there: the menu must remain open, the
+revision and layer count must stay unchanged, and a later deliberate duplicate
+must produce exactly one transaction with exact undo. The pre-correction frozen
+build fails that retained-menu assertion; its failure is archived.
+
+The user's `Trace-20261031T004013.json` independently records 183.7–259.7 ms
+pointerdown handlers when opening the Add menu. The trace includes the modal
+MenuRootContent, global page locking and synchronous style/position/focus work;
+React DevTools 8 also measures unchanged Suspense host geometry in this session.
+Its `measureHostInstance` calls appear directly in native layout stacks. These
+are observed costs, not evidence that App or every editor surface rerendered.
+
+Editor context menus and dropdowns now default to `modal={false}` in the shared
+primitives, with an explicit modal override retained. They no longer set inherited
+body pointer blocking or add ordinary-menu scroll locks. Actual dialogs preserve
+their own modal behavior. Shared integration regressions verify background
+pointer styles, overflow and accessibility, in addition to native dismissal and
+focus behavior. AGENTS.md records the lasting rule: local menus must keep
+invalidation local; zero React commits alone do not establish responsiveness.
+
+A separate Chrome 154.0.8037.97 development diagnostic on the actual Morph project
+records the following first-useful-RAF observations. Both use 1600×1000 at DPR 1,
+one foreground native browser, CPUQuota 200%, MemoryHigh 1800 MiB / MemoryMax
+2600 MiB and zero scope swap on a shared Linux workstation. No extension was
+loaded in this controlled browser. The scope bounds observed renderer/GPU work;
+Chrome may register its main process in a separate desktop scope.
+
+| Add menu sample                  | Earlier modal default | Nonmodal default |
+| -------------------------------- | --------------------: | ---------------: |
+| First root opening               |              253.1 ms |         124.1 ms |
+| Root reopening                   |              156.9 ms |         204.4 ms |
+| Effect submenu, two openings     |        23.3 / 15.2 ms |   25.9 / 51.9 ms |
+| Adjustment submenu, two openings |        41.1 / 38.7 ms |   20.3 / 55.8 ms |
+
+The first root observation improves, but these two samples do **not** establish a
+repeatable warm speedup or instantaneous development interaction. The reports
+retain that regression rather than treating the nonmodal default as a complete
+latency solution. Native production behavior and uninstrumented timing remain
+separate from React development/profiling overhead.
+
+The accompanying subscription audit removes selection-only invalidation from the
+simple desktop/mobile timelines, artboard mode footer, timelapse panel and layer
+animation controls. Advanced timelines still follow canonical layer selection;
+Inspector and selected-content export retain their necessary live subscriptions.
+A shared cached document selector handles edits, page changes, loads and cleanup.
+Deleted animation owners retire before geometry lookup, avoiding a stale
+Inspector crash after duplicate/undo.
+
+The maintained native witness is
+[`layer-menu-responsiveness.spec.ts`](../../test/browser/layer-menu-responsiveness.spec.ts).
+It records generated/dispatch/presentation clocks and actual React counters,
+checks held secondary release, repeated opening, one duplicate transaction and
+undo, the actual Morph effect popover, Add/effect/adjustment menus, page errors
+and production pixel-readback APIs. The source traces, frozen before bundle,
+matching maps, diagnostic runs and failures are retained under
+`artifacts/user-right-click-20261031/` and `artifacts/layer-overlay-investigation/`.
+
+An unrelated concurrent TanStack Start routing migration replaced the application
+entry while this investigation was running. The standard final build reached
+prerendering and failed on `/` with an internal server error. A separate ignored
+verification entry mounts the same current Studio/editor source and public assets
+without that routing/prerender stage, retains StrictMode and the normal renderer
+adapter, and explicitly includes all application UI utility classes. That bundle
+can verify this UI change; it is not a passing full routing/release build.
+
+The final isolated native witness passes in 15.1 seconds (17.0 seconds including
+runner work), using Chrome 154.0.8037.97, native Intel Xe-LPG WebGPU, 1600×1000
+and DPR 1. Dispatch → first useful RAF / second presentation opportunity are
+113.2 / 123.4 ms for cold Morph context selection, 33.3 / 44.2 ms for selected
+reopening, 82.4 / 98.4 ms for the Morph effect popover and 55.5 / 69.0 ms for
+the Add root. All six actual React counters stay unchanged in these samples;
+page errors and instrumented production pixel reads remain zero. These are
+individual observations on the isolated UI bundle, not paired speedup estimates
+against the supplied instrumented development session. The two native French and
+English catalogue regressions also pass, including category filtering, actual
+effect/adjustment insertion and exact undo.
+
+An earlier native diagnostic retained Playwright tracing and repeatedly returned
+the multi-megabyte Morph document as a nested protocol object. It exceeded the
+45-second test budget while checking exact undo. A focused CPU profile identified
+structured cloning, protocol serialization, GC and background journal work in
+that interval. The final witness preserves the same project, gestures, duplicate,
+undo and exact document checks, but returns canonical JSON strings for whole
+document equality and records timings without Playwright tracing. No timeout,
+interaction or assertion was removed to obtain the passing result.
+
+## Earlier effect and adjustment cohort
+
 The current production editor does not rebuild App, Inspector, CanvasArea, EditorCanvas or EditorScene when these menus open. The remaining opening cost is local UI mounting/style/layout and browser scheduling. A Chrome DevTools diagnostic attributes synchronous style work to Radix Presence's animation-name lookup and menu positioning. Its software-rendered, instrumented browser is separate from the uninstrumented native timing cohort; it establishes attribution, not a comparable duration or estimated saving.
 
 ## Shared scheduling correction

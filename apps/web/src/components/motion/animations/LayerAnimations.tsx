@@ -1,5 +1,5 @@
 import { AnimatedCollapsibleContent } from "../../shared/disclosure/AnimatedCollapsibleContent";
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 import { ChevronRight, Plus, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -10,6 +10,7 @@ import {
   type MotionAnimation,
 } from "@musart/core";
 import { createMotionTransport } from "../../../services/motion/transport";
+import { useEngineValue } from "../../../state/session/editor";
 import { NumberInput } from "../../shared/NumberInput";
 import { Button } from "../../ui/button";
 import { Switch } from "../../ui/switch";
@@ -25,15 +26,19 @@ import "./animations.css";
 
 export function LayerAnimations({ engine, layerId }: { engine: EnginePort; layerId: string }) {
   const { t } = useTranslation("animations");
-  const snapshot = useSyncExternalStore(engine.subscribe, engine.getSnapshot, engine.getSnapshot);
+  const project = useEngineValue(engine, (snapshot) => snapshot.project);
+  const pageId = useEngineValue(engine, (snapshot) => snapshot.pageId);
   const presentation = useAnimationPresentation(engine);
   const [error, setError] = useState(false);
-  const page = snapshot.project.pages.find((page) => page.id === snapshot.pageId)!;
+  const page = project.pages.find((page) => page.id === pageId)!;
   const tracks = page.motion?.tracks.filter((track) => track.layerId === layerId) ?? [];
-  const locked = createLayerGeometryIndex(page).isLocked(layerId);
+  const geometry = createLayerGeometryIndex(page);
+  // A retained Inspector can briefly outlive a deleted/undone layer.
+  if (!geometry.byId.has(layerId)) return null;
+  const locked = geometry.isLocked(layerId);
   if (page.motion?.mode !== "motion") return null;
   function run(action: () => void) {
-    if (locked || engine.getSnapshot().project !== snapshot.project) return;
+    if (locked || engine.getSnapshot().project !== project) return;
     try {
       action();
       setError(false);
@@ -55,7 +60,7 @@ export function LayerAnimations({ engine, layerId }: { engine: EnginePort; layer
           {t("title")}
         </h3>
         <MotionPopover
-          key={`${snapshot.project.id}:${page.id}:${layerId}`}
+          key={`${project.id}:${page.id}:${layerId}`}
           engine={engine}
           compositionId={page.id}
           layerId={layerId}

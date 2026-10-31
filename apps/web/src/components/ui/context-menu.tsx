@@ -3,11 +3,26 @@
 
 import * as React from "react";
 import { cn } from "./utils";
+import { withPresentationBoundary } from "../shared/overlays/PresentationBoundary";
+import { useOverlayEntrance } from "../shared/overlays/use-overlay-entrance";
+import { menuPointerUpCapture } from "./menu/pointer";
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react";
 import { ContextMenu as ContextMenuPrimitive } from "radix-ui";
 
-function ContextMenu({ ...props }: React.ComponentProps<typeof ContextMenuPrimitive.Root>) {
-  return <ContextMenuPrimitive.Root data-slot="context-menu" {...props} />;
+function ContextMenu({
+  onOpenChange,
+  modal = false,
+  ...props
+}: React.ComponentProps<typeof ContextMenuPrimitive.Root>) {
+  const change = useOverlayEntrance(onOpenChange);
+  return (
+    <ContextMenuPrimitive.Root
+      data-slot="context-menu"
+      modal={modal}
+      onOpenChange={change}
+      {...props}
+    />
+  );
 }
 
 function ContextMenuTrigger({
@@ -24,8 +39,12 @@ function ContextMenuPortal({ ...props }: React.ComponentProps<typeof ContextMenu
   return <ContextMenuPrimitive.Portal data-slot="context-menu-portal" {...props} />;
 }
 
-function ContextMenuSub({ ...props }: React.ComponentProps<typeof ContextMenuPrimitive.Sub>) {
-  return <ContextMenuPrimitive.Sub data-slot="context-menu-sub" {...props} />;
+function ContextMenuSub({
+  onOpenChange,
+  ...props
+}: React.ComponentProps<typeof ContextMenuPrimitive.Sub>) {
+  const change = useOverlayEntrance(onOpenChange);
+  return <ContextMenuPrimitive.Sub data-slot="context-menu-sub" onOpenChange={change} {...props} />;
 }
 
 function ContextMenuRadioGroup({
@@ -60,22 +79,32 @@ function ContextMenuSubTrigger({
 
 function ContextMenuSubContent({
   className,
+  children,
+  asChild,
+  onPointerUpCapture,
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.SubContent>) {
   return (
     <ContextMenuPrimitive.SubContent
+      asChild={asChild}
+      onPointerUpCapture={menuPointerUpCapture(onPointerUpCapture)}
       data-slot="context-menu-sub-content"
       className={cn(
         "z-50 min-w-[8rem] origin-(--radix-context-menu-content-transform-origin) overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
         className,
       )}
       {...props}
-    />
+    >
+      {withPresentationBoundary(children, asChild)}
+    </ContextMenuPrimitive.SubContent>
   );
 }
 
 function ContextMenuContent({
   className,
+  children,
+  asChild,
+  onPointerUpCapture,
   portalContainer,
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Content> & {
@@ -84,13 +113,17 @@ function ContextMenuContent({
   return (
     <ContextMenuPrimitive.Portal container={portalContainer}>
       <ContextMenuPrimitive.Content
+        asChild={asChild}
+        onPointerUpCapture={menuPointerUpCapture(onPointerUpCapture)}
         data-slot="context-menu-content"
         className={cn(
           "z-50 max-h-(--radix-context-menu-content-available-height) min-w-[8rem] origin-(--radix-context-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
           className,
         )}
         {...props}
-      />
+      >
+        {withPresentationBoundary(children, asChild)}
+      </ContextMenuPrimitive.Content>
     </ContextMenuPrimitive.Portal>
   );
 }

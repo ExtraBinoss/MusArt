@@ -50,7 +50,9 @@ class UiPresentation implements UiPresentationPort {
     const element = event.target as Element | null;
     if (
       element?.nodeType !== 1 ||
-      !element.matches('[data-slot="popover-content"][data-state="open"]')
+      !element.matches(
+        ':is([data-slot="popover-content"],[data-slot="context-menu-content"],[data-slot="context-menu-sub-content"],[data-slot="dropdown-menu-content"],[data-slot="dropdown-menu-sub-content"])[data-state="open"]',
+      )
     )
       return;
     const until = Date.now() + 250;

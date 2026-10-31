@@ -13,7 +13,9 @@ import { useAtom } from "jotai";
 import { timelineOpenAtom } from "../../../state/motion/timeline-state";
 import { Layers, SlidersHorizontal, Download, MousePointer2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useEngine, useEngineValue } from "../../../state/session/editor";
+import { useEngineValue } from "../../../state/session/editor";
+import { useDocumentSnapshot } from "../../../state/session/use-document-snapshot";
+import { useAnimationPresentation } from "../../motion/animations/presentation";
 import { EditorSidebar } from "../EditorSidebar";
 import { MobileExport } from "./MobileExport";
 import { MobileSheet } from "./MobileSheet";
@@ -134,7 +136,8 @@ export const MobileEditor = memo(function MobileEditor({ tools, ...props }: Prop
 });
 
 function MobileMotion({ engine, onClose }: Pick<Props, "engine"> & { onClose: () => void }) {
-  const snapshot = useEngine(engine);
+  const { details } = useAnimationPresentation(engine);
+  const snapshot = useDocumentSnapshot(engine, details);
   const transport = useMemo(() => createMotionTransport(engine), [engine]);
   const { t } = useTranslation("mobile");
   const page = snapshot.project.pages.find((item) => item.id === snapshot.pageId)!;

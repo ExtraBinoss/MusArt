@@ -16,6 +16,8 @@ Direct user instructions take precedence. Read the relevant architecture contrac
 - Use Three.js `WebGPURenderer`, React Three Fiber and TSL, including Three's WebGL fallback. Do not introduce a native WebGPU engine, handwritten shader pipeline or alternative rendering framework.
 - Keep composition, effects and masks on GPU textures. No production GPU pixel readbacks into JavaScript. Native image preparation and browser encoding are allowed.
 - Render on demand, bound caches and queues, and dispose resources, workers, listeners, timers and object URLs explicitly.
+- Editor context menus and dropdowns default to nonmodal operation. Local menu actions must not change inherited page styles or lock `body`; preserve explicit modal dialogs. Reject non-primary pointer releases before Radix item activation, while retaining primary drag selection and keyboard access. Verify these shared defaults with native input and focus checks.
+- Keep style/layout invalidation local to the changed surface, and batch geometry reads before writes. Measure actual browser input-to-presentation latency: unchanged React commit counters alone do not establish responsiveness.
 - Continuous property previews use imperative subscriptions. They must not rerender App, Inspector, CanvasArea, EditorCanvas or EditorScene. Commit once per completed gesture, with one undo entry; cancellation restores the original value.
 - Wheel/trackpad pans both axes. Ctrl/Cmd+wheel zooms around the pointer. Keep 100% reset, fit and recenter controls available.
 - Keep UI text in English/French resources and documentation in English. Use the shared `apps/web/src/ui/brand` configuration, theme tokens and SVG mascot; preserve upstream notices and legacy portable-format and persistence identifiers.

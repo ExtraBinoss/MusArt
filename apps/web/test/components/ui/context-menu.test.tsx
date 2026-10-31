@@ -1,6 +1,7 @@
 import { expect, test, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import * as Menu from "../../../src/components/ui/context-menu";
+import { getUiPresentation } from "../../../src/state/session/ui-presentation";
 test("genuine context menus expose nested, checkbox, radio and grouped actions", async () => {
   const select = vi.fn();
   render(
@@ -80,4 +81,28 @@ test("an explicit container preserves nonmodal Radix presence, Escape and native
     view.unmount();
     container.remove();
   }
+});
+
+test("opening callbacks yield sibling work before selecting, with no closed-menu lease", () => {
+  const port = getUiPresentation();
+  const changed = vi.fn((open: boolean) => {
+    if (open) expect(port.busy()).toBe(true);
+  });
+  const view = render(
+    <Menu.ContextMenu modal={false} onOpenChange={changed}>
+      <Menu.ContextMenuTrigger>Open layer actions</Menu.ContextMenuTrigger>
+      <Menu.ContextMenuContent asChild>
+        <article data-original-content>
+          <Menu.ContextMenuItem>Duplicate</Menu.ContextMenuItem>
+        </article>
+      </Menu.ContextMenuContent>
+    </Menu.ContextMenu>,
+  );
+  expect(port.busy()).toBe(false);
+  fireEvent.contextMenu(screen.getByText("Open layer actions"));
+  expect(changed).toHaveBeenCalledWith(true);
+  expect(screen.getByRole("menu").tagName).toBe("ARTICLE");
+  expect(screen.getByRole("menu")).toHaveAttribute("data-original-content");
+  view.unmount();
+  expect(port.busy()).toBe(false);
 });

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Clapperboard, Download, Pause, Play, RotateCcw } from "lucide-react";
 import { evaluateReplay, type EnginePort, type ReplaySpec } from "@musart/core";
 import type { EditorServices } from "../../state/contracts";
-import { useEngine } from "../../state/session/editor";
+import { useDocumentSnapshot } from "../../state/session/use-document-snapshot";
 import { createPlaybackSource } from "../../canvas/session/playback-source";
 import { getAnimationSession } from "../../services/animation/session";
 import { exportReplayVideo, VideoExportError } from "../../services/animation/export-video";
@@ -26,7 +26,7 @@ export function AnimatePanel({
   services: EditorServices;
 }) {
   const { t } = useTranslation("animation");
-  const snapshot = useEngine(engine);
+  const snapshot = useDocumentSnapshot(engine);
   const session = useMemo(() => getAnimationSession(engine), [engine]);
   const recording = useSyncExternalStore(session.subscribe, session.read);
   const playback = useMemo(() => createPlaybackSource(engine), [engine]);

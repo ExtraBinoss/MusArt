@@ -22,6 +22,8 @@ import { modifierLabel } from "../search/shortcuts";
 import type { TimelineTransport, TimelineUnit } from "./model";
 import "./messages";
 
+type ControlSnapshot = Pick<SessionSnapshot, "project" | "pageId" | "revision">;
+
 function AutoKey({ engine, active }: { engine: EnginePort; active: boolean }) {
   const { t } = useTranslation("motion");
   const port = useMemo(() => getMotionAuthoring(engine), [engine]);
@@ -48,7 +50,7 @@ function Duration({
   active,
 }: {
   engine: EnginePort;
-  snapshot: SessionSnapshot;
+  snapshot: ControlSnapshot;
   duration: MotionTime;
   unit: TimelineUnit;
   active: boolean;
@@ -150,7 +152,7 @@ export const TimelineControls = memo(function TimelineControls({
   active = true,
 }: {
   engine: EnginePort;
-  snapshot: SessionSnapshot;
+  snapshot: ControlSnapshot;
   transport: TimelineTransport;
   unit: TimelineUnit;
   onUnit: () => void;

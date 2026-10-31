@@ -6,6 +6,7 @@ import { DropdownChevron } from "../shared/DropdownChevron";
 import { Select as SelectPrimitive } from "radix-ui";
 import { ScrollShadow } from "../shared/scroll/ScrollShadow";
 import { bindSelectScroll } from "./select/scroll";
+import { menuPointerUpCapture } from "./menu/pointer";
 import "./select/scroll.css";
 
 function Select({ ...props }: React.ComponentProps<typeof SelectPrimitive.Root>) {
@@ -52,6 +53,7 @@ function SelectContent({
   position = "item-aligned",
   align = "center",
   style,
+  onPointerUpCapture,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
   const cleanup = React.useRef<(() => void) | null>(null);
@@ -64,6 +66,7 @@ function SelectContent({
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
+        onPointerUpCapture={menuPointerUpCapture(onPointerUpCapture)}
         data-slot="select-content"
         className={cn(
           "select-scroll-content relative z-50 min-w-[8rem] origin-(--radix-select-content-transform-origin) rounded-md border bg-popover text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",

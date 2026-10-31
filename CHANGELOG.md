@@ -12,6 +12,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 - Fixed Motion library previews that sent designed templates to the media-bundle loader. Hover and installation now share validated preparation for designed projects, and the complete registered Motion catalogue includes the Morphing Type bundle within an explicit 8 MiB manifest limit.
 
+- Fixed phantom context-menu actions on right-button release: shared context menus, dropdowns and selects now reject non-primary releases before Radix can synthesize an item click. Editor context/dropdown menus default to nonmodal operation to avoid global page pointer/scroll locks. Narrowed document subscriptions in desktop/mobile timelines, artboard mode controls, the timelapse panel and animation controls; retired deleted animation owners safely. Added native Morph release/reopening and transaction regressions, shared pointer/style checks and permanent contribution rules. See `docs/performance/overlay-openings.md` for the supplied Chrome traces and measurement limits.
+
 - Fixed duplicate React keys in typewriter search hints when distinct projects or templates share the same display name.
 
 - Replaced the pastel brand primary with saturated violet `#8B5CF6` and deeper `#7C3AED` action fills across both themes, the shared mascot gradient and generated browser/install icons.

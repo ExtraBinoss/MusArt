@@ -4,10 +4,12 @@
 import * as React from "react";
 import { cn } from "./utils";
 import { withPresentationBoundary } from "../shared/overlays/PresentationBoundary";
+import { useOverlayEntrance } from "../shared/overlays/use-overlay-entrance";
 import { Popover as PopoverPrimitive } from "radix-ui";
 
-function Popover({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Root>) {
-  return <PopoverPrimitive.Root data-slot="popover" {...props} />;
+function Popover({ onOpenChange, ...props }: React.ComponentProps<typeof PopoverPrimitive.Root>) {
+  const change = useOverlayEntrance(onOpenChange);
+  return <PopoverPrimitive.Root data-slot="popover" onOpenChange={change} {...props} />;
 }
 
 function PopoverTrigger({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Trigger>) {

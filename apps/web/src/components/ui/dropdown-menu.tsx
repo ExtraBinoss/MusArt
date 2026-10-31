@@ -2,11 +2,25 @@
 import * as React from "react";
 import { cn } from "./utils";
 import { withPresentationBoundary } from "../shared/overlays/PresentationBoundary";
+import { useOverlayEntrance } from "../shared/overlays/use-overlay-entrance";
+import { menuPointerUpCapture } from "./menu/pointer";
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 
-function DropdownMenu({ ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) {
-  return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
+function DropdownMenu({
+  onOpenChange,
+  modal = false,
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) {
+  const change = useOverlayEntrance(onOpenChange);
+  return (
+    <DropdownMenuPrimitive.Root
+      data-slot="dropdown-menu"
+      modal={modal}
+      onOpenChange={change}
+      {...props}
+    />
+  );
 }
 
 function DropdownMenuPortal({
@@ -25,6 +39,7 @@ function DropdownMenuContent({
   className,
   children,
   asChild,
+  onPointerUpCapture,
   sideOffset = 4,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) {
@@ -32,6 +47,7 @@ function DropdownMenuContent({
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
         asChild={asChild}
+        onPointerUpCapture={menuPointerUpCapture(onPointerUpCapture)}
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
         className={cn(
@@ -169,8 +185,14 @@ function DropdownMenuShortcut({ className, ...props }: React.ComponentProps<"spa
   );
 }
 
-function DropdownMenuSub({ ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Sub>) {
-  return <DropdownMenuPrimitive.Sub data-slot="dropdown-menu-sub" {...props} />;
+function DropdownMenuSub({
+  onOpenChange,
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Sub>) {
+  const change = useOverlayEntrance(onOpenChange);
+  return (
+    <DropdownMenuPrimitive.Sub data-slot="dropdown-menu-sub" onOpenChange={change} {...props} />
+  );
 }
 
 function DropdownMenuSubTrigger({
@@ -201,11 +223,13 @@ function DropdownMenuSubContent({
   className,
   children,
   asChild,
+  onPointerUpCapture,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.SubContent>) {
   return (
     <DropdownMenuPrimitive.SubContent
       asChild={asChild}
+      onPointerUpCapture={menuPointerUpCapture(onPointerUpCapture)}
       data-slot="dropdown-menu-sub-content"
       className={cn(
         "z-50 min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",

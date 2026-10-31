@@ -135,12 +135,18 @@ it("ignores a captured old timer without clearing or duplicating the current tim
   schedule.mockRestore();
 });
 
-it("protects the actual positioned entrance rather than only the initial content mount", () => {
+it.each([
+  "popover-content",
+  "context-menu-content",
+  "context-menu-sub-content",
+  "dropdown-menu-content",
+  "dropdown-menu-sub-content",
+])("protects the positioned %s entrance rather than only its initial mount", (slot) => {
   vi.useFakeTimers();
   const port = getUiPresentation(),
     release = port.hold();
   const content = document.body.appendChild(document.createElement("div"));
-  content.dataset.slot = "popover-content";
+  content.dataset.slot = slot;
   content.dataset.state = "open";
   vi.advanceTimersByTime(200);
   content.dispatchEvent(new Event("animationstart", { bubbles: true }));

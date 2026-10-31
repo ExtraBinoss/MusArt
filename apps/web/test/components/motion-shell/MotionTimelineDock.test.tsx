@@ -6,6 +6,7 @@ import { MotionTimelineDock } from "../../../src/components/motion-shell/MotionT
 import { timelineOpenAtom } from "../../../src/state/motion/timeline-state";
 import { createMotionTransport } from "../../../src/services/motion/transport";
 import { setup } from "../../support/ui";
+import { animationPresentation } from "../../../src/components/motion/animations/presentation";
 
 let reduced = true;
 vi.mock("motion/react", async (original) => ({
@@ -17,6 +18,31 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 const dock = () => document.querySelector(".motion-timeline-dock")!;
+
+test("layer selection retains the simple timeline; advanced rows adopt canonical selection", () => {
+  const d = setup();
+  d.engine.execute({ type: "setCompositionMode", mode: "motion" });
+  const url = location.href;
+  history.replaceState(null, "", "?automation=1");
+  const view = d.mount(<MotionTimelineDock engine={d.engine} />);
+  const panel = document.querySelector<HTMLElement>(".motion-timeline")!;
+  const before = panel.dataset.reactRenders;
+  try {
+    act(() => {
+      d.engine.select([d.text.id]);
+    });
+    expect(d.engine.getSnapshot().selection).toEqual([d.text.id]);
+    expect(panel.dataset.reactRenders).toBe(before);
+    act(() => animationPresentation(d.engine).set({ details: true }));
+    const advanced = Number(panel.dataset.reactRenders);
+    expect(advanced).toBeGreaterThan(Number(before));
+    act(() => d.engine.select([d.rectangle.id]));
+    expect(Number(panel.dataset.reactRenders)).toBeGreaterThan(advanced);
+  } finally {
+    view.unmount();
+    history.replaceState(null, "", url);
+  }
+});
 
 test("opens existing Motion in live peek, retains header/DOM and isolates toggle/pin from editor roots", () => {
   const d = setup(),

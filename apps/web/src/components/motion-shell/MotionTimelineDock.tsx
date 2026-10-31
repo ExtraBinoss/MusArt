@@ -3,7 +3,7 @@ import { useAtom, useStore } from "jotai";
 import { animate, useReducedMotion } from "motion/react";
 import type { EnginePort, SessionSnapshot } from "@musart/core";
 import { timelineOpenAtom } from "../../state/motion/timeline-state";
-import { useEngine } from "../../state/session/editor";
+import { useDocumentSnapshot } from "../../state/session/use-document-snapshot";
 import { createMotionTransport } from "../../services/motion/transport";
 import { TimelinePanel } from "../motion/TimelinePanel";
 import type { TimelineTransport } from "../motion/model";
@@ -13,6 +13,7 @@ import {
   type ViewportResizeLease,
 } from "../../canvas/session/viewport-resize";
 import { presentationSpring } from "../shared/motion/presentation-spring";
+import { useAnimationPresentation } from "../motion/animations/presentation";
 import "./motion-shell.css";
 
 const RetainedPanel = memo(TimelinePanel);
@@ -32,7 +33,8 @@ export const MotionTimelineDock = memo(function MotionTimelineDock({
 }: {
   engine: EnginePort;
 }) {
-  const snapshot = useEngine(engine);
+  const { details } = useAnimationPresentation(engine);
+  const snapshot = useDocumentSnapshot(engine, details);
   const transport = useMemo(() => createMotionTransport(engine), [engine]);
   const [choices, setChoices] = useState<ReadonlyMap<string, boolean>>(() => new Map());
   const scope = JSON.stringify([snapshot.project.id, snapshot.pageId]);

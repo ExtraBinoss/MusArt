@@ -328,10 +328,14 @@ export function TimelinePanel({
     if (event.currentTarget.hasPointerCapture(event.pointerId))
       event.currentTarget.releasePointerCapture(event.pointerId);
   }
+  const controlSnapshot = useMemo(
+    () => ({ project: snapshot.project, pageId: snapshot.pageId, revision: snapshot.revision }),
+    [snapshot.project, snapshot.pageId, snapshot.revision],
+  );
   const controls = (
     <TimelineControls
       engine={engine}
-      snapshot={snapshot}
+      snapshot={controlSnapshot}
       transport={transport}
       active={active}
       unit={unit}
