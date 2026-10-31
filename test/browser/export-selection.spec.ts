@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { createLayer, createPage, createProject } from "@musart/core";
 import { installReadbackProbe } from "./support/readback-probe";
 
-test("export popover previews and encodes only the selected masked child, or the complete artboard", async ({
+test("export dialog previews and encodes only the selected masked child, or the complete artboard", async ({
   page,
 }) => {
   test.setTimeout(90000);
@@ -133,6 +133,11 @@ test("export popover previews and encodes only the selected masked child, or the
   expect(selected.left[3]).toBeGreaterThanOrEqual(127);
   expect(selected.left[3]).toBeLessThanOrEqual(129);
   expect(selected.right[3]).toBe(0);
+  await expect(popover.getByText("Export prêt.", { exact: true })).toBeVisible();
+  await popover
+    .locator(".export-footer-actions")
+    .getByRole("button", { name: "Fermer", exact: true })
+    .click();
   await expect(popover).toBeHidden();
   expect(await page.evaluate(() => window.musart!.snapshot())).toEqual(before);
   await page.getByRole("button", { name: "Exporter", exact: true }).click();

@@ -157,6 +157,11 @@ for (const forceWebGL of [false, true])
       if (!path) throw new Error("No delivered video file");
       const bytes = await readFile(path),
         mime = download.suggestedFilename().endsWith(".mp4") ? "video/mp4" : "video/webm";
+      await expect(panel.getByText("Export prêt.", { exact: true })).toBeVisible();
+      await panel
+        .locator(".export-footer-actions")
+        .getByRole("button", { name: "Fermer", exact: true })
+        .click();
       await expect(panel).not.toBeVisible();
       await page.waitForFunction(
         ({ backend, before }) =>

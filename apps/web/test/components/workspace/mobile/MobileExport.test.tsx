@@ -1,54 +1,47 @@
 import { expect, test, vi } from "vitest";
-import { act, fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
+import type { EditorServices } from "../../../../src/state/contracts";
 import { MobileExport } from "../../../../src/components/workspace/mobile/MobileExport";
 import { setup } from "../../../support/ui";
 
-test("exports the actual selected scope/revision and releases pending protection on success", async () => {
-  const d = setup(),
-    close = vi.fn(),
-    pending = vi.fn();
-  d.engine.select([d.rectangle.id]);
-  d.mount(
-    <MobileExport
-      engine={d.engine}
-      services={d.services}
-      onTask={d.onTask}
-      onClose={close}
-      onPendingChange={pending}
-    />,
-  );
-  const snapshot = d.engine.getSnapshot();
-  expect(screen.getByText("200 × 100")).toBeInTheDocument();
-  fireEvent.click(screen.getByRole("button", { name: "Exporter l’image" }));
-  await waitFor(() => expect(close).toHaveBeenCalledOnce());
-  expect(d.services.exportImage).toHaveBeenCalledWith(
-    expect.objectContaining({ selectionOnly: true }),
-    { page: snapshot.project.pages[0], revision: snapshot.revision, selection: [d.rectangle.id] },
-  );
-  expect(pending.mock.calls.map(([value]) => value)).toEqual([true, false]);
-});
-
-test("failed exports remain in the sheet and committed scope changes stay local", async () => {
+test("mobile exports the actual captured selection through the common artboard service", async () => {
   const d = setup(),
     close = vi.fn();
-  vi.mocked(d.services.exportImage).mockRejectedValueOnce(new Error("Encoding failed"));
-  d.mount(
-    <MobileExport
-      engine={d.engine}
-      services={d.services}
-      onTask={d.onTask}
-      onClose={close}
-      onPendingChange={vi.fn()}
-    />,
+  d.engine.select([d.rectangle.id]);
+  d.services.exportComposition = vi.fn<NonNullable<EditorServices["exportComposition"]>>(
+    async () => ({
+      mode: "static",
+      filename: "selection.png",
+      mimeType: "image/png",
+      bytes: 4,
+      width: 200,
+      height: 100,
+    }),
   );
-  act(() => d.engine.select([d.rectangle.id]));
-  expect(screen.getByText("200 × 100")).toBeInTheDocument();
+  d.mount(<MobileExport engine={d.engine} services={d.services} onClose={close} />);
+  expect(document.querySelector(".export-workspace")).not.toBeNull();
+  expect(screen.getByRole("radio", { name: "Image" })).toBeChecked();
   fireEvent.click(screen.getByRole("button", { name: "Exporter l’image" }));
-  await waitFor(() =>
-    expect(screen.getByRole("button", { name: "Exporter l’image" })).not.toBeDisabled(),
+  await waitFor(() => expect(screen.getByText("Export prêt.")).toBeVisible());
+  expect(d.services.exportComposition).toHaveBeenCalledWith(
+    expect.objectContaining({
+      background: true,
+      selection: [d.rectangle.id],
+      image: expect.objectContaining({ selectionOnly: true }),
+    }),
+    expect.objectContaining({ revision: d.engine.getSnapshot().revision }),
   );
   expect(close).not.toHaveBeenCalled();
-  expect(document.querySelector(".export-popover")).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
+});
+
+test("mobile failures retain the real cause, leave the dialog open and allow closing", async () => {
+  const d = setup(),
+    close = vi.fn();
+  d.services.exportComposition = vi.fn().mockRejectedValue(new Error("Encoding failed"));
+  d.mount(<MobileExport engine={d.engine} services={d.services} onClose={close} />);
+  fireEvent.click(screen.getByRole("button", { name: "Exporter l’image" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("Encoding failed");
+  expect(close).not.toHaveBeenCalled();
+  fireEvent.click(document.querySelector(".export-footer-actions button")!);
   expect(close).toHaveBeenCalledOnce();
 });

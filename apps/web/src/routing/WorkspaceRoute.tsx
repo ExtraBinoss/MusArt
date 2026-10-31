@@ -1,5 +1,7 @@
+import { confirmExportLeave } from "../services/export/leave";
+import { hasActiveExports } from "../services/export/jobs";
 import { lazy, Suspense, useEffect } from "react";
-import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { useNavigate, useRouterState, useBlocker } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { readLanguage } from "../state/i18n";
 import { BrandStatus } from "../ui/brand/BrandStatus";
@@ -14,6 +16,10 @@ export function WorkspaceRoute() {
     void i18n.changeLanguage(readLanguage());
     document.documentElement.lang = readLanguage();
   }, [i18n]);
+  useBlocker({
+    shouldBlockFn: async () => !(await confirmExportLeave()),
+    enableBeforeUnload: hasActiveExports,
+  });
   const navigate = useNavigate();
   const location = useRouterState({ select: (state) => state.location });
   const view = location.pathname.replace(/\/$/, "").endsWith("/dashboard") ? "dashboard" : "editor";

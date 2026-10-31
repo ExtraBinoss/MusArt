@@ -10,6 +10,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 - Simplified library project menus, kept history clearing inside storage, and made project titles and aligned primary actions lead the details dialog. Added discoverable Motion hover previews with accessible pause/resume that retains the GPU frame and excludes paused time. Added reusable mascot/dots/shimmer throbbers, a genuine face-to-dots mascot loop, reduced-motion handling and flash suppression without delaying project results.
 
+- Unify image, Motion and Timelapse exports in a two-column dialog with local live previews, artboard/selection scopes, collapsed advanced/print settings, cancellable background jobs, shared button progress and a thoughtful leave-project confirmation. Add sRGB/CMYK canvas output targets and true ICC-managed CMYK JPEG/TIFF/PDF exports with bleed, vector crop/registration marks, color bars and document/profile labels. Preserve RGB GPU editing and verify real encoded output without JavaScript GPU readbacks.
+
 - Made Try Melt the single landing entry into Templates, deferred the editor bundle and last-document restoration until editing, and improved Clash Display spacing. Ordered navigation as Templates, Projects, Community; promoted favorites within the normal filtered grids; aligned mode filters with search; and moved project actions beside the title with matching right-click actions and a separate destructive section.
 
 - Added an English, light-paper social preview at `/ssr` for `melt.plinka.eu`, with a React brand layout and a genuine Three/TSL collage using supplied artist references, native Bayer dithering and ASCII. Added a reproducible 1200 × 630 PNG capture command and shared Open Graph/Twitter metadata.

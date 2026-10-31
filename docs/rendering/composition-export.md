@@ -4,11 +4,15 @@ The **Exporter** action and each artboard's **Export composition…** menu open 
 same panel. The artboard select stores a durable composition ID and initially
 chooses the active artboard. Its Radix list retains the shared native scrolling
 controls and ScrollShadow. Choosing another artboard never activates or edits it.
-Timelapse remains a separate journal/replay export.
+Timelapse uses the same dialog layout and remains a journal/replay export. See
+[export dialog and print output](export-dialog.md) for background tasks, selected
+video scopes and ICC-managed print output.
 
 The panel captures a canonical project revision and artboard identity. Execution
 checks the project ID, composition ID, revision, page identity and actual mode;
-the finished file is not downloaded if the document changes during rendering.
+legacy callers reject changes during rendering. Background UI exports retain
+the frozen start snapshot while ordinary edits continue; project replacement
+and same-ID reloads cancel delivery.
 Reloading a different snapshot with the same IDs cannot adopt an old request.
 Original-media resolution remains scoped to that captured project's storage.
 
@@ -93,7 +97,8 @@ per second. Playback, scrubbing and visibility changes remain local to the panel
 The preview is explicitly muted; the audio option controls the delivered file.
 
 Before encoding, the preview is stopped and its renderer disposal is awaited.
-Cancel aborts real rendering/encoding, retains the pending gate through cleanup,
+Closing the dialog leaves the session-owned export running. Cancel aborts real
+rendering/encoding, retains the pending gate through cleanup,
 and never downloads a partial result. Closing/unmounting releases the preview's
 RAF, subscriptions, visibility listener and renderer. Empty output, unsupported
 codecs, stale scope and renderer errors remain failures. Progress reaches 100%

@@ -9,6 +9,7 @@
     "./preview-cost": "./src/compositing/preview-cost.ts"
   },
   "dependencies": {
+    "@imagemagick/magick-wasm": "0.0.45",
     "@musart/assets": "workspace:*",
     "@musart/core": "workspace:*",
     "mediabunny": "1.62.1",

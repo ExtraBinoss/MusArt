@@ -102,7 +102,7 @@ describe("native canvas video export", () => {
       [0, 0.5],
       [0.5, 0.5],
     ]);
-    expect(progress.mock.calls.map(([fraction]) => fraction)).toEqual([0.5, 1]);
+    expect(progress.mock.calls.map(([fraction]) => fraction)).toEqual([0.495, 0.99, 1]);
     expect(probe.start).toHaveBeenCalledOnce();
     expect(probe.finalize).toHaveBeenCalledOnce();
     expect(probe.close).toHaveBeenCalledOnce();

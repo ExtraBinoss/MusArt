@@ -19,7 +19,7 @@ it("validates optional layer guides, dimensions and working spaces", () => {
     },
     new Set(),
   );
-  for (const colorSpace of ["srgb", "display-p3", "cmyk-proof"])
+  for (const colorSpace of ["srgb", "display-p3", "cmyk", "cmyk-proof"])
     validatePageLayout({
       colorSpace,
       rulers: false,
@@ -31,7 +31,7 @@ it("validates optional layer guides, dimensions and working spaces", () => {
   for (const run of [
     () => validateInsets({ top: 1, right: 9, bottom: 1, left: 9 }, 10, 10),
     () => validateInsets({ top: -1, right: 0, bottom: 0, left: 0 }, 10, 10),
-    () => validatePageLayout({ colorSpace: "cmyk" }),
+    () => validatePageLayout({ colorSpace: "invalid-print" }),
     () => validatePageLayout({ rulers: 1 }),
     () =>
       validateLayerLayout(

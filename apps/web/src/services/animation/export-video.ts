@@ -7,6 +7,8 @@ import { createReplayTiming, replayFrame } from "./replay-timing";
 export interface VideoExportOptions {
   fontResolver?: FontResolver;
   mediaResolver?: MediaSourceResolver;
+  selection?: readonly string[];
+  beforeFrame?: () => Promise<void>;
   duration: number;
   fps: number;
   scale: number;
@@ -71,8 +73,11 @@ export async function exportReplayVideo(
   const pageId = options.pageId ?? spec.pageId;
   const lastPage = final.pages.find((page) => page.id === pageId);
   if (!lastPage) throw new VideoExportError("missingPage");
-  const width = Math.max(1, Math.round(lastPage.width * scale));
-  const height = Math.max(1, Math.round(lastPage.height * scale));
+  const selection = options.selection?.length
+    ? (await import("@musart/render")).selectionFrameScope(lastPage, options.selection)
+    : { page: lastPage, frame: (page: Composition) => page };
+  const width = Math.max(1, Math.round(selection.page.width * scale));
+  const height = Math.max(1, Math.round(selection.page.height * scale));
   const quality = new Quality("high");
   const codecs: VideoCodec[] =
     container === "mp4" ? ["avc"] : container === "webm" ? ["vp9", "vp8"] : ["avc", "vp9", "vp8"];
@@ -107,6 +112,7 @@ export async function exportReplayVideo(
   try {
     const { count } = timing;
     for (let index = 0; index < count; index++) {
+      await options.beforeFrame?.();
       abort(signal);
       const sample = replayFrame(timing, index);
       const project = evaluateReplay(spec, sample.historyTime);
@@ -115,7 +121,7 @@ export async function exportReplayVideo(
         layers: [],
       };
       // A recorded resize is contained in a constant-size video frame.
-      const frame = { ...page, width: lastPage.width, height: lastPage.height };
+      const frame = selection.frame({ ...page, width: lastPage.width, height: lastPage.height });
       await session.withCanvasFrame(
         frame,
         { ...spec.assets, ...project.assets },
@@ -138,7 +144,7 @@ export async function exportReplayVideo(
         },
         { scale },
       );
-      options.onProgress?.((index + 1) / count);
+      options.onProgress?.(((index + 1) / count) * 0.99);
     }
     abort(signal);
     source?.close();
@@ -147,6 +153,7 @@ export async function exportReplayVideo(
     finalized = true;
     abort(signal);
     if (!target.buffer?.byteLength) throw new VideoExportError("emptyVideo");
+    options.onProgress?.(1);
     return new Blob([target.buffer], { type: codec === "avc" ? "video/mp4" : "video/webm" });
   } finally {
     signal?.removeEventListener("abort", onAbort);

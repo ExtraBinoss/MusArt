@@ -33,7 +33,7 @@ for (const forceWebGL of [false, true])
     const preview = page.locator(".export-preview img");
     await expect(preview).toBeVisible();
     await preview.evaluate((image) => (image as HTMLImageElement).decode());
-    await page.locator(".export-popover").evaluate(async (element) => {
+    await page.locator(".export-dialog").evaluate(async (element) => {
       await Promise.all(
         element
           .getAnimations({ subtree: true })

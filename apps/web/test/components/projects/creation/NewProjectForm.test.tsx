@@ -1,3 +1,4 @@
+import { choose } from "../../../support/select";
 import { expect, test, vi } from "vitest";
 import { fireEvent, screen, within } from "@testing-library/react";
 import { NewProjectForm } from "../../../../src/components/projects/creation/NewProjectForm";
@@ -47,6 +48,7 @@ test("links dimensions using the selected ratio and updates the preview live", (
     width: 300,
     height: 900,
     background: "#faf9f6",
+    colorSpace: "srgb",
   });
 });
 
@@ -80,4 +82,18 @@ test("linked dimensions cannot silently create the old size when the paired dime
   expect(screen.getByRole("button", { name: "Créer" })).toBeDisabled();
   fireEvent.submit(document.querySelector("form")!);
   expect(create).not.toHaveBeenCalled();
+});
+
+test("creates a CMYK-targeted canvas explicitly while sRGB remains the default", async () => {
+  const d = setup(),
+    create = vi.fn();
+  d.mount(<NewProjectForm onCreate={create} />);
+  expect(screen.getByRole("combobox", { name: "Couleurs de sortie du canvas" })).toHaveTextContent(
+    "sRGB",
+  );
+  await choose("Couleurs de sortie du canvas", "CMJN · papier couché standard");
+  fireEvent.click(screen.getByRole("button", { name: "Créer" }));
+  expect(create).toHaveBeenCalledWith(
+    expect.objectContaining({ colorSpace: "cmyk", width: 1080, height: 1080 }),
+  );
 });

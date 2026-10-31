@@ -1,3 +1,6 @@
+import type { WorkingColorSpace } from "@musart/core";
+import { SelectField } from "../../shared/SelectField";
+import "../../export/messages";
 import { useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ArrowUpRight, Link, Unlink } from "lucide-react";
@@ -18,6 +21,7 @@ export function NewProjectForm({
 }) {
   const { t } = useTranslation();
   const id = useId();
+  const [colorSpace, setColorSpace] = useState<WorkingColorSpace>("srgb");
   const [name, setName] = useState(t("untitled"));
   const [dimensions, setDimensions] = useState({ width: "1080", height: "1080" });
   const [preset, setPreset] = useState("custom");
@@ -60,6 +64,7 @@ export function NewProjectForm({
           width,
           height,
           background: "#faf9f6",
+          colorSpace,
           ...(preset !== "custom" ? { presetId: preset } : {}),
         });
       }}
@@ -138,6 +143,22 @@ export function NewProjectForm({
               )}
             </div>
           ))}
+        </div>
+        <div className="creation-name">
+          <Label htmlFor={`${id}-colors`}>{t("exportPanel:colorMode")}</Label>
+          <SelectField
+            id={`${id}-colors`}
+            label={t("exportPanel:colorMode")}
+            value={colorSpace}
+            options={[
+              { value: "srgb", label: "sRGB" },
+              { value: "cmyk", label: t("exportPanel:cmyk") },
+            ]}
+            onValueChange={(value) => setColorSpace(value as WorkingColorSpace)}
+          />
+          {colorSpace === "cmyk" && (
+            <p className="muted-description">{t("exportPanel:cmykCanvasHint")}</p>
+          )}
         </div>
         <Button type="submit" className="creation-submit" disabled={!valid || !name.trim()}>
           {t("create")}

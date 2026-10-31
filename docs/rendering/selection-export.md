@@ -4,7 +4,7 @@
 
 | Export topic          | Contract                                                                                                                                                |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Snapshot              | The export popover captures a canonical document snapshot.                                                                                              |
+| Snapshot              | The export dialog captures a canonical document snapshot.                                                                                               |
 | Selection or artboard | With a selected layer or group it exports cropped content by default; the whole-artboard switch restores the original canvas dimensions and background. |
 | Multiple artboards    | Multi-artboard output remains an explicit ZIP option.                                                                                                   |
 | Export scale          | Scale changes affect delivered resolution rather than the size of the preview viewport.                                                                 |
@@ -26,7 +26,7 @@
 | Export topic               | Contract                                                                                                                                                                      |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Renderer and queue         | Preview requests share the retained thumbnail renderer and bounded queue.                                                                                                     |
-| Priority                   | The export popover requests foreground priority after input release; background layer thumbnails remain deferred during active gestures.                                      |
+| Priority                   | The export dialog requests foreground priority after input release; background layer thumbnails remain deferred during active gestures.                                       |
 | Reference density          | Originals and the complete enabled effect/mask stack use the same document-resolution reference as the canvas, then GPU mipmaps reduce the processed output.                  |
 | Cached results and cleanup | Cached encoded blobs are reused, while consumer signals, canonical frame and requested-size checks, and owned blob URLs reject stale results and release abandoned resources. |
 

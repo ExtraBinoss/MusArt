@@ -15,11 +15,13 @@ export function MotionExportPreview({
   services,
   paused = false,
   onReady,
+  selection,
 }: {
   project: Project;
   page: Composition;
   services: EditorServices;
   paused?: boolean;
+  selection?: readonly string[];
   onReady?: (preview: ReturnType<typeof createMotionPreview> | null) => void;
 }) {
   const { t } = useTranslation("exportPanel");
@@ -44,6 +46,7 @@ export function MotionExportPreview({
         if (!active) return;
         preview = createMotionPreview(project, {
           compositionId: page.id,
+          selection,
           edge: 768,
           mediaResolver: services.mediaResolverFor?.(project.id),
           fontResolver: services.fonts?.resolve,
@@ -84,7 +87,7 @@ export function MotionExportPreview({
       onReady?.(null);
       if (preview) void preview.dispose().catch(() => {});
     };
-  }, [project, page.id, services, paused, onReady, slider]);
+  }, [project, page.id, services, paused, onReady, slider, selection]);
   useEffect(() => {
     pauseRequested.current = paused;
     if (paused) source.current?.pause();

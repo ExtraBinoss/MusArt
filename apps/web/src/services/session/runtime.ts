@@ -1,3 +1,4 @@
+import { getExportJobs } from "../export/jobs";
 import { createPage, createProject, EditorEngine, type Project } from "@musart/core";
 import { getAnimationSession } from "../animation/session";
 import { ThumbnailPipeline, installThumbnailSchedule } from "../projects/thumbnails";
@@ -167,6 +168,7 @@ export async function createRuntime(
           }
         })();
         services.pixelSelection?.dispose();
+        await getExportJobs(engine).stop();
         fonts.dispose();
         selection.dispose();
         try {

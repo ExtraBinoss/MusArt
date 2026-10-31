@@ -23,6 +23,8 @@ export function useTimelapsePreview(
   active: boolean,
   fontResolver?: FontResolver,
   mediaResolver?: MediaSourceResolver,
+  selection?: readonly string[],
+  autoPlay = false,
 ) {
   const viewport = useRef<HTMLDivElement>(null);
   const slider = useMemo(() => createSliderValue([0]), []);
@@ -40,6 +42,7 @@ export function useTimelapsePreview(
     if (!spec || !active) return;
     let stopped = false;
     let renderer: ReturnType<typeof createRenderSession> | undefined;
+    let crop: ReturnType<typeof import("@musart/render").selectionFrameScope> | undefined;
     let requested: number | null = null;
     let draining = false;
     let frame = 0;
@@ -74,6 +77,10 @@ export function useTimelapsePreview(
           (page) => page.id === pageId,
         );
         if (!final) throw new Error("Replay page is missing.");
+        if (!crop)
+          crop = selection?.length
+            ? (await import("@musart/render")).selectionFrameScope(final, selection)
+            : { page: final, frame: (page) => page };
         while (requested !== null && !stopped) {
           const index = requested;
           requested = null;
@@ -82,7 +89,7 @@ export function useTimelapsePreview(
           const project = evaluateReplay(spec!, sample.historyTime);
           const page = project.pages.find((item) => item.id === pageId) ?? { ...final, layers: [] };
           await renderer.withCanvasFrame(
-            { ...page, width: final.width, height: final.height },
+            crop.frame({ ...page, width: final.width, height: final.height }),
             { ...spec!.assets, ...project.assets },
             (canvas) => {
               if (stopped || !host) return;
@@ -92,9 +99,10 @@ export function useTimelapsePreview(
               if (!ready) {
                 ready = true;
                 setStatus("ready");
+                if (autoPlay) controls.current?.play();
               }
             },
-            { scale: Math.min(1, 480 / Math.max(final.width, final.height)) },
+            { scale: Math.min(1, 480 / Math.max(crop.page.width, crop.page.height)) },
           );
         }
       } catch {
@@ -156,6 +164,6 @@ export function useTimelapsePreview(
     return () => {
       void release().catch(() => {});
     };
-  }, [spec, pageId, active, fontResolver, mediaResolver, slider]);
+  }, [spec, pageId, active, fontResolver, mediaResolver, slider, selection, autoPlay]);
   return { viewport, slider, clock, status, playing, controls };
 }

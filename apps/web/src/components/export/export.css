@@ -221,7 +221,7 @@
   color: var(--muted-foreground);
 }
 .inspector-header .export-trigger {
-  position: static;
+  position: relative;
   height: 32px;
   padding: 0 9px;
   box-shadow: none;

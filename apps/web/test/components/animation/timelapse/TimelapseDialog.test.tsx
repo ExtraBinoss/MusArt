@@ -58,7 +58,7 @@ test("replays real history and validates final duration without exposing the old
     fireEvent.change(duration, { target: { value: "1" } });
     fireEvent.click(screen.getByRole("button", { name: "Exporter la vidéo" }));
     await waitFor(() =>
-      expect(downloadBlob).toHaveBeenCalledWith(expect.any(Blob), "Atelier-timelapse.webm"),
+      expect(downloadBlob).toHaveBeenCalledWith(expect.any(Blob), `${d.page.name}-timelapse.webm`),
     );
     expect(exportReplayVideo).toHaveBeenCalledWith(
       expect.objectContaining({ events: expect.any(Array) }),
@@ -98,10 +98,10 @@ test("reports real codec errors, cancels export and ignores a late completed res
     await act(async () => {
       options.onProgress?.(0.5);
     });
-    expect(screen.getByRole("progressbar")).toHaveAttribute("value", "0.5");
+    expect(screen.getByRole("progressbar")).toHaveAttribute("value", "50");
     fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
     expect(options.signal?.aborted).toBe(true);
-    expect(close).toHaveBeenCalledOnce();
+    expect(close).not.toHaveBeenCalled();
     const downloads = vi.mocked(downloadBlob).mock.calls.length;
     await act(async () => {
       finish(new Blob(["late"], { type: "video/mp4" }));

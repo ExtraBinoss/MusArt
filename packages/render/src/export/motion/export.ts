@@ -1,3 +1,4 @@
+import { selectionFrameScope } from "./selection";
 import { applyMotionFrame, compileMotion, evaluateMotion, type Project } from "@musart/core";
 import { AudioSample, AudioSampleSource, CanvasSource, Output } from "mediabunny";
 import { assertRenderSize, rasterExtent } from "../../compositing/types";
@@ -29,10 +30,11 @@ export async function exportMotionVideo(
     options.frameRate ?? program.composition.motion.frameRate,
     options.maxFrames,
   );
+  const selection = selectionFrameScope(program.composition, options.selection);
   const scale = options.scale ?? 1;
-  assertRenderSize(program.composition, scale);
-  const width = rasterExtent(program.composition.width, scale),
-    height = rasterExtent(program.composition.height, scale);
+  assertRenderSize(selection.page, scale);
+  const width = rasterExtent(selection.page.width, scale),
+    height = rasterExtent(selection.page.height, scale);
   const mixer =
     options.audio === false
       ? {
@@ -44,10 +46,23 @@ export async function exportMotionVideo(
           readBlock: async () => new Float32Array(0),
           dispose: async () => {},
         }
-      : await createMotionAudioMixer(program, assets, options.mediaResolver, {
-          ...options.audio,
-          signal: options.signal,
-        });
+      : await createMotionAudioMixer(
+          options.selection?.length
+            ? {
+                ...program,
+                audio: [],
+                layers: program.layers.filter((layer) =>
+                  selection.page.layers.some((item) => item.id === layer.id),
+                ),
+              }
+            : program,
+          assets,
+          options.mediaResolver,
+          {
+            ...options.audio,
+            signal: options.signal,
+          },
+        );
   let session: ReturnType<typeof createRenderSession> | undefined;
   let target: ReturnType<typeof createMotionOutputTarget> | undefined;
   let output: Output | undefined,
@@ -109,6 +124,7 @@ export async function exportMotionVideo(
     let videoClosed = false,
       audioClosed = !audio;
     while (index < timing.count || (audio && cursor < mixer.samples)) {
+      await options.beforeFrame?.();
       options.signal?.throwIfAborted();
       // Keep at most one future video timestamp ahead of the audio cursor. Encoder/writer
       // promises are awaited individually, including at very low/fractional video FPS.
@@ -120,7 +136,7 @@ export async function exportMotionVideo(
         const encoded = motionEncodedFrame(timing, index, encodedTiming.resolution);
         const plan = evaluateMotion(program, frame.time);
         await session.withCanvasFrame(
-          applyMotionFrame(program, plan),
+          selection.frame(applyMotionFrame(program, plan)),
           assets,
           async (canvas) => {
             options.signal?.throwIfAborted();

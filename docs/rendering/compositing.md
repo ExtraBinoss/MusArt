@@ -176,7 +176,7 @@ the pixel witness.
 
 Document working spaces are sRGB, Display-P3, and a generic CMYK print proof. Imported sRGB photos and branded SVG paints are converted into a Display-P3 working document; the current display/export path converts the document back to sRGB. This path does not claim native wide-gamut canvas output.
 
-The generic CMYK proof models under-color removal, a 280% total ink limit, 8% dot gain, a warm paper color and a black floor. It is not an ICC press profile, a calibrated printer simulation, or a CMYK raster encoder. `RENDER_CAPABILITIES` states these limits explicitly. PNG, JPEG and WebP outputs remain RGB.
+The generic CMYK proof models under-color removal, a 280% total ink limit, 8% dot gain, a warm paper color and a black floor. It is not an ICC press profile, a calibrated printer simulation, or a CMYK raster encoder. `RENDER_CAPABILITIES` states these limits explicitly. PNG and WebP remain RGB. The separate `cmyk` output target now uses true ICC-managed JPEG, TIFF and PDF export; GPU editing remains RGB. See [managed print output](export-dialog.md).
 
 ## Still and video export
 

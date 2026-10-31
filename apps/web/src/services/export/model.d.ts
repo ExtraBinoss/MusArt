@@ -1,4 +1,5 @@
 import type { Composition, MotionFrameRate } from "@musart/core";
+import type { ManagedImageOptions } from "@musart/render";
 import type { ExportOptions } from "../../state/contracts";
 
 /** IDs choose the target independently of the editing page; identity rejects same-ID reloads. */
@@ -13,10 +14,19 @@ export type CompositionExportOptions = {
   scale: number;
   signal?: AbortSignal;
   onProgress?: (fraction: number) => void;
+  /** Export the frozen start snapshot while edits continue in the same project. */
+  background?: boolean;
+  beforeFrame?: () => Promise<void>;
 } & (
-  | { mode: "static"; image: Omit<ExportOptions, "scale">; selection?: readonly string[] }
+  | {
+      mode: "static";
+      image: Omit<ExportOptions, "scale" | "format"> &
+        Partial<ManagedImageOptions> & { format: ManagedImageOptions["format"] };
+      selection?: readonly string[];
+    }
   | {
       mode: "motion";
+      selection?: readonly string[];
       container: "auto" | "mp4" | "webm";
       frameRate?: MotionFrameRate;
       videoBitrate?: number;

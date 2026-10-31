@@ -1,55 +1,40 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
-import { useEngine } from "../../../state/session/editor";
-import { ExportSettings } from "../../export/ExportSettings";
-import { EditorSidebar } from "../EditorSidebar";
-import { MobileSheet } from "./MobileSheet";
+import type { ComponentProps } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "../../ui/dialog";
+import { ExportWorkspace } from "../../export/ExportWorkspace";
+import type { ExportKind } from "../../../services/export/jobs";
+import type { EditorSidebar } from "../EditorSidebar";
 import "../../export/messages";
+import "../../export/export.css";
 
-type Props = Pick<ComponentProps<typeof EditorSidebar>, "engine" | "services" | "onTask"> & {
+type Props = Pick<ComponentProps<typeof EditorSidebar>, "engine" | "services"> & {
   onClose: () => void;
-  onPendingChange: (pending: boolean) => void;
+  initialKind?: ExportKind;
+  initialCompositionId?: string;
 };
-
-/** Real export scope follows committed edits locally; the app shell never subscribes to it. */
-export function MobileExport({ engine, services, onTask, onClose, onPendingChange }: Props) {
+/** Mobile uses the same dialog, scope and session-owned export as desktop. */
+export function MobileExport({ onClose, ...props }: Props) {
   const { t } = useTranslation();
-  const snapshot = useEngine(engine);
-  const page = snapshot.project.pages.find((item) => item.id === snapshot.pageId)!;
-  const pending = useRef(false);
-  const [busy, setBusy] = useState(false);
-  const pendingChanged = useCallback(
-    (value: boolean) => {
-      setBusy(value);
-      onPendingChange(value);
-    },
-    [onPendingChange],
-  );
-  useEffect(() => () => onPendingChange(false), [onPendingChange]);
-  function close() {
-    if (!pending.current) onClose();
-  }
   return (
-    <MobileSheet
-      title={t("exportTitle")}
-      onClose={close}
-      dismissible={!busy}
-      className="mobile-sheet-export"
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
-      <ExportSettings
-        page={page}
-        pageCount={snapshot.project.pages.length}
-        selection={snapshot.selection}
-        revision={snapshot.revision}
-        services={services}
-        onTask={onTask}
-        pendingRef={pending}
-        onPendingChange={pendingChanged}
-        onOpenChange={(open) => {
-          if (!open) close();
-        }}
-      />
-    </MobileSheet>
+      <DialogContent className="export-dialog" data-canvas-control data-keybinding-capture>
+        <DialogHeader className="export-dialog-header">
+          <DialogTitle>{t("exportTitle")}</DialogTitle>
+          <DialogDescription>{t("exportPanel:dialogDescription")}</DialogDescription>
+        </DialogHeader>
+        <ExportWorkspace {...props} onClose={onClose} />
+      </DialogContent>
+    </Dialog>
   );
 }

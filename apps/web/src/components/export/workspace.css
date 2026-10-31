@@ -1,0 +1,286 @@
+.export-dialog {
+  width: min(1080px, calc(100vw - 40px));
+  max-width: none;
+  height: min(720px, calc(100dvh - 48px));
+  max-height: calc(100dvh - 48px);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 0;
+  overflow: hidden;
+  padding: 0;
+  border-radius: 18px;
+}
+.export-dialog-header {
+  padding: 22px 28px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.export-dialog-header [data-slot="dialog-description"] {
+  max-width: 80%;
+}
+.export-workspace {
+  display: grid;
+  grid-template-columns: minmax(290px, 350px) minmax(0, 1fr);
+  min-height: 0;
+}
+.export-settings-scroll {
+  min-height: 0;
+  height: 100%;
+}
+.export-settings-viewport {
+  overflow-y: auto;
+  height: 100%;
+  scrollbar-gutter: stable;
+  padding: 24px;
+}
+.export-fields {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+.export-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.export-field > [data-slot="select-trigger"] {
+  width: 100%;
+}
+.export-field [data-slot="select-value"] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.export-fields .export-scope {
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: normal;
+}
+.export-fields .switch-row {
+  gap: 18px;
+  font-size: 12px;
+}
+.export-fields [data-slot="accordion-trigger"] {
+  font-size: 12px;
+  padding: 12px 0;
+}
+.export-fields [data-slot="accordion-content"] .export-fields {
+  padding-top: 10px;
+}
+.export-preview-pane {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px;
+  border-left: 1px solid var(--border);
+  background: color-mix(in srgb, var(--muted) 42%, var(--background));
+}
+.export-preview-pane > .export-preview-wrap {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+.export-preview-pane .export-preview-shadow {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+.export-preview-pane .export-preview {
+  border: 0;
+  border-radius: 10px;
+}
+.export-preview-pane .export-preview-body {
+  padding: 24px;
+}
+.export-preview-pane .motion-export-preview {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.export-preview-pane .motion-export-preview-surface {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+  border: 0;
+  background: #000;
+}
+.export-preview-pane .motion-export-preview-surface canvas {
+  max-height: 100%;
+  object-fit: contain;
+}
+.export-preview-pane > .motion-export-preview-controls {
+  flex: 0 0 auto;
+}
+.export-preview-pane .motion-export-preview-controls [data-slot="slider"] {
+  flex: 1;
+  min-width: 0;
+}
+.export-preview-caption {
+  display: grid;
+  gap: 5px;
+  text-align: center;
+  font-size: 12px;
+}
+.export-preview-caption strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.export-preview-caption span {
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+}
+.export-dialog-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 18px 24px;
+  border-top: 1px solid var(--border);
+}
+.export-dialog-footer > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+.export-footer-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.export-background-note {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  line-height: 1.5;
+  max-width: 400px;
+}
+.export-job {
+  font-size: 12px;
+  min-width: 0;
+}
+.export-job-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+}
+.export-job progress {
+  display: block;
+  width: 100%;
+  height: 5px;
+  border: 0;
+  border-radius: 3px;
+  overflow: hidden;
+  accent-color: var(--action);
+  background: var(--muted);
+}
+.export-job progress::-webkit-progress-bar {
+  background: var(--muted);
+  border-radius: 3px;
+}
+.export-job progress::-webkit-progress-value {
+  background: var(--action);
+  border-radius: 3px;
+  transition: width 160ms ease;
+}
+.export-job-error {
+  color: var(--destructive);
+  margin: 6px 0 0;
+  font-size: 11px;
+}
+.export-trigger {
+  position: relative;
+  overflow: hidden;
+}
+.export-trigger-progress {
+  position: absolute;
+  inset: auto auto 0 0;
+  height: 3px;
+  background: currentColor;
+  opacity: 0.7;
+  transition: width 160ms ease;
+}
+@media (min-width: 640px) {
+  .export-dialog {
+    max-width: min(1080px, calc(100vw - 40px));
+  }
+}
+@media (max-width: 699px) {
+  .export-dialog {
+    width: calc(100vw - 20px);
+    height: calc(100dvh - 24px);
+    max-height: calc(100dvh - 24px);
+    border-radius: 12px;
+  }
+  .export-dialog-header {
+    padding: 18px;
+  }
+  .export-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(150px, 40%) minmax(0, 1fr);
+  }
+  .export-preview-pane {
+    grid-row: 1;
+    border-left: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 16px;
+    gap: 8px;
+  }
+  .export-settings-viewport {
+    padding: 18px;
+  }
+  .export-dialog-footer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px 18px;
+  }
+  .export-footer-actions {
+    width: 100%;
+    justify-content: flex-end;
+    margin-left: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .export-trigger-progress,
+  .export-job progress::-webkit-progress-value {
+    transition: none;
+  }
+}
+.mobile-export-icon {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+}
+.mobile-export-icon small {
+  position: absolute;
+  right: -13px;
+  top: -6px;
+  padding: 1px 3px;
+  border-radius: 4px;
+  font-size: 8px;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+  background: var(--background);
+}
+.mobile-export-track {
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 24px;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--muted);
+}
+.mobile-export-track > span {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+}

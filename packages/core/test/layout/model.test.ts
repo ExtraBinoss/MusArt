@@ -9,5 +9,5 @@ it("has immutable zero spacing and explicit working spaces", () => {
     bottom: number;
     left: number;
   }>();
-  expectTypeOf<WorkingColorSpace>().toEqualTypeOf<"srgb" | "display-p3" | "cmyk-proof">();
+  expectTypeOf<WorkingColorSpace>().toEqualTypeOf<"srgb" | "display-p3" | "cmyk" | "cmyk-proof">();
 });

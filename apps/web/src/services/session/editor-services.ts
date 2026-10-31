@@ -1,3 +1,4 @@
+import { confirmExportLeave, ExportLeaveCancelled } from "../export/leave";
 import { beginProjectTiming } from "../performance/project-timing";
 import {
   createId,
@@ -90,6 +91,7 @@ export function createEditorServices(
     return snapshot.project.pages.find((p) => p.id === snapshot.pageId)!;
   };
   const switchReady = async () => {
+    if (!(await confirmExportLeave())) throw new ExportLeaveCancelled();
     await dependencies.flush?.();
   };
   const create = async (options: NewProjectOptions) => {
@@ -111,6 +113,7 @@ export function createEditorServices(
             width: options.width,
             height: options.height,
             background: options.background,
+            ...(options.colorSpace ? { colorSpace: options.colorSpace } : {}),
             ...(safe
               ? {
                   margins: safe,

@@ -201,3 +201,20 @@ test("selection crops retain the originals and report delivered dimensions", asy
   expect(d.image.mock.calls[0]![0]).toMatchObject({ width: 20, height: 10 });
   expect(result).toMatchObject({ width: 40, height: 20 });
 });
+
+test("an empty artboard fails before constructing a multi-artboard archive", async () => {
+  const d = fixture();
+  d.image.mockResolvedValueOnce(new Blob());
+  await expect(
+    d.run(
+      {
+        mode: "static",
+        compositionId: "b",
+        scale: 1,
+        image: { format: "png", quality: 1, allPages: true },
+      },
+      d.scope(),
+    ),
+  ).rejects.toThrow(/empty/);
+  expect(d.download).not.toHaveBeenCalled();
+});

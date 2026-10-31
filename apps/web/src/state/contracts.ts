@@ -72,6 +72,7 @@ export interface ProjectInsights extends ProjectUsage {
   origin?: OriginStorageEstimate;
 }
 export interface NewProjectOptions {
+  colorSpace?: Composition["colorSpace"];
   presetId?: string;
   name: string;
   width: number;

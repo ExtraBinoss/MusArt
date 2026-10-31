@@ -5,6 +5,8 @@ import type { FontResolver } from "../../surface/text/fonts";
 
 export interface MotionVideoExportOptions {
   compositionId: string;
+  selection?: readonly string[];
+  beforeFrame?: () => Promise<void>;
   frameRate?: MotionFrameRate;
   scale?: number;
   container?: "auto" | "mp4" | "webm";

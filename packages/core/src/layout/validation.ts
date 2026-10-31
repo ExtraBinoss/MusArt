@@ -43,7 +43,7 @@ export function validatePageLayout(page: Record<string, unknown>): void {
   if (page.colorSpace !== undefined)
     ensure(
       typeof page.colorSpace === "string" &&
-        ["srgb", "display-p3", "cmyk-proof"].includes(page.colorSpace),
+        ["srgb", "display-p3", "cmyk", "cmyk-proof"].includes(page.colorSpace),
       "INVALID_DOCUMENT",
       "Unknown working color space",
     );

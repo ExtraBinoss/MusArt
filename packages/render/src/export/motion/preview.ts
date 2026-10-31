@@ -1,3 +1,4 @@
+import { selectionFrameScope } from "./selection";
 import {
   applyMotionFrame,
   compileMotion,
@@ -20,6 +21,7 @@ export function createMotionPreview(project: Project, options: MotionPreviewOpti
       "missingMotion",
       "Motion preview requires an authored Motion composition.",
     );
+  const selection = selectionFrameScope(program.composition, options.selection);
   const edge = options.edge ?? 768;
   if (!Number.isInteger(edge) || edge < 16 || edge > 768)
     throw new MotionExportError("invalidOptions", "Motion preview edge must be 16–768 pixels.");
@@ -89,13 +91,13 @@ export function createMotionPreview(project: Project, options: MotionPreviewOpti
     dirty = false;
     publish({ busy: true });
     const job = session.withCanvasFrame(
-      applyMotionFrame(program, plan),
+      selection.frame(applyMotionFrame(program, plan)),
       assets,
       (canvas) => {
         if (!closed && owner === generation) options.onFrame(canvas, session.stats()?.backend);
       },
       {
-        scale: Math.min(1, edge / Math.max(program.composition.width, program.composition.height)),
+        scale: Math.min(1, edge / Math.max(selection.page.width, selection.page.height)),
         motionFrame: plan,
         mediaMode: "exact",
         signal: abort.signal,

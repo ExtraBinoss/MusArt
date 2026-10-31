@@ -1,3 +1,5 @@
+import { subscribeCompositionExport } from "../../export/composition-request";
+import { MobileExportIcon } from "./MobileExportIcon";
 import {
   memo,
   useEffect,
@@ -38,24 +40,37 @@ const icons = {
 
 export const MobileEditor = memo(function MobileEditor({ tools, ...props }: Props) {
   const { t } = useTranslation("mobile");
-  const [exportBusy, setExportBusy] = useState(false);
-  const [timelineOpen, setTimelineOpen] = useAtom(timelineOpenAtom);
+  const [requested, setRequested] = useState<string | undefined>();
   const [panel, setPanel] = useState<Panel | null>(null);
+  const { engine, onExportOpenChange, onTimelapseOpenChange } = props;
+  useEffect(
+    () =>
+      subscribeCompositionExport(engine, (target) => {
+        if (target.projectId !== engine.getSnapshot().project.id) return;
+        setRequested(target.compositionId);
+        setPanel(null);
+        onTimelapseOpenChange?.(false);
+        onExportOpenChange(true);
+      }),
+    [engine, onExportOpenChange, onTimelapseOpenChange],
+  );
+  const [timelineOpen, setTimelineOpen] = useAtom(timelineOpenAtom);
   const trigger = useRef<HTMLButtonElement | null>(null);
   const motionEnabled = useEngineValue(
     props.engine,
     (snapshot) =>
       snapshot.project.pages.find((page) => page.id === snapshot.pageId)?.motion?.mode === "motion",
   );
-  const shown = props.exportOpen
-    ? "export"
-    : props.timelapseOpen
-      ? "properties"
+  const shown =
+    props.exportOpen || props.timelapseOpen
+      ? "export"
       : timelineOpen && motionEnabled
         ? "motion"
         : panel;
   function close() {
     if (props.exportOpen) props.onExportOpenChange(false);
+    if (props.timelapseOpen) props.onTimelapseOpenChange?.(false);
+    setRequested(undefined);
     setPanel(null);
     setTimelineOpen(false);
     trigger.current?.focus({ preventScroll: true });
@@ -66,28 +81,32 @@ export const MobileEditor = memo(function MobileEditor({ tools, ...props }: Prop
         className="mobile-editor-nav"
         label={t("navigation")}
         value={shown}
-        disabled={exportBusy}
         selection="expanded"
         items={entries.map((item) => {
           const Icon = item === "motion" ? null : icons[item];
           return {
             value: item,
             label: t(item),
-            icon: Icon ? (
-              <Icon size={20} strokeWidth={1.6} />
-            ) : (
-              <ModeIcon mode="motion" size={23} />
-            ),
+            icon:
+              item === "export" ? (
+                <MobileExportIcon engine={engine} />
+              ) : Icon ? (
+                <Icon size={20} strokeWidth={1.6} />
+              ) : (
+                <ModeIcon mode="motion" size={23} />
+              ),
           };
         })}
         onSelect={(value, event) => {
           const item = entries.find((entry) => entry === value);
-          if (!item || exportBusy) return;
+          if (!item) return;
           trigger.current = event.currentTarget;
           if (item !== "export" && props.exportOpen) props.onExportOpenChange(false);
+          if (props.timelapseOpen) props.onTimelapseOpenChange?.(false);
           if (item !== "motion") setTimelineOpen(false);
           if (item === "export") {
             setPanel(null);
+            setRequested(undefined);
             props.onExportOpenChange(!props.exportOpen);
           } else if (item === "motion") {
             setPanel(shown === "motion" ? null : "motion");
@@ -101,9 +120,9 @@ export const MobileEditor = memo(function MobileEditor({ tools, ...props }: Prop
             key="export"
             engine={props.engine}
             services={props.services}
-            onTask={props.onTask}
             onClose={close}
-            onPendingChange={setExportBusy}
+            initialCompositionId={requested}
+            initialKind={props.timelapseOpen ? "timelapse" : undefined}
           />
         ) : (
           shown && (

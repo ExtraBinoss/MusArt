@@ -1,3 +1,5 @@
+import { ExportLeaveGuard } from "./components/export/ExportLeaveGuard";
+import { guardExportNavigation, ExportLeaveCancelled } from "./services/export/leave";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useStore } from "jotai";
 import { useRenderMetrics } from "./state/session/render-metrics";
@@ -65,8 +67,12 @@ export function App({ engine, services, welcome = false, routing }: AppProps) {
       ? null
       : localProjectMenu;
   const showProjectMenu = (view: ProjectView) => {
-    setProjectMenu(view);
-    if (routing && (view === "projects" || view === "newProject")) routing.navigate("dashboard");
+    const show = () => {
+      setProjectMenu(view);
+      if (routing && (view === "projects" || view === "newProject")) routing.navigate("dashboard");
+    };
+    if (view === "projects" || view === "newProject") guardExportNavigation(show);
+    else show();
   };
   const [exportMenu, setExportMenu] = useState(false);
   const [timelapseMenu, setTimelapseMenu] = useState(false);
@@ -95,6 +101,7 @@ export function App({ engine, services, welcome = false, routing }: AppProps) {
         if (success) setNotice({ message: success, error: false });
         return true;
       } catch (error) {
+        if (error instanceof ExportLeaveCancelled) return false;
         setNotice({ message: formatUiError(error), details: errorDiagnostics(error), error: true });
         return false;
       }
@@ -158,6 +165,7 @@ export function App({ engine, services, welcome = false, routing }: AppProps) {
             onError={onPreferencesError}
           >
             <main className="musart-app" ref={element}>
+              <ExportLeaveGuard />
               <MotionImportConfirmation engine={engine} />
               <TransitionRequestHost engine={engine} />
               {(!choosingProject || hasOpenedEditor) && (

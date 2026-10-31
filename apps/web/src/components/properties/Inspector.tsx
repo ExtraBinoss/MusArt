@@ -1,3 +1,4 @@
+import "../export/messages";
 import { LayerAnimations } from "../motion/animations/LayerAnimations";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -239,7 +240,10 @@ export const Inspector = memo(
                       options={[
                         { value: "srgb", label: "sRGB" },
                         { value: "display-p3", label: "Display P3" },
-                        { value: "cmyk-proof", label: t("cmykProof") },
+                        { value: "cmyk", label: t("exportPanel:cmyk") },
+                        ...(page.colorSpace === "cmyk-proof"
+                          ? [{ value: "cmyk-proof", label: t("cmykProof") }]
+                          : []),
                       ]}
                       onValueChange={(colorSpace) =>
                         pagePatch({
@@ -250,7 +254,13 @@ export const Inspector = memo(
                   </div>
                   {page.colorSpace && page.colorSpace !== "srgb" && (
                     <p className="muted-description color-mode-hint">
-                      {t(page.colorSpace === "cmyk-proof" ? "cmykProofHint" : "displayP3Hint")}
+                      {t(
+                        page.colorSpace === "cmyk"
+                          ? "exportPanel:cmykCanvasHint"
+                          : page.colorSpace === "cmyk-proof"
+                            ? "cmykProofHint"
+                            : "displayP3Hint",
+                      )}
                     </p>
                   )}
                   {layer?.kind === "text" && (

@@ -31,3 +31,15 @@ ExtraBinoss at `2825887abd292caa5dd46e8014f65481857fc183`, based on Bloub by
 Jérémy Perret via Beam. Complete notices, licenses and original file checksums
 are preserved in [docs/legal/maskot](docs/legal/maskot/). The SVG morph component
 retains Maskot's numeric interpolation with integration-specific lifecycle guards.
+
+## Managed print encoding and color profiles
+
+The lazy print encoder uses `@imagemagick/magick-wasm` 0.0.45 (Apache-2.0),
+including ImageMagick, LittleCMS and its native codec dependencies. The complete
+upstream [license](apps/web/public/licenses/magick-wasm-LICENSE.txt) and
+[dependency notices](apps/web/public/licenses/magick-wasm-NOTICE.txt) are preserved
+and included in the web distribution under `/licenses/`.
+
+The unmodified CGATS21 CRPC6 output profile is provided by Idealliance,
+copyright X-Rite, Inc.; sRGB-v4 is CC0 from Compact-ICC-Profiles. Their original
+terms and sources are preserved in the [profile notice](packages/render/assets/profiles/NOTICE.md).

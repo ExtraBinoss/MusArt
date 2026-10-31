@@ -1,3 +1,5 @@
+import type { EditorServices } from "../../../../src/state/contracts";
+import { getExportJobs } from "../../../../src/services/export/jobs";
 import { useState } from "react";
 import { expect, test, vi } from "vitest";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
@@ -40,7 +42,7 @@ test("mobile navigation starts with an unobstructed canvas and opens one sheet a
   expect(exportOpen).toHaveBeenCalledExactlyOnceWith(true);
 });
 
-test("bottom-nav export opens a dedicated sheet with the real shared settings", async () => {
+test("bottom-nav export opens a same export dialog with the real shared settings", async () => {
   const d = setup();
   function Host() {
     const [open, setOpen] = useState(false);
@@ -66,7 +68,7 @@ test("bottom-nav export opens a dedicated sheet with the real shared settings", 
   await waitFor(() =>
     expect(screen.getByRole("dialog", { name: "Exporter la composition" })).toBeVisible(),
   );
-  expect(within(nav).getByRole("button", { name: "Exporter" })).toHaveAttribute(
+  expect(within(nav).getByRole("button", { name: "Exporter", hidden: true })).toHaveAttribute(
     "aria-expanded",
     "true",
   );
@@ -78,14 +80,23 @@ test("bottom-nav export opens a dedicated sheet with the real shared settings", 
   expect(d.services.exportImage).not.toHaveBeenCalled();
 });
 
-test("pending export disables navigation and successful completion closes its mobile sheet", async () => {
+test("a closed mobile dialog leaves export running and navigation usable", async () => {
   const d = setup();
   let finish!: () => void;
-  vi.mocked(d.services.exportImage).mockImplementation(
-    () =>
-      new Promise<void>((resolve) => {
+  d.services.exportComposition = vi.fn<NonNullable<EditorServices["exportComposition"]>>(
+    async () => {
+      await new Promise<void>((resolve) => {
         finish = resolve;
-      }),
+      });
+      return {
+        mode: "static",
+        filename: "art.png",
+        mimeType: "image/png",
+        bytes: 4,
+        width: 10,
+        height: 10,
+      };
+    },
   );
   function Host() {
     const [open, setOpen] = useState(false);
@@ -109,13 +120,14 @@ test("pending export disables navigation and successful completion closes its mo
   await waitFor(() =>
     expect(screen.getByRole("dialog", { name: "Exporter la composition" })).toBeVisible(),
   );
-  expect(document.querySelector(".mobile-sheet-export")).not.toBeNull();
+  expect(document.querySelector(".export-workspace")).not.toBeNull();
   expect(document.querySelector(".export-popover")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Exporter l’image" }));
-  for (const button of within(nav).getAllByRole("button")) expect(button).toBeDisabled();
-  expect(screen.getByRole("button", { name: "Fermer le panneau" })).toBeDisabled();
+  await waitFor(() => expect(finish).toBeDefined());
   fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
-  expect(screen.getByRole("dialog", { name: "Exporter la composition" })).toBeInTheDocument();
+  await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  expect(getExportJobs(d.engine).pending).toBe(true);
+  for (const button of within(nav).getAllByRole("button")) expect(button).not.toBeDisabled();
   await act(async () => finish());
   await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   for (const button of within(nav).getAllByRole("button")) expect(button).not.toBeDisabled();
