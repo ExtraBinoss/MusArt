@@ -229,3 +229,25 @@ test("preview preparation validates original bytes without installing or renamin
   expect(prepared.originals[0]!.blob.size).toBe(f.bytes.byteLength);
   expect(f.openMediaProject).not.toHaveBeenCalled();
 });
+
+test("a verified hover source is reused for installation while each open keeps its own identity", async () => {
+  const { motionTemplateSources } =
+    await import("../../../../../src/services/projects/templates/motion/source-cache");
+  motionTemplateSources.clear();
+  const f = fixture();
+  vi.stubGlobal("fetch", f.fetcher);
+  try {
+    const prepared = await prepareMotionTemplate("in-bloom");
+    const reads = f.fetcher.mock.calls.length;
+    await openMotionTemplate(f, "in-bloom");
+    await openMotionTemplate(f, "in-bloom");
+    expect(f.fetcher.mock.calls.length).toBe(reads);
+    expect(f.openMediaProject.mock.calls[0]![0].pages).toBe(prepared.project.pages);
+    expect(f.openMediaProject.mock.calls[0]![0].id).not.toBe(
+      f.openMediaProject.mock.calls[1]![0].id,
+    );
+  } finally {
+    motionTemplateSources.clear();
+    vi.unstubAllGlobals();
+  }
+});

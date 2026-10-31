@@ -10,6 +10,7 @@ vi.mock("../../src/App", () => ({
     <div data-welcome={String(welcome)}>Atelier prêt</div>
   ),
 }));
+vi.mock("../../src/canvas/EditorCanvas", () => ({ default: () => null }));
 import { Studio } from "../../src/bootstrap/Studio";
 const runtime = () => ({
   welcome: false,

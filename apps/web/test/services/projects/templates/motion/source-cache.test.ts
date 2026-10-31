@@ -1,6 +1,6 @@
 import { expect, test, vi } from "vitest";
 import { createProject } from "@musart/core";
-import { PreviewSourceCache } from "../../../../../src/components/projects/templates/motion-preview/source-cache";
+import { PreviewSourceCache } from "../../../../../src/services/projects/templates/motion/source-cache";
 
 const signal = () => new AbortController().signal;
 test("templates retain validated geometry and originals without repeated preparation", async () => {

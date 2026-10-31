@@ -16,12 +16,17 @@ export class FragmentBudgetError extends Error {
 
 /** Stream an owned immutable DTO; snapshot mutable callers before scheduling this traversal. */
 export function* fragmentValue(frame: unknown): Generator<FragmentPart> {
-  const pending: Pending[] = [];
   function charge(budget: Budget, bytes: number) {
     budget.bytes += bytes;
     if (budget.bytes > MAX_INLINE_BYTES) throw new FragmentBudgetError();
   }
-  function split(value: unknown, path: FragmentPath, tasks: Pending[], budget: Budget): unknown {
+  function split(
+    value: unknown,
+    path: FragmentPath,
+    tasks: Pending[],
+    budget: Budget,
+    pack: boolean,
+  ): unknown {
     charge(budget, 16);
     if (typeof value === "string") {
       if (value.length <= INLINE_STRING_CHARS) {
@@ -41,6 +46,22 @@ export function* fragmentValue(frame: unknown): Generator<FragmentPart> {
       return "";
     }
     if (Array.isArray(value)) {
+      // Coordinate pairs, boxes and short scalar lists belong inside the surrounding
+      // bounded clone. Scheduling a worker task for every point overwhelms a morph.
+      if (pack && value.length && value.length <= ARRAY_CHUNK_ITEMS) {
+        let bytes = 0;
+        const scalar = value.every((item) => {
+          if (item !== null && !["number", "boolean", "string", "undefined"].includes(typeof item))
+            return false;
+          if (typeof item === "string" && item.length > INLINE_STRING_CHARS) return false;
+          bytes += 16 + (typeof item === "string" ? item.length * 2 : 0);
+          return true;
+        });
+        if (scalar && budget.bytes + bytes <= MAX_INLINE_BYTES) {
+          charge(budget, bytes);
+          return Object.isFrozen(value) ? value : value.slice();
+        }
+      }
       if (value.length)
         tasks.push(function* () {
           let prepared: { item: unknown; tasks: Pending[]; bytes: number } | undefined;
@@ -49,17 +70,12 @@ export function* fragmentValue(frame: unknown): Generator<FragmentPart> {
               items: unknown[] = [];
             let bytes = 0;
             while (offset + items.length < value.length && items.length < ARRAY_CHUNK_ITEMS) {
-              if (!prepared) {
-                const childTasks: Pending[] = [],
-                  childBudget = { bytes: 0 };
-                const item = split(
+              if (!prepared)
+                prepared = prepare(
                   value[offset + items.length],
                   [...path, offset + items.length],
-                  childTasks,
-                  childBudget,
+                  pack,
                 );
-                prepared = { item, tasks: childTasks, bytes: childBudget.bytes };
-              }
               if (items.length && bytes + prepared.bytes > MAX_INLINE_BYTES) break;
               items.push(prepared.item);
               nested.push(...prepared.tasks);
@@ -90,7 +106,7 @@ export function* fragmentValue(frame: unknown): Generator<FragmentPart> {
       } else if (Array.isArray(child) && !child.length && Object.isFrozen(child)) {
         charge(budget, 16);
         result = child;
-      } else result = split(child, [...path, key], tasks, budget);
+      } else result = split(child, [...path, key], tasks, budget, pack);
       changed ||= result !== child;
       values.push(result);
     }
@@ -99,6 +115,21 @@ export function* fragmentValue(frame: unknown): Generator<FragmentPart> {
     if (!changed && Object.isFrozen(value)) return value;
     return Object.fromEntries(keys.map((key, index) => [key, values[index]]));
   }
-  yield { type: "base", value: split(frame, [], pending, { bytes: 0 }) };
-  for (const task of pending) yield* task();
+  function prepare(value: unknown, path: FragmentPath, pack: boolean) {
+    let tasks: Pending[] = [],
+      budget = { bytes: 0 };
+    try {
+      return { item: split(value, path, tasks, budget, pack), tasks, bytes: budget.bytes };
+    } catch (error) {
+      if (!pack || !(error instanceof FragmentBudgetError)) throw error;
+      // Packing must never reject a DTO that the original fragmented shape accepts.
+      // No fragment has been emitted yet, so a bounded item can safely retry un-packed.
+      tasks = [];
+      budget = { bytes: 0 };
+      return { item: split(value, path, tasks, budget, false), tasks, bytes: budget.bytes };
+    }
+  }
+  const root = prepare(frame, [], true);
+  yield { type: "base", value: root.item };
+  for (const task of root.tasks) yield* task();
 }

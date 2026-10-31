@@ -1,6 +1,7 @@
 export { validateAssetDescription } from "./assets/validation";
 export type { MorphPoint, MorphContour, MorphShapeFrame, ShapeMorph } from "./effects/morph/model";
-export { prepareMorphShape } from "./effects/morph/geometry";
+export { compactShapeMorph } from "./effects/morph/compact";
+export { prepareMorphShape, prepareMorphShapeSteps } from "./effects/morph/geometry";
 export { validateShapeMorph } from "./effects/morph/validation";
 export { FORMAT_VERSION } from "./document/model";
 export type { PreparedEngineTransaction } from "./session/reservation";

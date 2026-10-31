@@ -1,3 +1,4 @@
+import { motionTemplateSources } from "./source-cache";
 import type { ProjectTiming } from "../../../performance/project-timing";
 import { isDesignedTemplateId } from "../designed/catalog";
 import { prepareDesignedTemplate } from "../designed/load";
@@ -173,7 +174,7 @@ export interface PreparedMotionTemplate {
 }
 
 /** Bounded original-only preparation shared by hover previews and durable installation. */
-export async function prepareMotionTemplate(
+async function prepareUncachedMotionTemplate(
   templateId: MotionTemplateId,
   options: Pick<TemplateLoadOptions, "signal" | "timing"> = {},
   fetcher: TemplateFetcher = fetch,
@@ -222,6 +223,21 @@ export async function prepareMotionTemplate(
   return { project: manifest.project, originals };
 }
 
+/** Verified build assets can be reused by a later open, without caching failures or aborts. */
+export async function prepareMotionTemplate(
+  templateId: MotionTemplateId,
+  options: Pick<TemplateLoadOptions, "signal" | "timing"> = {},
+  fetcher: TemplateFetcher = fetch,
+): Promise<PreparedMotionTemplate> {
+  options.signal?.throwIfAborted();
+  if (fetcher !== fetch) return prepareUncachedMotionTemplate(templateId, options, fetcher);
+  options.timing?.stage("Acquire validated template source (reuse when cached)");
+  const signal = options.signal ?? new AbortController().signal;
+  return motionTemplateSources.template(templateId, signal, () =>
+    prepareUncachedMotionTemplate(templateId, options, fetcher),
+  );
+}
+
 /** Install once only after complete validation; previews never call this boundary. */
 export async function openMotionTemplate(
   services: Pick<EditorServices, "openMediaProject">,
@@ -241,3 +257,5 @@ export async function openMotionTemplate(
     options,
   );
 }
+
+import.meta.hot?.dispose(() => motionTemplateSources.clear());

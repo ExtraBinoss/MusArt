@@ -1,4 +1,4 @@
-import { BrandStatus } from "../../ui/brand/BrandStatus";
+import { CanvasPreparation } from "./CanvasPreparation";
 import { Component, memo, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
@@ -174,18 +174,29 @@ export const EditorScene = memo(function EditorScene({
   const density = useMemo(() => new DrawingDensity(), []);
   const { t } = useTranslation();
   const element = useRef<HTMLDivElement>(null);
-  const preparing = useMemo(() => {
-    let initialized = false;
-    return {
+  const preparing = useMemo(
+    () => ({
       read: () => {
-        initialized ||= Boolean(
-          element.current?.querySelector('canvas[data-display-initialized="true"]'),
+        const canvas = element.current?.querySelector("canvas");
+        const { page, presentation } = controller.read();
+        return (
+          !canvas ||
+          canvas.dataset.presentationReady !== "true" ||
+          canvas.dataset.pageId !== page.id ||
+          Boolean(presentation && canvas.dataset.projectId !== presentation.origin.projectId)
         );
-        return !initialized;
       },
-      subscribe: controller.presentation.subscribe,
-    };
-  }, [controller]);
+      subscribe: (listener: () => void) => {
+        const presentation = controller.presentation.subscribe(listener);
+        const scene = controller.subscribe(listener);
+        return () => {
+          presentation();
+          scene();
+        };
+      },
+    }),
+    [controller],
+  );
   useRenderMetrics(element);
   return (
     <GpuBoundary
@@ -225,10 +236,7 @@ export const EditorScene = memo(function EditorScene({
             density={density}
           />
         </Canvas>
-        <div className="canvas-loading" role="status" aria-label={t("loadingCanvas")}>
-          <span className="canvas-loading-glow" aria-hidden="true" />
-          <BrandStatus size={60} state="preparing" activity={preparing} />
-        </div>
+        <CanvasPreparation activity={preparing} />
       </div>
     </GpuBoundary>
   );

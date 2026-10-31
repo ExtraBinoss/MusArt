@@ -11,7 +11,11 @@ import { attachAutomation } from "../services/automation/automation";
 import { formatUiError } from "../state/i18n/errors/format";
 import type { StudioRouting } from "../state/contracts";
 import { createProjectFromTemplate } from "../services/projects/templates/catalog";
-const App = lazy(() => import("../App").then((module) => ({ default: module.App })));
+const loadApp = () => import("../App");
+const prepareEditor = async () => {
+  await Promise.all([loadApp(), import("../canvas/EditorCanvas")]);
+};
+const App = lazy(() => loadApp().then((module) => ({ default: module.App })));
 export function Studio({ routing }: { routing?: StudioRouting } = {}) {
   const { t } = useTranslation("startup");
   const [runtime, setRuntime] = useState<EditorRuntime | null>(null);
@@ -28,6 +32,9 @@ export function Studio({ routing }: { routing?: StudioRouting } = {}) {
       if (!disposed) setError(formatUiError(error));
     };
     const initial = initialRouting.current;
+    const editorCode = initial?.view === "editor" ? prepareEditor() : undefined;
+    // Keep rejection observed while local project preparation is still pending.
+    void editorCode?.catch(() => {});
     void createRuntime(report, {
       signal: controller.signal,
       projectId: initial?.projectId,
@@ -41,12 +48,16 @@ export function Studio({ routing }: { routing?: StudioRouting } = {}) {
         }
         current = result;
         if (initial?.templateId) {
-          await createProjectFromTemplate(result.services, initial.templateId, {
-            signal: controller.signal,
-          });
+          await Promise.all([
+            editorCode,
+            createProjectFromTemplate(result.services, initial.templateId, {
+              signal: controller.signal,
+            }),
+          ]);
           if (disposed) return;
           initial.navigate("editor", result.engine.getSnapshot().project.id);
         }
+        await editorCode;
         if (new URLSearchParams(location.search).get("automation") === "1")
           detach = attachAutomation(result.engine, result.services);
         setRuntime(result);
@@ -80,6 +91,7 @@ export function Studio({ routing }: { routing?: StudioRouting } = {}) {
             showLanding={false}
             initialView="templates"
             onHome={() => routing.navigate("home")}
+            onPrepareEditor={prepareEditor}
             onClose={() => routing.navigate("editor", runtime.engine.getSnapshot().project.id)}
             onTask={async (task) => {
               try {

@@ -1,4 +1,5 @@
 import { MorphResource, morphResourceKey, sourceMorph } from "../morph/resource";
+import { buildMorphAtlasAsync } from "../morph/atlas";
 import { textMorph } from "../morph/text";
 import { compileGpuScene } from "../../compositing/compile";
 import type { Composition, Layer } from "@musart/core";
@@ -198,7 +199,7 @@ export class TextSources {
         }
         let job = this.pending.get(key);
         if (!job) {
-          job = this.prepareLayer(layer, key).finally(() => {
+          job = this.prepareLayer(layer, key, options.canContinue).finally(() => {
             if (this.pending.get(key) === job) this.pending.delete(key);
           });
           this.pending.set(key, job);
@@ -211,7 +212,11 @@ export class TextSources {
     }
     this.assertOpen();
   }
-  private async prepareLayer(layer: Layer, key: string): Promise<void> {
+  private async prepareLayer(
+    layer: Layer,
+    key: string,
+    canContinue?: () => boolean,
+  ): Promise<void> {
     const lease = await this.fonts.acquire(layer.fontFamily, layer.fontWeight);
     try {
       this.assertOpen();
@@ -222,9 +227,24 @@ export class TextSources {
         return;
       }
       const effect = sourceMorph(layer);
-      const resource = effect
-        ? new MorphResource(layer, effect, textMorph(layer, effect, lease.font, layout))
-        : new TextResource(layer, lease.font, layout);
+      let resource: TextResource | MorphResource;
+      if (effect) {
+        const definition = textMorph(layer, effect, lease.font, layout);
+        const atlas = await buildMorphAtlasAsync(definition, {
+          canContinue: () => !this.disposed && (canContinue?.() ?? true),
+        });
+        try {
+          this.assertOpen();
+          resource = new MorphResource(layer, effect, definition, atlas);
+        } catch (error) {
+          atlas.texture.dispose();
+          throw error;
+        }
+      } else resource = new TextResource(layer, lease.font, layout);
+      if (this.disposed) {
+        resource.dispose();
+        this.assertOpen();
+      }
       // The GPU resource contains copied curves and no longer depends on its font face.
       this.cache.set(key, resource);
       this.parses++;

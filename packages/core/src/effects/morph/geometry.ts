@@ -48,7 +48,9 @@ function align(points: MorphPoint[], previous: readonly MorphPoint[]): MorphPoin
   return points.map((_, i) => points[(i + best) % points.length]!);
 }
 /** Bounded cold geometry preparation. Missing holes collapse instead of popping or filling. */
-export function prepareMorphShape(frames: readonly MorphShapeFrame[]): MorphShapeFrame[] {
+export function* prepareMorphShapeSteps(
+  frames: readonly MorphShapeFrame[],
+): Generator<MorphShapeFrame> {
   const raw = frames.map((frame) =>
     [false, true].map((hole) => frame.contours.filter((c) => c.hole === hole)),
   );
@@ -99,21 +101,29 @@ export function prepareMorphShape(frames: readonly MorphShapeFrame[]): MorphShap
   );
   const slots = [0, 1].flatMap((kind) => anchors[kind]!.map((_, index) => ({ kind, index })));
   const previous: MorphPoint[][] = [];
-  return frames.map((frame, fi) => ({
-    ...frame,
-    box: [...frame.box],
-    contours: slots.map(({ kind, index }, slot): MorphContour => {
-      const reference = anchors[kind]![index]!;
-      const original = groups[fi]![kind]![index];
-      const hole = kind === 1;
-      let points = original
-        ? [...original.points]
-        : Array.from({ length: 3 }, () => center(reference.points));
-      if (area(points) > 0 === hole) points.reverse();
-      points = sample(points, hole ? 64 : 256);
-      if (previous[slot]) points = align(points, previous[slot]);
-      previous[slot] = points;
-      return { hole, points };
-    }),
-  }));
+  for (let fi = 0; fi < frames.length; fi++) {
+    const frame = frames[fi]!;
+    yield {
+      ...frame,
+      box: [...frame.box],
+      contours: slots.map(({ kind, index }, slot): MorphContour => {
+        const reference = anchors[kind]![index]!;
+        const original = groups[fi]![kind]![index];
+        const hole = kind === 1;
+        let points = original
+          ? [...original.points]
+          : Array.from({ length: 3 }, () => center(reference.points));
+        if (area(points) > 0 === hole) points.reverse();
+        points = sample(points, hole ? 64 : 256);
+        if (previous[slot]) points = align(points, previous[slot]);
+        previous[slot] = points;
+        return { hole, points };
+      }),
+    };
+  }
+}
+
+/** Synchronous pure-core convenience; render preparation can yield between the same steps. */
+export function prepareMorphShape(frames: readonly MorphShapeFrame[]): MorphShapeFrame[] {
+  return [...prepareMorphShapeSteps(frames)];
 }

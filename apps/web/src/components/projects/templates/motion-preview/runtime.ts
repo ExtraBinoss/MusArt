@@ -18,7 +18,7 @@ import {
 } from "../../../../services/projects/templates/motion/loader";
 import type { MotionTemplateId } from "../../../../services/projects/templates/motion/model";
 import { PreviewSessionPool } from "./session-pool";
-import { PreviewSourceCache } from "./source-cache";
+import { motionTemplateSources as sources } from "../../../../services/projects/templates/motion/source-cache";
 
 export type PreviewStatus = "idle" | "loading" | "playing" | "paused" | "failed";
 type Session = Pick<ReturnType<typeof createRenderSession>, "withCanvasFrame" | "dispose">;
@@ -29,7 +29,6 @@ export interface PreviewDependencies {
   requestFrame: (callback: FrameRequestCallback) => number;
   cancelFrame: (handle: number) => void;
 }
-const sources = new PreviewSourceCache();
 const sessions = new PreviewSessionPool(
   async (options) => {
     const { createRenderSession } = await import("@musart/render");
@@ -38,8 +37,7 @@ const sessions = new PreviewSessionPool(
   () => sources.clear(),
 );
 const native: PreviewDependencies = {
-  prepare: (id, signal) =>
-    sources.template(id, signal, () => prepareMotionTemplate(id, { signal })),
+  prepare: (id, signal) => prepareMotionTemplate(id, { signal }),
   createSession: (options) => sessions.acquire(options),
   now: () => performance.now(),
   requestFrame: (callback) => requestAnimationFrame(callback),

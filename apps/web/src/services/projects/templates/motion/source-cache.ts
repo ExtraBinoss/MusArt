@@ -1,6 +1,6 @@
 import { compileMotion, type Project, type MotionProgram } from "@musart/core";
-import type { PreparedMotionTemplate } from "../../../../services/projects/templates/motion/loader";
-import type { MotionTemplateId } from "../../../../services/projects/templates/motion/model";
+import type { PreparedMotionTemplate } from "./loader";
+import type { MotionTemplateId } from "./model";
 
 interface Entry {
   source: PreparedMotionTemplate;
@@ -85,3 +85,6 @@ export class PreviewSourceCache {
     }
   }
 }
+
+/** One bounded library cache serves hover and durable template installation. */
+export const motionTemplateSources = new PreviewSourceCache();

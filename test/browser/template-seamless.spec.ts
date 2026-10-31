@@ -72,6 +72,7 @@ for (const webgl of [false, true])
         },
       );
       expect(images.reads).toMatchObject({ gpu: 0, webgl: 0, canvas: 0 });
+      if (!images.stats) throw new Error("Renderer statistics are unavailable.");
       expect(images.stats.cacheBytes).toBeLessThanOrEqual(images.stats.maxBytes);
       for (const [i, frame] of images.frames.entries())
         await writeFile(`${folder}/${id}-${i}.png`, Buffer.from(frame.split(",")[1]!, "base64"));

@@ -39,6 +39,7 @@ export interface ProjectDialogProps {
   initialView?: "projects" | "templates" | "newProject" | "settings" | "settingsEditor";
   showLanding?: boolean;
   onHome?: () => void;
+  onPrepareEditor?: () => Promise<void>;
 }
 /** The same dashboard works before the first document and above an open project. */
 export function ProjectDialog(props: ProjectDialogProps) {
@@ -62,6 +63,7 @@ function ProjectDashboard({
   welcome = false,
   showLanding = true,
   onHome,
+  onPrepareEditor,
 }: ProjectDialogProps) {
   const { t } = useTranslation();
   const mobile = useMobileLayout();
@@ -142,10 +144,17 @@ function ProjectDashboard({
     setTemplateLoading(id === "in-bloom" || id === "motion-stress-lab");
     complete(async () => {
       try {
-        await createProjectFromTemplate(services, id, {
-          signal: request.signal,
-          expectedOrigin: origin,
-        });
+        // Begin editor code only after an explicit open, alongside validated installation.
+        await Promise.all([
+          onPrepareEditor?.(),
+          createProjectFromTemplate(services, id, {
+            signal: request.signal,
+            expectedOrigin: origin,
+          }),
+        ]);
+      } catch (error) {
+        request.abort();
+        throw error;
       } finally {
         if (templateRequest.current === request) {
           templateRequest.current = null;

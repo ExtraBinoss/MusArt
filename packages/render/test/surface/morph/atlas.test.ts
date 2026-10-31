@@ -1,5 +1,5 @@
-import { expect, test } from "vitest";
-import { buildMorphAtlas } from "../../../src/surface/morph/atlas";
+import { expect, test, vi } from "vitest";
+import { buildMorphAtlas, buildMorphAtlasAsync } from "../../../src/surface/morph/atlas";
 import { morphResourceKey } from "../../../src/surface/morph/resource";
 import { createEffect, createLayer, type ShapeMorph } from "@musart/core";
 const shape: ShapeMorph = {
@@ -68,4 +68,26 @@ test("progress, strength and glyph order preserve geometry resource identities",
   expect(morphResourceKey(layer, effect)).not.toBe(
     morphResourceKey({ ...layer, text: "Other" }, effect),
   );
+});
+
+test("cooperative atlas preparation yields identical bytes and cancels between batches", async () => {
+  let now = 0;
+  vi.spyOn(performance, "now").mockImplementation(() => (now += 5));
+  const yieldTask = vi.fn(async () => {});
+  const direct = buildMorphAtlas(shape),
+    cooperative = await buildMorphAtlasAsync(shape, { yieldTask });
+  expect(yieldTask).toHaveBeenCalled();
+  expect(cooperative.texture.image.data).toEqual(direct.texture.image.data);
+  expect(cooperative.shapes).toEqual(direct.shapes);
+  direct.texture.dispose();
+  cooperative.texture.dispose();
+  let current = true;
+  await expect(
+    buildMorphAtlasAsync(shape, {
+      canContinue: () => current,
+      yieldTask: async () => {
+        current = false;
+      },
+    }),
+  ).rejects.toMatchObject({ name: "AbortError" });
 });

@@ -6,6 +6,10 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Reduce complex template opening work with bounded scalar-array serialization and a shared validated source/program cache. Add opt-in conservative contour compaction, verified on the original 67-state Full HD reference with a 56.1% smaller manifest; preserve native rendering comparisons and diagnostic timing limits separately from the newer Melt mascot template.
+
+- Prepare cold morph geometry in cancellable cooperative batches with identical atlas bytes, preload editor/canvas modules alongside explicit template installation, and share a stable mascot loading presentation through module and GPU preparation. Dismiss the canvas overlay only after the matching project frame, with a short opacity fade and reduced-motion support; preserve real error and cancellation handling.
+
 - Make the photo collage loop seamless across wrapped occurrences and preview subframes; rename it Too Hot to Haunt. Replace the blue reference lettering with the shared violet Melt mascot and editable wordmark on white, close its vector loop, remove reference artifacts, and refresh the real rendered posters.
 
 - Apply the CGATS21 CRPC6 ICC soft proof automatically to CMYK canvases, thumbnails and video output, using a demand-driven GPU lookup pass with bounded memory. Keep native CMYK export input separate to prevent double conversion; use lossless source previews and verify canvas/preview/export colors in Chromium on WebGPU and WebGL.

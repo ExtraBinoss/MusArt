@@ -22,7 +22,8 @@ test("fast operations never flash a loader, while slow operations announce once 
   expect(view.container.querySelector("svg")).toHaveAttribute("data-brand-state", "working");
   view.rerender(<Throbber active={false} label="Loading projects" variant="shimmer" />);
   expect(screen.queryByRole("status")).toBeNull();
-  expect(view.container.querySelector("svg")).toHaveAttribute("data-brand-state", "idle");
+  expect(view.container.querySelector("svg")).toHaveAttribute("data-brand-state", "working");
+  expect(view.container.querySelector("svg")).toHaveAttribute("data-brand-active", "false");
   expect(view.container.firstChild).toHaveAttribute("data-visible", "false");
   act(() => {
     vi.advanceTimersByTime(160);

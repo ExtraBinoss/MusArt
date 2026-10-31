@@ -449,3 +449,37 @@ test("section changes retain header, creation controls and one search input with
 });
 
 beforeEach(() => localStorage.removeItem(LIBRARY_MODE_KEY));
+
+test("prepares editor code alongside an explicit template open and waits for both before navigation", async () => {
+  const d = setup(),
+    close = vi.fn();
+  let finishInstall!: () => void, finishEditor!: () => void;
+  const install = vi.spyOn(templates, "createProjectFromTemplate").mockImplementation(
+    () =>
+      new Promise<void>((resolve) => {
+        finishInstall = resolve;
+      }),
+  );
+  const prepare = vi.fn(
+    () =>
+      new Promise<void>((resolve) => {
+        finishEditor = resolve;
+      }),
+  );
+  d.mount(
+    <ProjectDialog
+      initialView="templates"
+      services={d.services}
+      onClose={close}
+      onTask={d.onTask}
+      onPrepareEditor={prepare}
+    />,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Créer depuis Mascotte Melt" }));
+  expect(install).toHaveBeenCalledOnce();
+  expect(prepare).toHaveBeenCalledOnce();
+  await act(async () => finishInstall());
+  expect(close).not.toHaveBeenCalled();
+  await act(async () => finishEditor());
+  await waitFor(() => expect(close).toHaveBeenCalledOnce());
+});

@@ -1,4 +1,4 @@
-import { useEffect, useState, useSyncExternalStore, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { MeltLogo } from "../../../ui/brand/MeltLogo";
 import type { BrandActivity } from "../../../ui/brand/playback";
 import "./throbber.css";
@@ -30,6 +30,7 @@ export function Throbber({
       activity?.read ?? pending,
       activity?.read ?? pending,
     ) && active;
+  const playback = useMemo(() => ({ read: () => running, subscribe: noSubscription }), [running]);
   const [mounted, setMounted] = useState(running && delayMs === 0);
   useEffect(() => {
     if (running === mounted) return;
@@ -56,7 +57,7 @@ export function Throbber({
                 <i />
               </span>
             ) : (
-              <MeltLogo size={size} state={running ? "working" : "idle"} />
+              <MeltLogo size={size} state="working" activity={playback} />
             )}
           </span>
           {label && <span className="ui-throbber-label">{label}</span>}

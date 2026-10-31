@@ -1,7 +1,6 @@
-import { BrandStatus } from "../../ui/brand/BrandStatus";
+import { CanvasPreparation } from "../../canvas/render/CanvasPreparation";
 import { lazy, memo, Suspense, useMemo, useRef } from "react";
 import { useAtomValue, useStore } from "jotai";
-import { useTranslation } from "react-i18next";
 import type { EnginePort } from "@musart/core";
 import type { FontResolver } from "@musart/render";
 import type { ArtboardServices } from "../../canvas/artboards/use-previews";
@@ -29,7 +28,6 @@ export const CanvasArea = memo(function CanvasArea({
   onDropFiles(this: void, files: File[]): void;
   onImagePoint(this: void, layerId: string, x: number, y: number): void;
 }) {
-  const { t } = useTranslation();
   const tool = useAtomValue(toolAtom);
   const store = useStore();
   const previewSource = useMemo(() => createPreviewSource(store), [store]);
@@ -37,14 +35,8 @@ export const CanvasArea = memo(function CanvasArea({
   useRenderMetrics(element);
   return (
     <div className="canvas-area" ref={element}>
-      <Suspense
-        fallback={
-          <div className="canvas-loading">
-            <BrandStatus size={40} state="preparing" />
-            <span>{t("loadingCanvas")}</span>
-          </div>
-        }
-      >
+      <Suspense fallback={<CanvasPreparation />}>
+        {" "}
         <EditorCanvas
           engine={engine}
           tool={tool}

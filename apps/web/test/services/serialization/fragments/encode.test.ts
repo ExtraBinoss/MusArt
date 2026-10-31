@@ -34,10 +34,7 @@ it("preserves small arrays, nulls, unicode and own object fields", () => {
     own: JSON.parse('{"__proto__":"plain"}') as unknown,
   };
   const parts = [...fragmentValue(value)];
-  expect(parts).toEqual([
-    { type: "base", value: { ...value, array: [] } },
-    { type: "array", path: ["array"], offset: 0, total: 4, value: value.array },
-  ]);
+  expect(parts).toEqual([{ type: "base", value }]);
   expect(Object.getPrototypeOf((parts[0] as { value: typeof value }).value.own)).toBe(
     Object.prototype,
   );
@@ -72,4 +69,33 @@ it("reuses unchanged immutable leaf shapes and still defers nested nonempty valu
   const nested = Object.freeze({ layers: Object.freeze([layer]), text: "x".repeat(5000) });
   const base = [...fragmentValue({ nested })][0]!;
   expect(base.type === "base" && (base.value as { nested: unknown }).nested).not.toBe(nested);
+});
+
+it("packs morph coordinate pairs without a task per point and preserves exact bounded reconstruction", async () => {
+  const { FragmentAssembly } =
+    await import("../../../../src/services/serialization/fragments/assembly");
+  const input = {
+    contours: [{ points: Array.from({ length: 20000 }, (_, i) => [i / 20000, (i % 7) / 7]) }],
+  };
+  const parts = [...fragmentValue(input)];
+  expect(parts.length).toBeLessThan(330);
+  const assembly = new FragmentAssembly();
+  for (const part of parts) {
+    expect(JSON.stringify(part).length).toBeLessThan(32768);
+    assembly.add(structuredClone(part));
+  }
+  expect(assembly.finish()).toEqual(input);
+});
+
+it("falls back to fragments when several short scalar arrays fill one object's byte budget", async () => {
+  const { FragmentAssembly } =
+    await import("../../../../src/services/serialization/fragments/assembly");
+  const input = {
+    values: Object.fromEntries(Array.from({ length: 700 }, (_, i) => [i, [i, i + 1]])),
+  };
+  const parts = [...fragmentValue(input)];
+  const assembly = new FragmentAssembly();
+  for (const part of parts) assembly.add(structuredClone(part));
+  expect(parts.length).toBeGreaterThan(1);
+  expect(assembly.finish()).toEqual(input);
 });

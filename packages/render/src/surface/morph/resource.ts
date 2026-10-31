@@ -30,7 +30,7 @@ import type { GpuResource } from "../../cache/GpuResourceCache";
 import { glyphCoverage } from "../text/coverage";
 import { glyphVertex } from "../text/vertex";
 import { textPaint, textPaintNode, updateTextPaint } from "../text/paint";
-import { buildMorphAtlas } from "./atlas";
+import { buildMorphAtlas, type MorphAtlas } from "./atlas";
 import { morphGeometry } from "./geometry";
 import { morphIdentity } from "./identity";
 
@@ -73,9 +73,9 @@ export class MorphResource implements GpuResource {
   private readonly key: string;
   private compiled = false;
   private closed = false;
-  constructor(layer: Layer, effect: Effect, definition: ShapeMorph) {
+  constructor(layer: Layer, effect: Effect, definition: ShapeMorph, prepared?: MorphAtlas) {
     this.key = morphResourceKey(layer, effect);
-    this.atlas = buildMorphAtlas(definition);
+    this.atlas = prepared ?? buildMorphAtlas(definition);
     const built = morphGeometry(layer, this.atlas);
     this.geometry = built.geometry;
     this.bytes = this.atlas.bytes + built.bytes;
