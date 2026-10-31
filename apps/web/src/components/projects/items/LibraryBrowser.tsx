@@ -6,7 +6,7 @@ import { libraryItemKey, type LibraryItem } from "../../../services/projects/lib
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "../../ui/dialog";
 import { Button } from "../../ui/button";
 import { MeltLogo } from "../../../ui/brand/MeltLogo";
-import { LibraryItemsContext, useLibraryItemActivation } from "./context";
+import { LibraryItemsContext } from "./context";
 import { ItemPreview } from "./ItemPreview";
 import { useFavorites } from "./use-favorites";
 import "./messages";
@@ -37,40 +37,14 @@ export function LibraryOpenButton({
     </Button>
   );
 }
-function FavoriteItem({
-  item,
-  open,
-  disabled,
-}: {
-  item: LibraryItem;
-  open: () => void;
-  disabled: boolean;
-}) {
-  const activation = useLibraryItemActivation(item, open, disabled);
-  return (
-    <button
-      className="library-favorite-item"
-      disabled={disabled}
-      onClick={activation.click}
-      onDoubleClick={activation.double}
-    >
-      <Star size={12} fill="currentColor" />
-      <span>{item.name}</span>
-    </button>
-  );
-}
 export function LibraryBrowser({
   children,
   services,
   busy,
-  onOpenProject,
-  onOpenTemplate,
 }: {
   children: ReactNode;
   services: EditorServices;
   busy: boolean;
-  onOpenProject: (id: string) => void;
-  onOpenTemplate: (id: string) => void;
 }) {
   const { t } = useTranslation("libraryItem"),
     favorites = useFavorites();
@@ -85,9 +59,17 @@ export function LibraryBrowser({
     selected &&
     favorites.items.some((item) => libraryItemKey(item) === libraryItemKey(selected.item));
   return (
-    <FavoritesOutletContext.Provider value={{ ...favorites, busy, onOpenProject, onOpenTemplate }}>
+    <FavoritesOutletContext.Provider value={favorites}>
       <LibraryItemsContext.Provider value={context}>
         {children}
+        {favorites.error && (
+          <div className="library-favorite-error" role="alert">
+            {t("readFailed")}{" "}
+            <button type="button" onClick={() => void favorites.refresh()}>
+              {t("retry")}
+            </button>
+          </div>
+        )}
         {selected && (
           <Dialog
             open
@@ -150,43 +132,8 @@ export function LibraryBrowser({
     </FavoritesOutletContext.Provider>
   );
 }
-// One favorites owner serves the detail dialog and the rail above the library search.
-type FavoritesView = ReturnType<typeof useFavorites> & {
-  busy: boolean;
-  onOpenProject: (id: string) => void;
-  onOpenTemplate: (id: string) => void;
-};
-const FavoritesOutletContext = createContext<FavoritesView | null>(null);
-export function FavoritesRail() {
-  const view = useContext(FavoritesOutletContext),
-    { t } = useTranslation("libraryItem");
-  if (!view) return null;
-  return (
-    <section className="library-favorites" aria-label={t("favorites")}>
-      <h3>
-        <Star size={13} />
-        {t("favorites")}
-      </h3>
-      {view.error ? (
-        <button onClick={() => void view.refresh()}>
-          {t("readFailed")} · {t("retry")}
-        </button>
-      ) : view.items.length ? (
-        <div className="library-favorite-list">
-          {view.items.map((item) => (
-            <FavoriteItem
-              key={libraryItemKey(item)}
-              item={item}
-              disabled={view.busy}
-              open={() =>
-                item.kind === "project" ? view.onOpenProject(item.id) : view.onOpenTemplate(item.id)
-              }
-            />
-          ))}
-        </div>
-      ) : (
-        <p>{t("empty")}</p>
-      )}
-    </section>
-  );
+// One durable favorites owner serves details, badges and ordering in both normal grids.
+const FavoritesOutletContext = createContext<ReturnType<typeof useFavorites> | null>(null);
+export function useLibraryFavorites() {
+  return useContext(FavoritesOutletContext);
 }

@@ -11,11 +11,11 @@ From the repository root, prepare a separate ignored build:
 ```sh
 bun install --frozen-lockfile
 mkdir -p artifacts
-bunx vite build --outDir ../../artifacts/performance-cohort-dist --sourcemap
-bunx vite preview --outDir ../../artifacts/performance-cohort-dist --host 127.0.0.1 --port 4175 --strictPort
+MUSART_BUILD_DIR=artifacts/performance-cohort-dist bunx vite build --sourcemap
+MUSART_BUILD_DIR=artifacts/performance-cohort-dist bunx vite preview --host 127.0.0.1 --port 4175 --strictPort
 ```
 
-Vite's configured root is `apps/web`, so the output path resolves back into the repository's `artifacts/`. Keep the preview process alive in its own terminal/session. Confirm an actual HTTP response before launching Chromium; a successful build does not prove that the server is still listening.
+`MUSART_BUILD_DIR` resolves relative to the repository root. TanStack Start writes matching `client/` and `server/` outputs there and uses the same configured directory while prerendering/previewing; do not override only Vite's CLI output directory. Keep the preview process alive in its own terminal/session. Confirm an actual HTTP response before launching Chromium; a successful build does not prove that the server is still listening.
 
 ```sh
 curl --fail --silent http://127.0.0.1:4175/ > /dev/null

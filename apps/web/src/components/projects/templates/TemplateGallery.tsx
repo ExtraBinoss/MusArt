@@ -2,7 +2,7 @@ import { BrandStatus } from "../../../ui/brand/BrandStatus";
 import { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { useTranslation } from "react-i18next";
-import { FileImage } from "lucide-react";
+import { FileImage, Star } from "lucide-react";
 import { TEMPLATE_CATALOG } from "../../../services/projects/templates/catalog";
 import { SocialBrandIcon } from "../../assets/SocialBrandIcon";
 import { Button } from "../../ui/button";
@@ -12,7 +12,8 @@ import { LibraryModeFilter } from "../dashboard/LibraryModeFilter";
 import { useLibraryMode, type LibraryMode } from "../dashboard/library-mode";
 import { templatePreview } from "./preview";
 import { LibraryItemActions } from "../items/context";
-import { LibraryOpenButton } from "../items/LibraryBrowser";
+import { LibraryOpenButton, useLibraryFavorites } from "../items/LibraryBrowser";
+import { favoritesFirst } from "../../../services/projects/library/favorites";
 import { isMotionTemplateId } from "../../../services/projects/templates/motion/identity";
 import "../items/messages";
 import { MotionTemplatePreview } from "./motion-preview/MotionTemplatePreview";
@@ -40,6 +41,10 @@ export function TemplateGallery({
 }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
+  const favorites = useLibraryFavorites();
+  const favoriteIds = new Set(
+    favorites?.items.filter((item) => item.kind === "template").map((item) => item.id),
+  );
   const [localQuery, setLocalQuery] = useState("");
   const [localMode, setLocalMode] = useLibraryMode();
   const query = externalQuery ?? localQuery;
@@ -48,10 +53,13 @@ export function TemplateGallery({
   const modeTemplates = TEMPLATE_CATALOG.filter(
     (template) => mode === "all" || template.mode === mode,
   );
-  const templates = modeTemplates.filter((template) =>
-    `${t(template.nameKey)} ${t(`templates:${template.mode}`)} ${template.brandId ?? ""} ${template.width} ${template.height}`
-      .toLocaleLowerCase()
-      .includes(term),
+  const templates = favoritesFirst(
+    modeTemplates.filter((template) =>
+      `${t(template.nameKey)} ${t(`templates:${template.mode}`)} ${template.brandId ?? ""} ${template.width} ${template.height}`
+        .toLocaleLowerCase()
+        .includes(term),
+    ),
+    favoriteIds,
   );
   return (
     <section className="template-gallery" aria-busy={busy}>
@@ -184,7 +192,17 @@ export function TemplateGallery({
                     </div>
                     <div className="template-caption project-card-overlay">
                       <span className="template-meta">
-                        <span className="template-title">{name}</span>
+                        <span className="template-title">
+                          {favoriteIds.has(template.id) && (
+                            <Star
+                              size={12}
+                              fill="currentColor"
+                              className="library-favorite-badge"
+                              aria-label={t("libraryItem:favorites")}
+                            />
+                          )}
+                          {name}
+                        </span>
                         <span className="template-size">
                           {template.width} × {template.height} px
                         </span>

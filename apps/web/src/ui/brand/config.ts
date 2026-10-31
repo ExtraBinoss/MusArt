@@ -1,6 +1,7 @@
 /** Visible identity only. Legacy storage keys, clipboard payloads and .musart files stay compatible. */
 export const brand = {
   name: "Melt",
+  site: "https://melt.plinka.eu",
   description: "A little wonder. A lot to create.",
   colors: {
     primary: "#8B5CF6",

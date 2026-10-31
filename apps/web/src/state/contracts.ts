@@ -20,6 +20,7 @@ export interface ProjectSummary {
 export interface ProjectLibraryOptions {
   limit?: number;
   before?: [string, string];
+  ids?: readonly string[];
 }
 export interface ProjectLibraryPage {
   projects: ProjectSummary[];
@@ -172,4 +173,11 @@ export interface AppProps {
   services: EditorServices;
   /** Initial empty-library session; the draft stays private until a real project is chosen. */
   welcome?: boolean;
+  routing?: StudioRouting;
+}
+export interface StudioRouting {
+  view: "dashboard" | "editor";
+  projectId?: string;
+  templateId?: string;
+  navigate: (destination: "home" | "dashboard" | "editor", projectId?: string) => void;
 }

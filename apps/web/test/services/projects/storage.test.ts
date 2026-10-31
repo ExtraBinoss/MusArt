@@ -436,3 +436,23 @@ describe("autosave scheduling", () => {
     await controller.dispose();
   });
 });
+
+it("bounded favorite lookup returns only selected project summaries without changing the active project", async () => {
+  const store = new ProjectStore(crypto.randomUUID());
+  try {
+    const first = createProject({ name: "Selected" }),
+      second = createProject({ name: "Other" });
+    await store.save(first);
+    await store.save(second);
+    const before = await store.last();
+    const page = await store.listPage({ ids: [first.id, "missing", first.id], limit: 3 });
+    expect(page.projects.map((project) => project.id)).toEqual([first.id]);
+    expect(page.before).toBeNull();
+    expect(await store.last()).toBe(before);
+    await expect(store.listPage({ ids: [first.id, second.id], limit: 1 })).rejects.toThrow(
+      "metadata selection",
+    );
+  } finally {
+    await store.close();
+  }
+});

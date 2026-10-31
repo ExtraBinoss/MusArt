@@ -12,7 +12,7 @@ Direct user instructions take precedence. Read the relevant architecture contrac
 
 ## Stack and interaction
 
-- Use Bun, strict TypeScript, React, Vite, Jotai, Motion, i18next and genuine shadcn/Radix components. Preserve copied components' provenance and licenses.
+- Use Bun, strict TypeScript, React, TanStack Start/Router with Vite, Jotai, Motion, i18next and genuine shadcn/Radix components. Preserve copied components' provenance and licenses.
 - Use Three.js `WebGPURenderer`, React Three Fiber and TSL, including Three's WebGL fallback. Do not introduce a native WebGPU engine, handwritten shader pipeline or alternative rendering framework.
 - Keep composition, effects and masks on GPU textures. No production GPU pixel readbacks into JavaScript. Native image preparation and browser encoding are allowed.
 - Render on demand, bound caches and queues, and dispose resources, workers, listeners, timers and object URLs explicitly.

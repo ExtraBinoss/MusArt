@@ -310,11 +310,26 @@ export class ProjectStore {
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id));
   }
   async listPage(
-    options: { limit?: number; before?: [string, string] } = {},
+    options: { limit?: number; before?: [string, string]; ids?: readonly string[] } = {},
   ): Promise<{ projects: ProjectSummary[]; before: [string, string] | null }> {
     const limit = options.limit ?? 50;
     if (!Number.isInteger(limit) || limit < 1 || limit > 100)
       throw new Error("Invalid project pagination.");
+    if (options.ids) {
+      if (
+        options.before ||
+        options.ids.length > limit ||
+        options.ids.some((id) => typeof id !== "string" || !id)
+      )
+        throw new Error("Invalid project metadata selection.");
+      const tx = (await this.db()).transaction("projects");
+      const records = await Promise.all([...new Set(options.ids)].map((id) => tx.store.get(id)));
+      await tx.done;
+      return {
+        projects: records.flatMap((record) => (record ? [projectSummary(record)] : [])),
+        before: null,
+      };
+    }
     const tx = (await this.db()).transaction("projects"),
       projects: ProjectSummary[] = [];
     let cursor = await tx.store

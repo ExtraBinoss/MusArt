@@ -54,7 +54,7 @@ export function MobileLibraryNavigation({
     const binding = bindSectionSwipe(target, {
       read: () => ({
         value: latest.current.view,
-        values: ["projects", "templates"],
+        values: ["templates", "projects"],
         disabled: latest.current.busy || latest.current.preferences,
       }),
       move: (offset, index) => {
@@ -97,14 +97,14 @@ export function MobileLibraryNavigation({
       }}
       items={[
         {
-          value: "projects",
-          label: t("projects"),
-          icon: <FolderOpen size={20} strokeWidth={1.6} />,
-        },
-        {
           value: "templates",
           label: t("templates"),
           icon: <LayoutTemplate size={20} strokeWidth={1.6} />,
+        },
+        {
+          value: "projects",
+          label: t("projects"),
+          icon: <FolderOpen size={20} strokeWidth={1.6} />,
         },
         {
           value: "community",

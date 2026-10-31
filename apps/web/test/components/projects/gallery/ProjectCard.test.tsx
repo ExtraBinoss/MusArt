@@ -109,7 +109,8 @@ test("matches template captions with name, resolution and the actual mode withou
     "data-mode",
     "static",
   );
-  expect(document.querySelector("time,.project-card-details,.active-project-badge")).toBeNull();
+  expect(document.querySelector("time,.active-project-badge")).toBeNull();
+  expect(document.querySelector(".project-card-details")).toHaveTextContent("320 × 220 pxStatique");
   view.rerender(
     <ProjectCard
       {...props}
@@ -171,4 +172,27 @@ test("caption resolution follows the displayed Motion artboard and falls back to
   expect(screen.getByText("600 × 800 px")).toBeVisible();
   view.rerender(<ProjectCard {...props} project={{ ...project, pages: [] }} />);
   expect(screen.getByText("320 × 220 px")).toBeVisible();
+});
+
+test("right click opens the same project actions without triggering a preview", async () => {
+  const d = setup(),
+    open = vi.fn(),
+    duplicate = vi.fn();
+  d.mount(
+    <ProjectCard
+      project={projectSummary()}
+      services={d.services}
+      active={false}
+      onOpen={open}
+      onRename={vi.fn()}
+      onDuplicate={duplicate}
+      onDelete={vi.fn()}
+      onInsights={vi.fn()}
+      onClearHistory={vi.fn()}
+    />,
+  );
+  fireEvent.contextMenu(screen.getByRole("article"), { clientX: 180, clientY: 120 });
+  fireEvent.click(await screen.findByRole("menuitem", { name: "Dupliquer" }));
+  expect(duplicate).toHaveBeenCalledOnce();
+  expect(open).not.toHaveBeenCalled();
 });

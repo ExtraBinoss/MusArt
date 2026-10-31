@@ -1,4 +1,4 @@
-import { LibraryBrowser, FavoritesRail } from "./items/LibraryBrowser";
+import { LibraryBrowser } from "./items/LibraryBrowser";
 import { brand } from "../../ui/brand/config";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
@@ -37,6 +37,8 @@ export interface ProjectDialogProps {
   onClose: () => void;
   onTask: TaskRunner;
   initialView?: "projects" | "templates" | "newProject" | "settings" | "settingsEditor";
+  showLanding?: boolean;
+  onHome?: () => void;
 }
 /** The same dashboard works before the first document and above an open project. */
 export function ProjectDialog(props: ProjectDialogProps) {
@@ -58,11 +60,15 @@ function ProjectDashboard({
   onTask,
   initialView = "projects",
   welcome = false,
+  showLanding = true,
+  onHome,
 }: ProjectDialogProps) {
   const { t } = useTranslation();
   const mobile = useMobileLayout();
   const headingId = useId();
-  const [landing, setLanding] = useState(Boolean(welcome && initialView !== "newProject"));
+  const [landing, setLanding] = useState(
+    Boolean(showLanding && welcome && initialView !== "newProject"),
+  );
   const [view, setView] = useState<"projects" | "templates">(
     initialView === "templates" ? "templates" : "projects",
   );
@@ -113,7 +119,10 @@ function ProjectDashboard({
     if (!scope.current.pending && scope.current.alive) setCreating(true);
   }
   function home() {
-    if (!scope.current.pending && scope.current.alive) setLanding(true);
+    if (!scope.current.pending && scope.current.alive) {
+      if (onHome) onHome();
+      else setLanding(true);
+    }
   }
   function changeView(value: string) {
     if (
@@ -187,12 +196,7 @@ function ProjectDashboard({
       />
     );
   return (
-    <LibraryBrowser
-      services={services}
-      busy={busy}
-      onOpenProject={(id) => complete(() => services.openProject(id))}
-      onOpenTemplate={chooseTemplate}
-    >
+    <LibraryBrowser services={services} busy={busy}>
       <Dialog
         open
         onOpenChange={(open) => {
@@ -279,7 +283,6 @@ function ProjectDashboard({
                         onImport={() => fileRef.current?.click()}
                       />
                     </div>
-                    <FavoritesRail />
                     <LibraryToolbar
                       view={view}
                       query={queries[view]}

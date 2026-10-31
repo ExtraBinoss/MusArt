@@ -46,3 +46,15 @@ it("rejects invalid records without overwriting existing bookmarks", async () =>
   await expect(setLibraryFavorite({ ...item, id: "" }, true)).rejects.toThrow("Invalid");
   expect(await readLibraryFavorites()).toEqual([item]);
 });
+
+test("favorites lead the normal list while its existing relative order stays stable", async () => {
+  const { favoritesFirst } = await import("../../../../src/services/projects/library/favorites");
+  const items = [{ id: "a" }, { id: "b" }, { id: "c" }, { id: "d" }];
+  expect(favoritesFirst(items, new Set(["d", "b"])).map((item) => item.id)).toEqual([
+    "b",
+    "d",
+    "a",
+    "c",
+  ]);
+  expect(items.map((item) => item.id)).toEqual(["a", "b", "c", "d"]);
+});

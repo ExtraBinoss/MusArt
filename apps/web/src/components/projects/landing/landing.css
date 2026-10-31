@@ -31,7 +31,7 @@
   font-family: var(--font-brand-display);
   font-weight: 650;
   font-size: 22px;
-  letter-spacing: -0.9px;
+  letter-spacing: 0.01em;
 }
 .landing-nav > .landing-brand {
   height: 48px;
@@ -62,7 +62,7 @@
   font-size: clamp(78px, 9.4vw, 144px);
   font-weight: 700;
   line-height: 1.02;
-  letter-spacing: -0.077em;
+  letter-spacing: -0.025em;
 }
 .hero-line {
   display: block;
@@ -258,7 +258,7 @@
   font-size: clamp(50px, 6vw, 88px);
   line-height: 1.04;
   font-weight: 650;
-  letter-spacing: -0.068em;
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 .landing-creativity p {
@@ -476,4 +476,14 @@
   .landing-template-open {
     transition: none;
   }
+}
+
+.landing-try[data-slot="button"],
+.landing-cta[data-slot="button"] {
+  font-family: var(--font-brand-display);
+  letter-spacing: 0.02em;
+  font-weight: 550;
+}
+.landing-try[data-slot="button"] {
+  font-size: 15px;
 }

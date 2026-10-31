@@ -7,7 +7,7 @@ Melt is a browser-based creative editor. Projects are stored on the device and c
 | Technology                        | Role and reason                                                                                                          |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Bun and strict TypeScript         | One workspace toolchain for the app, reusable packages and command-line tools, with shared typed document contracts.     |
-| React and Vite                    | The editor interface and development/production builds.                                                                  |
+| React, TanStack Start and Vite    | Typed routes, server/prerendered landing HTML and client-only editor builds.                                             |
 | Jotai                             | Interface state such as selection presentation and open controls; the document engine owns saved edits.                  |
 | Tailwind CSS, shadcn/ui and Radix | Shared styling and accessible dialogs, menus, tabs and controls. Copied components retain their provenance and licenses. |
 | Motion                            | Interface transitions that respect reduced-motion preferences.                                                           |
@@ -64,6 +64,8 @@ In repository **Settings → Pages**, select **GitHub Actions** as the source. T
 
 Keep `github-pages` restricted to `main`, with `ExtraBinoss` as its sole required reviewer and administrator bypass disabled. Self-review must remain allowed so the owner can approve their own deployment. The `main` ruleset requires pull requests, owner review, resolved conversations and the `verify` check; its only bypass is the `ExtraBinoss` user. These controls are configured in GitHub settings separately from the workflow and [CODEOWNERS](../../.github/CODEOWNERS) files.
 
+TanStack Start prerenders `/`, `/dashboard`, `/editor` and `/ssr` into `dist/client`. The landing contains real HTML and SEO metadata; the library and GPU editor use a shared client-only layout and are marked `noindex`. The editor accepts `?project=<durable-id>` and landing templates use `?template=<catalogue-id>`. Project selection replaces that transient template query with the saved project ID. Dashboard/editor navigation retains the runtime, undo history and an already mounted canvas; refresh restores the URL target from IndexedDB. The Pages workflow publishes only `dist/client`.
+
 Vite reads `MUSART_BASE_PATH` for the hosted path. The workflow obtains it from GitHub's Pages configuration; local development defaults to `/`. To preview the project path locally:
 
 ```sh
@@ -76,3 +78,7 @@ Open `http://localhost:6100/MusArt/`. Projects and installed fonts belong to the
 ## Attribution
 
 The project is MIT licensed. Bundled fonts, models, copied components and artwork retain their own notices. See [sources and licenses](../legal/provenance.md) and [legal/](../legal/).
+
+## Library entry
+
+Try Melt opens `/dashboard` directly on Templates. Templates, Projects and Community share the same library navigation. Initial library startup keeps a private empty draft, does not restore the last document and defers the editor/R3F bundle until editing; pointer/focus intent can preload the lightweight studio module. Favorites are promoted within the normal filtered grids. Missing first-page favorite projects use bounded 24-ID summary reads, without changing the active document. Card menus and right-click share one action list; the destructive action retains its own divider.

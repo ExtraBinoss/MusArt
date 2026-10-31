@@ -10,6 +10,13 @@ export interface LibraryItem {
   height?: number;
 }
 export const libraryItemKey = (item: Pick<LibraryItem, "kind" | "id">) => `${item.kind}:${item.id}`;
+/** Stable promotion within a filtered normal list; non-favorites retain their original order. */
+export function favoritesFirst<T extends { id: string }>(
+  items: readonly T[],
+  ids: ReadonlySet<string>,
+): T[] {
+  return [...items].sort((a, b) => Number(ids.has(b.id)) - Number(ids.has(a.id)));
+}
 const STORE = "favorites",
   LIMIT = 128;
 async function database() {

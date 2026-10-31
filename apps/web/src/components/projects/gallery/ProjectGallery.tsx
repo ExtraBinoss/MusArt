@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { Plus, LoaderCircle, FolderOpen } from "lucide-react";
@@ -13,6 +13,8 @@ import { useLibraryMode, projectLibraryMode, type LibraryMode } from "../dashboa
 import { ProjectCard } from "./ProjectCard";
 import { ProjectActionDialog } from "../actions/ProjectActionDialog";
 import { ProjectInsightsDialog } from "../insights/ProjectInsightsDialog";
+import { useLibraryFavorites } from "../items/LibraryBrowser";
+import { favoritesFirst } from "../../../services/projects/library/favorites";
 export function ProjectGallery({
   services,
   activeProjectId,
@@ -42,6 +44,13 @@ export function ProjectGallery({
 }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
+  const favorites = useLibraryFavorites();
+  const favoriteIds = useMemo(
+    () => favorites?.items.filter((item) => item.kind === "project").map((item) => item.id) ?? [],
+    [favorites?.items],
+  );
+  const favoriteSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
+  const [pinned, setPinned] = useState<ProjectSummary[]>([]);
   const [localQuery, setLocalQuery] = useState("");
   const query = externalQuery ?? localQuery;
   const term = query.trim().toLocaleLowerCase();
@@ -68,6 +77,39 @@ export function ProjectGallery({
     };
   }, []);
   const disabled = busy || dashboardBusy;
+  useEffect(() => {
+    if (!favoriteIds.length) return;
+    let alive = true;
+    void (async () => {
+      const projects: ProjectSummary[] = [];
+      for (let i = 0; i < favoriteIds.length && alive; i += 24) {
+        const page = await services.listProjectPage({
+          ids: favoriteIds.slice(i, i + 24),
+          limit: 24,
+        });
+        projects.push(...page.projects);
+      }
+      if (alive) setPinned(projects);
+    })().catch((error: unknown) => {
+      if (alive)
+        void onTask(() => {
+          throw error;
+        });
+    });
+    return () => {
+      alive = false;
+    };
+  }, [favoriteIds, services, onTask, revision]);
+  const projects = favoritesFirst(
+    [
+      ...pinned.filter(
+        (item) =>
+          favoriteSet.has(item.id) && !loaded?.projects.some((other) => other.id === item.id),
+      ),
+      ...(loaded?.projects ?? []),
+    ].filter(matches),
+    favoriteSet,
+  );
   useEffect(() => {
     let live = true;
     void services.listProjectPage({ limit: 24 }).then(
@@ -171,7 +213,7 @@ export function ProjectGallery({
             {t("retry")}
           </Button>
         </div>
-      ) : loaded?.projects.length === 0 ? (
+      ) : loaded?.projects.length === 0 && !projects.length ? (
         <div className="empty-projects">
           <FolderOpen size={28} strokeWidth={1.2} />
           <p>{t("noProjects")}</p>
@@ -185,13 +227,11 @@ export function ProjectGallery({
       ) : (
         <>
           <div className="gallery-summary">
-            <span>
-              {t("localProjectCount", { count: loaded?.projects.filter(matches).length ?? 0 })}
-            </span>
+            <span>{t("localProjectCount", { count: projects.length })}</span>
             <span>{t("localOnly")}</span>
           </div>
           <div className="project-grid" aria-busy={disabled}>
-            {loaded?.projects.filter(matches).map((project, index) => (
+            {projects.map((project, index) => (
               <motion.div
                 key={project.id}
                 className="project-card-entry"
@@ -206,6 +246,7 @@ export function ProjectGallery({
                   key={project.id}
                   project={project}
                   services={services}
+                  favorite={favoriteSet.has(project.id)}
                   active={project.id === activeProjectId}
                   disabled={disabled}
                   onOpen={() => {
@@ -231,7 +272,7 @@ export function ProjectGallery({
               </motion.div>
             ))}
           </div>
-          {loaded && !loaded.projects.some(matches) && (
+          {loaded && !projects.length && (
             <p className="template-empty">{t("dashboard:noResults")}</p>
           )}
           {loaded?.before && (

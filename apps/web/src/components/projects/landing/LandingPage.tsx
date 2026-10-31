@@ -16,11 +16,13 @@ export function LandingPage({
   onTemplate,
   busy = false,
   onCancel,
+  onPrepare,
 }: {
   onCreate: () => void;
   onTemplate?: (id: string) => void;
   busy?: boolean;
   onCancel?: () => void;
+  onPrepare?: () => void;
 }) {
   const { t } = useTranslation("landing");
   return (
@@ -30,7 +32,14 @@ export function LandingPage({
           <MeltLogo size={30} interactive />
           {brand.name}
         </a>
-        <Button variant="ghost" disabled={busy} onClick={onCreate}>
+        <Button
+          className="landing-try"
+          variant="ghost"
+          disabled={busy}
+          onClick={onCreate}
+          onPointerEnter={onPrepare}
+          onFocus={onPrepare}
+        >
           {t("try")}
           <ArrowUpRight size={16} />
         </Button>
@@ -73,7 +82,6 @@ export function LandingPage({
           {t("create")}
           <ArrowUpRight size={18} />
         </Button>
-        <p>{t("local")}</p>
         <span className="landing-footer-brand">
           <MeltLogo size={26} />
           {brand.name}

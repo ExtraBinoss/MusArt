@@ -21,6 +21,9 @@ export interface RuntimeOptions {
   thumbnails?: ThumbnailPipeline;
   signal?: AbortSignal;
   fonts?: FontLibraryPort;
+  projectId?: string;
+  editor?: boolean;
+  library?: boolean;
 }
 export async function createRuntime(
   onError: (error: unknown) => void,
@@ -29,14 +32,18 @@ export async function createRuntime(
   const store = options.store ?? new ProjectStore();
   const params = new URLSearchParams(location.search),
     benchmark = params.get("benchmark"),
-    seeded = params.get("automation") === "1" || benchmark !== null;
+    seeded = !options.library && (params.get("automation") === "1" || benchmark !== null);
   let project = options.project;
   let restored = false;
   await Promise.resolve();
   try {
     options.signal?.throwIfAborted();
 
-    if (!project && benchmark !== null) {
+    if (!project && options.projectId) {
+      project = await store.load(options.projectId);
+      restored = true;
+    }
+    if (!project && !options.library && benchmark !== null) {
       try {
         const { createPerformanceProject } = await import("../projects/performance-project");
         project = await createPerformanceProject(Number(benchmark));
@@ -44,7 +51,7 @@ export async function createRuntime(
         onError(error);
       }
     }
-    if (!project) {
+    if (!project && !options.library) {
       try {
         const last = await store.last();
         if (last) {
@@ -57,11 +64,11 @@ export async function createRuntime(
     }
     options.signal?.throwIfAborted();
   } catch (error) {
-    if (options.signal?.aborted) await store.close();
+    if (options.signal?.aborted || options.projectId) await store.close();
     throw error;
   }
-  const welcome = !project && !seeded;
-  project ??= welcome
+  const welcome = !project && !seeded && !options.editor;
+  project ??= !seeded
     ? createProject({
         id: crypto.randomUUID(),
         name: "Untitled",

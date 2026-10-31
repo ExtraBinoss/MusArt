@@ -130,6 +130,7 @@
   font-variant-numeric: tabular-nums;
 }
 .template-mode {
+  align-self: flex-end;
   display: inline-flex;
   align-items: center;
   gap: 5px;

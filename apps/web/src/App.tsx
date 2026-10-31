@@ -42,7 +42,7 @@ import {
   bundledFontLibrary,
 } from "./components/properties/fonts/library-context";
 
-export function App({ engine, services, welcome = false }: AppProps) {
+export function App({ engine, services, welcome = false, routing }: AppProps) {
   const { t } = useTranslation();
   const mobile = useMobileLayout();
   const element = useRef<HTMLElement>(null);
@@ -50,12 +50,24 @@ export function App({ engine, services, welcome = false }: AppProps) {
   useTheme();
   const projectId = useEngineValue(engine, (snapshot) => snapshot.project.id);
   const projectName = useEngineValue(engine, (snapshot) => snapshot.project.name);
-  const [choosingProject, setChoosingProject] = useState(
+  const [localChoosingProject, setChoosingProject] = useState(
     () => welcome || new URLSearchParams(location.search).get("welcome") === "1",
   );
-  const [projectMenu, setProjectMenu] = useState<ProjectView | null>(
+  const choosingProject = routing ? routing.view === "dashboard" : localChoosingProject;
+  const [hasOpenedEditor, setHasOpenedEditor] = useState(!choosingProject);
+  if (!choosingProject && !hasOpenedEditor) setHasOpenedEditor(true);
+  const [localProjectMenu, setProjectMenu] = useState<ProjectView | null>(
     choosingProject ? "projects" : null,
   );
+  const projectMenu = choosingProject
+    ? (localProjectMenu ?? "projects")
+    : routing && (localProjectMenu === "projects" || localProjectMenu === "newProject")
+      ? null
+      : localProjectMenu;
+  const showProjectMenu = (view: ProjectView) => {
+    setProjectMenu(view);
+    if (routing && (view === "projects" || view === "newProject")) routing.navigate("dashboard");
+  };
   const [exportMenu, setExportMenu] = useState(false);
   const [timelapseMenu, setTimelapseMenu] = useState(false);
   const motionTransport = useMemo(() => createMotionTransport(engine), [engine]);
@@ -148,7 +160,7 @@ export function App({ engine, services, welcome = false }: AppProps) {
             <main className="musart-app" ref={element}>
               <MotionImportConfirmation engine={engine} />
               <TransitionRequestHost engine={engine} />
-              {!choosingProject && (
+              {(!choosingProject || hasOpenedEditor) && (
                 <>
                   <ProjectPanelGroup
                     preference="workspaceLayout"
@@ -175,7 +187,7 @@ export function App({ engine, services, welcome = false }: AppProps) {
                           variant="ghost"
                           className="brand-button floating-panel"
                           aria-label={t("projectMenu")}
-                          onClick={() => setProjectMenu("projects")}
+                          onClick={() => showProjectMenu("projects")}
                         >
                           <MeltLogo interactive />
                         </Button>
@@ -185,7 +197,7 @@ export function App({ engine, services, welcome = false }: AppProps) {
                           services={services}
                           name={projectName}
                           onTask={onTask}
-                          onProjects={() => setProjectMenu("projects")}
+                          onProjects={() => showProjectMenu("projects")}
                         />
                       </div>
                       {!mobile && (
@@ -193,7 +205,7 @@ export function App({ engine, services, welcome = false }: AppProps) {
                           engine={engine}
                           services={services}
                           onTask={onTask}
-                          onProjects={setProjectMenu}
+                          onProjects={showProjectMenu}
                           onExport={() => showExport(true)}
                           onPanelMode={(mode) => {
                             if (mode === "animate") showTimelapse(true);
@@ -248,7 +260,7 @@ export function App({ engine, services, welcome = false }: AppProps) {
                             engine={engine}
                             services={services}
                             onTask={onTask}
-                            onProjects={setProjectMenu}
+                            onProjects={showProjectMenu}
                             onExport={() => showExport(true)}
                             onPanelMode={(mode) => {
                               if (mode === "animate") showTimelapse(true);
@@ -283,9 +295,12 @@ export function App({ engine, services, welcome = false }: AppProps) {
                   services={services}
                   {...(choosingProject ? { welcome: true } : { projectName, projectId })}
                   initialView={projectMenu}
+                  showLanding={!routing}
+                  onHome={routing ? () => routing.navigate("home") : undefined}
                   onClose={() => {
                     setChoosingProject(false);
                     setProjectMenu(null);
+                    if (routing) routing.navigate("editor", engine.getSnapshot().project.id);
                   }}
                   onTask={onTask}
                 />

@@ -518,3 +518,33 @@ it("retries a failed autosave explicitly without requiring another document edit
     await runtime.dispose();
   }
 });
+
+it("direct editor startup persists a blank document and a durable link restores its exact identity", async () => {
+  const store = new ProjectStore(crypto.randomUUID());
+  const first = await createRuntime(vi.fn(), { store, selection: selection(), editor: true });
+  const id = first.engine.getSnapshot().project.id;
+  try {
+    expect(first.welcome).toBe(false);
+    expect(first.engine.getSnapshot().project.pages[0]!.layers).toHaveLength(0);
+    expect((await store.load(id)).id).toBe(id);
+  } finally {
+    await first.dispose();
+  }
+});
+
+it("opening the library never restores the last document or persists a placeholder", async () => {
+  const store = new ProjectStore(crypto.randomUUID());
+  const last = vi.spyOn(store, "last"),
+    load = vi.spyOn(store, "load"),
+    save = vi.spyOn(store, "save");
+  const runtime = await createRuntime(vi.fn(), { store, selection: selection(), library: true });
+  try {
+    expect(runtime.welcome).toBe(true);
+    expect(last).not.toHaveBeenCalled();
+    expect(load).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
+    expect(runtime.engine.getSnapshot().project.pages[0]!.layers).toHaveLength(0);
+  } finally {
+    await runtime.dispose();
+  }
+});

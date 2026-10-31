@@ -76,7 +76,7 @@
   background: transparent;
   font-size: 23px;
   font-weight: 650;
-  letter-spacing: -0.8px;
+  letter-spacing: 0.01em;
 }
 .dashboard-brand[data-slot="button"]:hover {
   background: transparent;
@@ -231,7 +231,7 @@
   margin: 0;
   font-size: clamp(28px, 3vw, 38px);
   font-weight: 600;
-  letter-spacing: -1.5px;
+  letter-spacing: -0.015em;
   line-height: 1.25;
 }
 .dashboard-intro p {
@@ -385,4 +385,11 @@
   .project-grid {
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
   }
+}
+
+.library-toolbar .segmented-tabs[role="radiogroup"] {
+  height: 42px;
+}
+.library-toolbar .segmented-tabs[role="radiogroup"] .segmented-tab {
+  height: 34px;
 }

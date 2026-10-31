@@ -6,6 +6,12 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Made Try Melt the single landing entry into Templates, deferred the editor bundle and last-document restoration until editing, and improved Clash Display spacing. Ordered navigation as Templates, Projects, Community; promoted favorites within the normal filtered grids; aligned mode filters with search; and moved project actions beside the title with matching right-click actions and a separate destructive section.
+
+- Added an English, light-paper social preview at `/ssr` for `melt.plinka.eu`, with a React brand layout and a genuine Three/TSL collage using supplied artist references, native Bayer dithering and ASCII. Added a reproducible 1200 × 630 PNG capture command and shared Open Graph/Twitter metadata.
+
+- Added TanStack Start 1.169.4 and Router 1.170.46 on the existing Vite/Bun stack, with a prerendered SEO landing at `/`, a dedicated `/dashboard` and a client-only `/editor`. Durable project URLs restore local documents; dashboard/editor navigation retains the runtime and canvas. Preserved legacy automation links, localized hydration, brand metadata and GitHub Pages base paths.
+
 - Retained one bounded Motion library preview renderer and a four-entry source/compiled-program LRU across hovers, with exact saved-content invalidation, per-frame cancellation, idle expiry and visibility cleanup. Local repeated Morph template hover fell from 1,424.6 ms to 7.5 ms; saved-project hover fell from 1,323.8 ms to 421.4 ms.
 
 - Added development-only `[Melt perf]` console groups for project/template opening and Motion hover previews, with stage milliseconds, true first-frame acknowledgements, cancellation and failure results. Production builds do not enable these logs.

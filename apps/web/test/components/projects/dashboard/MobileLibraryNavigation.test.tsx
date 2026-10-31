@@ -53,11 +53,11 @@ test("swipe presents without React commits, focuses an exiting card's destinatio
   Object.defineProperty(surface, "clientWidth", { value: 390 });
   screen.getByRole("button", { name: "Old card" }).focus();
   const before = renders;
-  pointer(surface, "pointerdown", 300);
-  pointer(window, "pointermove", 190);
+  pointer(surface, "pointerdown", 90);
+  pointer(window, "pointermove", 200);
   expect(renders).toBe(before);
   expect(selected).not.toHaveBeenCalled();
-  pointer(window, "pointerup", 170);
+  pointer(window, "pointerup", 220);
   expect(selected).toHaveBeenCalledExactlyOnceWith("templates");
   const stage = screen.getByRole("button", { name: "Old card" }).parentElement!;
   expect(stage.style.transform).toContain("translate3d(");
@@ -101,8 +101,8 @@ test("preferences reuses its existing action, pending work disables activation a
   input.focus();
   const surface = screen.getByTestId("surface");
   Object.defineProperty(surface, "clientWidth", { value: 390 });
-  pointer(surface, "pointerdown", 300);
-  pointer(window, "pointerup", 160);
+  pointer(surface, "pointerdown", 90);
+  pointer(window, "pointerup", 230);
   expect(input).toHaveFocus();
   expect(change).toHaveBeenCalledOnce();
   view.rerender(<Host busy />);

@@ -1,0 +1,6 @@
+Visual references supplied by the user on 2026-10-31.
+portrait.jpg: ｡‧˚ʚ ୨ৎ aespa.jpeg
+chrome.png: Pinteresting-2026-10-30-5c9442f8/00052-pinterest-1ec91b0013e5.png
+eyes.jpg: Pinteresting-2026-10-30-5c9442f8/00060-pinterest-01d9abfc1c1f.jpg
+flower.jpg: Pinteresting-2026-10-30-5c9442f8/00062-pinterest-49f129180014.jpg
+Effects and layout: Melt native Three.js/TSL renderer; see ui/brand/ssr/composition.ts.

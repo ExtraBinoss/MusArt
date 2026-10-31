@@ -37,7 +37,7 @@ test("the app owns one persistent transition editor for requests originating out
   await act(async () => {
     await requestLayerTransition(d.engine, d.page.id, d.rectangle.id, { x: 100, y: 120 });
   });
-  expect(screen.getAllByRole("dialog", { name: "Transition" })).toHaveLength(1);
+  expect(await screen.findByRole("dialog", { name: "Ajouter une animation" })).toBeVisible();
 });
 test("opening an effect on an unselected layer leaves the app shell untouched", async () => {
   const d = setup();
@@ -279,10 +279,30 @@ test("welcome preview can reopen the already restored project without replacing 
     expect(screen.queryByTestId("canvas")).toBeNull();
     fireEvent.click(screen.getAllByRole("button", { name: "Commencer à créer" })[0]!);
     fireEvent.click(await screen.findByRole("button", { name: "Atelier" }));
+    const preview = await screen.findByRole("dialog", { name: "Ouvrir dans Melt" });
+    fireEvent.click(within(preview).getByRole("button", { name: "Ouvrir dans Melt" }));
     await screen.findByTestId("canvas");
     expect(d.services.openProject).toHaveBeenCalledExactlyOnceWith(d.project.id);
     expect(d.engine.getSnapshot().project.id).toBe(d.project.id);
   } finally {
     history.replaceState(null, "", previous);
   }
+});
+
+test("routed library navigation retains the mounted editor and browser Back hides library state", async () => {
+  const d = setup(),
+    navigate = vi.fn();
+  const routing = { view: "editor" as const, navigate };
+  const view = d.mount(<App engine={d.engine} services={d.services} routing={routing} />);
+  const canvas = await screen.findByTestId("canvas");
+  fireEvent.click(screen.getByRole("button", { name: "Menu du projet" }));
+  expect(navigate).toHaveBeenLastCalledWith("dashboard");
+  view.rerender(
+    <App engine={d.engine} services={d.services} routing={{ ...routing, view: "dashboard" }} />,
+  );
+  await screen.findByRole("dialog");
+  expect(screen.getByTestId("canvas")).toBe(canvas);
+  view.rerender(<App engine={d.engine} services={d.services} routing={routing} />);
+  await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  expect(screen.getByTestId("canvas")).toBe(canvas);
 });

@@ -109,3 +109,23 @@ it("cancels an initializing runtime when StrictMode cleans up its first mount", 
   view.unmount();
   expect(options.signal.aborted).toBe(true);
 });
+
+it("passes a durable URL target to startup and opens another URL target without rebuilding the runtime", async () => {
+  const result = { ...runtime(), services: { openProject: vi.fn().mockResolvedValue(undefined) } };
+  mocks.createRuntime.mockResolvedValue(result);
+  const routing = {
+    view: "editor" as const,
+    projectId: result.engine.getSnapshot().project.id,
+    navigate: vi.fn(),
+  };
+  const view = render(<Studio routing={routing} />);
+  await screen.findByText("Atelier prêt");
+  expect(mocks.createRuntime.mock.calls[0]![1]).toMatchObject({
+    projectId: routing.projectId,
+    editor: true,
+  });
+  view.rerender(<Studio routing={{ ...routing, projectId: "another-project" }} />);
+  expect(result.services.openProject).toHaveBeenCalledWith("another-project");
+  expect(mocks.createRuntime).toHaveBeenCalledOnce();
+  view.unmount();
+});

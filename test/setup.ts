@@ -15,6 +15,7 @@ for (const name of [
   "ReadableStream",
   "WritableStream",
   "TransformStream",
+  "ByteLengthQueuingStrategy",
   "TextEncoder",
   "TextDecoder",
   "structuredClone",

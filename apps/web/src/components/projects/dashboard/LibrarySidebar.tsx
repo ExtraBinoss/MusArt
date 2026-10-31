@@ -64,22 +64,22 @@ export function LibrarySidebar({
         <button
           type="button"
           className="library-navigation-item"
-          aria-current={view === "projects" ? "page" : undefined}
-          disabled={busy}
-          onClick={() => onViewChange("projects")}
-        >
-          <FolderOpen size={17} strokeWidth={1.6} />
-          <span>{t("projects")}</span>
-        </button>
-        <button
-          type="button"
-          className="library-navigation-item"
           aria-current={view === "templates" ? "page" : undefined}
           disabled={busy}
           onClick={() => onViewChange("templates")}
         >
           <LayoutTemplate size={17} strokeWidth={1.6} />
           <span>{t("templates")}</span>
+        </button>
+        <button
+          type="button"
+          className="library-navigation-item"
+          aria-current={view === "projects" ? "page" : undefined}
+          disabled={busy}
+          onClick={() => onViewChange("projects")}
+        >
+          <FolderOpen size={17} strokeWidth={1.6} />
+          <span>{t("projects")}</span>
         </button>
         <button
           type="button"

@@ -1,0 +1,90 @@
+.brand-social-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #e5e3df;
+}
+.brand-social-card {
+  position: relative;
+  width: min(1200px, calc(100vw - 48px));
+  aspect-ratio: 1200 / 630;
+  overflow: hidden;
+  isolation: isolate;
+  container-type: inline-size;
+  background: #f1f0ec;
+  color: #24152f;
+  font-family: "Inter Variable", sans-serif;
+}
+.brand-social-mascot {
+  position: absolute;
+  top: 10.5%;
+  left: 5.8%;
+  width: 5%;
+  height: auto;
+}
+.brand-social-wordmark {
+  position: absolute;
+  top: 30%;
+  left: 5.2%;
+  display: flex;
+  align-items: baseline;
+  gap: 1.1cqw;
+  z-index: 2;
+}
+.brand-social-wordmark h1 {
+  margin: 0;
+  font-family: var(--font-brand-display);
+  font-size: 15cqw;
+  font-weight: 600;
+  letter-spacing: -0.065em;
+  line-height: 1.04;
+}
+.brand-social-dot {
+  width: 1.15cqw;
+  height: 1.15cqw;
+  border-radius: 50%;
+  background: var(--social-violet);
+}
+.brand-social-tagline {
+  position: absolute;
+  top: 64%;
+  left: 5.8%;
+  margin: 0;
+  font-size: 2.1cqw;
+  font-weight: 450;
+  letter-spacing: -0.045em;
+  line-height: 1.35;
+  z-index: 2;
+}
+.brand-social-tagline > span {
+  color: #73697b;
+}
+.brand-social-art {
+  position: absolute;
+  top: 2.4%;
+  right: -0.8%;
+  width: 53.33%;
+  height: 95.24%;
+}
+.brand-social-art canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.brand-social-domain {
+  position: absolute;
+  bottom: 7%;
+  left: 5.8%;
+  font-size: 1.05cqw;
+  font-weight: 450;
+  letter-spacing: -0.01em;
+  color: #73697b;
+}
+.brand-social-domain > span {
+  display: inline-block;
+  margin-left: 1.2cqw;
+  font-size: 1.7cqw;
+  vertical-align: -0.12cqw;
+  color: var(--social-violet);
+}

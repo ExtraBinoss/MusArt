@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { mascotTint } from "../apps/web/src/ui/brand/tint";
@@ -65,24 +65,6 @@ export async function writeBrandAssets(
       2,
     ) + "\n",
   );
-  const htmlPath = resolve(root, "apps/web/index.html");
-  const html = await readFile(htmlPath, "utf8").catch((error: unknown) => {
-    if (typeof error === "object" && error && "code" in error && error.code === "ENOENT")
-      return null;
-    throw error;
-  });
-  const iconRevision = createHash("sha256").update(renderBrandSvg()).digest("hex").slice(0, 12);
-  if (html !== null)
-    await writeFile(
-      htmlPath,
-      html
-        .replace(/(href="\/branding\/melt\.svg)(?:\?v=[^"]*)?(")/g, `$1?v=${iconRevision}$2`)
-        .replace(/<title>[^<]*<\/title>/, `<title>${brand.name}</title>`)
-        .replace(
-          /(<meta name="theme-color" content=")[^"]*("\s*\/>)/,
-          `$1${brand.colors.primary}$2`,
-        ),
-    );
   const entries = ["melt.svg", "melt-maskable.svg"] as const;
   const files: Record<string, string> = {};
   for (const [index, name] of entries.entries()) {

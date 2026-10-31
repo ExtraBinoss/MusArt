@@ -89,11 +89,16 @@ test("library single click inspects, favorites survive reload, and direct/double
   ).toHaveAttribute("aria-pressed", "true");
   await page.keyboard.press("Escape");
   await expect(detail).toHaveCount(0);
-  await expect(dashboard.locator(".library-favorite-item")).toContainText("Favorite motion");
+  await expect(dashboard.locator(".project-card").first()).toContainText("Favorite motion");
+  await expect(
+    dashboard.locator(".project-card").first().locator(".library-favorite-badge"),
+  ).toBeVisible();
   await page.reload();
   await page.waitForFunction(() => !!window.musart);
   await page.getByRole("button", { name: "Project menu", exact: true }).click();
-  await expect(page.locator(".library-favorite-item")).toContainText("Favorite motion");
+  await expect(
+    page.locator(".project-card").first().locator(".library-favorite-badge"),
+  ).toBeVisible();
   await page.locator(".library-navigation-item").filter({ hasText: "Templates" }).click();
   const tile = page.locator(".template-card").first();
   const name = await tile.locator(".template-title").textContent();
