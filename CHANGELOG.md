@@ -6,6 +6,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Keep search typewriter artwork mounted throughout typing and erasing, crossfade successive previews in place, and fade hints while entering a real query without resetting the current artwork. Respect reduced motion and preserve imperative updates and timer/listener cleanup.
+
 - Reduce complex template opening work with bounded scalar-array serialization and a shared validated source/program cache. Add opt-in conservative contour compaction, verified on the original 67-state Full HD reference with a 56.1% smaller manifest; preserve native rendering comparisons and diagnostic timing limits separately from the newer Melt mascot template.
 
 - Prepare cold morph geometry in cancellable cooperative batches with identical atlas bytes, preload editor/canvas modules alongside explicit template installation, and share a stable mascot loading presentation through module and GPU preparation. Dismiss the canvas overlay only after the matching project frame, with a short opacity fade and reduced-motion support; preserve real error and cancellation handling.

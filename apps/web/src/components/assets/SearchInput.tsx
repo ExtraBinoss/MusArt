@@ -45,14 +45,14 @@ export function SearchInput({
       if (!element) return;
       const name = names[index] ?? "";
       if (document.hidden) return;
+      previews.current?.setAttribute("data-searching", String(!!element.value));
       if (element.value) {
-        displayed = -1;
         timer = setTimeout(tick, 400);
         return;
       }
       if (displayed !== index) {
         for (const [at, preview] of [...(previews.current?.children ?? [])].entries())
-          (preview as HTMLElement).hidden = at !== index;
+          (preview as HTMLElement).setAttribute("data-active", String(at === index));
         displayed = index;
       }
       element.placeholder = name ? `${searchPrefix} ${name.slice(0, count)}…` : `${searchPrefix}…`;
@@ -73,9 +73,11 @@ export function SearchInput({
       if (!document.hidden) tick();
     }
     tick();
+    element.addEventListener("input", visibility);
     document.addEventListener("visibilitychange", visibility);
     return () => {
       clearTimeout(timer);
+      element.removeEventListener("input", visibility);
       document.removeEventListener("visibilitychange", visibility);
     };
   }, [labels, searchPrefix, reduced]);
@@ -139,10 +141,16 @@ export function SearchInput({
         autoFocus={autoFocus}
         placeholder={`${searchPrefix}…`}
       />
-      {hints.some((hint) => hint.preview) && !props.value && (
-        <span ref={previews} className={styles.previews} aria-hidden>
+      {hints.some((hint) => hint.preview) && (
+        <span
+          ref={previews}
+          className={styles.previews}
+          data-search-previews
+          data-searching={!!props.value}
+          aria-hidden
+        >
           {hints.slice(0, 6).map((hint, index) => (
-            <span key={index} hidden={index !== 0}>
+            <span key={index} data-active={index === 0}>
               {hint.preview}
             </span>
           ))}

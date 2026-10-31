@@ -37,8 +37,30 @@
   width: 20px;
   height: 20px;
   pointer-events: none;
+  transition: opacity 220ms ease-in-out;
 }
 .previews svg {
   width: 20px;
   height: 20px;
+}
+
+.previews[data-searching="true"] {
+  opacity: 0;
+}
+.previews > span {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transition: opacity 220ms ease-in-out;
+}
+.previews > span[data-active="true"] {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .previews,
+  .previews > span {
+    transition: none;
+  }
 }

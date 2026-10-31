@@ -120,3 +120,36 @@ test("keeps separate preview slots when projects or templates have identical nam
     error.mockRestore();
   }
 });
+
+test("retains the current preview through erasing and crossfades mounted slots only for the next hint", async () => {
+  vi.useFakeTimers();
+  const view = render(
+    <SearchInput
+      aria-label="Search"
+      prefix="Find"
+      hints={[
+        { label: "ABC", preview: <img alt="First hint" src="/first.webp" /> },
+        { label: "XYZ", preview: <img alt="Next hint" src="/next.webp" /> },
+      ]}
+    />,
+  );
+  const first = screen.getByAltText("First hint").parentElement!;
+  const next = screen.getByAltText("Next hint").parentElement!;
+  expect(first).toHaveAttribute("data-active", "true");
+  await act(async () => vi.advanceTimersByTime(1767));
+  expect(screen.getByRole("searchbox")).toHaveAttribute("placeholder", "Find …");
+  expect(first).toHaveAttribute("data-active", "true");
+  expect(first).not.toHaveAttribute("hidden");
+  await act(async () => vi.advanceTimersByTime(240));
+  expect(first).toHaveAttribute("data-active", "false");
+  expect(next).toHaveAttribute("data-active", "true");
+  expect(next).not.toHaveAttribute("hidden");
+  fireEvent.input(screen.getByRole("searchbox"), { target: { value: "typed" } });
+  expect(next.parentElement).toHaveAttribute("data-searching", "true");
+  expect(screen.getByAltText("Next hint").parentElement).toBe(next);
+  fireEvent.input(screen.getByRole("searchbox"), { target: { value: "" } });
+  expect(next.parentElement).toHaveAttribute("data-searching", "false");
+  expect(next).toHaveAttribute("data-active", "true");
+  view.unmount();
+  expect(vi.getTimerCount()).toBe(0);
+});
