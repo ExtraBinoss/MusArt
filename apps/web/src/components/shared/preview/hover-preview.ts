@@ -71,7 +71,8 @@ export function bindHoverPreview(
   function focusOut(event: FocusEvent) {
     if (!(event.relatedTarget instanceof Node) || !surface.contains(event.relatedTarget)) stop();
   }
-  function down() {
+  function down(event: PointerEvent) {
+    if (event.target instanceof Element && event.target.closest("[data-preview-control]")) return;
     pressed = true;
     stop();
   }

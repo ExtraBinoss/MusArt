@@ -5,9 +5,10 @@ import { SHAPE_BY_ID } from "./engine/skins";
 import { RAYON } from "./engine/repere";
 import { brand } from "./config";
 
-export type BrandState = "idle" | "loading" | "preparing";
+export type BrandState = "idle" | "loading" | "preparing" | "working";
 export const brandStates = {
   idle: "idle",
+  working: "idle",
   loading: "thinking",
   preparing: "orbit",
 } as const satisfies Record<BrandState, StateId>;

@@ -14,7 +14,12 @@ test("uses the complete source engine's genuine eight-petal Dahlia and wonder ex
   expect(engine.sample(0.75)).toEqual(expected.sample(0.75));
   expect(engine.sample(0.75).bodyPath.match(/C/g)).toHaveLength(64);
   expect(engine.sample(0.75).eyes).toHaveLength(2);
-  expect(brandStates).toEqual({ idle: "idle", loading: "thinking", preparing: "orbit" });
+  expect(brandStates).toEqual({
+    idle: "idle",
+    working: "idle",
+    loading: "thinking",
+    preparing: "orbit",
+  });
   const before = engine.sample(1);
   engine.setState("thinking", 1);
   expect(engine.sample(1)).toEqual(before);

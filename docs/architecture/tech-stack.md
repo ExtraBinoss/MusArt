@@ -82,3 +82,9 @@ The project is MIT licensed. Bundled fonts, models, copied components and artwor
 ## Library entry
 
 Try Melt opens `/dashboard` directly on Templates. Templates, Projects and Community share the same library navigation. Initial library startup keeps a private empty draft, does not restore the last document and defers the editor/R3F bundle until editing; pointer/focus intent can preload the lightweight studio module. Favorites are promoted within the normal filtered grids. Missing first-page favorite projects use bounded 24-ID summary reads, without changing the active document. Card menus and right-click share one action list; the destructive action retains its own divider.
+
+## Loading feedback
+
+`components/ui/throbber/Throbber` provides `mascot`, `dots` and `shimmer` presentations. Its optional activity subscription stays local to the status leaf. The 160 ms reveal threshold only suppresses a short visual flash: reads, rendering, errors and ready content are never held for the animation. Completion stops the active animation and allows its decorative tail to fade for 160 ms. The mascot uses the shared SVG engine and original eyes, alternating its face and native thinking dots; reduced motion retains a still face. CSS shimmer is an original implementation, with no code or dependency copied from the account-gated shadcn.io example.
+
+Library Motion surfaces share a hover hint and an accessible native play/pause control outside their card's activation button. Pause retains the displayed GPU texture and stops requesting samples; resume excludes paused wall time. Leaving the surface releases the preview normally. Frame updates and control labels use local imperative updates rather than gallery-wide React renders.

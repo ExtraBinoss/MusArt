@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { MotionPreviewSurface } from "../../../../../src/components/projects/templates/motion-preview/MotionPreviewSurface";
 import "../../../../../src/state/i18n";
 
@@ -116,4 +116,51 @@ test("rebinding beneath a real fine pointer resumes intent without autoplaying a
     </button>,
   );
   expect(third).not.toHaveBeenCalled();
+});
+
+test("separate preview controls keep pause and retry out of the card activation target", () => {
+  vi.spyOn(window, "matchMedia").mockImplementation(
+    (query) =>
+      ({
+        matches: query.includes("hover"),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      }) as unknown as MediaQueryList,
+  );
+  const release = vi.fn(async () => undefined),
+    setPaused = vi.fn(),
+    opened = vi.fn();
+  let report!: (
+    value: import("../../../../../src/components/projects/templates/motion-preview/runtime").PreviewStatus,
+  ) => void;
+  const start = vi.fn((_host: HTMLElement, onStatus: typeof report) => {
+    report = onStatus;
+    onStatus("loading");
+    return { release, setPaused };
+  });
+  const view = render(
+    <div className="template-card-entry" data-preview-owner>
+      <button onClick={opened}>
+        <MotionPreviewSurface startPreview={start} poster="cached.webp" />
+      </button>
+    </div>,
+  );
+  const owner = view.container.firstElementChild!;
+  fireEvent.pointerEnter(owner);
+  const root = view.container.querySelector(".motion-template-preview")!;
+  act(() => report("playing"));
+  const pause = view.container.querySelector<HTMLButtonElement>(".motion-preview-control")!;
+  expect(pause.closest("button")!.parentElement).toBe(owner);
+  expect(pause).toHaveAttribute("data-status", "playing");
+  fireEvent.pointerDown(pause);
+  fireEvent.click(pause);
+  expect(release).not.toHaveBeenCalled();
+  expect(setPaused).toHaveBeenCalledWith(true);
+  expect(opened).not.toHaveBeenCalled();
+  act(() => report("failed"));
+  fireEvent.click(pause);
+  expect(start).toHaveBeenCalledTimes(2);
+  expect(root).toHaveAttribute("data-preview-status", "loading");
+  view.unmount();
+  expect(release).toHaveBeenCalledTimes(2);
 });

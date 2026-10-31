@@ -474,3 +474,16 @@
     display: none;
   }
 }
+
+.gallery-loading {
+  position: relative;
+  height: 0;
+}
+.gallery-loading[data-pending="true"] {
+  height: 200px;
+}
+.gallery-loading > .ui-throbber {
+  position: absolute;
+  inset: 0;
+  min-height: 200px;
+}

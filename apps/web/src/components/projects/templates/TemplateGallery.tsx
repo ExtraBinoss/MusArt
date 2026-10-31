@@ -128,6 +128,7 @@ export function TemplateGallery({
                 <motion.div
                   key={template.id}
                   className="template-card-entry"
+                  data-preview-owner
                   initial={reduced ? false : { opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{

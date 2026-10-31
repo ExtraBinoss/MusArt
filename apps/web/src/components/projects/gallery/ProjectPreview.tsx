@@ -144,6 +144,7 @@ export function ProjectPreview({
     <div
       ref={element}
       className="project-preview"
+      data-preview-owner
       data-preview-page={currentIndex + 1}
       data-preview-sliding={phase !== "idle" || undefined}
       onPointerEnter={() => setHovered(true)}

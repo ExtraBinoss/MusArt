@@ -38,6 +38,8 @@ function fixture() {
       const current = gate;
       gate = null;
       if (current) await current.promise;
+      if (options?.canRender && !options.canRender())
+        throw new DOMException("Rendering deferred.", "AbortError");
       return consume(canvas);
     },
     dispose,
@@ -246,4 +248,54 @@ test("saved projects and authored templates share one GPU owner and evaluate the
   expect(source.project).toEqual(before);
   await next.release();
   await first.release();
+});
+
+test("pause retains the GPU frame and resumes the same clock without counting paused time", async () => {
+  const f = fixture();
+  let now = 1000;
+  f.dependencies.now = () => now;
+  const owner = f.start();
+  await flush();
+  now = 1300;
+  f.tick(now);
+  await flush();
+  expect(f.times.at(-1)).toBe(0.3);
+  owner.setPaused!(true);
+  expect(f.callbacks.size).toBe(0);
+  expect(f.host.firstChild).toBe(f.canvas);
+  expect(f.status).toHaveBeenLastCalledWith("paused");
+  const count = f.times.length;
+  now = 8300;
+  owner.setPaused!(false);
+  expect(f.status).toHaveBeenLastCalledWith("playing");
+  expect(f.callbacks.size).toBe(1);
+  f.tick(8400);
+  await flush();
+  expect(f.times).toHaveLength(count + 1);
+  expect(f.times.at(-1)).toBe(0.4);
+  await owner.release();
+  owner.setPaused!(false);
+  expect(f.callbacks.size).toBe(0);
+  expect(f.dispose).toHaveBeenCalledOnce();
+});
+
+test("pausing during a queued GPU frame cancels admission without marking the preview as failed", async () => {
+  const f = fixture(),
+    owner = f.start();
+  await flush();
+  const gate = f.hold();
+  f.tick(1333);
+  await flush();
+  owner.setPaused!(true);
+  gate.resolve();
+  await flush();
+  expect(f.status).toHaveBeenLastCalledWith("paused");
+  expect(f.status.mock.calls.some(([state]) => state === "failed")).toBe(false);
+  expect(f.host.firstChild).toBe(f.canvas);
+  expect(f.dispose).not.toHaveBeenCalled();
+  owner.setPaused!(false);
+  f.tick(1366);
+  await flush();
+  expect(f.status).toHaveBeenLastCalledWith("playing");
+  await owner.release();
 });

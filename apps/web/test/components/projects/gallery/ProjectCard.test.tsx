@@ -13,8 +13,7 @@ test("exposes complete inactive-project CRUD and storage actions through real me
     rename = vi.fn().mockResolvedValue(true),
     copy = vi.fn(),
     remove = vi.fn(),
-    insights = vi.fn(),
-    clear = vi.fn();
+    insights = vi.fn();
   d.mount(
     <ProjectCard
       project={projectSummary()}
@@ -25,9 +24,16 @@ test("exposes complete inactive-project CRUD and storage actions through real me
       onDuplicate={copy}
       onDelete={remove}
       onInsights={insights}
-      onClearHistory={clear}
     />,
   );
+  fireEvent.pointerDown(screen.getByLabelText("Options du projet"), { button: 0, ctrlKey: false });
+  const storage = await screen.findByRole("menuitem", { name: "Stockage du projet" });
+  expect(storage.querySelector("svg")).toBeNull();
+  expect(screen.queryByRole("menuitem", { name: "Effacer l’historique" })).toBeNull();
+  expect(screen.getAllByRole("menuitem").at(-1)).toBe(storage);
+  expect(screen.getByRole("menuitem", { name: "Supprimer" }).querySelector("svg")).not.toBeNull();
+  fireEvent.keyDown(storage, { key: "Escape" });
+  await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
   expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Options du projet" })).toHaveClass(
     "project-options-trigger",
@@ -48,7 +54,6 @@ test("exposes complete inactive-project CRUD and storage actions through real me
   for (const [label, fn] of [
     ["Dupliquer", copy],
     ["Stockage du projet", insights],
-    ["Effacer l’historique", clear],
     ["Supprimer", remove],
   ] as const) {
     await menu(label);
@@ -68,7 +73,6 @@ test("supports F2, Escape, empty names, blur and a failed rename without losing 
       onDuplicate={() => undefined}
       onDelete={() => undefined}
       onInsights={() => undefined}
-      onClearHistory={() => undefined}
     />,
   );
   expect(screen.getByRole("article", { name: "Study" })).toHaveAttribute("aria-current", "true");
@@ -188,7 +192,6 @@ test("right click opens the same project actions without triggering a preview", 
       onDuplicate={duplicate}
       onDelete={vi.fn()}
       onInsights={vi.fn()}
-      onClearHistory={vi.fn()}
     />,
   );
   fireEvent.contextMenu(screen.getByRole("article"), { clientX: 180, clientY: 120 });

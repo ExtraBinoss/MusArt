@@ -5,6 +5,7 @@ import { Plus, LoaderCircle, FolderOpen } from "lucide-react";
 import type { EditorServices, ProjectLibraryPage, ProjectSummary } from "../../../state/contracts";
 import type { TaskRunner } from "../ProjectDialog";
 import { SearchInput } from "../../assets/SearchInput";
+import { Throbber } from "../../ui/throbber/Throbber";
 import { MeltLogo } from "../../../ui/brand/MeltLogo";
 import "../dashboard/messages";
 import { Button } from "../../ui/button";
@@ -201,12 +202,15 @@ export function ProjectGallery({
           <LibraryModeFilter value={mode} onChange={setMode} disabled={disabled} />
         </div>
       )}
-      {!loaded && !failed ? (
-        <p className="gallery-status" role="status">
-          <LoaderCircle size={16} className="animate-spin" />
-          {t("loadingProjects")}
-        </p>
-      ) : failed ? (
+      <div className="gallery-loading" data-pending={!loaded && !failed}>
+        <Throbber
+          active={!loaded && !failed}
+          label={t("loadingProjects")}
+          variant="shimmer"
+          size={32}
+        />
+      </div>
+      {!loaded && !failed ? null : failed ? (
         <div className="gallery-status">
           <p>{t("projectsUnavailable")}</p>
           <Button variant="outline" onClick={() => setRevision((value) => value + 1)}>
@@ -267,7 +271,6 @@ export function ProjectGallery({
                   }}
                   onDelete={() => setAction({ kind: "delete", project })}
                   onInsights={() => setInspecting(project)}
-                  onClearHistory={() => setAction({ kind: "clearHistory", project })}
                 />
               </motion.div>
             ))}

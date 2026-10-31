@@ -164,3 +164,23 @@ test("hover blinks and keeps one genuine idle animation chain, then returns to r
   expect(f.callbacks.size).toBe(0);
   f.playback.dispose();
 });
+
+test("working loops the genuine face through dots and back, with no frame loop under reduced motion", () => {
+  const f = fixture();
+  f.playback.setState("working");
+  for (let i = 0; i < 20; i++) f.step(100);
+  expect(
+    f.surface.paint.mock.lastCall![0].eyes.every((eye: { alpha: number }) => eye.alpha > 0),
+  ).toBe(true);
+  for (let i = 0; i < 15; i++) f.step(100);
+  expect(
+    f.surface.paint.mock.lastCall![0].eyes.every((eye: { alpha: number }) => eye.alpha === 0),
+  ).toBe(true);
+  for (let i = 0; i < 15; i++) f.step(100);
+  expect(
+    f.surface.paint.mock.lastCall![0].eyes.every((eye: { alpha: number }) => eye.alpha > 0),
+  ).toBe(true);
+  f.reduce(true);
+  expect(f.callbacks.size).toBe(0);
+  f.playback.dispose();
+});

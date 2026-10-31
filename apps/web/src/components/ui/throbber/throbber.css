@@ -1,0 +1,93 @@
+/* Original Melt component; CSS shimmer inspired by shadcn.io's public description. */
+.ui-throbber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 160ms ease,
+    visibility 160ms;
+}
+.ui-throbber[data-visible="true"] {
+  opacity: 1;
+  visibility: visible;
+}
+.ui-throbber-mark {
+  width: var(--throbber-size);
+  height: var(--throbber-size);
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--brand-primary);
+}
+.ui-throbber[data-variant="shimmer"] .ui-throbber-label {
+  background: linear-gradient(
+    110deg,
+    var(--muted-foreground) 30%,
+    var(--brand-primary) 48%,
+    var(--foreground) 52%,
+    var(--muted-foreground) 70%
+  );
+  background-size: 260% 100%;
+  background-clip: text;
+  color: transparent;
+  animation: melt-text-shimmer 2.8s ease-in-out infinite;
+}
+.ui-throbber-dots {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.ui-throbber-dots > i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: melt-dot-pulse 1.2s ease-in-out infinite;
+}
+.ui-throbber-dots > i:nth-child(2) {
+  animation-delay: 140ms;
+}
+.ui-throbber-dots > i:nth-child(3) {
+  animation-delay: 280ms;
+}
+.ui-throbber[data-active="false"] * {
+  animation-play-state: paused;
+}
+@keyframes melt-text-shimmer {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
+}
+@keyframes melt-dot-pulse {
+  0%,
+  70%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-throbber,
+  .ui-throbber * {
+    animation: none !important;
+    transition: none;
+  }
+  .ui-throbber[data-variant="shimmer"] .ui-throbber-label {
+    background: none;
+    color: var(--muted-foreground);
+  }
+}

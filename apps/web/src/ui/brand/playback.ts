@@ -25,6 +25,8 @@ export function createBrandPlayback(
     engine = createDahliaEngine();
   let state: BrandState = "idle",
     time = 0.75,
+    workingAt = 0,
+    workingPose = "idle",
     end = 0,
     active = true,
     hovered = false,
@@ -55,6 +57,16 @@ export function createBrandPlayback(
     last = stamp;
     if (stamp - paintedAt >= 1000 / 30 || (state === "idle" && !hovered && time >= end)) {
       paintedAt = stamp;
+      // Keep the real face for most of the loop, then morph to the native dots and back.
+      // The engine owns the geometry and continuous transition; no React frame updates.
+      if (state === "working") {
+        const phase = (time - workingAt) % 5.2;
+        const next = phase >= 2.4 && phase < 3.8 ? "thinking" : "idle";
+        if (next !== workingPose) {
+          workingPose = next;
+          engine.setState(next, time);
+        }
+      }
       surface.paint(engine.sample(time));
     }
     if (wantsFrames()) frame = clock.request(tick);
@@ -68,6 +80,11 @@ export function createBrandPlayback(
       !page.hidden &&
       (state !== "idle" || hovered || time < end)
     ) {
+      if (state === "working") {
+        engine.setState("idle", time);
+        workingPose = "idle";
+        end = time + 0.6;
+      }
       time = Math.max(time, end);
       surface.paint(engine.sample(time));
     }
@@ -97,6 +114,8 @@ export function createBrandPlayback(
     setState(next: BrandState) {
       if (disposed || next === state) return;
       state = next;
+      workingAt = time;
+      workingPose = "idle";
       engine.setState(brandStates[next], time);
       end = time + 0.6;
       resume();

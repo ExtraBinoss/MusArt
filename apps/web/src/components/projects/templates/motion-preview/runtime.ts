@@ -20,7 +20,7 @@ import type { MotionTemplateId } from "../../../../services/projects/templates/m
 import { PreviewSessionPool } from "./session-pool";
 import { PreviewSourceCache } from "./source-cache";
 
-export type PreviewStatus = "idle" | "loading" | "playing" | "failed";
+export type PreviewStatus = "idle" | "loading" | "playing" | "paused" | "failed";
 type Session = Pick<ReturnType<typeof createRenderSession>, "withCanvasFrame" | "dispose">;
 export interface PreviewDependencies {
   prepare: (id: MotionTemplateId, signal: AbortSignal) => Promise<PreparedMotionTemplate>;
@@ -47,6 +47,7 @@ const native: PreviewDependencies = {
 };
 export interface PreviewOwner {
   release: () => Promise<void>;
+  setPaused?: (paused: boolean) => void;
 }
 let active: PreviewOwner | null = null;
 async function clearPreviews() {
@@ -97,6 +98,9 @@ export function startMotionPreview(
   let draining: Promise<void> | null = null;
   let disposal: Promise<void> | null = null;
   let began = 0;
+  let paused = false;
+  let renderGeneration = 0;
+  let changePaused: ((next: boolean) => void) | null = null;
   let lastSample = -1;
   let bootstrap: Promise<void> = Promise.resolve();
   function alive() {
@@ -123,7 +127,10 @@ export function startMotionPreview(
     })();
     return disposal;
   }
-  const owner: PreviewOwner = { release: () => stop(true) };
+  const owner: PreviewOwner = {
+    release: () => stop(true),
+    setPaused: (next) => changePaused?.(next),
+  };
   active = owner;
   options.onStatus("loading");
   bootstrap = (async () => {
@@ -175,23 +182,36 @@ export function startMotionPreview(
       const scale = Math.min(1, 480 / Math.max(page.width, page.height));
       async function render(seconds: number) {
         const plan = evaluateMotion(program, { value: Math.round(seconds * 30), rate: 30 });
-        await session!.withCanvasFrame(
-          applyMotionFrame(program, plan),
-          prepared.project.assets,
-          (canvas) => {
-            if (!alive()) return;
-            if (canvas.parentElement !== options.host) options.host.replaceChildren(canvas);
-            options.host.dataset.previewTime = String(seconds);
-          },
-          {
-            scale,
-            motionFrame: plan,
-            mediaResolver,
-            mediaMode: "exact",
-            signal: abort.signal,
-            canRender: alive,
-          },
-        );
+        const generation = renderGeneration;
+        try {
+          await session!.withCanvasFrame(
+            applyMotionFrame(program, plan),
+            prepared.project.assets,
+            (canvas) => {
+              if (!alive() || paused || generation !== renderGeneration) return;
+              if (canvas.parentElement !== options.host) options.host.replaceChildren(canvas);
+              options.host.dataset.previewTime = String(seconds);
+            },
+            {
+              scale,
+              motionFrame: plan,
+              mediaResolver,
+              mediaMode: "exact",
+              signal: abort.signal,
+              canRender: () => alive() && !paused && generation === renderGeneration,
+            },
+          );
+        } catch (error) {
+          // A queued/in-flight frame rejected by pause is expected admission cancellation.
+          // Never hide actual preparation, decoding or GPU failures.
+          if (
+            generation !== renderGeneration &&
+            error instanceof Error &&
+            error.name === "AbortError"
+          )
+            return;
+          throw error;
+        }
       }
       function failure(error: unknown) {
         if (!alive()) return;
@@ -199,9 +219,9 @@ export function startMotionPreview(
         void stop(false).catch((cleanupError) => options.onStatus("failed", cleanupError));
       }
       function drain() {
-        if (draining || !alive()) return;
+        if (draining || !alive() || paused) return;
         draining = (async () => {
-          while (requested !== null && alive()) {
+          while (requested !== null && alive() && !paused) {
             const seconds = requested;
             requested = null;
             await render(seconds);
@@ -213,7 +233,7 @@ export function startMotionPreview(
           });
       }
       function tick(now: number) {
-        if (!alive()) return;
+        if (!alive() || paused) return;
         const sample = Math.floor((((now - began) / 1000) % duration) * 30 + 1e-7);
         if (sample !== lastSample) {
           lastSample = sample;
@@ -225,6 +245,24 @@ export function startMotionPreview(
       timing?.stage("First frame: fonts, geometry + GPU render");
       await render(0);
       if (!alive()) return;
+      let pausedAt = 0;
+      changePaused = (next) => {
+        if (!alive() || paused === next) return;
+        paused = next;
+        if (next) {
+          renderGeneration++;
+          pausedAt = dependencies.now();
+          if (frame !== null) dependencies.cancelFrame(frame);
+          frame = null;
+          requested = null;
+          options.onStatus("paused");
+        } else {
+          began += dependencies.now() - pausedAt;
+          lastSample = -1;
+          options.onStatus("playing");
+          frame = dependencies.requestFrame(tick);
+        }
+      };
       options.onStatus("playing");
       timing?.finish("ready");
       began = dependencies.now();

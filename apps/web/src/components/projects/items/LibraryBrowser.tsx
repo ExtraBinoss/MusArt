@@ -79,9 +79,8 @@ export function LibraryBrowser({
           >
             <DialogContent className="library-item-dialog" showCloseButton={!busy}>
               <div className="library-item-info">
+                <DialogTitle className="library-item-name">{selected.item.name}</DialogTitle>
                 <span className="library-item-kind">{t(selected.item.kind)}</span>
-                <DialogTitle>{t("open")}</DialogTitle>
-                <h2 className="library-item-name">{selected.item.name}</h2>
                 <DialogDescription>{t("hint")}</DialogDescription>
                 <div className="library-item-author">
                   <MeltLogo
@@ -96,6 +95,7 @@ export function LibraryBrowser({
                   </span>
                 </div>
                 <Button
+                  className="library-item-primary"
                   disabled={busy}
                   onClick={() => {
                     const action = selected.open;
@@ -104,7 +104,7 @@ export function LibraryBrowser({
                   }}
                 >
                   <ArrowUpRight size={15} />
-                  {t("open")}
+                  <span>{t("open")}</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -116,7 +116,7 @@ export function LibraryBrowser({
                   }}
                 >
                   <Star size={14} fill={favorite ? "currentColor" : "none"} />
-                  {t(favorite ? "unfavorite" : "favorite")}
+                  <span>{t(favorite ? "unfavorite" : "favorite")}</span>
                 </Button>
                 {error && <p role="alert">{t("saveFailed")}</p>}
               </div>

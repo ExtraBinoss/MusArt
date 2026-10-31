@@ -24,7 +24,6 @@ export function ProjectCard({
   onDuplicate,
   onDelete,
   onInsights,
-  onClearHistory,
 }: {
   project: ProjectSummary;
   services: EditorServices;
@@ -36,7 +35,6 @@ export function ProjectCard({
   onDuplicate: () => void;
   onDelete: () => void;
   onInsights: () => void;
-  onClearHistory: () => void;
 }) {
   const { t } = useTranslation();
   const previewPage = project.pages.find((page) => page.mode === "motion") ?? project.pages[0];
@@ -85,7 +83,6 @@ export function ProjectCard({
     rename: begin,
     duplicate: onDuplicate,
     insights: onInsights,
-    clearHistory: onClearHistory,
     remove: onDelete,
   };
   function restoreRenameFocus(event: Event) {
