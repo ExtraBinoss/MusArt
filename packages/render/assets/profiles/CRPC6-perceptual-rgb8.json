@@ -1,0 +1,11 @@
+{
+  "size": 86,
+  "channels": 4,
+  "order": "red-fastest, green, blue",
+  "intent": "Perceptual",
+  "transform": "sRGB-v4 → CGATS21_CRPC6 (CMYK8) → sRGB-v4 (RGB8)",
+  "generator": "@imagemagick/magick-wasm 0.0.45",
+  "rgbSha256": "c56e1685d888f5edb92fe07f2750f387f8fe8e91b32ff8fb0b56bfbbb9458353",
+  "cmykSha256": "4ea462ebcc80e2376ebf4a72bd118d1ba92c638edcd718e3c051c3a185586063",
+  "lutSha256": "52ecc0efbb00f9397b201fba7b3ba4f9ded45766b3d18852a197965760b9bacc"
+}

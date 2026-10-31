@@ -6,6 +6,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Apply the CGATS21 CRPC6 ICC soft proof automatically to CMYK canvases, thumbnails and video output, using a demand-driven GPU lookup pass with bounded memory. Keep native CMYK export input separate to prevent double conversion; use lossless source previews and verify canvas/preview/export colors in Chromium on WebGPU and WebGL.
+
 - Compact project storage into linked, keyboard-accessible bar/legend highlights with byte and percentage tooltips. Move recorded-history details, their own breakdown and clearing action into contextual info; clarify that clearing replay/timelapse data preserves the current document and session undo stack.
 
 - Simplified library project menus, kept history clearing inside storage, and made project titles and aligned primary actions lead the details dialog. Added discoverable Motion hover previews with accessible pause/resume that retains the GPU frame and excludes paused time. Added reusable mascot/dots/shimmer throbbers, a genuine face-to-dots mascot loop, reduced-motion handling and flash suppression without delaying project results.

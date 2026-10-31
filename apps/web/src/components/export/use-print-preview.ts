@@ -50,7 +50,11 @@ export function usePrintPreview(
                   "image/png",
                 ),
               ),
-            { scale, signal: controller.signal },
+            {
+              scale,
+              signal: controller.signal,
+              colorOutput: options.colorMode === "cmyk" ? "source" : "display",
+            },
           );
           const proof = await encodeManagedImage(
             { blob, options, width: page.width, height: page.height, name: page.name, proof: true },

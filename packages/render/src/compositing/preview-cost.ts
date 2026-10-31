@@ -17,6 +17,7 @@ import { effectStages } from "../effects/pipeline";
 import { effectFootprint } from "../effects/shared/footprint";
 import { rasterExtent } from "./types";
 import { maskLayerMapping } from "./mask-binding";
+import { PRINT_PROOF_BYTES } from "../color/proof/table";
 
 export interface PreviewCost {
   readonly bytes: number;
@@ -142,6 +143,7 @@ export function estimatePreviewCost(
       primitiveCapacity(Math.min(primitiveCount, MAX_PRIMITIVE_INSTANCES)) * INSTANCE_BYTES;
   // Shared effect scratch/backdrop are high-water resources, not one pair per layer.
   fixedBytes += scratch + backdrop;
+  if (page.colorSpace === "cmyk") fixedBytes += PRINT_PROOF_BYTES;
   return {
     bytes: originalBytes + fixedBytes + scaledBytes,
     originalBytes,

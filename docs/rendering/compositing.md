@@ -174,9 +174,9 @@ the pixel witness.
 
 ## Color and output
 
-Document working spaces are sRGB, Display-P3, and a generic CMYK print proof. Imported sRGB photos and branded SVG paints are converted into a Display-P3 working document; the current display/export path converts the document back to sRGB. This path does not claim native wide-gamut canvas output.
+Document modes are sRGB, Display-P3, ICC-managed CMYK and the legacy generic CMYK proof. Imported sRGB photos and branded SVG paints are converted into a Display-P3 working document; the current display/export path converts the document back to sRGB. This path does not claim native wide-gamut canvas output.
 
-The generic CMYK proof models under-color removal, a 280% total ink limit, 8% dot gain, a warm paper color and a black floor. It is not an ICC press profile, a calibrated printer simulation, or a CMYK raster encoder. `RENDER_CAPABILITIES` states these limits explicitly. PNG and WebP remain RGB. The separate `cmyk` output target now uses true ICC-managed JPEG, TIFF and PDF export; GPU editing remains RGB. See [managed print output](export-dialog.md).
+The legacy `cmyk-proof` models under-color removal, a 280% total ink limit, 8% dot gain, a warm paper color and a black floor; it is not an ICC press profile. The separate `cmyk` document mode uses a CGATS21 CRPC6 / Perceptual ICC GPU soft proof automatically on the canvas, with matching native ICC-managed JPEG, TIFF and PDF output. Its RGB compositing buffers retain source colors; only display presentation applies the proof, and CMYK encoding explicitly requests unproofed source input. PNG/WebP and videos preserve the proofed RGB appearance. See [managed print output](export-dialog.md) for precision, cache accounting and limitations.
 
 ## Still and video export
 

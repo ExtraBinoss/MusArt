@@ -39,7 +39,7 @@ export const messages = {
     scale: "Scale",
     colorMode: "Canvas color output",
     cmykCanvasHint:
-      "Edit on screen in RGB; export print files in CMYK with the standard ICC profile.",
+      "The canvas previews the CGATS21 CRPC6 print profile used for CMYK export, on white paper.",
 
     chooseArtboard: "Artboard",
     motionArtboard: "Motion · {{name}}",
@@ -115,7 +115,7 @@ export const messages = {
     scale: "Échelle",
     colorMode: "Couleurs de sortie du canvas",
     cmykCanvasHint:
-      "Édition à l’écran en RGB ; export des fichiers d’impression en CMJN avec le profil ICC standard.",
+      "Le canvas affiche l’épreuve du profil d’impression CGATS21 CRPC6 utilisé à l’export CMJN, sur papier blanc.",
 
     chooseArtboard: "Plan de travail",
     motionArtboard: "Motion · {{name}}",

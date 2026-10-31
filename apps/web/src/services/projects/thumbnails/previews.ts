@@ -12,6 +12,7 @@ export interface ThumbnailPreviewOptions {
   signal?: AbortSignal;
   isCurrent?: () => boolean;
   mediaResolver?: MediaSourceResolver;
+  colorOutput?: "display" | "source";
 }
 export interface ThumbnailPreview {
   blob: Blob;
@@ -29,6 +30,7 @@ interface Job {
   page: Composition;
   assets: Record<string, Asset>;
   edge: number;
+  colorOutput?: "display" | "source";
   consumers: Set<Consumer>;
 }
 const abortError = (message = "Preview is no longer current.") =>
@@ -76,7 +78,7 @@ export class ThumbnailPreviews {
     } catch (error) {
       return Promise.reject(error);
     }
-    const identity = JSON.stringify([key, edge]),
+    const identity = JSON.stringify([key, edge, options.colorOutput ?? "display"]),
       cached = this.cache.get(identity);
     if (cached) {
       this.cache.delete(identity);
@@ -94,7 +96,14 @@ export class ThumbnailPreviews {
           this.pending.values().next().value!,
           abortError("Preview queue capacity exceeded."),
         );
-      job = { key: identity, page, assets, edge, consumers: new Set() };
+      job = {
+        key: identity,
+        page,
+        assets,
+        edge,
+        colorOutput: options.colorOutput,
+        consumers: new Set(),
+      };
       this.jobs.set(identity, job);
       this.pending.set(identity, job);
     }
@@ -261,11 +270,13 @@ export class ThumbnailPreviews {
       }
       const resolver = [...job.consumers].find((consumer) => consumer.options.mediaResolver)
         ?.options.mediaResolver;
-      const result = resolver
-        ? await this.renderer.render(job.page, job.assets, () => this.canRender(job), job.edge, {
-            mediaResolver: resolver,
-          })
-        : await this.renderer.render(job.page, job.assets, () => this.canRender(job), job.edge);
+      const result =
+        resolver || job.colorOutput
+          ? await this.renderer.render(job.page, job.assets, () => this.canRender(job), job.edge, {
+              ...(resolver ? { mediaResolver: resolver } : {}),
+              ...(job.colorOutput ? { colorOutput: job.colorOutput } : {}),
+            })
+          : await this.renderer.render(job.page, job.assets, () => this.canRender(job), job.edge);
       if (!this.current(job)) return;
       if (this.blocked(job)) {
         this.pending.set(job.key, job);

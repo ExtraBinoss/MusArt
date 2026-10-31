@@ -47,12 +47,30 @@ export function ImageExportPane(
     () => (selectionOnly ? selectionComposition(page, selection) : page),
     [page, selection, selectionOnly],
   );
+  const previewServices = useMemo(
+    () => ({
+      previewExport: services.previewExport
+        ? (
+            request: Parameters<NonNullable<typeof services.previewExport>>[0],
+            signal?: AbortSignal,
+          ) =>
+            services.previewExport!(
+              {
+                ...request,
+                colorOutput: options.colorMode === "cmyk" ? "source" : "display",
+              },
+              signal,
+            )
+        : undefined,
+    }),
+    [services, options.colorMode],
+  );
   const preview = useExportPreview(
     page,
     selection,
     selectionOnly,
     origin.revision,
-    services,
+    previewServices,
     options.format === "pdf" ? null : edge,
   );
   const managed = useManagedPreview(preview, options);

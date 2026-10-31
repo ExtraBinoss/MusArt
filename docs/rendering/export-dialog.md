@@ -44,12 +44,35 @@ before replacing the project. Native reload/close uses the browser's own
 
 ## Color targets
 
-New canvases can target sRGB or CMYK. The portable `colorSpace: "cmyk"` is an
-output target: GPU editing remains RGB, including on screen. It does not claim
-four-channel brush editing or an ICC press proof in the main canvas. The export
-preview uses the real ICC transform. The former `cmyk-proof` value remains
+New canvases can target sRGB or CMYK. The portable `colorSpace: "cmyk"` automatically
+applies an ICC soft proof to the main canvas, thumbnails, Motion and Timelapse.
+The GPU compositing buffers remain RGB, but the visible document previews the
+same CGATS21 CRPC6 / Perceptual print conversion used by native CMYK export.
+Transparent artwork is shown over white paper, as in print output. This is
+color-managed display, not four-channel ink/separation editing. The former `cmyk-proof` value remains
 readable as a legacy generic simulation; it is not the new CMYK output target.
 Display-P3 documents retain the existing explicit conversion to sRGB output.
+
+The display proof samples a precomputed 86³ RGBA8 lookup texture in the final
+GPU pass. It requires 2,544,224 bytes per renderer, accounted in the existing
+GPU LRU, with one shared immutable CPU copy. It loads only for CMYK display,
+renders on demand and performs no runtime CPU pixel conversion or GPU readback.
+Regenerate it with `bun scripts/color/print-proof.ts`; `--check` verifies the
+table/profile checksums. The synthetic build-time grid uses the same native
+ICC library and unmodified profiles as export. Both WebGPU and WebGL use TSL.
+
+`RenderOptions.colorOutput: "source"` bypasses the display proof only before
+native CMYK encoding. Display/source frame and preview caches are distinct;
+the export preview performs its native proof once, while RGB image/video output
+keeps the document's proofed appearance. No proof is baked into native CMYK input.
+
+The LUT is an interpolated display approximation, not a promise of bit-identical
+RGB values after an 8-bit CMYK round trip. Against 10,000 seeded random samples
+through independent Pillow/LittleCMS, maximum channel error was 13/255, p99 4/255
+and mean maximum-channel error 0.704/255. Sharp 8-bit ink quantization boundaries
+cause the largest differences. Screen calibration, viewing light, press and
+paper still determine the physical match. WYSIWYG here uses one explicit print
+profile throughout the canvas/preview/output pipeline.
 
 | Output             | Color contract                                                                                                                               |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -107,6 +130,20 @@ ICC reference exactly; JPEG differs by one 8-bit level in two ink channels.
 Production readback probes remain zero. These are functional witnesses, not
 input-latency benchmarks. Logs and captures are retained in `artifacts/export-dialog/`.
 
+The subsequent CMYK-canvas witness (`test/browser/cmyk-canvas.spec.ts`) passed
+on both WebGPU and WebGL in Chrome 154 on Linux, at 1600 × 1000 / DPR 1.
+On its eight-patch color/alpha grid, the largest canvas-to-native-preview or
+canvas-to-independently-decoded-TIFF channel difference was 1/255. RGB delivery
+matched the displayed proof; switching to sRGB and undo restored the expected
+unproofed/proofed colors. The 50-photo / 100-effect workload also passed with
+bounded GPU accounting and unchanged GPU-pass/React-commit counts across idle
+frames. All production readback counts were zero. These checks used one CPU
+core, low CPU/I/O priority and no swap, with a 3,000 MiB memory ceiling. See
+`artifacts/cmyk-canvas/` for captures and reports; the random-color precision
+limits above remain applicable beyond the grid.
+
 Primary references: [ICC CRPC6 profile and license](https://registry.color.org/profile-registry/CGATS21_CRPC6),
+[LittleCMS ICC soft-proofing](https://www.littlecms.com/LittleCMS2.18%20tutorial.pdf),
+[Affinity soft-proof/export guidance](https://www.affinity.studio/blog/screen-to-paper-how-to-hand-off-your-logo),
 [native ICC conversion API](https://github.com/dlemstra/magick-wasm),
 [canvas serialization color contract](https://html.spec.whatwg.org/multipage/canvas.html).

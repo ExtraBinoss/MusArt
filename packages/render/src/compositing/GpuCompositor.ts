@@ -10,6 +10,7 @@ import {
 } from "@musart/core";
 import type { RenderTarget, WebGPURenderer } from "three/webgpu";
 import { ColorPipeline } from "../color/ColorPipeline";
+import { PrintProofPass } from "../color/proof/PrintProofPass";
 import { GpuResourceCache } from "../cache/GpuResourceCache";
 import { gpuTextureLimit } from "../cache/texture-limits";
 import { createSourceKeys } from "../cache/keys";
@@ -59,6 +60,7 @@ export class GpuCompositor {
   private disposal: Promise<void> | null = null;
   private frames = 0;
   private cacheHits = 0;
+  private proofPasses = 0;
   private profile: Record<"pipeline" | "sources" | "text" | "compose", number[]> | null = null;
   private sample(
     phase: "pipeline" | "sources" | "text" | "compose",
@@ -97,9 +99,10 @@ export class GpuCompositor {
     assets: Record<string, Asset>,
     scale: number,
     motionFrame?: MotionFramePlan,
+    colorOutput: RenderOptions["colorOutput"] = "display",
   ): FrameTexture | null {
     if (this.disposed || !isPublishedComposition(page) || !isPublishedAssets(assets)) return null;
-    const key = `page:${page.id}:${scale}`,
+    const key = `page:${page.id}:${scale}${colorOutput === "source" ? ":source" : ""}`,
       entry = this.cache.get<LayerTargets>(key);
     const input = entry && this.retainedInputs.get(entry);
     if (
@@ -164,6 +167,15 @@ export class GpuCompositor {
         return !options.signal?.aborted && (!options.canRender || options.canRender());
       };
       const pipelineStarted = options.profileVideo ? performance.now() : 0;
+      let proof: PrintProofPass | undefined;
+      if (page.colorSpace === "cmyk" && options.colorOutput !== "source") {
+        proof = this.cache.get<PrintProofPass>("print-proof");
+        if (!proof) {
+          proof = new PrintProofPass(this.renderer);
+          this.cache.set("print-proof", proof);
+        }
+        await proof.prepare(preparationTarget, canPrepare);
+      }
       await this.passes.prepare(preparationTarget, canPrepare);
       for (const layer of page.layers) {
         if (!layer.effects.length) continue;
@@ -214,7 +226,7 @@ export class GpuCompositor {
         geometry,
       };
       const { keyFor } = frame;
-      const rootKey = `page:${page.id}:${scale}`;
+      const rootKey = `page:${page.id}:${scale}${options.colorOutput === "source" ? ":source" : ""}`;
       const entry = this.entry(rootKey);
       const roots = geometry.children(null);
       const signature = JSON.stringify([
@@ -254,7 +266,10 @@ export class GpuCompositor {
         frame,
       );
       const target = this.target(entry, rootKey, "presentation", composed.width, composed.height);
-      if (page.colorSpace === "display-p3") this.color.render(composed, target, "to-srgb");
+      if (proof) {
+        proof.render(composed, target);
+        this.proofPasses++;
+      } else if (page.colorSpace === "display-p3") this.color.render(composed, target, "to-srgb");
       else if (page.colorSpace === "cmyk-proof") this.color.render(composed, target, "cmyk-proof");
       else this.passes.copyTo(composed, target);
       entry.output = {
@@ -497,6 +512,7 @@ export class GpuCompositor {
     const effects = this.effects?.stats();
     return {
       passes:
+        this.proofPasses +
         (this.sources.videoStats()?.passes ?? 0) +
         (this.passes?.passes ?? 0) +
         (this.normal?.passes ?? 0) +

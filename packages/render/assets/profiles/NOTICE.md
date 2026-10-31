@@ -18,3 +18,8 @@ https://github.com/saucecontrol/Compact-ICC-Profiles
 The print encoder uses @imagemagick/magick-wasm (Apache-2.0). Its upstream
 LICENSE and NOTICE remain in the installed package. No profile is represented
 as universally suitable for every press or paper.
+
+`CRPC6-perceptual-rgb8.bin` is a generated lookup of synthetic color conversions,
+not a modified ICC profile. `scripts/color/print-proof.ts` generates it using the
+unmodified profiles above; the adjacent JSON records their checksums, rendering
+intent, generator and table checksum. No ICC payload is changed by generation.

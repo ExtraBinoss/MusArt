@@ -35,7 +35,7 @@ export class ThumbnailRenderer {
     assets: Record<string, Asset>,
     canRender?: () => boolean,
     edge = THUMBNAIL_EDGE,
-    media: Pick<RenderOptions, "mediaResolver" | "motionFrame"> = {},
+    media: Pick<RenderOptions, "mediaResolver" | "motionFrame" | "colorOutput"> = {},
   ) {
     if (this.disposed) throw new Error("Thumbnail renderer is closed.");
     if (canRender && !canRender()) throw new DOMException("Rendering deferred.", "AbortError");
@@ -61,12 +61,13 @@ export class ThumbnailRenderer {
           if (!allowed()) throw new DOMException("Rendering deferred.", "AbortError");
           const width = canvas.width,
             height = canvas.height;
+          const type = media.colorOutput === "source" ? "image/png" : "image/webp";
           // Start the native snapshot in the SAME task as the draw. WebGL's
           // default framebuffer may be cleared at presentation after any await.
           const encoding = new Promise<Blob>((resolve, reject) =>
             canvas.toBlob(
               (value) => (value ? resolve(value) : reject(new Error("Thumbnail encoding failed."))),
-              "image/webp",
+              type,
               THUMBNAIL_QUALITY,
             ),
           );
@@ -86,7 +87,12 @@ export class ThumbnailRenderer {
       );
       const blob = await frame.encoding;
       this.controller.signal.throwIfAborted();
-      if (blob.type !== "image/webp" || blob.size === 0 || blob.size > MAX_THUMBNAIL_BYTES)
+      const source = media.colorOutput === "source";
+      if (
+        blob.type !== (source ? "image/png" : "image/webp") ||
+        blob.size === 0 ||
+        blob.size > (source ? 3 * MAX_THUMBNAIL_BYTES : MAX_THUMBNAIL_BYTES)
+      )
         throw new Error("Unsupported or oversized thumbnail.");
       return { blob, width: frame.width, height: frame.height };
     } finally {

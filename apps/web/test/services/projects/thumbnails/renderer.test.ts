@@ -19,6 +19,18 @@ function fixture(blob: Blob | null = new Blob(["webp"], { type: "image/webp" }))
   const factory = vi.fn(async () => session);
   return { canvas, session, factory, encode, renderer: new ThumbnailRenderer(factory) };
 }
+it("keeps native CMYK input lossless and forwards source mode through the retained renderer", async () => {
+  const d = fixture(new Blob(["png"], { type: "image/png" }));
+  await d.renderer.render(createPage(), {}, undefined, 384, { colorOutput: "source" });
+  expect(d.encode).toHaveBeenCalledWith(expect.any(Function), "image/png", 0.88);
+  expect(d.session.withCanvasFrame).toHaveBeenCalledWith(
+    expect.anything(),
+    {},
+    expect.any(Function),
+    expect.objectContaining({ colorOutput: "source" }),
+  );
+  await d.renderer.dispose();
+});
 it("retains one native GPU session across pages and encodes high-quality WebP inside its atomic frame queue", async () => {
   const d = fixture(),
     page = createPage({ width: 2000, height: 1000 });

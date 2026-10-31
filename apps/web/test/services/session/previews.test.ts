@@ -32,6 +32,16 @@ function fixture() {
   return { engine, preview, run: createPreviewExport(engine, { preview }) };
 }
 
+test("separates native CMYK source previews from ICC display previews without editing the document", async () => {
+  const { engine, preview, run } = fixture();
+  const before = engine.getSnapshot();
+  await run({ all: true });
+  await run({ all: true, colorOutput: "source" });
+  expect(preview.mock.calls[0]![0]).not.toBe(preview.mock.calls[1]![0]);
+  expect(preview.mock.calls[1]![3]).toMatchObject({ colorOutput: "source" });
+  expect(engine.getSnapshot()).toBe(before);
+});
+
 test("previews an inactive artboard's layer without changing the editing page or selection", async () => {
   const { engine, preview, run } = fixture();
   engine.select(["a"]);
@@ -39,7 +49,7 @@ test("previews an inactive artboard's layer without changing the editing page or
   const signal = new AbortController().signal;
   await run({ pageId: "second", selection: ["b"], edge: 96, priority: "visible" }, signal);
   expect(engine.getSnapshot()).toBe(before);
-  expect(JSON.parse(preview.mock.calls[0]![0])[0]).toBe("gpu-webp-768-88-v4");
+  expect(JSON.parse(preview.mock.calls[0]![0])[0]).toBe("gpu-webp-768-88-v5-icc");
   expect(preview.mock.calls[0]![1]).toMatchObject({
     width: 80,
     height: 40,

@@ -4,6 +4,8 @@ import type { MediaSourceResolver } from "../sources/media/model";
 import type { FontResolver } from "../surface/text/fonts";
 export interface RenderOptions {
   scale?: number;
+  /** Display applies the document ICC proof. Source is reserved for native CMYK encoding. */
+  colorOutput?: "display" | "source";
   forceWebGL?: boolean;
   canRender?: () => boolean;
   fontResolver?: FontResolver;

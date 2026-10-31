@@ -116,6 +116,8 @@ export async function libraryStressProject() {
   const { stdout } = await promisify(execFile)(
     "bun",
     [
+      "--define",
+      'import.meta.env.BASE_URL="/"',
       "-e",
       `
     import { createPerformanceProject } from './apps/web/src/services/projects/performance-project.ts';

@@ -120,6 +120,7 @@ export function createCompositionExporter(
               : item;
           let encoded = await renderer.exportComposition(printable, project.assets, {
             ...options.image,
+            colorOutput: options.image.colorMode === "cmyk" ? "source" : "display",
             format: managed ? "png" : (options.image.format as "png" | "jpeg" | "webp"),
             scale: options.scale,
             mediaResolver,

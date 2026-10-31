@@ -94,6 +94,8 @@ export interface ExportScope {
 }
 export type LayerPreviewVariant = { kind: "effect"; effectId: string } | { kind: "mask" };
 export interface ExportPreviewOptions {
+  /** Bypass the canvas proof only when the next stage performs native CMYK conversion. */
+  colorOutput?: "display" | "source";
   /** A genuine intermediate effect or mask coverage preview, scoped to one selected owner. */
   variant?: LayerPreviewVariant;
   /** Explicit artboard previews remain valid when another artboard becomes active. */
