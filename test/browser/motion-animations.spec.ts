@@ -192,9 +192,9 @@ test("reference collage opens as editable action blocks with all replacement pho
   await page.getByRole("button", { name: "Project menu", exact: true }).click();
   const gallery = page.getByRole("dialog");
   await gallery.getByRole("button", { name: "Templates", exact: true }).click();
-  await gallery.getByRole("button", { name: "Create from Share Your Work", exact: true }).click();
+  await gallery.getByRole("button", { name: "Create from Too Hot to Haunt", exact: true }).click();
   await expect(gallery).toBeHidden();
-  await expect(page.locator(".motion-animation-block[data-animation-id]")).toHaveCount(11);
+  await expect(page.locator(".motion-animation-block[data-animation-id]")).toHaveCount(10);
   await page.waitForFunction(
     () => {
       const data = document.querySelector<HTMLCanvasElement>(".canvas-artboard canvas")?.dataset;
@@ -242,9 +242,9 @@ test("reference collage opens as editable action blocks with all replacement pho
       tracks: snapshot.project.pages[0]!.motion!.tracks.length,
     };
   });
-  expect(result).toMatchObject({ name: "Share Your Work", photos: 8 });
+  expect(result).toMatchObject({ name: "Too Hot to Haunt", photos: 8 });
   await page.reload();
-  await expect(page.locator(".motion-animation-block[data-animation-id]")).toHaveCount(11);
+  await expect(page.locator(".motion-animation-block[data-animation-id]")).toHaveCount(10);
 });
 
 test("the two-column picker fits the mobile inspector and applies motion without exposing keys", async ({

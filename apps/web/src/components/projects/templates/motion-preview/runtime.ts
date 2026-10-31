@@ -181,7 +181,7 @@ export function startMotionPreview(
       abort.signal.throwIfAborted();
       const scale = Math.min(1, 480 / Math.max(page.width, page.height));
       async function render(seconds: number) {
-        const plan = evaluateMotion(program, { value: Math.round(seconds * 30), rate: 30 });
+        const plan = evaluateMotion(program, { value: Math.floor(seconds * 30 + 1e-7), rate: 30 });
         const generation = renderGeneration;
         try {
           await session!.withCanvasFrame(

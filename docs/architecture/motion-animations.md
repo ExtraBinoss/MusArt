@@ -22,9 +22,34 @@ Personal presets live in a separate global `musart-motion-presets` IndexedDB dat
 
 ## Share Your Work reference
 
-The bundled 480-square, 30 fps template reconstructs the supplied reference's rapid card collage with eight replacement Unsplash photographs, ten staggered entrances, one move action and separately layered white text. Its 1.5-second timeline completes the actions visible in the screenshot; the supplied video covers only 1.233 seconds. Each entrance combines centered scale and editable GPU blur. Photo drop shadows and an interleaved card/text stack reproduce the changing occlusion and shade visible in the source; see [the frame analysis and effect contract](../rendering/effects/shadow-blur.md). The reference does not establish a measured blur radius; the added blur is a requested treatment.
+The photo-collage template retains eight licensed replacement photographs, centered scale, editable GPU blur, drop shadows and an interleaved card/text stack. Its current looping version is described below; the original reference analysis remains in [the shadow/blur contract](../rendering/effects/shadow-blur.md).
 
 Generation uses public engine commands and records replayable batches. Photo source/license metadata lives beside the bundled JPEGs. The native template loader accepts an empty original-media sidecar list only when the validated project references no original-backed video/audio assets. PNG/JPEG image originals remain embedded in the portable project.
+
+## Seamless branded templates
+
+The durable `share-your-work` template ID now presents **Too Hot to Haunt**.
+Its 1.2-second photo cycle uses ten editable action blocks over eight images.
+Occurrences crossing the loop boundary are split and their channel curves are
+clipped at the same phase; opacity and blur return continuously rather than
+popping a card or resetting a drift. Preview sampling floors the 30 fps index,
+so the last subframe cannot round into the exclusive composition end.
+
+The durable `morphing-type` ID now presents **Melt Mascot**: the shared mascot's
+radial profile, native vector contour morphing, editable facial shapes and a Melt
+wordmark in the shared brand primary on white. Nine contour states close over
+2.4 seconds. It contains no reference-letter outlines or reference footer marks.
+Both templates retain their public IDs for existing links and regenerate from
+public command builders under `scripts/templates/`.
+
+`test/browser/template-seamless.spec.ts` verifies genuine WebGPU and WebGL
+frames, exact first/terminal pixel continuity, changing intermediate poses and
+white mascot corners. On Chrome 154/Linux at a 480 px output edge, both templates
+had zero mean RGB difference at the seam and zero production pixel-readback
+calls. This is a functional witness, not an input-latency or physical-display
+measurement. Captures are in `artifacts/template-seams/`; the checked-in WebP
+posters are native encodings of reviewed rendered frames. Verification is
+serialized with a one-core CPU quota, bounded memory and no swap.
 
 ## Detailed timeline
 

@@ -36,7 +36,7 @@ test.each(templates)(
       );
       await openMotionTemplate({ openMediaProject }, template.id, {}, fetcher);
       expect(openMediaProject).toHaveBeenCalledOnce();
-      expect(openMediaProject.mock.calls[0]![0]).toMatchObject({ name: "Morphing Type" });
+      expect(openMediaProject.mock.calls[0]![0]).toMatchObject({ name: "Melt Mascot" });
     }
   },
 );

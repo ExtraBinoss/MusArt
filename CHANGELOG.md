@@ -6,6 +6,8 @@ All notable changes are recorded here in English. Melt uses a synchronized [Sema
 
 ### Changed
 
+- Make the photo collage loop seamless across wrapped occurrences and preview subframes; rename it Too Hot to Haunt. Replace the blue reference lettering with the shared violet Melt mascot and editable wordmark on white, close its vector loop, remove reference artifacts, and refresh the real rendered posters.
+
 - Apply the CGATS21 CRPC6 ICC soft proof automatically to CMYK canvases, thumbnails and video output, using a demand-driven GPU lookup pass with bounded memory. Keep native CMYK export input separate to prevent double conversion; use lossless source previews and verify canvas/preview/export colors in Chromium on WebGPU and WebGL.
 
 - Compact project storage into linked, keyboard-accessible bar/legend highlights with byte and percentage tooltips. Move recorded-history details, their own breakdown and clearing action into contextual info; clarify that clearing replay/timelapse data preserves the current document and session undo stack.

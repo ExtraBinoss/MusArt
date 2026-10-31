@@ -299,3 +299,17 @@ test("pausing during a queued GPU frame cancels admission without marking the pr
   expect(f.status).toHaveBeenLastCalledWith("playing");
   await owner.release();
 });
+
+test("the final subframe stays below the exclusive duration instead of presenting an empty terminal frame", async () => {
+  const f = fixture(),
+    owner = f.start();
+  await flush();
+  f.tick(5999);
+  await flush();
+  expect(f.times.at(-1)).toBeCloseTo(149 / 30, 8);
+  expect(f.rendered.at(-1)!.layers.some((layer) => layer.visible)).toBe(true);
+  f.tick(6001);
+  await flush();
+  expect(f.times.at(-1)).toBe(0);
+  await owner.release();
+});

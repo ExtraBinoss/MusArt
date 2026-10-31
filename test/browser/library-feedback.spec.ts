@@ -10,7 +10,7 @@ test("motion previews expose native pause/resume and details put the name first 
     localStorage.setItem("musart.onboarding.v1", JSON.stringify({ version: 1, completed: true }));
   });
   await page.goto("./dashboard");
-  const card = page.locator(".template-card-entry").filter({ hasText: "Share Your Work" }).first();
+  const card = page.locator(".template-card-entry").filter({ hasText: "Too Hot to Haunt" }).first();
   await expect(card).toBeVisible();
   const preview = card.locator(".motion-template-preview");
   await expect(preview.locator(".motion-preview-hint")).toHaveText("Hover to preview");
@@ -35,7 +35,7 @@ test("motion previews expose native pause/resume and details put the name first 
   const details = page.locator(".library-item-dialog");
   await expect(details).toBeVisible();
   await expect(
-    details.getByRole("heading", { name: "Share Your Work", exact: true }),
+    details.getByRole("heading", { name: "Too Hot to Haunt", exact: true }),
   ).toBeVisible();
   await expect(details.getByRole("heading", { name: "Open in Melt", exact: true })).toHaveCount(0);
   const alignment = await details.evaluate((dialog) => {

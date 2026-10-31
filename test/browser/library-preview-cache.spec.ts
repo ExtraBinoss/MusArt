@@ -19,7 +19,7 @@ test("template hovers reuse the real GPU canvas and validated sources across car
     page
       .locator(".template-card-entry")
       .filter({ has: page.getByRole("button", { name: `Preview ${name}`, exact: true }) });
-  const morph = card("Morphing Type"),
+  const morph = card("Melt Mascot"),
     orbit = card("Orbit Study");
   await morph.locator(".template-card").hover();
   await expect(morph.locator(".motion-template-preview")).toHaveAttribute(

@@ -2,11 +2,11 @@ import { i18n } from "../../../state/i18n";
 
 const resources = {
   en: {
-    morphingType: "Morphing Type",
-    morphingTypeDescription: "2.23 s · Editable text, letter morphing, inflation and stretch",
-    shareYourWork: "Share Your Work",
+    morphingType: "Melt Mascot",
+    morphingTypeDescription: "2.4 s · Melt mascot, seamless vector morph and editable wordmark",
+    shareYourWork: "Too Hot to Haunt",
     shareYourWorkDescription:
-      "1.5 s · Staggered photo cards, scale, blur and editable motion blocks",
+      "1.2 s · Seamless photo collage, scale, blur and editable motion blocks",
     soundPlayground: "Sound Playground",
     soundPlaygroundDescription: "6 s · Original SFX, playful groups, fades and transitions",
     orbit: "Orbit Study",
@@ -35,11 +35,12 @@ const resources = {
     cancel: "Cancel",
   },
   fr: {
-    morphingType: "Morphing Type",
+    morphingType: "Mascotte Melt",
     morphingTypeDescription:
-      "2,23 s · Texte modifiable, morphing des lettres, gonflement et étirement",
-    shareYourWork: "Share Your Work",
-    shareYourWorkDescription: "1,5 s · Cartes photo décalées, scale, flou et blocs modifiables",
+      "2,4 s · Mascotte Melt, morphing vectoriel en boucle et texte modifiable",
+    shareYourWork: "Too Hot to Haunt",
+    shareYourWorkDescription:
+      "1,2 s · Collage photo en boucle continue, scale, flou et blocs modifiables",
     soundPlayground: "Sound Playground",
     soundPlaygroundDescription: "6 s · Sons originaux, groupes animés, fondus et transitions",
     orbit: "Orbit Study",

@@ -26,7 +26,7 @@ test("recreates the reference cadence with editable action blocks and determinis
   const page = result.project.pages[0]!;
   expect(page.width).toBe(480);
   expect(page.height).toBe(480);
-  expect(page.motion!.tracks.flatMap((track) => track.animations ?? [])).toHaveLength(11);
+  expect(page.motion!.tracks.flatMap((track) => track.animations ?? [])).toHaveLength(10);
   expect(page.layers.filter((layer) => layer.kind === "image")).toHaveLength(8);
   const order = page.layers.map((layer) => layer.id);
   expect(order.indexOf("share-work")).toBeLessThan(order.indexOf("share-card-4"));
@@ -47,19 +47,39 @@ test("recreates the reference cadence with editable action blocks and determinis
   const program = compileMotion(result.project, { compositionId: page.id });
   const sample = (milliseconds: number) =>
     applyMotionFrame(program, evaluateMotion(program, { value: milliseconds, rate: 1000 }));
-  expect(sample(149).layers.find((layer) => layer.id === "share-card-1")!.visible).toBe(true);
-  expect(sample(151).layers.find((layer) => layer.id === "share-card-1")!.visible).toBe(false);
-  expect(sample(901).layers.find((layer) => layer.id === "share-card-1")!.visible).toBe(true);
-  const midway = sample(200).layers.find((layer) => layer.id === "share-card-4")!;
-  expect(midway.scaleX).toBeGreaterThan(0.05);
-  expect(midway.scaleX).toBeLessThan(1);
-  expect(midway.effects.find((effect) => effect.type === "blur")!.amount).toBeGreaterThan(0);
-  expect(midway.effects.find((effect) => effect.type === "blur")!.amount).toBeLessThan(1);
+  const startFrame = sample(0);
+  const endFrame = applyMotionFrame(
+    program,
+    evaluateMotion(program, { value: 1200, rate: 1000 }, { terminalPreview: true }),
+  );
+  const visible = (frame: typeof startFrame) =>
+    frame.layers
+      .filter((l) => l.visible && l.opacity > 1e-6)
+      .map((l) => ({
+        id: l.id,
+        x: l.x,
+        y: l.y,
+        rotation: l.rotation,
+        opacity: l.opacity,
+        scaleX: l.scaleX,
+        scaleY: l.scaleY,
+        effects: l.effects,
+      }));
+  const first = visible(startFrame),
+    last = visible(endFrame);
+  expect(last.map((l) => l.id)).toEqual(first.map((l) => l.id));
+  for (let i = 0; i < first.length; i++) {
+    expect(last[i]!.scaleX ?? 1).toBeCloseTo(first[i]!.scaleX ?? 1, 8);
+    expect(last[i]!.opacity).toBeCloseTo(first[i]!.opacity, 8);
+    expect(last[i]!.x).toBe(first[i]!.x);
+  }
   expect(
-    sample(250)
-      .layers.find((layer) => layer.id === "share-card-4")!
-      .effects.find((effect) => effect.type === "blur")!.amount,
-  ).toBeGreaterThan(0.4);
+    sample(200)
+      .layers.filter((l) => l.visible && l.opacity > 0)
+      .map((l) => l.id),
+  ).not.toEqual(first.map((l) => l.id));
+  expect(page.layers.filter((l) => l.kind === "text").map((l) => l.text)).toContain("HAUNT");
+  expect(JSON.stringify(result.project)).not.toContain("SHARE YOUR WORK");
   expect(
     parseMotionTemplateManifest(
       { version: 1, templateId: "share-your-work", project: result.project, originals: [] },

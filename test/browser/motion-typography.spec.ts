@@ -41,7 +41,7 @@ for (const forceWebGL of [false, true])
     expect(result.frames[0]!.png).toBe(result.frames.at(-1)!.png);
     expect(result.text[0]).not.toBe(result.text[1]);
     expect(result.readbacks).toMatchObject({ gpu: 0, webgl: 0, canvas: 0 });
-    for (const frame of result.frames.slice(0, forceWebGL ? 5 : 67))
+    for (const frame of result.frames.slice(0, forceWebGL ? 5 : 72))
       await writeFile(
         test.info().outputPath(`${forceWebGL ? "webgl" : "webgpu"}-${frame.frame}.png`),
         Buffer.from(frame.png.split(",")[1]!, "base64"),
@@ -74,8 +74,8 @@ for (const forceWebGL of [false, true])
           (await import(/* @vite-ignore */ url)) as typeof import("./support/morph-witness")
         ).exportMorphReference();
       });
-      expect(video.frames).toBe(67);
-      expect(video.duration).toEqual({ value: 67, rate: 30 });
+      expect(video.frames).toBe(72);
+      expect(video.duration).toEqual({ value: 12, rate: 5 });
       expect(video.readbacks).toMatchObject({ gpu: 0, webgl: 0, canvas: 0 });
       await writeFile(
         test.info().outputPath("morphing-type.mp4"),

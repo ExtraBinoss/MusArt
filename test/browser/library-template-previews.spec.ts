@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { createLayer, createPage, createProject } from "@musart/core";
 
-test("registered designed Motion cards and Morphing Type preview and open through their actual loaders", async ({
+test("registered designed Motion cards and Melt Mascot preview and open through their actual loaders", async ({
   page,
 }) => {
   test.setTimeout(60000);
@@ -26,7 +26,7 @@ test("registered designed Motion cards and Morphing Type preview and open throug
     ["Orbit Study", "designed", "orbit-study"],
     ["Paper Motion", "designed", "paper-motion"],
     ["Transition Atlas", "designed", "transition-atlas"],
-    ["Morphing Type", "motion", "morphing-type"],
+    ["Melt Mascot", "motion", "morphing-type"],
   ] as const) {
     const tile = page
       .locator(".template-card-entry")
@@ -49,14 +49,14 @@ test("registered designed Motion cards and Morphing Type preview and open throug
   }
   const card = page
     .locator(".template-card-entry")
-    .filter({ has: page.getByRole("button", { name: "Preview Morphing Type", exact: true }) });
+    .filter({ has: page.getByRole("button", { name: "Preview Melt Mascot", exact: true }) });
   await card.locator(".library-item-open").click();
   await expect(page.locator(".project-dashboard")).toHaveCount(0);
   await expect
     .poll(() => page.evaluate(() => window.musart!.snapshot().project.name))
-    .toBe("Morphing Type");
+    .toBe("Melt Mascot");
   const project = await page.evaluate(() => window.musart!.snapshot().project);
-  expect(project.pages[0]!.layers).toHaveLength(1);
-  expect(project.pages[0]!.layers[0]).toMatchObject({ kind: "text", text: "MORPH" });
+  expect(project.pages[0]!.layers).toHaveLength(5);
+  expect(project.pages[0]!.layers[0]).toMatchObject({ kind: "vector", name: "Melt mascot" });
   await expect(page.locator('.canvas-artboard canvas[data-renderer-ready="true"]')).toBeVisible();
 });

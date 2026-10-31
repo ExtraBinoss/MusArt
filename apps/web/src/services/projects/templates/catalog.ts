@@ -20,11 +20,11 @@ export const TEMPLATE_CATALOG: readonly ProjectTemplate[] = Object.freeze([
     id: "morphing-type",
     nameKey: "templates:morphingType",
     descriptionKey: "templates:morphingTypeDescription",
-    width: 790,
-    height: 480,
+    width: 1920,
+    height: 1080,
     mode: "motion",
     category: "artwork",
-    preview: `${import.meta.env.BASE_URL}templates/motion/morphing-type.webp`,
+    preview: `${import.meta.env.BASE_URL}templates/motion/morphing-type.webp?v=melt-mascot-1`,
   }),
   ...DESIGNED_TEMPLATES.map((template) =>
     Object.freeze({
@@ -80,7 +80,7 @@ export const TEMPLATE_CATALOG: readonly ProjectTemplate[] = Object.freeze([
     category: "artwork" as const,
     mode: "motion" as const,
     descriptionKey: "templates:shareYourWorkDescription",
-    preview: `${import.meta.env.BASE_URL}templates/motion/share-your-work.webp`,
+    preview: `${import.meta.env.BASE_URL}templates/motion/share-your-work.webp?v=haunt-loop-1`,
   }),
   ...PRESETS.map((preset) =>
     Object.freeze({
