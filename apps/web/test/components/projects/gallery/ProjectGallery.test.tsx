@@ -50,12 +50,14 @@ test("loads bounded pages, mutates inactive projects and confirms history cleari
   await action("Study", "Dupliquer");
   await waitFor(() => expect(d.services.duplicateProject).toHaveBeenCalledWith(a.id));
   await action("Study", "Stockage du projet");
-  await screen.findByText("Détail du journal");
+  fireEvent.click(await screen.findByRole("button", { name: "Historique enregistré" }));
+  await screen.findByRole("dialog", { name: "Historique enregistré" });
   fireEvent.click(screen.getByRole("button", { name: "Effacer l’historique" }));
   fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
   expect(d.services.clearHistory).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Historique enregistré" }));
   fireEvent.click(screen.getByRole("button", { name: "Effacer l’historique" }));
-  fireEvent.click(screen.getByRole("button", { name: "Effacer le journal" }));
+  fireEvent.click(screen.getByRole("button", { name: "Effacer l’historique" }));
   await waitFor(() => expect(d.services.clearHistory).toHaveBeenCalledWith(a.id));
   await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
   fireEvent.click(screen.getByRole("button", { name: "Fermer" }));

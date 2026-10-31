@@ -161,7 +161,7 @@ test("clears the active durable journal after confirmation and discards prepared
     fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
     expect(d.services.clearHistory).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Effacer l’historique" }));
-    fireEvent.click(screen.getByRole("button", { name: "Effacer le journal" }));
+    fireEvent.click(screen.getByRole("button", { name: "Effacer l’historique" }));
     await waitFor(() => expect(d.session.read().events).toBe(0));
     expect(d.services.clearHistory).toHaveBeenCalledWith(d.project.id);
     expect(d.engine.getSnapshot()).toBe(before);

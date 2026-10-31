@@ -23,7 +23,10 @@ test("requires confirmation before clearing a journal, keeps failures visible an
   expect(screen.getByRole("alertdialog")).toHaveAccessibleName(
     "Effacer l’historique de « Study » ?",
   );
-  fireEvent.click(screen.getByRole("button", { name: "Effacer le journal" }));
+  expect(screen.getByRole("alertdialog")).toHaveTextContent(
+    "Ctrl/Cmd+Z de cette session sont conservés",
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Effacer l’historique" }));
   expect(confirm).toHaveBeenCalledOnce();
   expect(screen.getByRole("button", { name: "En cours…" })).toBeDisabled();
   expect(screen.getByRole("button", { name: "Annuler" })).toBeDisabled();
@@ -32,7 +35,7 @@ test("requires confirmation before clearing a journal, keeps failures visible an
   });
   expect(await screen.findByRole("alert")).toHaveTextContent("Réessayez");
   expect(cancel).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "Effacer le journal" }));
+  fireEvent.click(screen.getByRole("button", { name: "Effacer l’historique" }));
   await act(async () => {
     resolve(true);
   });

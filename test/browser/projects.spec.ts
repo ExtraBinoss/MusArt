@@ -232,13 +232,19 @@ test("inactive CRUD, project storage, journal clearing, active clearing and crea
   await expect(copy).toHaveCount(0);
   await menu(page, card, "Stockage du projet");
   const storage = page.getByRole("dialog", { name: "Stockage du projet", exact: true });
-  await expect(storage.getByText("Détail du journal")).toBeVisible();
-  await expect(storage.getByText(/Tailles logiques JSON et UTF-8/)).toBeVisible();
+  await storage.getByRole("button", { name: "Historique enregistré", exact: true }).click();
+  const historyDetails = page.getByRole("dialog", { name: "Historique enregistré", exact: true });
+  await expect(historyDetails).toContainText("Ctrl/Cmd+Z");
   expect(await storage.locator(".project-storage-total strong").innerText()).not.toMatch(/^0\s/);
-  await storage.getByRole("button", { name: "Effacer l’historique", exact: true }).click();
-  await page.getByRole("button", { name: "Effacer le journal", exact: true }).click();
-  await expect(storage.getByText(/0 entrées? enregistrée/)).toBeVisible();
-  await expect(storage.getByRole("button", { name: "Effacer l’historique" })).toBeDisabled();
+  await historyDetails.getByRole("button", { name: "Effacer l’historique", exact: true }).click();
+  await page
+    .getByRole("alertdialog")
+    .getByRole("button", { name: "Effacer l’historique", exact: true })
+    .click();
+  await storage.getByRole("button", { name: "Historique enregistré", exact: true }).click();
+  await expect(historyDetails.getByText("0 étapes enregistrées")).toBeVisible();
+  await expect(historyDetails.getByRole("button", { name: "Effacer l’historique" })).toBeDisabled();
+  await page.keyboard.press("Escape");
   await storage.getByRole("button", { name: "Fermer", exact: true }).click();
   expect((await page.evaluate(() => window.musart!.snapshot())).project.id).toBe(
     activeBefore.project.id,
@@ -259,7 +265,7 @@ test("inactive CRUD, project storage, journal clearing, active clearing and crea
   ).toBeEnabled();
   const canonical = await page.evaluate(() => window.musart!.snapshot());
   await page.getByRole("button", { name: "Effacer l’historique", exact: true }).click();
-  await page.getByRole("button", { name: "Effacer le journal", exact: true }).click();
+  await page.getByRole("button", { name: "Effacer l’historique", exact: true }).click();
   await expect
     .poll(() => page.evaluate(async () => (await window.musart!.historyInfo()).events))
     .toBe(0);
